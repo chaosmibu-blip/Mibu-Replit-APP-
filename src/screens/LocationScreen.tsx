@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -6,21 +6,9 @@ import {
   TouchableOpacity, 
   ActivityIndicator,
   Platform,
-  Dimensions,
   ScrollView,
   Linking,
 } from 'react-native';
-let MapView: any = null;
-let Marker: any = null;
-let PROVIDER_DEFAULT: any = null;
-type Region = { latitude: number; longitude: number; latitudeDelta: number; longitudeDelta: number };
-
-if (Platform.OS !== 'web') {
-  const Maps = require('react-native-maps');
-  MapView = Maps.default;
-  Marker = Maps.Marker;
-  PROVIDER_DEFAULT = Maps.PROVIDER_DEFAULT;
-}
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
@@ -86,8 +74,6 @@ const translations = {
     nature: '自然',
     food: '美食',
     shopping: '購物',
-    listView: '列表',
-    mapView: '地圖',
   },
   'en': {
     title: 'Location',
@@ -105,8 +91,6 @@ const translations = {
     nature: 'Nature',
     food: 'Food',
     shopping: 'Shopping',
-    listView: 'List',
-    mapView: 'Map',
   },
   'ja': {
     title: '位置情報',
@@ -124,8 +108,6 @@ const translations = {
     nature: '自然',
     food: 'グルメ',
     shopping: 'ショッピング',
-    listView: 'リスト',
-    mapView: 'マップ',
   },
   'ko': {
     title: '위치',
@@ -143,27 +125,16 @@ const translations = {
     nature: '자연',
     food: '음식',
     shopping: '쇼핑',
-    listView: '목록',
-    mapView: '지도',
   },
 };
 
 export function LocationScreen() {
   const { state } = useApp();
-  const mapRef = useRef<MapView>(null);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [nearbyPlaces, setNearbyPlaces] = useState<NearbyPlace[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedPlace, setSelectedPlace] = useState<NearbyPlace | null>(null);
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
-  const [region, setRegion] = useState<Region>({
-    latitude: 25.0330,
-    longitude: 121.5654,
-    latitudeDelta: 0.08,
-    longitudeDelta: 0.08,
-  });
 
   const texts = translations[state.language] || translations['zh-TW'];
 
@@ -221,14 +192,6 @@ export function LocationScreen() {
       
       setLocation(currentLocation);
 
-      const newRegion = {
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      };
-      setRegion(newRegion);
-
       const placesWithDistance = samplePlaces.map(place => ({
         ...place,
         distance: calculateDistance(
@@ -262,30 +225,7 @@ export function LocationScreen() {
       android: `google.navigation:q=${place.latitude},${place.longitude}`,
       default: `https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`,
     });
-    Linking.openURL(url);
-  };
-
-  const centerOnLocation = () => {
-    if (location && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.02,
-        longitudeDelta: 0.02,
-      }, 500);
-    }
-  };
-
-  const focusOnPlace = (place: NearbyPlace) => {
-    setSelectedPlace(place);
-    if (mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: place.latitude,
-        longitude: place.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 500);
-    }
+    if (url) Linking.openURL(url);
   };
 
   const categories = ['landmark', 'nature', 'food', 'shopping'];
@@ -303,72 +243,26 @@ export function LocationScreen() {
     );
   }
 
-  const isWeb = Platform.OS === 'web';
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{texts.title}</Text>
-        {!isWeb && (
-          <View style={styles.viewToggle}>
-            <TouchableOpacity
-              style={[styles.toggleButton, viewMode === 'map' && styles.toggleButtonActive]}
-              onPress={() => setViewMode('map')}
-            >
-              <Ionicons name="map" size={18} color={viewMode === 'map' ? '#ffffff' : '#64748b'} />
-              <Text style={[styles.toggleText, viewMode === 'map' && styles.toggleTextActive]}>
-                {texts.mapView}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.toggleButton, viewMode === 'list' && styles.toggleButtonActive]}
-              onPress={() => setViewMode('list')}
-            >
-              <Ionicons name="list" size={18} color={viewMode === 'list' ? '#ffffff' : '#64748b'} />
-              <Text style={[styles.toggleText, viewMode === 'list' && styles.toggleTextActive]}>
-                {texts.listView}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>{texts.title}</Text>
 
-      <View style={styles.categoryFilter}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
-          <TouchableOpacity
-            style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
-            onPress={() => setSelectedCategory(null)}
-          >
-            <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
-              {texts.allCategories}
+      {location && (
+        <View style={styles.locationCard}>
+          <View style={styles.locationIcon}>
+            <Ionicons name="navigate" size={24} color="#22c55e" />
+          </View>
+          <View style={styles.locationInfo}>
+            <Text style={styles.locationLabel}>{texts.yourLocation}</Text>
+            <Text style={styles.locationCoords}>
+              {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
             </Text>
+          </View>
+          <TouchableOpacity style={styles.refreshButton} onPress={getLocation}>
+            <Ionicons name="refresh" size={20} color="#22c55e" />
           </TouchableOpacity>
-          {categories.map(cat => (
-            <TouchableOpacity
-              key={cat}
-              style={[
-                styles.categoryChip, 
-                selectedCategory === cat && styles.categoryChipActive,
-                selectedCategory === cat && { backgroundColor: getCategoryColor(cat) }
-              ]}
-              onPress={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
-            >
-              <Ionicons 
-                name={getCategoryIcon(cat)} 
-                size={16} 
-                color={selectedCategory === cat ? '#ffffff' : getCategoryColor(cat)} 
-              />
-              <Text style={[
-                styles.categoryChipText, 
-                selectedCategory === cat && styles.categoryChipTextActive,
-                selectedCategory !== cat && { color: getCategoryColor(cat) }
-              ]}>
-                {getCategoryName(cat)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+        </View>
+      )}
 
       {errorMsg && (
         <View style={styles.warningCard}>
@@ -377,289 +271,87 @@ export function LocationScreen() {
         </View>
       )}
 
-      {!isWeb && viewMode === 'map' ? (
-        <View style={styles.mapContainer}>
-          <MapView
-            ref={mapRef}
-            style={styles.map}
-            provider={PROVIDER_DEFAULT}
-            initialRegion={region}
-            showsUserLocation
-            showsMyLocationButton={false}
+      <View style={styles.categoryFilter}>
+        <TouchableOpacity
+          style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
+          onPress={() => setSelectedCategory(null)}
+        >
+          <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
+            {texts.allCategories}
+          </Text>
+        </TouchableOpacity>
+        {categories.map(cat => (
+          <TouchableOpacity
+            key={cat}
+            style={[
+              styles.categoryChip, 
+              selectedCategory === cat && styles.categoryChipActive,
+              selectedCategory === cat && { backgroundColor: getCategoryColor(cat) }
+            ]}
+            onPress={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
           >
-            {filteredPlaces.map(place => (
-              <Marker
-                key={place.id}
-                coordinate={{ latitude: place.latitude, longitude: place.longitude }}
-                title={getPlaceName(place)}
-                pinColor={getCategoryColor(place.category)}
-                onPress={() => setSelectedPlace(place)}
-              />
-            ))}
-          </MapView>
-
-          <TouchableOpacity style={styles.myLocationButton} onPress={centerOnLocation}>
-            <Ionicons name="locate" size={24} color="#22c55e" />
+            <Ionicons 
+              name={getCategoryIcon(cat)} 
+              size={16} 
+              color={selectedCategory === cat ? '#ffffff' : getCategoryColor(cat)} 
+            />
+            <Text style={[
+              styles.categoryChipText, 
+              selectedCategory === cat && styles.categoryChipTextActive,
+              selectedCategory !== cat && { color: getCategoryColor(cat) }
+            ]}>
+              {getCategoryName(cat)}
+            </Text>
           </TouchableOpacity>
+        ))}
+      </View>
 
-          {selectedPlace && (
-            <View style={styles.selectedPlaceCard}>
-              <View style={[styles.selectedPlaceIcon, { backgroundColor: getCategoryColor(selectedPlace.category) + '20' }]}>
-                <Ionicons 
-                  name={getCategoryIcon(selectedPlace.category)} 
-                  size={24} 
-                  color={getCategoryColor(selectedPlace.category)} 
-                />
-              </View>
-              <View style={styles.selectedPlaceInfo}>
-                <Text style={styles.selectedPlaceName}>{getPlaceName(selectedPlace)}</Text>
-                <Text style={styles.selectedPlaceDistance}>{formatDistance(selectedPlace.distance)}</Text>
-              </View>
-              <TouchableOpacity style={styles.navigateButton} onPress={() => openInMaps(selectedPlace)}>
-                <Ionicons name="navigate" size={20} color="#ffffff" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedPlace(null)}>
-                <Ionicons name="close" size={20} color="#64748b" />
-              </TouchableOpacity>
-            </View>
-          )}
+      <Text style={styles.sectionTitle}>{texts.nearbyTitle}</Text>
+
+      {filteredPlaces.length === 0 ? (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>{texts.noPlaces}</Text>
         </View>
       ) : (
-        <ScrollView style={styles.listContainer} contentContainerStyle={styles.listContent}>
-          {location && (
-            <View style={styles.locationCard}>
-              <View style={styles.locationIcon}>
-                <Ionicons name="navigate" size={24} color="#22c55e" />
-              </View>
-              <View style={styles.locationInfo}>
-                <Text style={styles.locationLabel}>{texts.yourLocation}</Text>
-                <Text style={styles.locationCoords}>
-                  {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
-                </Text>
-              </View>
-              <TouchableOpacity style={styles.refreshButton} onPress={getLocation}>
-                <Ionicons name="refresh" size={20} color="#22c55e" />
-              </TouchableOpacity>
+        filteredPlaces.map(place => (
+          <TouchableOpacity
+            key={place.id}
+            style={styles.placeCard}
+            onPress={() => openInMaps(place)}
+          >
+            <View style={[styles.placeIcon, { backgroundColor: getCategoryColor(place.category) + '20' }]}>
+              <Ionicons 
+                name={getCategoryIcon(place.category)} 
+                size={24} 
+                color={getCategoryColor(place.category)} 
+              />
             </View>
-          )}
-
-          <Text style={styles.sectionTitle}>{texts.nearbyTitle}</Text>
-
-          {filteredPlaces.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>{texts.noPlaces}</Text>
+            <View style={styles.placeInfo}>
+              <Text style={styles.placeName}>{getPlaceName(place)}</Text>
+              <Text style={styles.placeAddress} numberOfLines={1}>{place.address}</Text>
+              <View style={styles.placeDistanceRow}>
+                <Ionicons name="navigate-circle" size={14} color="#22c55e" />
+                <Text style={styles.placeDistanceText}>{formatDistance(place.distance)}</Text>
+              </View>
             </View>
-          ) : (
-            filteredPlaces.map(place => (
-              <TouchableOpacity
-                key={place.id}
-                style={styles.placeCard}
-                onPress={() => openInMaps(place)}
-              >
-                <View style={[styles.placeIcon, { backgroundColor: getCategoryColor(place.category) + '20' }]}>
-                  <Ionicons 
-                    name={getCategoryIcon(place.category)} 
-                    size={24} 
-                    color={getCategoryColor(place.category)} 
-                  />
-                </View>
-                <View style={styles.placeInfo}>
-                  <Text style={styles.placeName}>{getPlaceName(place)}</Text>
-                  <Text style={styles.placeAddress} numberOfLines={1}>{place.address}</Text>
-                  <View style={styles.placeDistanceRow}>
-                    <Ionicons name="navigate-circle" size={14} color="#22c55e" />
-                    <Text style={styles.placeDistanceText}>{formatDistance(place.distance)}</Text>
-                  </View>
-                </View>
-                <View style={styles.placeAction}>
-                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-                </View>
-              </TouchableOpacity>
-            ))
-          )}
-        </ScrollView>
+            <View style={styles.placeAction}>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </View>
+          </TouchableOpacity>
+        ))
       )}
-    </View>
+    </ScrollView>
   );
 }
-
-const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 60 : 20,
-    paddingBottom: 12,
-    backgroundColor: '#ffffff',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#1e293b',
-  },
-  viewToggle: {
-    flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
-    borderRadius: 12,
-    padding: 4,
-  },
-  toggleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  toggleButtonActive: {
-    backgroundColor: '#22c55e',
-  },
-  toggleText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#64748b',
-  },
-  toggleTextActive: {
-    color: '#ffffff',
-  },
-  categoryFilter: {
-    backgroundColor: '#ffffff',
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  categoryScroll: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    backgroundColor: '#ffffff',
-    borderWidth: 1.5,
-    borderColor: '#e2e8f0',
-    marginRight: 8,
-  },
-  categoryChipActive: {
-    backgroundColor: '#22c55e',
-    borderColor: '#22c55e',
-  },
-  categoryChipText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#64748b',
-  },
-  categoryChipTextActive: {
-    color: '#ffffff',
-  },
-  warningCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fefce8',
-    padding: 12,
-    marginHorizontal: 20,
-    marginTop: 12,
-    borderRadius: 12,
-    gap: 8,
-  },
-  warningText: {
-    fontSize: 14,
-    color: '#92400e',
-    flex: 1,
-  },
-  mapContainer: {
-    flex: 1,
-    position: 'relative',
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  myLocationButton: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-    width: 48,
-    height: 48,
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  selectedPlaceCard: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 100 : 80,
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-    gap: 12,
-  },
-  selectedPlaceIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  selectedPlaceInfo: {
-    flex: 1,
-  },
-  selectedPlaceName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 4,
-  },
-  selectedPlaceDistance: {
-    fontSize: 14,
-    color: '#22c55e',
-    fontWeight: '600',
-  },
-  navigateButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#22c55e',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f1f5f9',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listContainer: {
-    flex: 1,
-  },
-  listContent: {
+  content: {
     padding: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 20,
     paddingBottom: 100,
   },
   loadingContainer: {
@@ -673,13 +365,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#64748b',
   },
+  title: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#1e293b',
+    marginBottom: 20,
+  },
   locationCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ffffff',
     padding: 16,
     borderRadius: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     borderWidth: 2,
     borderColor: '#dcfce7',
   },
@@ -712,6 +410,49 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0fdf4',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  warningCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fefce8',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+    gap: 8,
+  },
+  warningText: {
+    fontSize: 14,
+    color: '#92400e',
+    flex: 1,
+  },
+  categoryFilter: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 20,
+  },
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+  },
+  categoryChipActive: {
+    backgroundColor: '#22c55e',
+    borderColor: '#22c55e',
+  },
+  categoryChipText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#64748b',
+  },
+  categoryChipTextActive: {
+    color: '#ffffff',
   },
   sectionTitle: {
     fontSize: 18,
