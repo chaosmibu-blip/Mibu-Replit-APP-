@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import * as AuthSession from 'expo-auth-session';
 import * as Linking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../src/context/AppContext';
@@ -22,10 +21,11 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: 'mibu',
-    path: 'auth/callback',
-  });
+  const redirectUri = Linking.createURL('auth/callback');
+
+  useEffect(() => {
+    console.log('Generated redirect URI:', redirectUri);
+  }, [redirectUri]);
 
   useEffect(() => {
     if (state.isAuthenticated && state.user) {
@@ -39,6 +39,9 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const authUrl = `${API_BASE_URL}/api/auth/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
+      
+      console.log('Auth URL:', authUrl);
+      console.log('Redirect URI:', redirectUri);
       
       if (Platform.OS === 'web') {
         const width = 500;
@@ -73,15 +76,22 @@ export default function LoginScreen() {
           redirectUri
         );
 
+        console.log('Auth result:', result);
+
         if (result.type === 'success') {
           const url = result.url;
-          const params = Linking.parse(url);
+          console.log('Returned URL:', url);
           
-          if (params.queryParams?.token) {
-            await fetchUserWithToken(params.queryParams.token as string);
+          const parsed = Linking.parse(url);
+          console.log('Parsed params:', parsed);
+          
+          if (parsed.queryParams?.token) {
+            await fetchUserWithToken(parsed.queryParams.token as string);
           } else {
             await fetchUserAfterAuth();
           }
+        } else if (result.type === 'cancel') {
+          console.log('Auth cancelled by user');
         }
         setLoading(false);
       }
