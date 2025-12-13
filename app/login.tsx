@@ -138,37 +138,51 @@ export default function LoginScreen() {
           [{ text: '繼續', style: 'default' }]
         );
         
-        const result = await WebBrowser.openAuthSessionAsync(
-          authUrl,
-          redirectUri,
-          {
-            preferEphemeralSession: true,
-            showInRecents: true,
-          }
-        );
-
-        const resultInfo = `Type: ${result.type}\n\nURL: ${(result as any).url || 'null'}\n\nError: ${(result as any).error || 'none'}`;
-        
-        Alert.alert(
-          '登入結果',
-          resultInfo,
-          [{ text: '確定', style: 'default' }]
-        );
-
-        if (result.type === 'success') {
-          const url = result.url;
-          const parsed = Linking.parse(url);
+        const handleAuthCallback = async (event: { url: string }) => {
+          console.log('=== Auth Callback Received ===');
+          console.log('URL:', event.url);
           
-          if (parsed.queryParams?.token) {
-            await fetchUserWithToken(parsed.queryParams.token as string);
-          } else {
-            await fetchUserAfterAuth();
+          const parsed = Linking.parse(event.url);
+          console.log('Parsed:', JSON.stringify(parsed, null, 2));
+          
+          if (event.url.includes('auth/callback') || event.url.includes('token=')) {
+            subscription.remove();
+            
+            await WebBrowser.dismissBrowser();
+            
+            if (parsed.queryParams?.token) {
+              Alert.alert(
+                '登入成功',
+                `收到 Token!\n\n路徑: ${parsed.path}\nToken: ${(parsed.queryParams.token as string).substring(0, 20)}...`,
+                [{ text: '確定', style: 'default' }]
+              );
+              await fetchUserWithToken(parsed.queryParams.token as string);
+            } else {
+              Alert.alert(
+                '回調收到',
+                `URL: ${event.url}\n\n未找到 Token`,
+                [{ text: '確定', style: 'default' }]
+              );
+              setLoading(false);
+            }
           }
-        }
-        setLoading(false);
+        };
+        
+        const subscription = Linking.addEventListener('url', handleAuthCallback);
+        
+        await WebBrowser.openBrowserAsync(authUrl, {
+          showInRecents: true,
+          dismissButtonStyle: 'close',
+        });
+        
+        setTimeout(() => {
+          subscription.remove();
+          setLoading(false);
+        }, 120000);
       }
     } catch (error) {
       console.error('Auth error:', error);
+      Alert.alert('錯誤', `登入失敗: ${error}`);
       setLoading(false);
     }
   };
