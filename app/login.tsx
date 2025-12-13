@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -23,9 +24,68 @@ export default function LoginScreen() {
 
   const redirectUri = Linking.createURL('auth/callback');
 
+  const handleDeepLink = useCallback(async (event: { url: string }) => {
+    console.log('=== Deep Link Received ===');
+    console.log('URL:', event.url);
+    
+    const parsed = Linking.parse(event.url);
+    console.log('Parsed:', JSON.stringify(parsed, null, 2));
+    
+    if (parsed.path === 'auth/callback' || event.url.includes('auth/callback')) {
+      if (parsed.queryParams?.token) {
+        console.log('Token found in deep link!');
+        await WebBrowser.dismissBrowser();
+        await fetchUserWithTokenDirect(parsed.queryParams.token as string);
+      }
+    }
+  }, []);
+
+  const fetchUserWithTokenDirect = async (token: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        if (userData && userData.name) {
+          setUser({
+            id: userData.id,
+            name: userData.name,
+            email: userData.email || null,
+            avatar: userData.avatar || null,
+            firstName: userData.firstName || userData.name.split(' ')[0],
+            provider: 'replit',
+            providerId: userData.id,
+          });
+          setLoading(false);
+          router.replace('/(tabs)');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch user with token:', error);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     console.log('Generated redirect URI:', redirectUri);
-  }, [redirectUri]);
+    
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+    
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        console.log('Initial URL:', url);
+        handleDeepLink({ url });
+      }
+    });
+    
+    return () => {
+      subscription.remove();
+    };
+  }, [handleDeepLink, redirectUri]);
 
   useEffect(() => {
     if (state.isAuthenticated && state.user) {
