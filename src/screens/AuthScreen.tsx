@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,12 @@ import {
   Platform,
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { API_BASE_URL } from '../constants/translations';
+
+WebBrowser.maybeCompleteAuthSession();
 
 interface AuthScreenProps {
   visible: boolean;
@@ -22,22 +25,95 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
   const { setUser, state } = useApp();
   const [loading, setLoading] = useState(false);
 
+  const getRedirectUri = () => {
+    if (Platform.OS === 'web') {
+      return window.location.origin + '/auth/callback';
+    }
+    return Linking.createURL('auth/callback');
+  };
+
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const authUrl = `${API_BASE_URL}/api/auth/login`;
-      const result = await WebBrowser.openAuthSessionAsync(
-        authUrl,
-        'mibu://auth/callback'
-      );
+      const redirectUri = getRedirectUri();
+      const authUrl = `${API_BASE_URL}/api/auth/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
+      
+      if (Platform.OS === 'web') {
+        const width = 500;
+        const height = 600;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        
+        const authWindow = window.open(
+          authUrl,
+          'auth',
+          `width=${width},height=${height},left=${left},top=${top}`
+        );
 
-      if (result.type === 'success') {
-        await fetchUserAfterAuth();
+        const checkInterval = setInterval(async () => {
+          try {
+            if (authWindow?.closed) {
+              clearInterval(checkInterval);
+              await fetchUserAfterAuth();
+              setLoading(false);
+            }
+          } catch (e) {
+          }
+        }, 500);
+
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          setLoading(false);
+        }, 120000);
+      } else {
+        const result = await WebBrowser.openAuthSessionAsync(
+          authUrl,
+          Linking.createURL('auth/callback')
+        );
+
+        if (result.type === 'success') {
+          const url = result.url;
+          const params = Linking.parse(url);
+          
+          if (params.queryParams?.token) {
+            await fetchUserWithToken(params.queryParams.token as string);
+          } else {
+            await fetchUserAfterAuth();
+          }
+        }
+        setLoading(false);
       }
     } catch (error) {
       console.error('Auth error:', error);
-    } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserWithToken = async (token: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        if (userData && userData.name) {
+          setUser({
+            id: userData.id,
+            name: userData.name,
+            email: userData.email || null,
+            avatar: userData.avatar || null,
+            firstName: userData.firstName || userData.name.split(' ')[0],
+            provider: 'replit',
+            providerId: userData.id,
+          });
+          onClose();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch user with token:', error);
     }
   };
 
