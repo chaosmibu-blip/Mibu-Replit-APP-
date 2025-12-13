@@ -11,6 +11,7 @@ import {
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import * as AuthSession from 'expo-auth-session';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
@@ -22,7 +23,11 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  const redirectUri = Linking.createURL('auth/callback');
+  const redirectUri = AuthSession.makeRedirectUri({
+    scheme: 'mibu',
+    path: 'auth/callback',
+    preferLocalhost: false,
+  });
 
   const handleDeepLink = useCallback(async (event: { url: string }) => {
     console.log('=== Deep Link Received ===');
@@ -131,9 +136,11 @@ export default function LoginScreen() {
           setLoading(false);
         }, 120000);
       } else {
-        console.log('=== Starting Auth Session ===');
-        console.log('Auth URL:', authUrl);
-        console.log('Expected redirect URI:', redirectUri);
+        Alert.alert(
+          '登入資訊',
+          `Auth URL:\n${authUrl}\n\nRedirect URI:\n${redirectUri}`,
+          [{ text: '繼續', style: 'default' }]
+        );
         
         const result = await WebBrowser.openAuthSessionAsync(
           authUrl,
@@ -144,28 +151,23 @@ export default function LoginScreen() {
           }
         );
 
-        console.log('=== Auth Result ===');
-        console.log('Result type:', result.type);
-        console.log('Full result:', JSON.stringify(result, null, 2));
+        const resultInfo = `Type: ${result.type}\n\nURL: ${(result as any).url || 'null'}\n\nError: ${(result as any).error || 'none'}`;
+        
+        Alert.alert(
+          '登入結果',
+          resultInfo,
+          [{ text: '確定', style: 'default' }]
+        );
 
         if (result.type === 'success') {
           const url = result.url;
-          console.log('Returned URL:', url);
-          
           const parsed = Linking.parse(url);
-          console.log('Parsed params:', JSON.stringify(parsed, null, 2));
           
           if (parsed.queryParams?.token) {
-            console.log('Token found, fetching user...');
             await fetchUserWithToken(parsed.queryParams.token as string);
           } else {
-            console.log('No token in params, trying session auth...');
             await fetchUserAfterAuth();
           }
-        } else if (result.type === 'cancel') {
-          console.log('Auth cancelled by user');
-        } else if (result.type === 'dismiss') {
-          console.log('Auth dismissed - browser closed without redirect');
         }
         setLoading(false);
       }
