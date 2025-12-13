@@ -94,4 +94,4 @@ expertMode = true
 [deployment]
 deploymentTarget = "autoscale"
 run = ["npx", "serve", "dist", "-l", "5000"]
-build = ["npm", "run", "build"]
+build = ["sh", "-c", "npm run build"]
