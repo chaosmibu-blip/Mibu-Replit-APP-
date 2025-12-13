@@ -1,0 +1,115 @@
+行程扭蛋模組 (Travel Gacha) 架構說明
+一、模組定義
+位置: modules/travel-gacha/manifest.ts
+
+模組ID: travel-gacha
+中文名稱: 行程扭蛋
+描述: AI 驅動的隨機旅遊行程生成器，具有扭蛋機制
+路由:
+  - 前端: /gacha, /collection
+  - 後端: /api/gacha
+
+二、核心資料結構
+位置: client/src/types.ts
+
+結構名稱	說明
+GachaItem	單一景點/店家項目，包含地點名稱、描述、分類、建議時間、顏色、優惠券等
+GachaMeta	扭蛋結果的元資料：日期、國家、城市、鎖定區域、用戶等級
+GachaResponse	API 回傳格式，包含 status、meta 和 inventory (景點清單)
+Category	7 種分類：Food、Stay、Education、Entertainment、Scenery、Shopping、Activity
+GachaItem 重要欄位:
+
+place_name / description - 支援多語系 (LocalizedContent)
+category / subcategory - 分類系統
+suggested_time / duration - 建議時間與預估停留
+is_coupon / coupon_data - 優惠券機制
+place_id / verified_address - Google 地圖驗證資訊
+location - 經緯度座標
+三、前端元件
+元件	位置	功能
+InputForm	client/src/components/InputForm.tsx	選擇國家、區域、等級的輸入表單
+GachaScene	client/src/components/GachaScene.tsx	扭蛋轉動時的載入動畫
+ResultList	client/src/components/ResultList.tsx	顯示扭蛋結果清單，支援排除與重新扭蛋
+CollectionGrid	client/src/components/CollectionGrid.tsx	用戶收藏的景點網格
+ItemBox	client/src/components/ItemBox.tsx	優惠券物品箱
+四、狀態管理
+位置: client/src/hooks/useAppState.ts
+
+AppState 關鍵狀態:
+
+{
+  language: Language,      // 語言 (zh-TW, en, ja, ko)
+  country: string,         // 選擇的國家
+  city: string,            // 選擇的城市
+  countryId: number,       // 國家 ID
+  regionId: number,        // 區域 ID
+  level: number,           // 用戶等級
+  result: GachaResponse,   // 扭蛋結果
+  collection: GachaItem[], // 用戶收藏
+  view: AppView,           // 當前視圖
+}
+
+子視圖 (GachaSubView):
+
+gacha - 扭蛋主頁面
+collection - 收藏頁面
+itembox - 物品箱
+LocalStorage 持久化:
+
+travel_gacha_collection - 收藏資料
+mibu_last_visit_collection - 最後造訪收藏時間
+mibu_last_visit_itembox - 最後造訪物品箱時間
+五、後端 API 架構
+位置: server/routes.ts
+
+API 端點	方法	功能
+/api/generate-itinerary	POST	主要扭蛋生成 API
+/api/gacha/itinerary	POST	平行時段 AI 架構生成
+/api/gacha/pull	POST	單次扭蛋抽取 (向後兼容)
+/api/locations/countries	GET	取得國家清單
+/api/locations/regions/:countryId	GET	取得區域清單
+/api/locations/districts/:regionId	GET	取得地區清單
+/api/feedback/exclude	POST	排除不喜歡的地點
+/api/collections	GET	取得用戶收藏
+六、AI 生成流程
+位置: server/routes.ts 中的 generatePlaceWithAI 函數
+
+1. 使用者選擇國家 → 區域 → 觸發扭蛋
+2. 系統隨機選擇一個「地區」(district)
+3. 根據時段骨架 (time-slot skeleton) 決定需要的分類組合
+4. 呼叫 Gemini AI 為每個分類生成真實景點
+5. 使用 Google Places API 驗證地點真實性
+6. 組裝成完整行程回傳前端
+
+AI Prompt 核心邏輯:
+
+- 推薦位於「{區域}{地區}」的「{子分類}」類型店家或景點
+- 必須是真實存在、適合觀光的地點
+- 排除已收藏或已排除的地點
+- 提供 30-50 字吸引力介紹
+
+七、資料流程圖
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│  InputForm  │ ──▶ │ geminiService│ ──▶ │   後端 API  │
+│ (選擇地點)   │     │ (API 呼叫)   │     │             │
+└─────────────┘     └──────────────┘     └──────┬──────┘
+                                                 │
+                                                 ▼
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│ ResultList  │ ◀── │  AppState    │ ◀── │  Gemini AI  │
+│ (顯示結果)   │     │ (狀態更新)   │     │  生成景點   │
+└─────────────┘     └──────────────┘     └─────────────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │ Collection   │
+                    │ (收藏管理)    │
+                    └──────────────┘
+
+八、特色功能
+多語系支援: zh-TW, en, ja, ko
+Google 驗證: 使用 Places API 確認地點真實性
+優惠券系統: 商家可設定優惠券
+排除機制: 用戶可排除不喜歡的地點
+收藏功能: 登入用戶可同步雲端收藏
+訪客模式: 未登入也可使用，資料存 LocalStorage
