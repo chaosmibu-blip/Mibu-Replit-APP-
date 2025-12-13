@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -185,7 +186,9 @@ export default function LoginScreen() {
           setLoading(false);
           router.replace('/(tabs)');
         } else {
+          console.log('API Response:', JSON.stringify(userData, null, 2));
           console.error('Invalid user data received');
+          Alert.alert('Debug Error', JSON.stringify(userData));
           setLoading(false);
         }
       } else {
