@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { Language } from '../types';
+import { AuthScreen } from './AuthScreen';
 
 const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
   { code: 'zh-TW', label: '繁體中文', flag: '🇹🇼' },
@@ -13,6 +14,7 @@ const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
 
 export function SettingsScreen() {
   const { state, t, setLanguage, setUser } = useApp();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleLogout = () => {
     setUser(null);
@@ -82,12 +84,17 @@ export function SettingsScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          <TouchableOpacity style={styles.loginButton}>
+          <TouchableOpacity style={styles.loginButton} onPress={() => setShowAuthModal(true)}>
             <Ionicons name="log-in-outline" size={20} color="#ffffff" />
             <Text style={styles.loginButtonText}>{t.login}</Text>
           </TouchableOpacity>
         )}
       </View>
+
+      <AuthScreen 
+        visible={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
