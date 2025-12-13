@@ -71,27 +71,41 @@ export default function LoginScreen() {
           setLoading(false);
         }, 120000);
       } else {
+        console.log('=== Starting Auth Session ===');
+        console.log('Auth URL:', authUrl);
+        console.log('Expected redirect URI:', redirectUri);
+        
         const result = await WebBrowser.openAuthSessionAsync(
           authUrl,
-          redirectUri
+          redirectUri,
+          {
+            preferEphemeralSession: true,
+            showInRecents: true,
+          }
         );
 
-        console.log('Auth result:', result);
+        console.log('=== Auth Result ===');
+        console.log('Result type:', result.type);
+        console.log('Full result:', JSON.stringify(result, null, 2));
 
         if (result.type === 'success') {
           const url = result.url;
           console.log('Returned URL:', url);
           
           const parsed = Linking.parse(url);
-          console.log('Parsed params:', parsed);
+          console.log('Parsed params:', JSON.stringify(parsed, null, 2));
           
           if (parsed.queryParams?.token) {
+            console.log('Token found, fetching user...');
             await fetchUserWithToken(parsed.queryParams.token as string);
           } else {
+            console.log('No token in params, trying session auth...');
             await fetchUserAfterAuth();
           }
         } else if (result.type === 'cancel') {
           console.log('Auth cancelled by user');
+        } else if (result.type === 'dismiss') {
+          console.log('Auth dismissed - browser closed without redirect');
         }
         setLoading(false);
       }
