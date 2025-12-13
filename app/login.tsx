@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
-  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session';
 import * as Linking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../src/context/AppContext';
@@ -22,6 +22,11 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
+  const redirectUri = AuthSession.makeRedirectUri({
+    scheme: 'mibu',
+    path: 'auth/callback',
+  });
+
   useEffect(() => {
     if (state.isAuthenticated && state.user) {
       router.replace('/(tabs)');
@@ -30,24 +35,16 @@ export default function LoginScreen() {
     }
   }, [state.isAuthenticated, state.user]);
 
-  const getRedirectUri = () => {
-    if (Platform.OS === 'web') {
-      return window.location.origin + '/auth/callback';
-    }
-    return Linking.createURL('auth/callback');
-  };
-
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const redirectUri = getRedirectUri();
       const authUrl = `${API_BASE_URL}/api/auth/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
       
       if (Platform.OS === 'web') {
         const width = 500;
         const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
+        const left = (window.screenX || 0) + ((window.outerWidth || 800) - width) / 2;
+        const top = (window.screenY || 0) + ((window.outerHeight || 600) - height) / 2;
         
         const authWindow = window.open(
           authUrl,
@@ -73,7 +70,7 @@ export default function LoginScreen() {
       } else {
         const result = await WebBrowser.openAuthSessionAsync(
           authUrl,
-          Linking.createURL('auth/callback')
+          redirectUri
         );
 
         if (result.type === 'success') {
