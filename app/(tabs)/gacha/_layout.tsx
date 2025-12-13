@@ -5,9 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { useApp } from '../../src/context/AppContext';
+import { useApp } from '../../../src/context/AppContext';
 
-export default function TabLayout() {
+export default function GachaLayout() {
   const { t } = useApp();
 
   return (
@@ -45,15 +45,6 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t.navHome,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="gacha"
-        options={{
           title: t.navGacha,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'dice' : 'dice-outline'} size={24} color={color} />
@@ -63,24 +54,18 @@ export default function TabLayout() {
       <Tabs.Screen
         name="collection"
         options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="planner"
-        options={{
-          title: t.navPlanner,
+          title: t.navCollection,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'map' : 'map-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'book' : 'book-outline'} size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="items"
         options={{
-          title: t.navSettings,
+          title: t.navItems,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'cube' : 'cube-outline'} size={24} color={color} />
           ),
         }}
       />

@@ -1,13 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { Card } from '../components/ui/Card';
 
 export function HomeScreen() {
-  const { t, state } = useApp();
-  const router = useRouter();
+  const { t } = useApp();
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -45,60 +43,6 @@ export function HomeScreen() {
           </Text>
         </View>
       </Card>
-
-      <View style={styles.moduleGrid}>
-        <TouchableOpacity
-          style={styles.moduleCard}
-          onPress={() => router.push('/(tabs)/gacha')}
-        >
-          <View style={[styles.moduleIcon, { backgroundColor: '#eef2ff' }]}>
-            <Ionicons name="dice" size={32} color="#6366f1" />
-          </View>
-          <Text style={styles.moduleTitle}>{t.navGachaModule}</Text>
-          <Text style={styles.moduleDesc}>
-            {state.language === 'zh-TW' ? '隨機探索台灣景點' : 'Explore random spots'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.moduleCard}
-          onPress={() => router.push('/(tabs)/collection')}
-        >
-          <View style={[styles.moduleIcon, { backgroundColor: '#fef3c7' }]}>
-            <Ionicons name="book" size={32} color="#f59e0b" />
-          </View>
-          <Text style={styles.moduleTitle}>{t.navCollection}</Text>
-          <Text style={styles.moduleDesc}>
-            {state.language === 'zh-TW' ? '查看收集的景點' : 'View collected spots'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.moduleCard}
-          onPress={() => router.push('/(tabs)/planner')}
-        >
-          <View style={[styles.moduleIcon, { backgroundColor: '#dcfce7' }]}>
-            <Ionicons name="map" size={32} color="#22c55e" />
-          </View>
-          <Text style={styles.moduleTitle}>{t.navPlannerModule}</Text>
-          <Text style={styles.moduleDesc}>
-            {state.language === 'zh-TW' ? '規劃完美行程' : 'Plan your trip'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.moduleCard}
-          onPress={() => router.push('/(tabs)/settings')}
-        >
-          <View style={[styles.moduleIcon, { backgroundColor: '#f1f5f9' }]}>
-            <Ionicons name="settings" size={32} color="#64748b" />
-          </View>
-          <Text style={styles.moduleTitle}>{t.navSettings}</Text>
-          <Text style={styles.moduleDesc}>
-            {state.language === 'zh-TW' ? '語言與偏好設定' : 'Language & preferences'}
-          </Text>
-        </TouchableOpacity>
-      </View>
     </ScrollView>
   );
 }
@@ -155,42 +99,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#92400e',
     lineHeight: 20,
-  },
-  moduleGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  moduleCard: {
-    width: '47%',
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  moduleIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  moduleTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  moduleDesc: {
-    fontSize: 12,
-    color: '#94a3b8',
-    textAlign: 'center',
   },
 });

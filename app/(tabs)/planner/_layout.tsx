@@ -5,15 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { useApp } from '../../src/context/AppContext';
+import { useApp } from '../../../src/context/AppContext';
 
-export default function TabLayout() {
+export default function PlannerLayout() {
   const { t } = useApp();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#6366f1',
+        tabBarActiveTintColor: '#22c55e',
         tabBarInactiveTintColor: '#94a3b8',
         headerShown: false,
         tabBarButton: HapticTab,
@@ -45,42 +45,27 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t.navHome,
+          title: t.navLocation,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'location' : 'location-outline'} size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="gacha"
+        name="itinerary"
         options={{
-          title: t.navGacha,
+          title: t.navItinerary,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'dice' : 'dice-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="collection"
+        name="chat"
         options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="planner"
-        options={{
-          title: t.navPlanner,
+          title: t.navChat,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'map' : 'map-outline'} size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: t.navSettings,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} size={24} color={color} />
           ),
         }}
       />
