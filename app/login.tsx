@@ -23,9 +23,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  const redirectUri = AuthSession.makeRedirectUri({
-    native: 'mibu://auth/callback',
-  });
+  const redirectUri = Linking.createURL('auth/callback');
 
   const handleDeepLink = useCallback(async (event: { url: string }) => {
     console.log('=== Deep Link Received ===');
