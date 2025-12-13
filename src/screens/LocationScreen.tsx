@@ -1,27 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   StyleSheet, 
   ActivityIndicator,
-  Platform,
   TouchableOpacity,
 } from 'react-native';
 import * as Location from 'expo-location';
+import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
-
-let MapView: any = null;
-let Marker: any = null;
-
-if (Platform.OS !== 'web') {
-  const Maps = require('react-native-maps');
-  MapView = Maps.default;
-  Marker = Maps.Marker;
-}
 
 export function LocationScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
-  const mapRef = useRef<any>(null);
 
   const getLocation = async () => {
     setLoading(true);
@@ -73,17 +63,6 @@ export function LocationScreen() {
     getLocation();
   }, []);
 
-  const centerOnUser = () => {
-    if (location && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      }, 500);
-    }
-  };
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -95,53 +74,61 @@ export function LocationScreen() {
   const lat = location?.coords.latitude || 25.0330;
   const lng = location?.coords.longitude || 121.5654;
 
-  if (Platform.OS === 'web') {
-    return (
-      <View style={styles.container}>
-        <iframe
-          src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.02}%2C${lat - 0.02}%2C${lng + 0.02}%2C${lat + 0.02}&layer=mapnik&marker=${lat}%2C${lng}`}
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-          }}
-          title="Map"
-        />
-        <TouchableOpacity style={styles.locateButton} onPress={getLocation}>
-          <Ionicons name="navigate" size={24} color="#22c55e" />
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const mapHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+      <style>
+        * { margin: 0; padding: 0; }
+        html, body, #map { width: 100%; height: 100%; }
+        .user-marker {
+          width: 20px;
+          height: 20px;
+          background: #22c55e;
+          border: 3px solid white;
+          border-radius: 50%;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+      </style>
+    </head>
+    <body>
+      <div id="map"></div>
+      <script>
+        var map = L.map('map', {
+          zoomControl: false,
+          attributionControl: false
+        }).setView([${lat}, ${lng}], 15);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+        }).addTo(map);
+        
+        var userIcon = L.divIcon({
+          className: 'user-marker-wrapper',
+          html: '<div class="user-marker"></div>',
+          iconSize: [26, 26],
+          iconAnchor: [13, 13]
+        });
+        
+        L.marker([${lat}, ${lng}], { icon: userIcon }).addTo(map);
+      </script>
+    </body>
+    </html>
+  `;
 
   return (
     <View style={styles.container}>
-      {MapView && (
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          initialRegion={{
-            latitude: lat,
-            longitude: lng,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-          showsUserLocation={true}
-          showsMyLocationButton={false}
-          showsCompass={true}
-        >
-          {Marker && location && (
-            <Marker
-              coordinate={{
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-              }}
-              title="您的位置"
-            />
-          )}
-        </MapView>
-      )}
-      <TouchableOpacity style={styles.locateButton} onPress={centerOnUser}>
+      <WebView
+        style={styles.map}
+        source={{ html: mapHtml }}
+        scrollEnabled={false}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+      />
+      <TouchableOpacity style={styles.locateButton} onPress={getLocation}>
         <Ionicons name="navigate" size={24} color="#22c55e" />
       </TouchableOpacity>
     </View>
