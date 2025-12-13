@@ -6,6 +6,31 @@ Mibu is a React Native/Expo mobile application that gamifies travel planning thr
 
 The app connects to an external backend API for location data and itinerary generation, with local storage for user preferences and collections.
 
+## Recent Changes (December 2024)
+
+### Login Flow
+- Standalone login page (`app/login.tsx`) shows on app launch
+- Supports Replit OAuth and Guest login
+- Redirects to main tabs after authentication
+
+### Location Feature (LocationScreen)
+- Uses `expo-location` for user positioning
+- Native platforms: Map view with `react-native-maps`
+- Web platform: List view (maps not supported on web)
+- Category filtering (landmarks, nature, food, shopping)
+- Full i18n support for all 4 languages
+
+### Chat Feature (ChatScreen)
+- AI trip assistant with pre-defined responses
+- Quick reply buttons
+- Full i18n support with localized responses
+- Typing indicator animation
+
+### Twilio Integration
+- `src/lib/twilio.ts` with proper error handling
+- SMS sending capability
+- Credentials managed via Replit Connectors
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
