@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
-  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -173,22 +172,24 @@ export default function LoginScreen() {
       
       if (response.ok) {
         const userData = await response.json();
-        if (userData && userData.name) {
+        if (userData && userData.id) {
+          const displayName = userData.firstName || userData.name || userData.email?.split('@')[0] || 'User';
           setUser({
             id: userData.id,
-            name: userData.name,
+            name: displayName,
             email: userData.email || null,
-            avatar: userData.avatar || null,
-            firstName: userData.firstName || userData.name.split(' ')[0],
-            provider: 'replit',
+            firstName: userData.firstName || null,
+            lastName: userData.lastName || null,
+            avatar: userData.profileImageUrl || userData.avatar || null,
+            profileImageUrl: userData.profileImageUrl || null,
+            role: userData.role || null,
+            provider: userData.provider || 'replit',
             providerId: userData.id,
           });
           setLoading(false);
           router.replace('/(tabs)');
         } else {
-          console.log('API Response:', JSON.stringify(userData, null, 2));
-          console.error('Invalid user data received');
-          Alert.alert('Debug Error', JSON.stringify(userData));
+          console.error('Invalid user data: missing id');
           setLoading(false);
         }
       } else {

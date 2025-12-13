@@ -14,11 +14,14 @@ export type LocalizedContent = string | { [key in Language]?: string };
 export type PlanTier = 'free' | 'partner' | 'premium';
 
 export interface User {
-  id?: string;
-  name: string;
-  avatar: string | null;
+  id: string;
+  name?: string;
   email: string | null;
-  firstName?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  avatar?: string | null;
+  profileImageUrl?: string | null;
+  role?: string;
   provider?: string | null;
   providerId?: string | null;
   isMerchant?: boolean;
