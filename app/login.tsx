@@ -6,17 +6,16 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
-  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
-import * as AuthSession from 'expo-auth-session';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
 
-WebBrowser.maybeCompleteAuthSession();
+const AUTH_TOKEN_KEY = 'mibu_auth_token';
 
 export default function LoginScreen() {
   const { setUser, state } = useApp();
@@ -26,15 +25,10 @@ export default function LoginScreen() {
   const redirectUri = Linking.createURL('auth/callback');
 
   const handleDeepLink = useCallback(async (event: { url: string }) => {
-    console.log('=== Deep Link Received ===');
-    console.log('URL:', event.url);
-    
     const parsed = Linking.parse(event.url);
-    console.log('Parsed:', JSON.stringify(parsed, null, 2));
     
     if (parsed.path === 'auth/callback' || event.url.includes('auth/callback')) {
       if (parsed.queryParams?.token) {
-        console.log('Token found in deep link!');
         await WebBrowser.dismissBrowser();
         await fetchUserWithTokenDirect(parsed.queryParams.token as string);
       }
@@ -43,6 +37,8 @@ export default function LoginScreen() {
 
   const fetchUserWithTokenDirect = async (token: string) => {
     try {
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+      
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -64,6 +60,9 @@ export default function LoginScreen() {
           setLoading(false);
           router.replace('/(tabs)');
         }
+      } else {
+        console.error('Failed to fetch user data:', response.status);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Failed to fetch user with token:', error);
@@ -72,13 +71,10 @@ export default function LoginScreen() {
   };
 
   useEffect(() => {
-    console.log('Generated redirect URI:', redirectUri);
-    
     const subscription = Linking.addEventListener('url', handleDeepLink);
     
     Linking.getInitialURL().then((url) => {
       if (url) {
-        console.log('Initial URL:', url);
         handleDeepLink({ url });
       }
     });
@@ -86,7 +82,7 @@ export default function LoginScreen() {
     return () => {
       subscription.remove();
     };
-  }, [handleDeepLink, redirectUri]);
+  }, [handleDeepLink]);
 
   useEffect(() => {
     if (state.isAuthenticated && state.user) {
@@ -100,9 +96,6 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const authUrl = `${API_BASE_URL}/api/auth/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
-      
-      console.log('Auth URL:', authUrl);
-      console.log('Redirect URI:', redirectUri);
       
       if (Platform.OS === 'web') {
         const width = 500;
@@ -132,18 +125,8 @@ export default function LoginScreen() {
           setLoading(false);
         }, 120000);
       } else {
-        Alert.alert(
-          '登入資訊',
-          `Auth URL:\n${authUrl}\n\nRedirect URI:\n${redirectUri}`,
-          [{ text: '繼續', style: 'default' }]
-        );
-        
         const handleAuthCallback = async (event: { url: string }) => {
-          console.log('=== Auth Callback Received ===');
-          console.log('URL:', event.url);
-          
           const parsed = Linking.parse(event.url);
-          console.log('Parsed:', JSON.stringify(parsed, null, 2));
           
           if (event.url.includes('auth/callback') || event.url.includes('token=')) {
             subscription.remove();
@@ -151,18 +134,9 @@ export default function LoginScreen() {
             await WebBrowser.dismissBrowser();
             
             if (parsed.queryParams?.token) {
-              Alert.alert(
-                '登入成功',
-                `收到 Token!\n\n路徑: ${parsed.path}\nToken: ${(parsed.queryParams.token as string).substring(0, 20)}...`,
-                [{ text: '確定', style: 'default' }]
-              );
               await fetchUserWithToken(parsed.queryParams.token as string);
             } else {
-              Alert.alert(
-                '回調收到',
-                `URL: ${event.url}\n\n未找到 Token`,
-                [{ text: '確定', style: 'default' }]
-              );
+              console.error('Auth callback received but no token found');
               setLoading(false);
             }
           }
@@ -182,13 +156,14 @@ export default function LoginScreen() {
       }
     } catch (error) {
       console.error('Auth error:', error);
-      Alert.alert('錯誤', `登入失敗: ${error}`);
       setLoading(false);
     }
   };
 
   const fetchUserWithToken = async (token: string) => {
     try {
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+      
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -207,11 +182,19 @@ export default function LoginScreen() {
             provider: 'replit',
             providerId: userData.id,
           });
+          setLoading(false);
           router.replace('/(tabs)');
+        } else {
+          console.error('Invalid user data received');
+          setLoading(false);
         }
+      } else {
+        console.error('Failed to fetch user:', response.status);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Failed to fetch user with token:', error);
+      setLoading(false);
     }
   };
 
