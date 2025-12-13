@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
+import * as WebBrowser from 'expo-web-browser';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { API_BASE_URL } from '../constants/translations';
@@ -20,19 +20,24 @@ interface AuthScreenProps {
 
 export function AuthScreen({ visible, onClose }: AuthScreenProps) {
   const { setUser, state } = useApp();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const authUrl = `${API_BASE_URL}/api/auth/login`;
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const authUrl = `${API_BASE_URL}/api/auth/login`;
+      const result = await WebBrowser.openAuthSessionAsync(
+        authUrl,
+        'mibu://auth/callback'
+      );
 
-  const handleNavigationStateChange = (navState: any) => {
-    const { url } = navState;
-    
-    if (url.includes('/api/auth/callback') || url.includes('/__replauthcallback')) {
-      fetchUserAfterAuth();
-    }
-    
-    if (url.includes('/api/auth/success') || url.includes('/?auth=success')) {
-      fetchUserAfterAuth();
+      if (result.type === 'success') {
+        await fetchUserAfterAuth();
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,132 +67,83 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
     }
   };
 
-  const handleMessage = (event: any) => {
-    try {
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === 'AUTH_SUCCESS' && data.user) {
-        setUser({
-          id: data.user.id,
-          name: data.user.name,
-          email: data.user.email || null,
-          avatar: data.user.avatar || null,
-          firstName: data.user.firstName || data.user.name?.split(' ')[0],
-          provider: 'replit',
-          providerId: data.user.id,
-        });
-        onClose();
-      }
-    } catch (e) {
-    }
+  const handleGuestLogin = () => {
+    setUser({
+      id: 'guest',
+      name: 'Guest User',
+      email: null,
+      avatar: null,
+      firstName: 'Guest',
+      provider: 'guest',
+      providerId: 'guest',
+    });
+    onClose();
   };
 
-  const injectedJavaScript = `
-    (function() {
-      const checkAuth = setInterval(function() {
-        const authSuccess = document.querySelector('[data-auth-success]');
-        if (authSuccess || window.location.href.includes('auth=success')) {
-          window.ReactNativeWebView.postMessage(JSON.stringify({
-            type: 'AUTH_SUCCESS',
-            user: window.__REPLIT_USER__ || null
-          }));
-          clearInterval(checkAuth);
-        }
-      }, 500);
-    })();
-    true;
-  `;
-
-  if (Platform.OS === 'web') {
-    return (
-      <Modal visible={visible} animationType="slide" transparent>
-        <View style={styles.overlay}>
-          <View style={styles.webContainer}>
-            <View style={styles.header}>
-              <Text style={styles.headerTitle}>
-                {state.language === 'zh-TW' ? '登入' : 'Sign In'}
-              </Text>
-              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <Ionicons name="close" size={24} color="#64748b" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.webMessage}>
-              <Ionicons name="information-circle-outline" size={48} color="#6366f1" />
-              <Text style={styles.webMessageTitle}>
-                {state.language === 'zh-TW' ? '請使用手機應用登入' : 'Please use mobile app to login'}
-              </Text>
-              <Text style={styles.webMessageText}>
-                {state.language === 'zh-TW' 
-                  ? '在 Web 預覽中無法完成登入流程。請下載 Expo Go 應用並掃描 QR Code 來測試完整功能。' 
-                  : 'Login is not available in web preview. Please download Expo Go and scan the QR code to test full functionality.'}
-              </Text>
-              <TouchableOpacity style={styles.guestButton} onPress={() => {
-                setUser({
-                  id: 'guest',
-                  name: 'Guest User',
-                  email: null,
-                  avatar: null,
-                  firstName: 'Guest',
-                  provider: 'guest',
-                  providerId: 'guest',
-                });
-                onClose();
-              }}>
-                <Ionicons name="person-outline" size={20} color="#6366f1" />
-                <Text style={styles.guestButtonText}>
-                  {state.language === 'zh-TW' ? '以訪客身份繼續' : 'Continue as Guest'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    );
-  }
-
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>
-            {state.language === 'zh-TW' ? '使用 Replit 登入' : 'Sign in with Replit'}
-          </Text>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Ionicons name="close" size={24} color="#64748b" />
-          </TouchableOpacity>
-        </View>
-        
-        {loading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#6366f1" />
-            <Text style={styles.loadingText}>
-              {state.language === 'zh-TW' ? '載入中...' : 'Loading...'}
+    <Modal visible={visible} animationType="slide" transparent>
+      <View style={styles.overlay}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>
+              {state.language === 'zh-TW' ? '登入' : 'Sign In'}
+            </Text>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Ionicons name="close" size={24} color="#64748b" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.content}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="person-circle" size={64} color="#6366f1" />
+            </View>
+            
+            <Text style={styles.title}>
+              {state.language === 'zh-TW' ? '歡迎使用 Mibu' : 'Welcome to Mibu'}
+            </Text>
+            <Text style={styles.subtitle}>
+              {state.language === 'zh-TW' 
+                ? '登入以保存您的收藏和設定' 
+                : 'Sign in to save your collection and settings'}
+            </Text>
+
+            <TouchableOpacity 
+              style={styles.loginButton} 
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <>
+                  <Ionicons name="log-in-outline" size={20} color="#ffffff" />
+                  <Text style={styles.loginButtonText}>
+                    {state.language === 'zh-TW' ? '使用 Replit 登入' : 'Sign in with Replit'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
+              <Ionicons name="person-outline" size={20} color="#6366f1" />
+              <Text style={styles.guestButtonText}>
+                {state.language === 'zh-TW' ? '以訪客身份繼續' : 'Continue as Guest'}
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={styles.note}>
+              {state.language === 'zh-TW' 
+                ? '訪客模式下，資料僅保存在本機裝置' 
+                : 'In guest mode, data is only saved locally'}
             </Text>
           </View>
-        )}
-
-        <WebView
-          source={{ uri: authUrl }}
-          style={styles.webview}
-          onNavigationStateChange={handleNavigationStateChange}
-          onMessage={handleMessage}
-          injectedJavaScript={injectedJavaScript}
-          onLoadStart={() => setLoading(true)}
-          onLoadEnd={() => setLoading(false)}
-          javaScriptEnabled
-          domStorageEnabled
-          sharedCookiesEnabled
-          thirdPartyCookiesEnabled
-        />
+        </View>
       </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -195,12 +151,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  webContainer: {
+  container: {
     backgroundColor: '#ffffff',
-    borderRadius: 20,
+    borderRadius: 24,
     width: '100%',
     maxWidth: 400,
-    maxHeight: '80%',
     overflow: 'hidden',
   },
   header: {
@@ -220,43 +175,42 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 4,
   },
-  webview: {
-    flex: 1,
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 60,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#64748b',
-  },
-  webMessage: {
+  content: {
     padding: 32,
     alignItems: 'center',
   },
-  webMessageTitle: {
-    fontSize: 18,
+  iconContainer: {
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 22,
     fontWeight: '700',
     color: '#1e293b',
-    marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
   },
-  webMessageText: {
+  subtitle: {
     fontSize: 14,
     color: '#64748b',
     textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
+    marginBottom: 32,
+  },
+  loginButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#6366f1',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    width: '100%',
+    marginBottom: 12,
+  },
+  loginButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
   },
   guestButton: {
     flexDirection: 'row',
@@ -267,10 +221,17 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 12,
+    width: '100%',
+    marginBottom: 16,
   },
   guestButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#6366f1',
+  },
+  note: {
+    fontSize: 12,
+    color: '#94a3b8',
+    textAlign: 'center',
   },
 });
