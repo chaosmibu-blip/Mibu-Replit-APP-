@@ -37,6 +37,15 @@ The app connects to an external backend API for location data and itinerary gene
 - Full i18n support with localized responses
 - Typing indicator animation
 
+### Merchant Center (MerchantScreen)
+- Search places via Google Places API (`GET /api/places/search`)
+- Results display: name (bold), address (gray), Google types (tags) - no images
+- Claim flow with confirmation modal
+- 409 conflict handling with dispute option (`POST /api/merchant/claim/dispute`)
+- Manual place creation form with category picker (`GET /api/categories`)
+- Full i18n support for all 4 languages
+- Tab navigation with storefront icon
+
 ### Twilio Integration
 - `src/lib/twilio.ts` with proper error handling
 - SMS sending capability
@@ -55,7 +64,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Navigation Structure
 - Tab-based navigation using `@react-navigation/bottom-tabs`
-- Five main tabs: Home, Gacha, Planner, Collection, Settings
+- Six main tabs: Home, Gacha, Planner, Merchant, Settings (Collection hidden)
 - Screen components live in `src/screens/` and are re-exported through `app/(tabs)/` files
 
 ### State Management
@@ -100,6 +109,10 @@ Preferred communication style: Simple, everyday language.
   - `POST /api/location/update` - Update user location with sharing flag
   - `GET /api/user/sos-link` - Get user's SOS webhook URL
   - `POST /api/sos/trigger` - Trigger SOS emergency signal
+  - `GET /api/places/search` - Search places via Google Places API
+  - `POST /api/merchant/claim` - Claim a place as merchant
+  - `POST /api/merchant/claim/dispute` - Submit dispute for already claimed place
+  - `GET /api/categories` - Get available place categories
 
 ### Key NPM Packages
 - `@react-native-async-storage/async-storage` - Local data persistence
