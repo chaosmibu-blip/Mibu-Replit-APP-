@@ -70,6 +70,9 @@ export function SOSScreen() {
   };
 
   const sendSOS = async () => {
+    const postUrl = `${API_BASE_URL}/api/sos/trigger`;
+    Alert.alert('Debug POST', `URL: ${postUrl}`);
+    
     Alert.alert(
       t.confirmSOS,
       t.confirmSOSDesc,
@@ -81,7 +84,7 @@ export function SOSScreen() {
           onPress: async () => {
             try {
               setSending(true);
-              const response = await fetch(`${API_BASE_URL}/api/sos/trigger`, {
+              const response = await fetch(postUrl, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -91,11 +94,12 @@ export function SOSScreen() {
               if (response.ok) {
                 Alert.alert(t.sent, t.sosSuccess);
               } else {
-                Alert.alert(t.sendFailed, t.tryAgainLater);
+                const errorText = await response.text();
+                Alert.alert('Error', `Status: ${response.status}\n\n${errorText}`);
               }
-            } catch (error) {
+            } catch (error: any) {
               console.error('Failed to send SOS:', error);
-              Alert.alert(t.sendFailed, t.networkError);
+              Alert.alert('Network Error', error.message || 'Unknown error');
             } finally {
               setSending(false);
             }
