@@ -17,8 +17,19 @@ The app connects to an external backend API for location data and itinerary gene
 - Uses `expo-location` for user positioning
 - Native platforms: Map view with `react-native-maps`
 - Web platform: List view (maps not supported on web)
-- Category filtering (landmarks, nature, food, shopping)
+- **Share location toggle**: Switch to share location with trip planner
+- API sends `isSharingEnabled` flag, receives planner locations for map markers
+- Planner markers displayed in purple on map when sharing is enabled
 - Full i18n support for all 4 languages
+
+### SOS Safety Center (SOSScreen)
+- Accessible from Settings > Safety section
+- Webhook URL display for iOS Shortcuts integration
+- Copy to clipboard functionality with `expo-clipboard`
+- Step-by-step iOS Shortcuts setup instructions
+- Red SOS emergency button with confirmation dialog
+- Full i18n support for all 4 languages
+- Route: `/sos` via `app/sos.tsx`
 
 ### Chat Feature (ChatScreen)
 - AI trip assistant with pre-defined responses
@@ -86,6 +97,9 @@ Preferred communication style: Simple, everyday language.
   - `POST /api/gacha/itinerary` - Generate random itinerary
   - `GET /api/auth/user` - Fetch authenticated user data
   - `GET /api/auth/login` - OAuth login flow
+  - `POST /api/location/update` - Update user location with sharing flag
+  - `GET /api/sos/webhook` - Get user's SOS webhook URL
+  - `POST /api/sos/trigger` - Trigger SOS emergency signal
 
 ### Key NPM Packages
 - `@react-native-async-storage/async-storage` - Local data persistence
