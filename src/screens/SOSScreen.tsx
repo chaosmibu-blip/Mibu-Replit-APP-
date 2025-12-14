@@ -36,17 +36,26 @@ export function SOSScreen() {
           ...(userToken ? { 'Authorization': `Bearer ${userToken}` } : {}),
         },
       });
-      if (response.ok) {
-        const data = await response.json();
-        const url = data.webhookUrl || data.url;
-        setWebhookUrl(url);
+      
+      if (!response.ok) {
+        throw new Error(`伺服器回應錯誤: ${response.status}`);
       }
+      
+      const data = await response.json();
+      const url = data.webhookUrl || data.url;
+      
+      if (!url) {
+        throw new Error('無法取得連結，伺服器回傳資料不完整。');
+      }
+      
+      setWebhookUrl(url);
     } catch (error: any) {
       console.error('Failed to fetch webhook URL:', error);
+      Alert.alert(t.sendFailed, t.tryAgainLater);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchWebhookUrl();
@@ -86,6 +95,7 @@ export function SOSScreen() {
               }
             } catch (error) {
               console.error('Failed to send SOS:', error);
+              Alert.alert(t.sendFailed, t.networkError);
             } finally {
               setSending(false);
             }
