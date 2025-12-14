@@ -25,10 +25,8 @@ export function SOSScreen() {
   const [copied, setCopied] = useState(false);
 
   const fetchWebhookUrl = useCallback(async () => {
-    console.log('🔥 fetchWebhookUrl CALLED');
     const fullUrl = `${API_BASE_URL}/api/user/sos-link`;
     const userToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
-    Alert.alert('Checking Token', userToken ? 'Token exists: ' + userToken.substring(0, 20) + '...' : 'Token is NULL');
     try {
       setLoading(true);
       const response = await fetch(fullUrl, {
@@ -38,26 +36,19 @@ export function SOSScreen() {
           ...(userToken ? { 'Authorization': `Bearer ${userToken}` } : {}),
         },
       });
-      console.log('🔥 Response Status:', response.status);
-      Alert.alert('Response', `Status: ${response.status}`);
       if (response.ok) {
         const data = await response.json();
-        console.log('🔥 DEBUG RAW DATA:', JSON.stringify(data));
-        Alert.alert('Debug Data', JSON.stringify(data));
         const url = data.webhookUrl || data.url;
         setWebhookUrl(url);
-        console.log('🔗 Link set to:', url);
       }
     } catch (error: any) {
       console.error('Failed to fetch webhook URL:', error);
-      Alert.alert('Error', error.message || 'Unknown error');
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    Alert.alert('Effect Start', 'useEffect is running');
     fetchWebhookUrl();
   }, [fetchWebhookUrl]);
 
