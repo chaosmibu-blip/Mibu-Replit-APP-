@@ -86,7 +86,6 @@ export function SOSScreen() {
               }
             } catch (error) {
               console.error('Failed to send SOS:', error);
-              Alert.alert(t.sendFailed, t.networkError);
             } finally {
               setSending(false);
             }
