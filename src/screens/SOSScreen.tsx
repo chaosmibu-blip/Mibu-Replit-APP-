@@ -25,15 +25,18 @@ export function SOSScreen() {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/sos/webhook`);
+      console.log('🔥 Response Status:', response.status);
       if (response.ok) {
         const data = await response.json();
-        console.log('📦 API Raw Data:', JSON.stringify(data, null, 2));
+        console.log('🔥 DEBUG RAW DATA:', JSON.stringify(data));
+        Alert.alert('Debug Data', JSON.stringify(data));
         const url = data.webhookUrl || data.url;
-        setWebhookUrl(url || null);
+        setWebhookUrl(url);
         console.log('🔗 Link set to:', url);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch webhook URL:', error);
+      Alert.alert('Error', error.message || 'Unknown error');
     } finally {
       setLoading(false);
     }
