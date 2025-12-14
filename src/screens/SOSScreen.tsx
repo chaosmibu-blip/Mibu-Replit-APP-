@@ -28,9 +28,9 @@ export function SOSScreen() {
       if (response.ok) {
         const data = await response.json();
         console.log('📦 API Raw Data:', JSON.stringify(data, null, 2));
-        const url = data.webhookUrl || data.url || data.link;
-        console.log('🔗 Extracted URL:', url);
+        const url = data.webhookUrl || data.url;
         setWebhookUrl(url || null);
+        console.log('🔗 Link set to:', url);
       }
     } catch (error) {
       console.error('Failed to fetch webhook URL:', error);
