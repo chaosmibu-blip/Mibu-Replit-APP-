@@ -23,10 +23,10 @@ export function SOSScreen() {
 
   const fetchWebhookUrl = useCallback(async () => {
     console.log('🔥 fetchWebhookUrl CALLED');
-    Alert.alert('Fetch Start', 'fetchWebhookUrl is running');
+    Alert.alert('Checking URL', API_BASE_URL + '/api/user/sos-link');
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/sos/webhook`);
+      const response = await fetch(`${API_BASE_URL}/api/user/sos-link`);
       console.log('🔥 Response Status:', response.status);
       Alert.alert('Response', `Status: ${response.status}`);
       if (response.ok) {

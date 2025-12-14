@@ -98,7 +98,7 @@ Preferred communication style: Simple, everyday language.
   - `GET /api/auth/user` - Fetch authenticated user data
   - `GET /api/auth/login` - OAuth login flow
   - `POST /api/location/update` - Update user location with sharing flag
-  - `GET /api/sos/webhook` - Get user's SOS webhook URL
+  - `GET /api/user/sos-link` - Get user's SOS webhook URL
   - `POST /api/sos/trigger` - Trigger SOS emergency signal
 
 ### Key NPM Packages
