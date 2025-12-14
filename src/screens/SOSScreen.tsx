@@ -30,6 +30,7 @@ export function SOSScreen() {
         console.log('📦 Received Data:', data);
         const url = data.webhookUrl || data.url;
         setWebhookUrl(url || null);
+        console.log('🔗 Set URL to state:', url);
       }
     } catch (error) {
       console.error('Failed to fetch webhook URL:', error);
