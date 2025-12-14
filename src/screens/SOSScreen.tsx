@@ -22,10 +22,13 @@ export function SOSScreen() {
   const [copied, setCopied] = useState(false);
 
   const fetchWebhookUrl = useCallback(async () => {
+    console.log('🔥 fetchWebhookUrl CALLED');
+    Alert.alert('Fetch Start', 'fetchWebhookUrl is running');
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/api/sos/webhook`);
       console.log('🔥 Response Status:', response.status);
+      Alert.alert('Response', `Status: ${response.status}`);
       if (response.ok) {
         const data = await response.json();
         console.log('🔥 DEBUG RAW DATA:', JSON.stringify(data));
@@ -43,6 +46,7 @@ export function SOSScreen() {
   }, []);
 
   useEffect(() => {
+    Alert.alert('Effect Start', 'useEffect is running');
     fetchWebhookUrl();
   }, [fetchWebhookUrl]);
 
