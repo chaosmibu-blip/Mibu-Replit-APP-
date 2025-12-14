@@ -1,135 +1,205 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   View, 
   StyleSheet, 
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
+  Text,
 } from 'react-native';
 import * as Location from 'expo-location';
-import { WebView } from 'react-native-webview';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
+import { API_BASE_URL } from '../constants/translations';
+
+const THROTTLE_INTERVAL = 10000;
+const MIN_DISTANCE_METERS = 10;
+
+function getDistanceFromLatLonInMeters(
+  lat1: number, lon1: number, 
+  lat2: number, lon2: number
+): number {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 export function LocationScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  
+  const mapRef = useRef<MapView | null>(null);
+  const lastReportedLocation = useRef<{ latitude: number; longitude: number } | null>(null);
+  const lastReportTime = useRef<number>(0);
+  const locationSubscription = useRef<Location.LocationSubscription | null>(null);
 
-  const getLocation = async () => {
-    setLoading(true);
+  const updateUserLocation = useCallback(async (latitude: number, longitude: number) => {
+    try {
+      await fetch(`${API_BASE_URL}/api/location/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ latitude, longitude }),
+      });
+    } catch (error) {
+      console.error('Failed to update location:', error);
+    }
+  }, []);
+
+  const shouldReportLocation = useCallback((latitude: number, longitude: number): boolean => {
+    const now = Date.now();
+    const timeSinceLastReport = now - lastReportTime.current;
     
+    if (timeSinceLastReport >= THROTTLE_INTERVAL) {
+      return true;
+    }
+    
+    if (lastReportedLocation.current) {
+      const distance = getDistanceFromLatLonInMeters(
+        lastReportedLocation.current.latitude,
+        lastReportedLocation.current.longitude,
+        latitude,
+        longitude
+      );
+      
+      if (distance >= MIN_DISTANCE_METERS) {
+        return true;
+      }
+    }
+    
+    return false;
+  }, []);
+
+  const handleLocationUpdate = useCallback((newLocation: Location.LocationObject) => {
+    setLocation(newLocation);
+    
+    const { latitude, longitude } = newLocation.coords;
+    
+    if (shouldReportLocation(latitude, longitude)) {
+      updateUserLocation(latitude, longitude);
+      lastReportedLocation.current = { latitude, longitude };
+      lastReportTime.current = Date.now();
+    }
+  }, [shouldReportLocation, updateUserLocation]);
+
+  const startLocationTracking = useCallback(async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setLocation({
-          coords: {
-            latitude: 25.0330,
-            longitude: 121.5654,
-            altitude: null,
-            accuracy: null,
-            altitudeAccuracy: null,
-            heading: null,
-            speed: null,
-          },
-          timestamp: Date.now(),
-        });
+        setErrorMsg('需要位置權限才能使用此功能');
         setLoading(false);
         return;
       }
 
       const currentLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
+        accuracy: Location.Accuracy.High,
       });
       
-      setLocation(currentLocation);
+      handleLocationUpdate(currentLocation);
+      setLoading(false);
+
+      locationSubscription.current = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.Balanced,
+          timeInterval: 5000,
+          distanceInterval: 5,
+        },
+        handleLocationUpdate
+      );
     } catch (error) {
       console.error('Location error:', error);
-      setLocation({
-        coords: {
-          latitude: 25.0330,
-          longitude: 121.5654,
-          altitude: null,
-          accuracy: null,
-          altitudeAccuracy: null,
-          heading: null,
-          speed: null,
-        },
-        timestamp: Date.now(),
-      });
-    } finally {
+      setErrorMsg('無法取得位置');
       setLoading(false);
     }
-  };
+  }, [handleLocationUpdate]);
 
   useEffect(() => {
-    getLocation();
-  }, []);
+    startLocationTracking();
+    
+    return () => {
+      if (locationSubscription.current) {
+        locationSubscription.current.remove();
+      }
+    };
+  }, [startLocationTracking]);
+
+  const centerOnUser = useCallback(() => {
+    if (location && mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 500);
+    }
+  }, [location]);
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#22c55e" />
+        <Text style={styles.loadingText}>正在取得位置...</Text>
       </View>
     );
   }
 
-  const lat = location?.coords.latitude || 25.0330;
-  const lng = location?.coords.longitude || 121.5654;
+  if (errorMsg) {
+    return (
+      <View style={styles.errorContainer}>
+        <Ionicons name="location-outline" size={48} color="#ef4444" />
+        <Text style={styles.errorText}>{errorMsg}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={startLocationTracking}>
+          <Text style={styles.retryButtonText}>重試</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
-  const mapHtml = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-      <style>
-        * { margin: 0; padding: 0; }
-        html, body, #map { width: 100%; height: 100%; }
-        .user-marker {
-          width: 20px;
-          height: 20px;
-          background: #22c55e;
-          border: 3px solid white;
-          border-radius: 50%;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-      </style>
-    </head>
-    <body>
-      <div id="map"></div>
-      <script>
-        var map = L.map('map', {
-          zoomControl: false,
-          attributionControl: false
-        }).setView([${lat}, ${lng}], 15);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-        }).addTo(map);
-        
-        var userIcon = L.divIcon({
-          className: 'user-marker-wrapper',
-          html: '<div class="user-marker"></div>',
-          iconSize: [26, 26],
-          iconAnchor: [13, 13]
-        });
-        
-        L.marker([${lat}, ${lng}], { icon: userIcon }).addTo(map);
-      </script>
-    </body>
-    </html>
-  `;
+  const initialRegion = {
+    latitude: location?.coords.latitude || 25.0330,
+    longitude: location?.coords.longitude || 121.5654,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  };
 
   return (
     <View style={styles.container}>
-      <WebView
+      <MapView
+        ref={mapRef}
         style={styles.map}
-        source={{ html: mapHtml }}
-        scrollEnabled={false}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-      />
-      <TouchableOpacity style={styles.locateButton} onPress={getLocation}>
-        <Ionicons name="navigate" size={24} color="#22c55e" />
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+        initialRegion={initialRegion}
+        showsUserLocation={true}
+        showsMyLocationButton={false}
+        showsCompass={true}
+        rotateEnabled={true}
+        pitchEnabled={true}
+      >
+        {location && (
+          <Marker
+            coordinate={{
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+            }}
+            title="你的位置"
+          >
+            <View style={styles.userMarker}>
+              <View style={styles.userMarkerInner} />
+            </View>
+          </Marker>
+        )}
+      </MapView>
+      
+      <TouchableOpacity style={styles.centerButton} onPress={centerOnUser}>
+        <Ionicons name="locate" size={24} color="#22c55e" />
       </TouchableOpacity>
     </View>
   );
@@ -138,7 +208,9 @@ export function LocationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+  },
+  map: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,
@@ -146,27 +218,66 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f8fafc',
   },
-  map: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#64748b',
   },
-  locateButton: {
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    padding: 24,
+  },
+  errorText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#64748b',
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 20,
+    backgroundColor: '#22c55e',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  centerButton: {
     position: 'absolute',
-    bottom: 100,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    bottom: 24,
+    right: 16,
+    width: 48,
+    height: 48,
     backgroundColor: '#ffffff',
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 4,
+  },
+  userMarker: {
+    width: 24,
+    height: 24,
+    backgroundColor: 'rgba(34, 197, 94, 0.3)',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userMarkerInner: {
+    width: 12,
+    height: 12,
+    backgroundColor: '#22c55e',
+    borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#dcfce7',
+    borderColor: '#ffffff',
   },
 });
