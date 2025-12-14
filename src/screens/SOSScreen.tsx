@@ -20,6 +20,7 @@ const AUTH_TOKEN_KEY = 'mibu_auth_token';
 export function SOSScreen() {
   const { t } = useApp();
   const [webhookUrl, setWebhookUrl] = useState<string | null>(null);
+  const [sosKey, setSosKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -43,12 +44,22 @@ export function SOSScreen() {
       
       const data = await response.json();
       const url = data.webhookUrl || data.url;
+      const key = data.key || data.sosKey;
       
       if (!url) {
         throw new Error('無法取得連結，伺服器回傳資料不完整。');
       }
       
       setWebhookUrl(url);
+      if (key) {
+        setSosKey(key);
+      } else {
+        const urlObj = new URL(url);
+        const keyFromUrl = urlObj.searchParams.get('key');
+        if (keyFromUrl) {
+          setSosKey(keyFromUrl);
+        }
+      }
     } catch (error: any) {
       console.error('Failed to fetch webhook URL:', error);
       Alert.alert(t.sendFailed, t.tryAgainLater);
@@ -70,8 +81,13 @@ export function SOSScreen() {
   };
 
   const sendSOS = async () => {
-    const postUrl = `${API_BASE_URL}/api/sos/trigger`;
-    Alert.alert('Debug POST', `URL: ${postUrl}`);
+    if (!sosKey) {
+      Alert.alert('Error', '尚未取得授權金鑰，請重新整理頁面。');
+      return;
+    }
+    
+    const triggerUrl = `${API_BASE_URL}/api/sos/trigger?key=${sosKey}`;
+    Alert.alert('Debug POST', `URL: ${triggerUrl}\nKey: ${sosKey}`);
     
     Alert.alert(
       t.confirmSOS,
@@ -84,7 +100,7 @@ export function SOSScreen() {
           onPress: async () => {
             try {
               setSending(true);
-              const response = await fetch(postUrl, {
+              const response = await fetch(triggerUrl, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
