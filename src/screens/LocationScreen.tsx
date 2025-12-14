@@ -54,6 +54,7 @@ export function LocationScreen() {
 
   const updateUserLocation = useCallback(async (latitude: number, longitude: number, sharing: boolean) => {
     try {
+      console.log('🔗 Debug URL:', API_BASE_URL + '/api/location/update');
       const response = await fetch(`${API_BASE_URL}/api/location/update`, {
         method: 'POST',
         headers: {
