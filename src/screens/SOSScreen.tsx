@@ -10,9 +10,12 @@ import {
   Platform,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../constants/translations';
 import { useApp } from '../context/AppContext';
+
+const AUTH_TOKEN_KEY = 'mibu_auth_token';
 
 export function SOSScreen() {
   const { t } = useApp();
@@ -24,13 +27,15 @@ export function SOSScreen() {
   const fetchWebhookUrl = useCallback(async () => {
     console.log('🔥 fetchWebhookUrl CALLED');
     const fullUrl = `${API_BASE_URL}/api/user/sos-link`;
-    Alert.alert('DEBUG URL', fullUrl);
+    const userToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+    Alert.alert('Checking Token', userToken ? 'Token exists: ' + userToken.substring(0, 20) + '...' : 'Token is NULL');
     try {
       setLoading(true);
       const response = await fetch(fullUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...(userToken ? { 'Authorization': `Bearer ${userToken}` } : {}),
         },
       });
       console.log('🔥 Response Status:', response.status);
