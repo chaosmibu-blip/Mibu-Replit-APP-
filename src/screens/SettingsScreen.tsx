@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useApp } from '../context/AppContext';
 import { Language } from '../types';
 import { AuthScreen } from './AuthScreen';
@@ -15,9 +16,14 @@ const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
 export function SettingsScreen() {
   const { state, t, setLanguage, setUser } = useApp();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const router = useRouter();
 
   const handleLogout = () => {
     setUser(null);
+  };
+
+  const handleSOSPress = () => {
+    router.push('/sos');
   };
 
   return (
@@ -95,6 +101,26 @@ export function SettingsScreen() {
         visible={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>
+          {state.language === 'zh-TW' ? '安全' : 'Safety'}
+        </Text>
+        <TouchableOpacity style={styles.sosCard} onPress={handleSOSPress}>
+          <View style={styles.sosIconContainer}>
+            <Ionicons name="shield-checkmark" size={24} color="#ef4444" />
+          </View>
+          <View style={styles.sosInfo}>
+            <Text style={styles.sosTitle}>
+              {state.language === 'zh-TW' ? '安全中心' : 'Safety Center'}
+            </Text>
+            <Text style={styles.sosSubtitle}>
+              {state.language === 'zh-TW' ? '設定緊急求救功能' : 'Set up emergency SOS'}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
@@ -251,5 +277,36 @@ const styles = StyleSheet.create({
   copyright: {
     fontSize: 12,
     color: '#94a3b8',
+  },
+  sosCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#fecaca',
+    gap: 12,
+  },
+  sosIconContainer: {
+    width: 44,
+    height: 44,
+    backgroundColor: '#fef2f2',
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sosInfo: {
+    flex: 1,
+  },
+  sosTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 2,
+  },
+  sosSubtitle: {
+    fontSize: 13,
+    color: '#64748b',
   },
 });
