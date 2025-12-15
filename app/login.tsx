@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  Modal,
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -14,15 +16,58 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
+import { UserRole } from '../src/types';
 
 const AUTH_TOKEN_KEY = 'mibu_auth_token';
+
+type PortalType = 'traveler' | 'merchant' | 'specialist' | 'admin';
+
+interface PortalConfig {
+  type: PortalType;
+  label: string;
+  color: string;
+  bgColor: string;
+  subtitle: string;
+  guestAllowed: boolean;
+}
+
+const PORTAL_CONFIGS: Record<string, PortalConfig[]> = {
+  'zh-TW': [
+    { type: 'traveler', label: '旅客', color: '#6366f1', bgColor: '#eef2ff', subtitle: '探索台灣各地精彩景點', guestAllowed: true },
+    { type: 'merchant', label: '企業端', color: '#10b981', bgColor: '#ecfdf5', subtitle: '景點業者、餐廳、住宿等企業合作夥伴', guestAllowed: false },
+    { type: 'specialist', label: '專員端', color: '#a855f7', bgColor: '#faf5ff', subtitle: '旅遊專員服務入口', guestAllowed: false },
+    { type: 'admin', label: '管理端', color: '#f59e0b', bgColor: '#fffbeb', subtitle: '系統管理員專用入口', guestAllowed: false },
+  ],
+  'en': [
+    { type: 'traveler', label: 'Traveler', color: '#6366f1', bgColor: '#eef2ff', subtitle: 'Explore amazing destinations', guestAllowed: true },
+    { type: 'merchant', label: 'Business', color: '#10b981', bgColor: '#ecfdf5', subtitle: 'For attractions, restaurants, and hotels', guestAllowed: false },
+    { type: 'specialist', label: 'Specialist', color: '#a855f7', bgColor: '#faf5ff', subtitle: 'Travel specialist service portal', guestAllowed: false },
+    { type: 'admin', label: 'Admin', color: '#f59e0b', bgColor: '#fffbeb', subtitle: 'System administrator portal', guestAllowed: false },
+  ],
+  'ja': [
+    { type: 'traveler', label: '旅行者', color: '#6366f1', bgColor: '#eef2ff', subtitle: '素晴らしい目的地を探索', guestAllowed: true },
+    { type: 'merchant', label: '企業', color: '#10b981', bgColor: '#ecfdf5', subtitle: '観光地、レストラン、宿泊施設向け', guestAllowed: false },
+    { type: 'specialist', label: 'スペシャリスト', color: '#a855f7', bgColor: '#faf5ff', subtitle: '旅行スペシャリストポータル', guestAllowed: false },
+    { type: 'admin', label: '管理者', color: '#f59e0b', bgColor: '#fffbeb', subtitle: 'システム管理者ポータル', guestAllowed: false },
+  ],
+  'ko': [
+    { type: 'traveler', label: '여행자', color: '#6366f1', bgColor: '#eef2ff', subtitle: '놀라운 여행지 탐험', guestAllowed: true },
+    { type: 'merchant', label: '기업', color: '#10b981', bgColor: '#ecfdf5', subtitle: '관광지, 레스토랑, 숙박 시설용', guestAllowed: false },
+    { type: 'specialist', label: '전문가', color: '#a855f7', bgColor: '#faf5ff', subtitle: '여행 전문가 서비스 포털', guestAllowed: false },
+    { type: 'admin', label: '관리자', color: '#f59e0b', bgColor: '#fffbeb', subtitle: '시스템 관리자 포털', guestAllowed: false },
+  ],
+};
 
 export default function LoginScreen() {
   const { setUser, state } = useApp();
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [selectedPortal, setSelectedPortal] = useState<PortalType>('traveler');
+  const [showPortalMenu, setShowPortalMenu] = useState(false);
 
   const redirectUri = Linking.createURL('auth/callback');
+  const portals = PORTAL_CONFIGS[state.language] || PORTAL_CONFIGS['zh-TW'];
+  const currentPortal = portals.find(p => p.type === selectedPortal) || portals[0];
 
   const handleDeepLink = useCallback(async (event: { url: string }) => {
     const parsed = Linking.parse(event.url);
@@ -54,11 +99,13 @@ export default function LoginScreen() {
             email: userData.email || null,
             avatar: userData.avatar || null,
             firstName: userData.firstName || userData.name.split(' ')[0],
-            provider: 'replit',
+            role: userData.role || selectedPortal,
+            isApproved: userData.isApproved,
+            provider: 'google',
             providerId: userData.id,
-          });
+          }, token);
           setLoading(false);
-          router.replace('/(tabs)');
+          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved);
         }
       } else {
         console.error('Failed to fetch user data:', response.status);
@@ -67,6 +114,24 @@ export default function LoginScreen() {
     } catch (error) {
       console.error('Failed to fetch user with token:', error);
       setLoading(false);
+    }
+  };
+
+  const navigateAfterLogin = (role: string, isApproved?: boolean) => {
+    if (role === 'merchant') {
+      if (isApproved === false) {
+        router.replace('/pending-approval');
+      } else {
+        router.replace('/merchant-dashboard');
+      }
+    } else if (role === 'specialist') {
+      if (isApproved === false) {
+        router.replace('/pending-approval');
+      } else {
+        router.replace('/specialist-dashboard');
+      }
+    } else {
+      router.replace('/(tabs)');
     }
   };
 
@@ -86,7 +151,7 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (state.isAuthenticated && state.user) {
-      router.replace('/(tabs)');
+      navigateAfterLogin(state.user.role || 'traveler', state.user.isApproved);
     } else {
       setCheckingAuth(false);
     }
@@ -95,7 +160,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const authUrl = `${API_BASE_URL}/api/auth/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
+      const authUrl = `${API_BASE_URL}/api/auth/login?redirect_uri=${encodeURIComponent(redirectUri)}&portal=${selectedPortal}`;
       
       if (Platform.OS === 'web') {
         const width = 500;
@@ -182,12 +247,13 @@ export default function LoginScreen() {
             lastName: userData.lastName || null,
             avatar: userData.profileImageUrl || userData.avatar || null,
             profileImageUrl: userData.profileImageUrl || null,
-            role: userData.role || null,
-            provider: userData.provider || 'replit',
+            role: userData.role || selectedPortal,
+            isApproved: userData.isApproved,
+            provider: userData.provider || 'google',
             providerId: userData.id,
-          });
+          }, token);
           setLoading(false);
-          router.replace('/(tabs)');
+          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved);
         } else {
           console.error('Invalid user data: missing id');
           setLoading(false);
@@ -217,10 +283,12 @@ export default function LoginScreen() {
             email: userData.email || null,
             avatar: userData.avatar || null,
             firstName: userData.firstName || userData.name.split(' ')[0],
-            provider: 'replit',
+            role: userData.role || selectedPortal,
+            isApproved: userData.isApproved,
+            provider: 'google',
             providerId: userData.id,
           });
-          router.replace('/(tabs)');
+          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved);
         }
       }
     } catch (error) {
@@ -235,6 +303,7 @@ export default function LoginScreen() {
       email: null,
       avatar: null,
       firstName: 'Guest',
+      role: 'traveler',
       provider: 'guest',
       providerId: 'guest',
     });
@@ -251,32 +320,28 @@ export default function LoginScreen() {
 
   const t = {
     'zh-TW': {
-      welcome: '歡迎使用 Mibu',
-      subtitle: '旅遊扭蛋 - 探索台灣各地精彩景點',
-      login: '使用 Replit 登入',
-      guest: '以訪客身份繼續',
-      note: '訪客模式下，資料僅保存在本機裝置',
+      switchPortal: '切換用戶別',
+      login: 'Google 登入',
+      guest: '訪客登入',
+      guestNote: '訪客模式的資料僅保存在此裝置',
     },
     'en': {
-      welcome: 'Welcome to Mibu',
-      subtitle: 'Travel Gacha - Explore amazing destinations',
-      login: 'Sign in with Replit',
-      guest: 'Continue as Guest',
-      note: 'In guest mode, data is only saved locally',
+      switchPortal: 'Switch Portal',
+      login: 'Google Sign In',
+      guest: 'Guest Login',
+      guestNote: 'Guest mode data is only saved on this device',
     },
     'ja': {
-      welcome: 'Mibuへようこそ',
-      subtitle: '旅行ガチャ - 素晴らしい目的地を探索',
-      login: 'Replitでログイン',
-      guest: 'ゲストとして続ける',
-      note: 'ゲストモードではデータはローカルにのみ保存されます',
+      switchPortal: 'ポータル切替',
+      login: 'Googleログイン',
+      guest: 'ゲストログイン',
+      guestNote: 'ゲストモードのデータはこのデバイスにのみ保存',
     },
     'ko': {
-      welcome: 'Mibu에 오신 것을 환영합니다',
-      subtitle: '여행 가챠 - 놀라운 여행지 탐험',
-      login: 'Replit으로 로그인',
-      guest: '게스트로 계속하기',
-      note: '게스트 모드에서는 데이터가 로컬에만 저장됩니다',
+      switchPortal: '포털 전환',
+      login: 'Google 로그인',
+      guest: '게스트 로그인',
+      guestNote: '게스트 모드 데이터는 이 기기에만 저장됩니다',
     },
   };
 
@@ -285,21 +350,62 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Ionicons name="dice" size={48} color="#ffffff" />
-          </View>
+        <View style={styles.headerLeft}>
+          <Image 
+            source={require('../assets/images/icon.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>MIBU</Text>
         </View>
-        <Text style={styles.appName}>MIBU</Text>
+        <TouchableOpacity style={styles.globeButton}>
+          <Ionicons name="globe-outline" size={28} color="#64748b" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.portalSwitcher}>
+        <TouchableOpacity 
+          style={styles.switchButton}
+          onPress={() => setShowPortalMenu(!showPortalMenu)}
+        >
+          <Text style={[styles.switchButtonText, { color: currentPortal.color }]}>
+            {texts.switchPortal}
+          </Text>
+        </TouchableOpacity>
+
+        {showPortalMenu && (
+          <View style={styles.portalMenu}>
+            {portals.map((portal) => (
+              <TouchableOpacity
+                key={portal.type}
+                style={[
+                  styles.portalMenuItem,
+                  selectedPortal === portal.type && { backgroundColor: portal.bgColor },
+                ]}
+                onPress={() => {
+                  setSelectedPortal(portal.type);
+                  setShowPortalMenu(false);
+                }}
+              >
+                <Text style={[
+                  styles.portalMenuText,
+                  selectedPortal === portal.type && { color: portal.color, fontWeight: '700' },
+                ]}>
+                  {portal.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>{texts.welcome}</Text>
-        <Text style={styles.subtitle}>{texts.subtitle}</Text>
+        <Text style={styles.title}>Mibu</Text>
+        <Text style={styles.subtitle}>今天去哪玩?老天說了算</Text>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
-            style={styles.loginButton} 
+            style={[styles.loginButton, { backgroundColor: currentPortal.color }]} 
             onPress={handleLogin}
             disabled={loading}
           >
@@ -307,23 +413,22 @@ export default function LoginScreen() {
               <ActivityIndicator color="#ffffff" />
             ) : (
               <>
-                <Ionicons name="log-in-outline" size={22} color="#ffffff" />
+                <Ionicons name="arrow-redo" size={22} color="#ffffff" />
                 <Text style={styles.loginButtonText}>{texts.login}</Text>
               </>
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
-            <Ionicons name="person-outline" size={22} color="#6366f1" />
-            <Text style={styles.guestButtonText}>{texts.guest}</Text>
-          </TouchableOpacity>
+          {currentPortal.guestAllowed && (
+            <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
+              <Text style={styles.guestButtonText}>{texts.guest}</Text>
+            </TouchableOpacity>
+          )}
 
-          <Text style={styles.note}>{texts.note}</Text>
+          <Text style={styles.note}>
+            {currentPortal.guestAllowed ? texts.guestNote : currentPortal.subtitle}
+          </Text>
         </View>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>今天去哪玩？老天說了算</Text>
       </View>
     </View>
   );
@@ -341,43 +446,86 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 80,
-    paddingBottom: 40,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 16,
   },
-  logoContainer: {
-    marginBottom: 16,
-  },
-  logoCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#6366f1',
-    justifyContent: 'center',
+  headerLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    gap: 12,
   },
-  appName: {
-    fontSize: 32,
+  logo: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+  },
+  headerTitle: {
+    fontSize: 22,
     fontWeight: '800',
     color: '#1e293b',
-    letterSpacing: 4,
+    letterSpacing: 2,
+  },
+  globeButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  portalSwitcher: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 20,
+    zIndex: 100,
+  },
+  switchButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  switchButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  portalMenu: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    minWidth: 140,
+  },
+  portalMenuItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+  },
+  portalMenuText: {
+    fontSize: 16,
+    color: '#334155',
+    textAlign: 'center',
   },
   content: {
     flex: 1,
     paddingHorizontal: 32,
     justifyContent: 'center',
+    marginTop: -60,
   },
   title: {
-    fontSize: 28,
+    fontSize: 48,
     fontWeight: '700',
     color: '#1e293b',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
@@ -393,49 +541,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: '#6366f1',
     paddingVertical: 18,
     paddingHorizontal: 32,
-    borderRadius: 16,
-    shadowColor: '#6366f1',
+    borderRadius: 20,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
   loginButtonText: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700',
     color: '#ffffff',
   },
   guestButton: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    backgroundColor: '#eef2ff',
+    backgroundColor: '#ffffff',
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
   },
   guestButtonText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#6366f1',
+    color: '#334155',
   },
   note: {
-    fontSize: 13,
-    color: '#94a3b8',
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  footer: {
-    paddingBottom: 48,
-    alignItems: 'center',
-  },
-  footerText: {
     fontSize: 14,
-    color: '#94a3b8',
-    fontStyle: 'italic',
+    color: '#6366f1',
+    textAlign: 'center',
+    marginTop: 16,
   },
 });
