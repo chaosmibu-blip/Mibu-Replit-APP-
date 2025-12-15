@@ -41,6 +41,7 @@ export function GachaTopNav({
   hasNewItems = false,
 }: GachaTopNavProps) {
   const tabs: { key: GachaSubView; hasNew: boolean }[] = [
+    { key: 'gacha', hasNew: false },
     { key: 'collection', hasNew: hasNewCollection },
     { key: 'itembox', hasNew: hasNewItems },
   ];
@@ -64,13 +65,7 @@ export function GachaTopNav({
         return (
           <TouchableOpacity
             key={key}
-            onPress={() => {
-              if (isActive) {
-                onChange('gacha');
-              } else {
-                onChange(key);
-              }
-            }}
+            onPress={() => onChange(key)}
             style={{
               flex: 1,
               alignItems: 'center',
