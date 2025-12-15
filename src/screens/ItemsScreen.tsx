@@ -4,11 +4,12 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Linking,
   Image,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { useApp } from '../context/AppContext';
 import { GachaItem } from '../types';
 import { getCategoryLabel, getCategoryColor } from '../constants/translations';
@@ -63,9 +64,14 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
     return '2-3h';
   };
 
-  const handleOpenMaps = () => {
+  const handleOpenMaps = async () => {
+    if (!placeName) return;
     const url = `https://www.google.com/search?q=${encodeURIComponent(placeName)}`;
-    Linking.openURL(url);
+    try {
+      await WebBrowser.openBrowserAsync(url);
+    } catch (error) {
+      console.log('Failed to open URL:', error);
+    }
   };
 
   const rarity = item.rarity || 'N';
