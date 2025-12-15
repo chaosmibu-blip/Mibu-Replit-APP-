@@ -1,0 +1,189 @@
+前端同步指令
+1️⃣ 身份分流登入系統
+=== 前端同步指令 ===
+【後端更新摘要】
+多角色註冊與登入系統，支援 consumer/merchant/specialist/admin 四種身份
+【API 變更】
+- POST /api/auth/register - 註冊（可指定 role）
+- POST /api/auth/login - 登入（返回 JWT + role）
+- GET /api/auth/user - 取得當前用戶資訊
+【API 呼叫範例】
+// 註冊
+const response = await fetch('https://gacha-travel--s8869420.replit.app據剛剛更新的功能，以下是前端需要對接的 API：
+---
+## 前端同步指令
+### 1️⃣ 身份分流登入系統
+
+=== 前端同步指令 ===
+
+【後端更新摘要】
+多角色註冊與登入系統，支援 consumer/merchant/specialist/admin 四種身份
+
+【API 變更】
+
+POST /api/auth/register - 註冊（可指定 role）
+POST /api/auth/login - 登入（返回 JWT + role）
+GET /api/auth/user - 取得當前用戶資訊
+【API 呼叫範例】
+// 註冊
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/auth/register', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+username: 'user@example.com',
+password: 'password123',
+name: '用戶名稱',
+role: 'consumer' // 'consumer' | 'merchant' | 'specialist'
+})
+});
+// 回傳：{ user, token }
+// 注意：merchant/specialist 需管理員審核後才能使用
+
+// 登入
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/auth/login', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ username, password })
+});
+// 回傳：{ user: { id, username, role, isApproved }, token }
+
+【前端需要的改動】
+
+根據 user.role 導向不同首頁（consumer→扭蛋、merchant→商家後台、specialist→專家監控）
+儲存 token 到 AsyncStorage，每次請求帶 Authorization header
+非 consumer 且 isApproved=false 顯示「等待審核」畫面
+=== 指令結束 ===
+
+---
+### 2️⃣ 商家每日核銷碼與儲值系統
+
+=== 前端同步指令 ===
+
+【後端更新摘要】
+商家可取得每日驗證碼供顧客打卡，並透過 Stripe 儲值點數
+
+【API 變更】
+
+GET /api/merchant/daily-code - 取得今日核銷碼（每日自動更新）
+POST /api/merchant/verify-code - 驗證顧客輸入的碼
+GET /api/merchant/credits - 查詢點數餘額
+POST /api/merchant/credits/purchase - 購買點數（跳轉 Stripe）
+【API 呼叫範例】
+// 取得今日核銷碼（商家端）
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/merchant/daily-code', {
+headers: { 'Authorization': Bearer ${token} }
+});
+// 回傳：{ code: "ABC123", expiresAt: "2025-12-16T00:00:00Z" }
+
+// 查詢點數餘額
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/merchant/credits', {
+headers: { 'Authorization': Bearer ${token} }
+});
+// 回傳：{ creditBalance: 500, merchantId: 1 }
+
+// 購買點數
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/merchant/credits/purchase', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'Authorization': Bearer ${token}
+},
+body: JSON.stringify({ amount: 500 }) // 最低 100 點
+});
+// 回傳：{ checkoutUrl: "https://checkout.stripe.com/..." }
+
+【前端需要的改動】
+
+商家後台顯示今日核銷碼（大字 QRCode 或數字）
+點數餘額顯示於商家首頁
+儲值按鈕 → 使用 Linking.openURL(checkoutUrl) 跳轉 Stripe
+=== 指令結束 ===
+
+---
+### 3️⃣ 專家即時監控與通訊系統
+
+=== 前端同步指令 ===
+
+【後端更新摘要】
+專家可上線待命、接收旅客配對、即時追蹤旅客位置
+
+【API 變更】
+
+POST /api/specialist/register - 註冊為專家
+GET /api/specialist/me - 取得專家資料
+POST /api/specialist/toggle-online - 切換上線狀態
+GET /api/specialist/services - 取得目前服務中的旅客
+【Socket.IO 事件】（見前面的即時位置追蹤指令）
+
+specialist_subscribe - 訂閱旅客位置
+traveler_location - 接收旅客即時位置
+active_travelers - 接收服務中旅客列表
+【API 呼叫範例】
+// 切換上線狀態
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/specialist/toggle-online', {
+method: 'POST',
+headers: { 'Authorization': Bearer ${token} }
+});
+// 回傳：{ specialist: { id, isOnline, isAvailable, ... } }
+
+// 取得服務中旅客
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/specialist/services', {
+headers: { 'Authorization': Bearer ${token} }
+});
+// 回傳：{ relations: [{ id, travelerId, status, createdAt, ... }] }
+
+【前端需要的改動】
+
+專家後台新增「上線/離線」開關
+地圖組件顯示所有服務中旅客的即時位置（使用 Socket.IO）
+旅客列表卡片：顯示姓名、地區、開始時間
+=== 指令結束 ===
+
+---
+### 4️⃣ 基於地區的自動媒合系統
+
+=== 前端同步指令 ===
+
+【後端更新摘要】
+旅客請求專家時，系統自動配對同地區的上線專家
+
+【API 變更】
+
+POST /api/specialist/request - 旅客請求專家（自動媒合）
+GET /api/specialist/my-service - 旅客查詢目前配對狀態
+POST /api/specialist/end-service - 結束服務並評分
+【API 呼叫範例】
+// 旅客請求專家
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/specialist/request', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'Authorization': Bearer ${token}
+},
+body: JSON.stringify({ region: '宜蘭縣' })
+});
+// 成功：{ relation: {...}, specialist: { id, name, serviceRegion } }
+// 失敗：{ error: "No available specialists in your region" }
+
+// 查詢配對狀態
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/specialist/my-service', {
+headers: { 'Authorization': Bearer ${token} }
+});
+// 回傳：{ relation, specialist } 或 null
+
+// 結束服務
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/specialist/end-service', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'Authorization': Bearer ${token}
+},
+body: JSON.stringify({ rating: 5, feedback: '很棒的服務！' })
+});
+
+【前端需要的改動】
+
+旅客端新增「呼叫專家」按鈕
+配對成功後顯示專家資訊卡片
+服務中顯示「結束服務」按鈕 + 評分彈窗
+=== 指令結束 ===
