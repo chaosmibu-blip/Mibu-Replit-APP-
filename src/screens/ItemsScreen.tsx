@@ -64,8 +64,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
   };
 
   const handleOpenMaps = () => {
-    const query = item.verified_address || placeName;
-    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    const url = `https://www.google.com/search?q=${encodeURIComponent(placeName)}`;
     Linking.openURL(url);
   };
 
