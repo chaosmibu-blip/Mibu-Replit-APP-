@@ -211,13 +211,28 @@ class ApiService {
     });
   }
 
-  async purchaseCredits(token: string, amount: number): Promise<{ checkoutUrl: string }> {
-    return this.request<{ checkoutUrl: string }>('/api/merchant/credits/purchase', {
+  async purchaseCredits(token: string, amount: number, provider: 'stripe' | 'recur' = 'stripe'): Promise<{ 
+    transactionId: number;
+    amount: number;
+    provider: 'stripe' | 'recur';
+    checkoutUrl: string | null;
+    status: string;
+    message: string;
+  }> {
+    return this.request('/api/merchant/credits/purchase', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ amount }),
+      body: JSON.stringify({ amount, provider }),
+    });
+  }
+
+  async getChatToken(token: string): Promise<{ token: string; identity: string }> {
+    return this.request<{ token: string; identity: string }>('/api/chat/token', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
   }
 

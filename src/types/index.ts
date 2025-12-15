@@ -13,7 +13,7 @@ export type LocalizedContent = string | { [key in Language]?: string };
 
 export type PlanTier = 'free' | 'partner' | 'premium';
 
-export type UserRole = 'consumer' | 'merchant' | 'specialist' | 'admin';
+export type UserRole = 'traveler' | 'merchant' | 'specialist' | 'admin';
 
 export interface User {
   id: string;

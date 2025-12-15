@@ -8,7 +8,8 @@ interface AppContextType {
   t: Record<string, string>;
   updateState: (updates: Partial<AppState>) => void;
   setLanguage: (lang: Language) => void;
-  setUser: (user: User | null) => void;
+  setUser: (user: User | null, token?: string | null) => void;
+  getToken: () => Promise<string | null>;
   addToCollection: (items: GachaItem[]) => void;
   setResult: (result: GachaResponse | null) => void;
   setLoading: (loading: boolean) => void;
@@ -37,6 +38,7 @@ const STORAGE_KEYS = {
   LANGUAGE: '@mibu_language',
   COLLECTION: '@mibu_collection',
   USER: '@mibu_user',
+  TOKEN: '@mibu_token',
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -87,7 +89,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await AsyncStorage.setItem(STORAGE_KEYS.LANGUAGE, lang);
   }, []);
 
-  const setUser = useCallback(async (user: User | null) => {
+  const setUser = useCallback(async (user: User | null, token?: string | null) => {
     setState(prev => ({ 
       ...prev, 
       user, 
@@ -95,8 +97,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
     if (user) {
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+      if (token) {
+        await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, token);
+      }
     } else {
       await AsyncStorage.removeItem(STORAGE_KEYS.USER);
+      await AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
+    }
+  }, []);
+
+  const getToken = useCallback(async (): Promise<string | null> => {
+    try {
+      return await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+    } catch {
+      return null;
     }
   }, []);
 
@@ -135,6 +149,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         updateState,
         setLanguage,
         setUser,
+        getToken,
         addToCollection,
         setResult,
         setLoading,

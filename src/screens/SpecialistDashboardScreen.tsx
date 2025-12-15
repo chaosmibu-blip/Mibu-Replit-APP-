@@ -1,0 +1,308 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Switch,
+  ActivityIndicator,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
+import { apiService } from '../services/api';
+import { SpecialistInfo, ServiceRelation } from '../types';
+
+export function SpecialistDashboardScreen() {
+  const { state, getToken } = useApp();
+  const [specialist, setSpecialist] = useState<SpecialistInfo | null>(null);
+  const [services, setServices] = useState<ServiceRelation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toggling, setToggling] = useState(false);
+
+  const isZh = state.language === 'zh-TW';
+
+  const translations = {
+    title: isZh ? '專家後台' : 'Specialist Dashboard',
+    online: isZh ? '上線中' : 'Online',
+    offline: isZh ? '離線' : 'Offline',
+    toggleOnline: isZh ? '上線狀態' : 'Online Status',
+    activeServices: isZh ? '服務中旅客' : 'Active Services',
+    noServices: isZh ? '目前無服務中旅客' : 'No active services',
+    loading: isZh ? '載入中...' : 'Loading...',
+    since: isZh ? '開始於' : 'Since',
+    region: isZh ? '地區' : 'Region',
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const token = await getToken();
+      if (!token) return;
+
+      const [specialistData, servicesData] = await Promise.all([
+        apiService.getSpecialistMe(token).catch(() => null),
+        apiService.getSpecialistServices(token).catch(() => ({ relations: [] })),
+      ]);
+
+      setSpecialist(specialistData);
+      setServices(servicesData.relations || []);
+    } catch (error) {
+      console.error('Failed to load specialist data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleOnline = async () => {
+    try {
+      setToggling(true);
+      const token = await getToken();
+      if (!token) return;
+
+      const response = await apiService.toggleSpecialistOnline(token);
+      setSpecialist(response.specialist);
+    } catch (error) {
+      console.error('Failed to toggle online:', error);
+    } finally {
+      setToggling(false);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleString(isZh ? 'zh-TW' : 'en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6366f1" />
+        <Text style={styles.loadingText}>{translations.loading}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>{translations.title}</Text>
+
+      <View style={styles.statusCard}>
+        <View style={styles.statusHeader}>
+          <View style={styles.statusInfo}>
+            <View style={[
+              styles.statusIndicator,
+              specialist?.isOnline ? styles.statusOnline : styles.statusOffline,
+            ]} />
+            <Text style={styles.statusText}>
+              {specialist?.isOnline ? translations.online : translations.offline}
+            </Text>
+          </View>
+          <View style={styles.toggleContainer}>
+            {toggling ? (
+              <ActivityIndicator size="small" color="#6366f1" />
+            ) : (
+              <Switch
+                value={specialist?.isOnline || false}
+                onValueChange={handleToggleOnline}
+                trackColor={{ false: '#e2e8f0', true: '#c7d2fe' }}
+                thumbColor={specialist?.isOnline ? '#6366f1' : '#94a3b8'}
+              />
+            )}
+          </View>
+        </View>
+        <Text style={styles.toggleLabel}>{translations.toggleOnline}</Text>
+        {specialist?.serviceRegion && (
+          <Text style={styles.regionText}>
+            {translations.region}: {specialist.serviceRegion}
+          </Text>
+        )}
+      </View>
+
+      <Text style={styles.sectionTitle}>{translations.activeServices}</Text>
+
+      {services.length === 0 ? (
+        <View style={styles.emptyCard}>
+          <Ionicons name="people-outline" size={48} color="#94a3b8" />
+          <Text style={styles.emptyText}>{translations.noServices}</Text>
+        </View>
+      ) : (
+        <View style={styles.servicesList}>
+          {services.map(service => (
+            <View key={service.id} style={styles.serviceCard}>
+              <View style={styles.serviceAvatar}>
+                <Ionicons name="person" size={24} color="#ffffff" />
+              </View>
+              <View style={styles.serviceInfo}>
+                <Text style={styles.serviceName}>
+                  {service.traveler?.name || `Traveler #${service.travelerId}`}
+                </Text>
+                <Text style={styles.serviceDate}>
+                  {translations.since}: {formatDate(service.createdAt)}
+                </Text>
+              </View>
+              <View style={[
+                styles.serviceStatus,
+                service.status === 'active' && styles.serviceStatusActive,
+              ]}>
+                <Text style={styles.serviceStatusText}>{service.status}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  content: {
+    padding: 20,
+    paddingTop: 60,
+    paddingBottom: 100,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#64748b',
+    fontSize: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#1e293b',
+    marginBottom: 24,
+  },
+  statusCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  statusInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  statusIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  statusOnline: {
+    backgroundColor: '#22c55e',
+  },
+  statusOffline: {
+    backgroundColor: '#94a3b8',
+  },
+  statusText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
+  toggleContainer: {
+    width: 60,
+    alignItems: 'flex-end',
+  },
+  toggleLabel: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  regionText: {
+    fontSize: 14,
+    color: '#6366f1',
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 16,
+  },
+  emptyCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 40,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#64748b',
+    marginTop: 12,
+  },
+  servicesList: {
+    gap: 12,
+  },
+  serviceCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+  },
+  serviceAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#6366f1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  serviceInfo: {
+    flex: 1,
+  },
+  serviceName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  serviceDate: {
+    fontSize: 13,
+    color: '#64748b',
+  },
+  serviceStatus: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#f1f5f9',
+  },
+  serviceStatusActive: {
+    backgroundColor: '#dcfce7',
+  },
+  serviceStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+});

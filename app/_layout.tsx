@@ -24,6 +24,11 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="merchant-dashboard" options={{ headerShown: false }} />
+          <Stack.Screen name="specialist-dashboard" options={{ headerShown: false }} />
+          <Stack.Screen name="pending-approval" options={{ headerShown: false }} />
+          <Stack.Screen name="admin-exclusions" options={{ headerShown: false }} />
+          <Stack.Screen name="sos" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />

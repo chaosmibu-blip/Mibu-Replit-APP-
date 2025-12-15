@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,140 +6,112 @@ import {
   Modal,
   TouchableOpacity,
   ActivityIndicator,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
-import { API_BASE_URL } from '../constants/translations';
-
-WebBrowser.maybeCompleteAuthSession();
+import { apiService } from '../services/api';
+import { UserRole } from '../types';
 
 interface AuthScreenProps {
   visible: boolean;
   onClose: () => void;
 }
 
+type AuthMode = 'login' | 'register';
+
+const ROLE_OPTIONS: { value: UserRole; labelZh: string; labelEn: string; icon: string }[] = [
+  { value: 'traveler', labelZh: '旅客', labelEn: 'Traveler', icon: 'airplane-outline' },
+  { value: 'merchant', labelZh: '商家', labelEn: 'Merchant', icon: 'storefront-outline' },
+  { value: 'specialist', labelZh: '專家', labelEn: 'Specialist', icon: 'shield-checkmark-outline' },
+];
+
 export function AuthScreen({ visible, onClose }: AuthScreenProps) {
   const { setUser, state } = useApp();
+  const [mode, setMode] = useState<AuthMode>('login');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const getRedirectUri = () => {
-    if (Platform.OS === 'web') {
-      return window.location.origin + '/auth/callback';
-    }
-    return Linking.createURL('auth/callback');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('traveler');
+
+  const isZh = state.language === 'zh-TW';
+
+  const translations = {
+    login: isZh ? '登入' : 'Sign In',
+    register: isZh ? '註冊' : 'Sign Up',
+    username: isZh ? '帳號（Email）' : 'Username (Email)',
+    password: isZh ? '密碼' : 'Password',
+    name: isZh ? '姓名' : 'Name',
+    selectRole: isZh ? '選擇身份' : 'Select Role',
+    noAccount: isZh ? '還沒有帳號？' : "Don't have an account?",
+    hasAccount: isZh ? '已有帳號？' : 'Already have an account?',
+    guestLogin: isZh ? '以訪客身份繼續' : 'Continue as Guest',
+    guestNote: isZh ? '訪客模式下，資料僅保存在本機裝置' : 'In guest mode, data is only saved locally',
+    pendingApproval: isZh ? '商家和專家帳號需管理員審核後才能使用' : 'Merchant and Specialist accounts require admin approval',
+    loginFailed: isZh ? '登入失敗，請檢查帳號密碼' : 'Login failed, please check your credentials',
+    registerFailed: isZh ? '註冊失敗，請稍後再試' : 'Registration failed, please try again',
+  };
+
+  const resetForm = () => {
+    setUsername('');
+    setPassword('');
+    setName('');
+    setSelectedRole('traveler');
+    setError(null);
   };
 
   const handleLogin = async () => {
+    if (!username.trim() || !password.trim()) {
+      setError(isZh ? '請填寫帳號和密碼' : 'Please enter username and password');
+      return;
+    }
+
     setLoading(true);
+    setError(null);
+
     try {
-      const redirectUri = getRedirectUri();
-      const authUrl = `${API_BASE_URL}/api/auth/login?redirect_uri=${encodeURIComponent(redirectUri)}`;
-      
-      if (Platform.OS === 'web') {
-        const width = 500;
-        const height = 600;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        
-        const authWindow = window.open(
-          authUrl,
-          'auth',
-          `width=${width},height=${height},left=${left},top=${top}`
-        );
-
-        const checkInterval = setInterval(async () => {
-          try {
-            if (authWindow?.closed) {
-              clearInterval(checkInterval);
-              await fetchUserAfterAuth();
-              setLoading(false);
-            }
-          } catch (e) {
-          }
-        }, 500);
-
-        setTimeout(() => {
-          clearInterval(checkInterval);
-          setLoading(false);
-        }, 120000);
-      } else {
-        const result = await WebBrowser.openAuthSessionAsync(
-          authUrl,
-          Linking.createURL('auth/callback')
-        );
-
-        if (result.type === 'success') {
-          const url = result.url;
-          const params = Linking.parse(url);
-          
-          if (params.queryParams?.token) {
-            await fetchUserWithToken(params.queryParams.token as string);
-          } else {
-            await fetchUserAfterAuth();
-          }
-        }
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error('Auth error:', error);
+      const response = await apiService.login(username.trim(), password);
+      setUser(response.user, response.token);
+      resetForm();
+      onClose();
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(translations.loginFailed);
+    } finally {
       setLoading(false);
     }
   };
 
-  const fetchUserWithToken = async (token: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        if (userData && userData.name) {
-          setUser({
-            id: userData.id,
-            name: userData.name,
-            email: userData.email || null,
-            avatar: userData.avatar || null,
-            firstName: userData.firstName || userData.name.split(' ')[0],
-            provider: 'replit',
-            providerId: userData.id,
-          });
-          onClose();
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch user with token:', error);
+  const handleRegister = async () => {
+    if (!username.trim() || !password.trim() || !name.trim()) {
+      setError(isZh ? '請填寫所有欄位' : 'Please fill in all fields');
+      return;
     }
-  };
 
-  const fetchUserAfterAuth = async () => {
+    setLoading(true);
+    setError(null);
+
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
-        credentials: 'include',
+      const response = await apiService.register({
+        username: username.trim(),
+        password,
+        name: name.trim(),
+        role: selectedRole,
       });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        if (userData && userData.name) {
-          setUser({
-            id: userData.id,
-            name: userData.name,
-            email: userData.email || null,
-            avatar: userData.avatar || null,
-            firstName: userData.firstName || userData.name.split(' ')[0],
-            provider: 'replit',
-            providerId: userData.id,
-          });
-          onClose();
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch user after auth:', error);
+      setUser(response.user, response.token);
+      resetForm();
+      onClose();
+    } catch (err) {
+      console.error('Register error:', err);
+      setError(translations.registerFailed);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,71 +122,156 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
       email: null,
       avatar: null,
       firstName: 'Guest',
+      role: 'traveler',
       provider: 'guest',
       providerId: 'guest',
     });
+    resetForm();
+    onClose();
+  };
+
+  const handleClose = () => {
+    resetForm();
     onClose();
   };
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView 
+        style={styles.overlay} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <View style={styles.container}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>
-              {state.language === 'zh-TW' ? '登入' : 'Sign In'}
+              {mode === 'login' ? translations.login : translations.register}
             </Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
               <Ionicons name="close" size={24} color="#64748b" />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.content}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="person-circle" size={64} color="#6366f1" />
-            </View>
-            
-            <Text style={styles.title}>
-              {state.language === 'zh-TW' ? '歡迎使用 Mibu' : 'Welcome to Mibu'}
-            </Text>
-            <Text style={styles.subtitle}>
-              {state.language === 'zh-TW' 
-                ? '登入以保存您的收藏和設定' 
-                : 'Sign in to save your collection and settings'}
-            </Text>
+          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.content}>
+              <View style={styles.iconContainer}>
+                <Ionicons name="person-circle" size={64} color="#6366f1" />
+              </View>
 
-            <TouchableOpacity 
-              style={styles.loginButton} 
-              onPress={handleLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
+              {error && (
+                <View style={styles.errorContainer}>
+                  <Ionicons name="alert-circle" size={20} color="#ef4444" />
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              )}
+
+              {mode === 'register' && (
+                <TextInput
+                  style={styles.input}
+                  placeholder={translations.name}
+                  value={name}
+                  onChangeText={setName}
+                  placeholderTextColor="#94a3b8"
+                  autoCapitalize="words"
+                />
+              )}
+
+              <TextInput
+                style={styles.input}
+                placeholder={translations.username}
+                value={username}
+                onChangeText={setUsername}
+                placeholderTextColor="#94a3b8"
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder={translations.password}
+                value={password}
+                onChangeText={setPassword}
+                placeholderTextColor="#94a3b8"
+                secureTextEntry
+              />
+
+              {mode === 'register' && (
                 <>
-                  <Ionicons name="log-in-outline" size={20} color="#ffffff" />
-                  <Text style={styles.loginButtonText}>
-                    {state.language === 'zh-TW' ? '使用 Replit 登入' : 'Sign in with Replit'}
-                  </Text>
+                  <Text style={styles.roleLabel}>{translations.selectRole}</Text>
+                  <View style={styles.roleGrid}>
+                    {ROLE_OPTIONS.map(role => (
+                      <TouchableOpacity
+                        key={role.value}
+                        style={[
+                          styles.roleCard,
+                          selectedRole === role.value && styles.roleCardActive,
+                        ]}
+                        onPress={() => setSelectedRole(role.value)}
+                      >
+                        <Ionicons 
+                          name={role.icon as any} 
+                          size={24} 
+                          color={selectedRole === role.value ? '#6366f1' : '#64748b'} 
+                        />
+                        <Text style={[
+                          styles.roleText,
+                          selectedRole === role.value && styles.roleTextActive,
+                        ]}>
+                          {isZh ? role.labelZh : role.labelEn}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  {selectedRole !== 'traveler' && (
+                    <Text style={styles.approvalNote}>{translations.pendingApproval}</Text>
+                  )}
                 </>
               )}
-            </TouchableOpacity>
 
-            <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
-              <Ionicons name="person-outline" size={20} color="#6366f1" />
-              <Text style={styles.guestButtonText}>
-                {state.language === 'zh-TW' ? '以訪客身份繼續' : 'Continue as Guest'}
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.submitButton, loading && styles.submitButtonDisabled]} 
+                onPress={mode === 'login' ? handleLogin : handleRegister}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text style={styles.submitButtonText}>
+                    {mode === 'login' ? translations.login : translations.register}
+                  </Text>
+                )}
+              </TouchableOpacity>
 
-            <Text style={styles.note}>
-              {state.language === 'zh-TW' 
-                ? '訪客模式下，資料僅保存在本機裝置' 
-                : 'In guest mode, data is only saved locally'}
-            </Text>
-          </View>
+              <TouchableOpacity 
+                style={styles.switchButton}
+                onPress={() => {
+                  setMode(mode === 'login' ? 'register' : 'login');
+                  setError(null);
+                }}
+              >
+                <Text style={styles.switchText}>
+                  {mode === 'login' ? translations.noAccount : translations.hasAccount}
+                  <Text style={styles.switchTextBold}>
+                    {' '}{mode === 'login' ? translations.register : translations.login}
+                  </Text>
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>OR</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
+                <Ionicons name="person-outline" size={20} color="#6366f1" />
+                <Text style={styles.guestButtonText}>{translations.guestLogin}</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.note}>{translations.guestNote}</Text>
+            </View>
+          </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -232,6 +289,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     width: '100%',
     maxWidth: 400,
+    maxHeight: '90%',
     overflow: 'hidden',
   },
   header: {
@@ -251,42 +309,121 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 4,
   },
+  scrollContent: {
+    maxHeight: 600,
+  },
   content: {
-    padding: 32,
-    alignItems: 'center',
+    padding: 24,
   },
   iconContainer: {
+    alignItems: 'center',
     marginBottom: 16,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#64748b',
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  loginButton: {
+  errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#fef2f2',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
     gap: 8,
-    backgroundColor: '#6366f1',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 16,
-    width: '100%',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    flex: 1,
+  },
+  input: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: '#1e293b',
     marginBottom: 12,
   },
-  loginButtonText: {
+  roleLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748b',
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  roleGrid: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  roleCard: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+    gap: 8,
+  },
+  roleCardActive: {
+    borderColor: '#6366f1',
+    backgroundColor: '#eef2ff',
+  },
+  roleText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  roleTextActive: {
+    color: '#6366f1',
+  },
+  approvalNote: {
+    fontSize: 12,
+    color: '#f59e0b',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  submitButton: {
+    backgroundColor: '#6366f1',
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  submitButtonText: {
     fontSize: 16,
     fontWeight: '700',
     color: '#ffffff',
+  },
+  switchButton: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  switchText: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  switchTextBold: {
+    fontWeight: '700',
+    color: '#6366f1',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e2e8f0',
+  },
+  dividerText: {
+    paddingHorizontal: 16,
+    fontSize: 12,
+    color: '#94a3b8',
   },
   guestButton: {
     flexDirection: 'row',
@@ -295,10 +432,8 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: '#eef2ff',
     paddingVertical: 14,
-    paddingHorizontal: 24,
     borderRadius: 12,
-    width: '100%',
-    marginBottom: 16,
+    marginTop: 8,
   },
   guestButtonText: {
     fontSize: 16,
@@ -309,5 +444,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#94a3b8',
     textAlign: 'center',
+    marginTop: 16,
   },
 });
