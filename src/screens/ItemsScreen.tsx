@@ -1,31 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  Dimensions,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
+  Linking,
   Image,
 } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSequence,
-  withTiming,
-  withDelay,
-  withSpring,
-  FadeIn,
-  FadeOut,
-} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../context/AppContext';
 import { GachaItem } from '../types';
 import { getCategoryLabel, getCategoryColor } from '../constants/translations';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH - 48;
-const CARD_HEIGHT = SCREEN_HEIGHT * 0.65;
 
 const RARITY_COLORS: Record<string, string> = {
   SP: '#fbbf24',
@@ -45,48 +31,11 @@ const RARITY_BG_COLORS: Record<string, string> = {
 
 interface ItemCardProps {
   item: GachaItem;
-  index: number;
-  onAddToBackpack: (item: GachaItem) => void;
-  isInCollection: boolean;
   translations: Record<string, string>;
   language: string;
 }
 
-function ItemCard({ item, index, onAddToBackpack, isInCollection, translations, language }: ItemCardProps) {
-  const [showCouponPopup, setShowCouponPopup] = useState(false);
-  const isAdded = isInCollection;
-
-  const popupScale = useSharedValue(0);
-  const popupOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    if (item.coupon_data || item.is_coupon) {
-      const timer = setTimeout(() => {
-        setShowCouponPopup(true);
-        popupScale.value = withSequence(
-          withSpring(1.2, { damping: 8 }),
-          withSpring(1, { damping: 12 })
-        );
-        popupOpacity.value = withTiming(1, { duration: 300 });
-
-        setTimeout(() => {
-          popupOpacity.value = withTiming(0, { duration: 500 });
-          setShowCouponPopup(false);
-        }, 3000);
-      }, 500 + index * 200);
-
-      return () => clearTimeout(timer);
-    }
-  }, [item.coupon_data, item.is_coupon, index]);
-
-  const couponPopupStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: popupScale.value }],
-    opacity: popupOpacity.value,
-  }));
-
-  const rarity = item.rarity || 'N';
-  const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.N;
-  const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.N;
+function ItemCard({ item, translations, language }: ItemCardProps) {
   const categoryColor = getCategoryColor(item.category as string);
   const categoryLabel = getCategoryLabel(item.category as string, language as any);
 
@@ -101,214 +50,146 @@ function ItemCard({ item, index, onAddToBackpack, isInCollection, translations, 
   const placeName = getLocalizedContent(item.place_name) || getLocalizedContent(item.verified_name) || '';
   const description = getLocalizedContent(item.ai_description) || getLocalizedContent(item.description) || '';
 
+  const getDurationText = () => {
+    if (item.duration) return item.duration;
+    if (item.suggested_time) return item.suggested_time;
+    const category = (item.category || '').toString().toLowerCase();
+    if (category.includes('food') || category.includes('美食') || category === 'f') {
+      return '0.5-1h';
+    }
+    if (category.includes('shop') || category.includes('購物') || category === 's') {
+      return '1-2h';
+    }
+    return '2-3h';
+  };
+
+  const handleOpenMaps = () => {
+    const query = item.verified_address || placeName;
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    Linking.openURL(url);
+  };
+
+  const rarity = item.rarity || 'N';
+  const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.N;
+  const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.N;
+
+  const hasCoupon = item.coupon_data || item.merchant?.discount;
+  const couponText = (item.coupon_data?.title ? getLocalizedContent(item.coupon_data.title) : '') || item.merchant?.discount || '';
+  const couponCode = item.coupon_data?.code || '';
+
   return (
     <View
       style={{
-        width: CARD_WIDTH,
-        height: CARD_HEIGHT,
-        marginHorizontal: 24,
-        borderRadius: 24,
         backgroundColor: '#ffffff',
+        borderRadius: 20,
+        marginHorizontal: 16,
+        marginBottom: 16,
+        borderWidth: 2,
+        borderColor: categoryColor,
         overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 24,
-        elevation: 8,
       }}
     >
-      <View style={{ height: CARD_HEIGHT * 0.45, position: 'relative' }}>
-        {item.imageUrl ? (
-          <Image
-            source={{ uri: item.imageUrl }}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
-          />
-        ) : (
+      <View style={{ padding: 20 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <View
             style={{
-              width: '100%',
-              height: '100%',
-              backgroundColor: categoryColor,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Ionicons name="location" size={64} color="rgba(255,255,255,0.4)" />
-          </View>
-        )}
-
-        <View
-          style={{
-            position: 'absolute',
-            top: 16,
-            left: 16,
-            flexDirection: 'row',
-            gap: 8,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: rarityBg,
+              backgroundColor: '#f8fafc',
               paddingHorizontal: 12,
               paddingVertical: 6,
-              borderRadius: 12,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: '#e2e8f0',
             }}
           >
-            <Text style={{ fontSize: 14, fontWeight: '900', color: rarityColor }}>
-              {rarity}
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#475569' }}>
+              {getDurationText()}
             </Text>
           </View>
 
           <View
             style={{
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              paddingHorizontal: 12,
+              backgroundColor: categoryColor + '20',
+              paddingHorizontal: 14,
               paddingVertical: 6,
-              borderRadius: 12,
+              borderRadius: 20,
             }}
           >
-            <Text style={{ fontSize: 12, fontWeight: '700', color: '#ffffff' }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: categoryColor }}>
               {categoryLabel}
             </Text>
           </View>
         </View>
 
-        {item.merchant && (
-          <View
-            style={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              backgroundColor: '#fef3c7',
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 4,
-            }}
-          >
-            <Ionicons name="star" size={12} color="#f59e0b" />
-            <Text style={{ fontSize: 11, fontWeight: '700', color: '#b45309' }}>
-              {translations.partnerMerchant || '特約商家'}
-            </Text>
-          </View>
-        )}
-
-        {showCouponPopup && (
-          <Animated.View
-            style={[
-              {
-                position: 'absolute',
-                top: '30%',
-                left: '50%',
-                marginLeft: -80,
-                width: 160,
-                backgroundColor: '#10b981',
-                paddingVertical: 16,
-                paddingHorizontal: 20,
-                borderRadius: 20,
-                alignItems: 'center',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 12,
-                elevation: 10,
-              },
-              couponPopupStyle,
-            ]}
-          >
-            <Ionicons name="gift" size={28} color="#ffffff" />
-            <Text style={{ fontSize: 14, fontWeight: '800', color: '#ffffff', marginTop: 8 }}>
-              {translations.gotCoupon || '獲得優惠券！'}
-            </Text>
-          </Animated.View>
-        )}
-      </View>
-
-      <View style={{ flex: 1, padding: 20 }}>
         <Text
-          style={{ fontSize: 22, fontWeight: '800', color: '#1e293b', marginBottom: 8 }}
+          style={{ fontSize: 24, fontWeight: '800', color: '#1e293b', marginBottom: 12 }}
           numberOfLines={2}
         >
           {placeName}
         </Text>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <Ionicons name="location-outline" size={16} color="#64748b" />
-          <Text style={{ fontSize: 14, color: '#64748b' }}>
-            {item.districtDisplay || item.district || ''}, {item.cityDisplay || item.city || ''}
-          </Text>
-        </View>
-
-        {item.google_rating != null && typeof item.google_rating === 'number' && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-            <Ionicons name="star" size={16} color="#f59e0b" />
-            <Text style={{ fontSize: 14, fontWeight: '600', color: '#1e293b' }}>
-              {item.google_rating.toFixed(1)}
-            </Text>
-            <Text style={{ fontSize: 12, color: '#94a3b8' }}>
-              ({translations.rating || '評分'})
-            </Text>
-          </View>
-        )}
-
-        {item.merchant?.discount && (
-          <View
-            style={{
-              backgroundColor: '#fef3c7',
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderRadius: 12,
-              marginBottom: 12,
-            }}
-          >
-            <Text style={{ fontSize: 13, color: '#b45309', fontWeight: '600' }}>
-              {item.merchant.discount}
-            </Text>
-          </View>
-        )}
-
         {description ? (
           <Text
-            style={{ fontSize: 13, color: '#64748b', lineHeight: 20 }}
-            numberOfLines={3}
+            style={{ fontSize: 15, color: '#64748b', lineHeight: 24, marginBottom: 16 }}
           >
             {description}
           </Text>
         ) : null}
 
-        <View style={{ flex: 1 }} />
+        {hasCoupon && (
+          <View
+            style={{
+              borderWidth: 2,
+              borderColor: '#e5e7eb',
+              borderStyle: 'dashed',
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: rarityBg,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 8,
+                marginRight: 12,
+              }}
+            >
+              <Text style={{ fontSize: 12, fontWeight: '900', color: rarityColor }}>
+                {rarity}
+              </Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', marginBottom: 2 }}>
+                {couponText}
+              </Text>
+              {couponCode && (
+                <Text style={{ fontSize: 12, color: '#64748b' }}>
+                  CODE: {couponCode}
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
 
         <TouchableOpacity
           style={{
-            backgroundColor: isAdded ? '#e2e8f0' : '#6366f1',
+            backgroundColor: '#f8fafc',
+            borderRadius: 12,
             paddingVertical: 16,
-            borderRadius: 16,
-            alignItems: 'center',
             flexDirection: 'row',
+            alignItems: 'center',
             justifyContent: 'center',
-            gap: 8,
+            borderWidth: 1,
+            borderColor: '#e2e8f0',
           }}
-          onPress={() => !isAdded && onAddToBackpack(item)}
-          disabled={isAdded}
+          onPress={handleOpenMaps}
         >
-          <Ionicons
-            name={isAdded ? 'checkmark-circle' : 'add-circle-outline'}
-            size={20}
-            color={isAdded ? '#64748b' : '#ffffff'}
-          />
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: '700',
-              color: isAdded ? '#64748b' : '#ffffff',
-            }}
-          >
-            {isAdded
-              ? (translations.addedToBackpack || '已加入背包')
-              : (translations.addToBackpack || '加入背包')}
+          <Ionicons name="location-outline" size={18} color="#64748b" />
+          <Text style={{ fontSize: 15, fontWeight: '600', color: '#64748b', marginLeft: 8 }}>
+            {translations.viewOnMap || '在 Google 地圖中查看'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -318,26 +199,10 @@ function ItemCard({ item, index, onAddToBackpack, isInCollection, translations, 
 
 export function ItemsScreen() {
   const router = useRouter();
-  const { state, t, updateState, addToCollection } = useApp();
-  const [locallyAdded, setLocallyAdded] = useState<Set<number>>(new Set());
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
+  const { state, t } = useApp();
 
   const items = state.result?.inventory || [];
-  const collectionIds = new Set(state.collection.map(i => i.id));
-
-  const isItemInCollection = (itemId: number) => {
-    return collectionIds.has(itemId) || locallyAdded.has(itemId);
-  };
-
-  const handleAddToBackpack = async (item: GachaItem) => {
-    try {
-      await addToCollection([item]);
-      setLocallyAdded(prev => new Set(prev).add(item.id));
-    } catch (error) {
-      console.error('Failed to add to backpack:', error);
-    }
-  };
+  const meta = state.result?.meta;
 
   const handleBackToGacha = () => {
     router.push('/(tabs)/gacha');
@@ -390,92 +255,99 @@ export function ItemsScreen() {
     );
   }
 
+  const getLocalizedString = (content: any): string => {
+    if (typeof content === 'string') return content;
+    if (typeof content === 'object' && content !== null) {
+      return content[state.language] || content['zh-TW'] || content['en'] || '';
+    }
+    return '';
+  };
+
+  const cityName = getLocalizedString(meta?.city) || '';
+  const districtName = getLocalizedString(meta?.locked_district) || '';
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#0f172a' }}>
+    <View style={{ flex: 1, backgroundColor: '#fdf2f2' }}>
       <View
         style={{
           paddingTop: 60,
-          paddingHorizontal: 24,
-          paddingBottom: 16,
-          flexDirection: 'row',
+          paddingHorizontal: 20,
+          paddingBottom: 20,
           alignItems: 'center',
-          justifyContent: 'space-between',
         }}
       >
-        <TouchableOpacity
-          onPress={handleBackToGacha}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Ionicons name="arrow-back" size={20} color="#ffffff" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+          <Image
+            source={require('../../assets/images/icon.png')}
+            style={{ width: 32, height: 32, marginRight: 8 }}
+            resizeMode="contain"
+          />
+          <Text style={{ fontSize: 18, fontWeight: '700', color: '#1e293b' }}>
+            MIBU
+          </Text>
+        </View>
 
-        <Text style={{ fontSize: 18, fontWeight: '800', color: '#ffffff' }}>
-          {t.gachaResults || '扭蛋結果'}
+        <Text style={{ fontSize: 36, fontWeight: '900', color: '#1e293b', marginBottom: 8 }}>
+          {cityName}
         </Text>
 
-        <View style={{ width: 40 }} />
+        {districtName && (
+          <Text style={{ fontSize: 16, color: '#64748b' }}>
+            {t.exploring || '正在探索'}{' '}
+            <Text style={{ color: '#6366f1', fontWeight: '700' }}>
+              {districtName}
+            </Text>
+          </Text>
+        )}
       </View>
 
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          gap: 6,
-          marginBottom: 16,
-        }}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
       >
-        {items.map((_, index) => (
-          <View
-            key={index}
-            style={{
-              width: index === currentIndex ? 24 : 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: index === currentIndex ? '#6366f1' : 'rgba(255,255,255,0.3)',
-            }}
-          />
-        ))}
-      </View>
-
-      <FlatList
-        ref={flatListRef}
-        data={items}
-        renderItem={({ item, index }) => (
+        {items.map((item, index) => (
           <ItemCard
+            key={item.id || index}
             item={item}
-            index={index}
-            onAddToBackpack={handleAddToBackpack}
-            isInCollection={isItemInCollection(item.id)}
             translations={t}
             language={state.language}
           />
-        )}
-        keyExtractor={(item) => item.id.toString()}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={CARD_WIDTH + 48}
-        decelerationRate="fast"
-        contentContainerStyle={{
-          paddingVertical: 20,
-        }}
-        onMomentumScrollEnd={(event) => {
-          const index = Math.round(event.nativeEvent.contentOffset.x / (CARD_WIDTH + 48));
-          setCurrentIndex(index);
-        }}
-      />
+        ))}
+      </ScrollView>
 
-      <View style={{ paddingHorizontal: 24, paddingBottom: 40 }}>
-        <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>
-          {currentIndex + 1} / {items.length}
-        </Text>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingHorizontal: 20,
+          paddingBottom: 40,
+          paddingTop: 16,
+        }}
+      >
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#1e293b',
+            paddingVertical: 18,
+            borderRadius: 30,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.2,
+            shadowRadius: 12,
+            elevation: 8,
+          }}
+          onPress={handleBackToGacha}
+        >
+          <Text style={{ fontSize: 17, fontWeight: '700', color: '#ffffff', marginRight: 8 }}>
+            {t.reGacha || '重新扭蛋'}
+          </Text>
+          <Ionicons name="refresh" size={20} color="#ffffff" />
+        </TouchableOpacity>
       </View>
     </View>
   );
