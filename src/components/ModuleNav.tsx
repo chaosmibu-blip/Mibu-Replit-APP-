@@ -41,7 +41,6 @@ export function GachaTopNav({
   hasNewItems = false,
 }: GachaTopNavProps) {
   const tabs: { key: GachaSubView; hasNew: boolean }[] = [
-    { key: 'gacha', hasNew: false },
     { key: 'collection', hasNew: hasNewCollection },
     { key: 'itembox', hasNew: hasNewItems },
   ];

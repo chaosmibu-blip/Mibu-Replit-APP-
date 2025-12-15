@@ -14,26 +14,29 @@ export function GachaModuleScreen() {
 
   const renderContent = () => {
     switch (currentTab) {
-      case 'gacha':
-        return <GachaScreen />;
       case 'collection':
         return <CollectionScreen />;
       case 'itembox':
         return <ItemBoxScreen />;
+      case 'gacha':
       default:
         return <GachaScreen />;
     }
   };
 
+  const showTopNav = currentTab !== 'gacha';
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
-      <GachaTopNav
-        currentTab={currentTab}
-        onChange={setCurrentTab}
-        language={state.language}
-        hasNewCollection={hasNewCollection}
-        hasNewItems={hasNewItems}
-      />
+    <SafeAreaView style={{ flex: 1, backgroundColor: currentTab === 'gacha' ? '#f8fafc' : '#ffffff' }}>
+      {showTopNav && (
+        <GachaTopNav
+          currentTab={currentTab}
+          onChange={setCurrentTab}
+          language={state.language}
+          hasNewCollection={hasNewCollection}
+          hasNewItems={hasNewItems}
+        />
+      )}
       <View style={{ flex: 1 }}>
         {renderContent()}
       </View>
