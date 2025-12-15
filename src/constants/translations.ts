@@ -123,6 +123,10 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulls: '張',
     loadingPool: '載入獎池中...',
     merchant: '特約商家',
+    generatingItinerary: '正在生成行程...',
+    sponsorAd: '贊助商廣告 (模擬)',
+    pleaseWait: '請稍候',
+    almostReady: '即將完成',
   },
   'en': {
     dailyLimitReached: 'Daily Limit Reached',
@@ -229,6 +233,10 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulls: 'pulls',
     loadingPool: 'Loading pool...',
     merchant: 'Partner',
+    generatingItinerary: 'Generating itinerary...',
+    sponsorAd: 'Sponsored Ad (Demo)',
+    pleaseWait: 'Please wait',
+    almostReady: 'Almost ready',
   },
   'ja': {
     dailyLimitReached: '本日の上限に達しました',
@@ -335,6 +343,10 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulls: '回',
     loadingPool: 'プール読み込み中...',
     merchant: '提携店舗',
+    generatingItinerary: '旅程を生成中...',
+    sponsorAd: 'スポンサー広告 (デモ)',
+    pleaseWait: 'お待ちください',
+    almostReady: 'もうすぐ完了',
   },
   'ko': {
     dailyLimitReached: '일일 한도 도달',
@@ -441,6 +453,10 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     pulls: '장',
     loadingPool: '풀 로딩 중...',
     merchant: '파트너',
+    generatingItinerary: '일정 생성 중...',
+    sponsorAd: '스폰서 광고 (데모)',
+    pleaseWait: '잠시만 기다려주세요',
+    almostReady: '거의 완료',
   },
 };
 

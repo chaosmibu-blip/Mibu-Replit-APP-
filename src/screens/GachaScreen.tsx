@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
+import { LoadingAdScreen } from '../components/LoadingAdScreen';
 import { apiService } from '../services/api';
 import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse } from '../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../constants/translations';
@@ -61,6 +62,10 @@ export function GachaScreen() {
   const [poolModalVisible, setPoolModalVisible] = useState(false);
   const [poolData, setPoolData] = useState<GachaPoolResponse | null>(null);
   const [loadingPool, setLoadingPool] = useState(false);
+  
+  const [showLoadingAd, setShowLoadingAd] = useState(false);
+  const [isApiComplete, setIsApiComplete] = useState(false);
+  const pendingResultRef = useRef<any>(null);
 
   useEffect(() => {
     loadCountries();
@@ -197,7 +202,9 @@ export function GachaScreen() {
       return;
     }
 
-    setLoading(true);
+    setShowLoadingAd(true);
+    setIsApiComplete(false);
+    pendingResultRef.current = null;
 
     try {
       const response = await apiService.generateItinerary({
@@ -235,13 +242,15 @@ export function GachaScreen() {
         primary_type: item.place?.primaryType || null,
         location: item.place?.location || null,
         is_location_verified: item.isVerified || false,
+        merchant: item.merchant || null,
+        coupon: item.coupon || null,
+        rarity: item.rarity || 'N',
       }));
 
       await incrementDailyCount();
-      addToCollection(items);
 
-      setResult({
-        status: 'success',
+      pendingResultRef.current = {
+        items,
         meta: {
           date: new Date().toISOString().split('T')[0],
           country: itinerary.location.country.name,
@@ -249,17 +258,32 @@ export function GachaScreen() {
           locked_district: itinerary.location.district.nameZh || itinerary.location.district.name,
           user_level: pullCount,
         },
+      };
+
+      setIsApiComplete(true);
+    } catch (error) {
+      console.error('Gacha failed:', error);
+      setShowLoadingAd(false);
+      Alert.alert('Error', 'Failed to generate itinerary. Please try again.');
+    }
+  };
+
+  const handleLoadingComplete = useCallback(() => {
+    if (pendingResultRef.current) {
+      const { items, meta } = pendingResultRef.current;
+      
+      addToCollection(items);
+
+      setResult({
+        status: 'success',
+        meta,
         inventory: items,
       });
 
+      setShowLoadingAd(false);
       updateState({ view: 'result' as any });
-    } catch (error) {
-      console.error('Gacha failed:', error);
-      Alert.alert('Error', 'Failed to generate itinerary. Please try again.');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [addToCollection, setResult, updateState]);
 
   const countryOptions = countries.map(c => ({
     label: getLocalizedName(c),
@@ -474,8 +498,7 @@ export function GachaScreen() {
         <Button
           title={t.startGacha}
           onPress={handleGacha}
-          disabled={!canSubmit}
-          loading={state.loading}
+          disabled={!canSubmit || showLoadingAd}
           style={{ marginTop: 8 }}
         />
       </View>
@@ -579,6 +602,18 @@ export function GachaScreen() {
           </View>
         </View>
       </Modal>
+
+      <LoadingAdScreen
+        visible={showLoadingAd}
+        onComplete={handleLoadingComplete}
+        isApiComplete={isApiComplete}
+        translations={{
+          generatingItinerary: t.generatingItinerary || '正在生成行程...',
+          sponsorAd: t.sponsorAd || '贊助商廣告 (模擬)',
+          pleaseWait: t.pleaseWait || '請稍候',
+          almostReady: t.almostReady || '即將完成',
+        }}
+      />
     </ScrollView>
   );
 }
