@@ -26,10 +26,28 @@ The app connects to an external backend API for location data and itinerary gene
 - **API Configuration**: `API_BASE_URL` now supports `EXPO_PUBLIC_API_URL` environment variable with fallback
 - **TypeScript Types**: Added `SosEvent`, `ServiceOrder` interfaces; Updated `User.role` to union type with 'specialist'
 
+### Multi-Role Authentication System (December 15, 2024)
+- **Role-based navigation**: Users are routed to different dashboards based on their role
+  - `traveler` / `admin` → Main tabs app
+  - `merchant` (approved) → Merchant Dashboard
+  - `specialist` (approved) → Specialist Dashboard
+  - Unapproved merchant/specialist → Pending Approval page
+- **AuthScreen with registration**: Modal-based auth with role selection during signup
+  - Traveler, Merchant, Specialist options
+  - Email/password login and registration
+  - Guest login for quick access
+- **AppContext token storage**: JWT tokens stored in AsyncStorage via `getToken()` method
+- **New screens created**:
+  - `MerchantDashboardScreen`: Daily verification code, credit balance, Stripe/Recur top-up
+  - `SpecialistDashboardScreen`: Online toggle, active service list
+  - `PendingApprovalScreen`: Waiting status for unapproved accounts
+- **Payment gateway integration**: Dual support for Stripe and Recur payments
+
 ### Login Flow
 - Standalone login page (`app/login.tsx`) shows on app launch
-- Supports Replit OAuth and Guest login
-- Redirects to main tabs after authentication
+- AuthScreen modal for registration with role selection
+- Supports Email/Password login and Guest login
+- Role-based redirects after authentication
 
 ### Location Feature (LocationScreen)
 - Uses `expo-location` for user positioning
