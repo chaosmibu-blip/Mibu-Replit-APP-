@@ -1,3 +1,3 @@
-import { GachaScreen } from '../../../src/screens/GachaScreen';
+import { GachaModuleScreen } from '../../../src/screens/GachaModuleScreen';
 
-export default GachaScreen;
+export default GachaModuleScreen;

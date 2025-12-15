@@ -400,7 +400,7 @@ export function GachaScreen() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: '#f8fafc' }}
-      contentContainerStyle={{ padding: 20, paddingTop: 60 }}
+      contentContainerStyle={{ padding: 20, paddingTop: 20 }}
     >
       <View style={{ alignItems: 'center', marginBottom: 32 }}>
         <Text style={{ fontSize: 32, fontWeight: '900', color: '#1e293b', letterSpacing: -0.5 }}>
