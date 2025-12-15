@@ -167,6 +167,53 @@ export interface Region {
   nameKo: string | null;
 }
 
+export type ItineraryPace = 'relaxed' | 'moderate' | 'packed';
+export type TimeSlot = 'breakfast' | 'morning' | 'lunch' | 'afternoon' | 'dinner' | 'evening';
+
+export interface ItineraryCoupon {
+  id: string;
+  title: string;
+  code: string;
+  terms: string;
+}
+
+export interface ItineraryPlace {
+  id: number;
+  placeName: LocalizedContent;
+  category: string;
+  subcategory?: string;
+  description?: LocalizedContent;
+  imageUrl?: string;
+  google_rating?: number;
+  location?: { lat: number; lng: number };
+  verified_address?: string;
+}
+
+export interface ItineraryItem {
+  timeSlot: TimeSlot;
+  place: ItineraryPlace;
+  couponWon: ItineraryCoupon | null;
+}
+
+export interface ItineraryV3Response {
+  success: boolean;
+  itinerary: ItineraryItem[];
+  couponsWon: ItineraryCoupon[];
+  meta: {
+    city: string;
+    district: string;
+    pace: ItineraryPace;
+    totalPlaces: number;
+    totalCouponsWon: number;
+  };
+}
+
+export interface ItineraryV3Payload {
+  city: string;
+  district: string;
+  pace: ItineraryPace;
+}
+
 export type AppView = 'home' | 'gacha_module' | 'planner_module' | 'settings' | 'result' | 'login';
 export type GachaSubView = 'gacha' | 'collection' | 'itembox';
 export type PlannerSubView = 'location' | 'itinerary' | 'chat' | 'service';

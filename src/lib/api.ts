@@ -155,4 +155,15 @@ export const api = {
     request<T>(endpoint, { ...options, method: 'DELETE' }),
 };
 
+import type { ItineraryV3Payload, ItineraryV3Response, ItineraryPace } from '../types';
+
+export async function generateItineraryV3(
+  city: string,
+  district: string,
+  pace: ItineraryPace = 'moderate'
+): Promise<ItineraryV3Response> {
+  const payload: ItineraryV3Payload = { city, district, pace };
+  return api.post<ItineraryV3Response>('/api/gacha/itinerary/v3', payload);
+}
+
 export { ApiError };
