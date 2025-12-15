@@ -93,9 +93,10 @@ expertMode = true
 integrations = ["twilio:1.0.0"]
 
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "static"
 run = ["npx", "serve", "dist", "-l", "5000"]
-build = ["sh", "-c", "npm run build"]
+build = ["npx", "expo", "export", "--platform", "web"]
+publicDir = "dist"
 
 [userenv]
 
