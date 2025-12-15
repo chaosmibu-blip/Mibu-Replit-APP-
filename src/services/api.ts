@@ -33,9 +33,12 @@ class ApiService {
     return data.regions || [];
   }
 
-  async getDistricts(regionId: number): Promise<{ count: number }> {
+  async getDistricts(regionId: number): Promise<{ count: number; districts: { id: number; name: string; nameZh?: string; nameEn?: string; nameJa?: string; nameKo?: string }[] }> {
     const data = await this.request<{ districts: any[]; count?: number }>(`/api/locations/districts/${regionId}`);
-    return { count: data.districts?.length || data.count || 0 };
+    return { 
+      count: data.districts?.length || data.count || 0,
+      districts: data.districts || []
+    };
   }
 
   async generateItinerary(params: {
