@@ -4,7 +4,7 @@ export const MAX_LEVEL = 12;
 export const DEFAULT_LEVEL = 5;
 export const MAX_DAILY_GENERATIONS = 3;
 
-export const API_BASE_URL = 'https://gacha-travel--s8869420.replit.app';
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://gacha-travel--s8869420.replit.app';
 
 export const CATEGORY_COLORS: Record<string, string> = {
   food: '#ea580c',

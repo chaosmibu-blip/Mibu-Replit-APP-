@@ -21,10 +21,30 @@ export interface User {
   lastName?: string | null;
   avatar?: string | null;
   profileImageUrl?: string | null;
-  role?: string;
+  role?: 'user' | 'admin' | 'merchant' | 'specialist';
   provider?: string | null;
   providerId?: string | null;
   isMerchant?: boolean;
+}
+
+export interface SosEvent {
+  id: string;
+  userId: string;
+  status: 'pending' | 'active' | 'resolved' | 'cancelled';
+  locationLat?: number;
+  locationLng?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ServiceOrder {
+  id: string;
+  userId: string;
+  type: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  verificationCode?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Merchant {
