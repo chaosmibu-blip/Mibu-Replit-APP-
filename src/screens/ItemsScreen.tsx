@@ -242,7 +242,7 @@ function ItemCard({ item, index, onAddToBackpack, isInCollection, translations, 
           </Text>
         </View>
 
-        {item.google_rating && (
+        {item.google_rating != null && typeof item.google_rating === 'number' && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
             <Ionicons name="star" size={16} color="#f59e0b" />
             <Text style={{ fontSize: 14, fontWeight: '600', color: '#1e293b' }}>
