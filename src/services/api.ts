@@ -96,9 +96,12 @@ class ApiService {
     return this.request(`/api/place/promo?${queryParams}`);
   }
 
-  async getGachaPool(city: string, district: string): Promise<GachaPoolResponse> {
+  async getGachaPool(city: string, district?: string): Promise<GachaPoolResponse> {
     try {
-      const data = await this.request<GachaPoolResponse>(`/api/gacha/pool/${encodeURIComponent(city)}/${encodeURIComponent(district)}`);
+      const path = district 
+        ? `/api/gacha/pool/${encodeURIComponent(city)}/${encodeURIComponent(district)}`
+        : `/api/gacha/pool/${encodeURIComponent(city)}`;
+      const data = await this.request<GachaPoolResponse>(path);
       return data;
     } catch (error) {
       console.error('Failed to get gacha pool:', error);
