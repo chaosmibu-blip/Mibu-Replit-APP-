@@ -8,6 +8,16 @@ The app connects to an external backend API for location data and itinerary gene
 
 ## Recent Changes (December 2024)
 
+### Infrastructure Upgrade (December 15, 2024)
+- **NativeWind v4 + Tailwind CSS**: Installed and configured for utility-first styling
+  - `babel.config.js` with nativewind/babel preset
+  - `tailwind.config.js` with nativewind/preset
+  - `metro.config.js` with withNativeWind wrapper
+  - `global.css` imported in root layout
+  - `nativewind-env.d.ts` for TypeScript support
+- **API Configuration**: `API_BASE_URL` now supports `EXPO_PUBLIC_API_URL` environment variable with fallback
+- **TypeScript Types**: Added `SosEvent`, `ServiceOrder` interfaces; Updated `User.role` to union type with 'specialist'
+
 ### Login Flow
 - Standalone login page (`app/login.tsx`) shows on app launch
 - Supports Replit OAuth and Guest login
