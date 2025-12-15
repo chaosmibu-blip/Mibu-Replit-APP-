@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppState, Language, User, GachaItem, GachaResponse } from '../types';
 import { TRANSLATIONS, DEFAULT_LEVEL } from '../constants/translations';
@@ -78,16 +78,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateState = (updates: Partial<AppState>) => {
+  const updateState = useCallback((updates: Partial<AppState>) => {
     setState(prev => ({ ...prev, ...updates }));
-  };
+  }, []);
 
-  const setLanguage = async (lang: Language) => {
+  const setLanguage = useCallback(async (lang: Language) => {
     setState(prev => ({ ...prev, language: lang }));
     await AsyncStorage.setItem(STORAGE_KEYS.LANGUAGE, lang);
-  };
+  }, []);
 
-  const setUser = async (user: User | null) => {
+  const setUser = useCallback(async (user: User | null) => {
     setState(prev => ({ 
       ...prev, 
       user, 
@@ -98,31 +98,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } else {
       await AsyncStorage.removeItem(STORAGE_KEYS.USER);
     }
-  };
+  }, []);
 
-  const addToCollection = async (items: GachaItem[]) => {
+  const addToCollection = useCallback(async (items: GachaItem[]) => {
     setState(prev => {
       const existingIds = new Set(prev.collection.map(i => i.id));
       const newItems = items.filter(i => !existingIds.has(i.id));
+      if (newItems.length === 0) return prev;
       const updatedCollection = [...prev.collection, ...newItems];
       
       AsyncStorage.setItem(STORAGE_KEYS.COLLECTION, JSON.stringify(updatedCollection));
       
       return { ...prev, collection: updatedCollection };
     });
-  };
+  }, []);
 
-  const setResult = (result: GachaResponse | null) => {
+  const setResult = useCallback((result: GachaResponse | null) => {
     setState(prev => ({ ...prev, result }));
-  };
+  }, []);
 
-  const setLoading = (loading: boolean) => {
+  const setLoading = useCallback((loading: boolean) => {
     setState(prev => ({ ...prev, loading }));
-  };
+  }, []);
 
-  const setError = (error: string | null) => {
+  const setError = useCallback((error: string | null) => {
     setState(prev => ({ ...prev, error }));
-  };
+  }, []);
 
   const t = TRANSLATIONS[state.language];
 
