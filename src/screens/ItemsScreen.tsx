@@ -18,6 +18,7 @@ import Animated, {
   FadeOut,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useApp } from '../context/AppContext';
 import { GachaItem } from '../types';
 import { getCategoryLabel, getCategoryColor } from '../constants/translations';
@@ -316,6 +317,7 @@ function ItemCard({ item, index, onAddToBackpack, isInCollection, translations, 
 }
 
 export function ItemsScreen() {
+  const router = useRouter();
   const { state, t, updateState, addToCollection } = useApp();
   const [locallyAdded, setLocallyAdded] = useState<Set<number>>(new Set());
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -338,7 +340,7 @@ export function ItemsScreen() {
   };
 
   const handleBackToGacha = () => {
-    updateState({ view: 'gacha_module' as any });
+    router.push('/(tabs)/gacha');
   };
 
   if (items.length === 0) {

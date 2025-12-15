@@ -8,6 +8,12 @@ The app connects to an external backend API for location data and itinerary gene
 
 ## Recent Changes (December 2024)
 
+### Gacha Flow Simplification (December 15, 2024)
+- **Removed district selector**: Users now only need to select Country and City/Region to start gacha
+- **Fixed navigation to results**: Changed from AppContext state-based navigation to expo-router `router.push()` for proper navigation after gacha completion
+- **Removed pool preview feature**: Feature was dependent on district selection and has been removed
+- **Simplified GachaScreen.tsx**: Removed unused imports, states, and modal components
+
 ### Infrastructure Upgrade (December 15, 2024)
 - **NativeWind v4 + Tailwind CSS**: Installed and configured for utility-first styling
   - `babel.config.js` with nativewind/babel preset
