@@ -1,0 +1,90 @@
+
+【後端更新摘要】
+商家儲值 API 支援 Stripe 和 Recur 兩種付款方式
+【API 變更】
+- POST /api/merchant/credits/purchase - 新增 provider 參數
+【API 呼叫範例】
+// 使用 Stripe 付款
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/merchant/credits/purchase', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    amount: 500,         // 最低 100 點
+    provider: 'stripe'   // 'stripe' | 'recur'
+  })
+});
+// 回傳格式
+{
+  transactionId: number,
+  amount: number,
+  provider: 'stripe' | 'recur',
+  checkoutUrl: string | null,
+  status: 'pending',
+  message: string
+}
+【前端需要的改動】
+1. 儲值頁面新增付款方式選擇按鈕：
+   - 「使用 Stripe 付款」
+   - 「使用 Recur 付款」
+2. 收到 checkoutUrl 後：Linking.openURL(checkoutUrl)
+=== 指令結束 ===
+
+3️⃣ Twilio Chat Token API
+=== 前端同步指令 ===
+【後端更新摘要】
+Twilio Chat Token API 改為 GET 方法
+【API 變更】
+- GET /api/chat/token（原為 POST）
+【API 呼叫範例】
+const response = await fetch('https://gacha-travel--s8869420.replit.app/api/chat/token', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+// 回傳格式
+{
+  token: string,     // Twilio JWT token
+  identity: string   // 用戶 ID
+}
+【前端需要的改動】
+1. 將 POST 改為 GET
+2. 使用 Twilio Conversations SDK 初始化聊天
+【注意】
+- 聊天功能使用 Twilio SDK，不是 Socket.IO
+- Socket.IO 僅用於即時位置追蹤
+=== 指令結束 ===
+
+4️⃣ Socket.IO 即時位置追蹤
+=== 前端同步指令 ===
+【後端更新摘要】
+Socket.IO 即時位置追蹤，旅客上報位置，自動轉發給配對的專家
+【Socket.IO 連線設定】
+URL: wss://gacha-travel--s8869420.replit.app
+認證: { auth: { token: jwtToken } }
+傳輸: ['websocket', 'polling']
+【旅客端】
+import { io } from 'socket.io-client';
+import * as Location from 'expo-location';
+const socket = io('https://gacha-travel--s8869420.replit.app', {
+  auth: { token: jwtToken },
+  transports: ['websocket', 'polling'],
+});
+Location.watchPositionAsync(
+  { accuracy: Location.Accuracy.High, timeInterval: 5000, distanceInterval: 10 },
+  (location) => {
+    socket.emit('location_update', {
+      lat: location.coords.latitude,
+      lng: location.coords.longitude,
+      timestamp: Date.now(),
+    });
+  }
+);
+socket.on('location_ack', (data) => console.log('位置已更新', data));
+【專家端】
+socket.emit('specialist_subscribe', {});
+socket.on('traveler_location', (data) => {
+  // { travelerId, serviceId, lat, lng, timestamp }
+  updateMarkerPosition(data.travelerId, data.lat, data.lng);
+});
+=== 指令結束 ===

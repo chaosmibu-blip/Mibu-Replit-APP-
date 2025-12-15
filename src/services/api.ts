@@ -230,6 +230,7 @@ class ApiService {
 
   async getChatToken(token: string): Promise<{ token: string; identity: string }> {
     return this.request<{ token: string; identity: string }>('/api/chat/token', {
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
