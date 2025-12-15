@@ -64,7 +64,13 @@ export function GachaTopNav({
         return (
           <TouchableOpacity
             key={key}
-            onPress={() => onChange(key)}
+            onPress={() => {
+              if (isActive) {
+                onChange('gacha');
+              } else {
+                onChange(key);
+              }
+            }}
             style={{
               flex: 1,
               alignItems: 'center',

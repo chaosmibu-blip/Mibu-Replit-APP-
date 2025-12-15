@@ -24,20 +24,16 @@ export function GachaModuleScreen() {
     }
   };
 
-  const showTopNav = currentTab !== 'gacha';
-
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: currentTab === 'gacha' ? '#f8fafc' : '#ffffff' }}>
-      {showTopNav && (
-        <GachaTopNav
-          currentTab={currentTab}
-          onChange={setCurrentTab}
-          language={state.language}
-          hasNewCollection={hasNewCollection}
-          hasNewItems={hasNewItems}
-        />
-      )}
-      <View style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      <GachaTopNav
+        currentTab={currentTab}
+        onChange={setCurrentTab}
+        language={state.language}
+        hasNewCollection={hasNewCollection}
+        hasNewItems={hasNewItems}
+      />
+      <View style={{ flex: 1, backgroundColor: currentTab === 'gacha' ? '#f8fafc' : '#ffffff' }}>
         {renderContent()}
       </View>
     </SafeAreaView>
