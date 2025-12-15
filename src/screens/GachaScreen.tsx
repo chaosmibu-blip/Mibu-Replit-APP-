@@ -11,6 +11,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../context/AppContext';
@@ -22,14 +23,10 @@ import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse } from '..
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const UNLIMITED_EMAILS = ['s8869420@gmail.com'];
+
 const DAILY_LIMIT_KEY = '@mibu_daily_limit';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-const PULL_COUNT_OPTIONS = [
-  { label: '5', value: 5 },
-  { label: '6', value: 6 },
-  { label: '8', value: 8 },
-];
 
 const RARITY_COLORS: Record<string, string> = {
   SP: '#fbbf24',
@@ -117,6 +114,10 @@ export function GachaScreen() {
   };
 
   const checkDailyLimit = async (): Promise<boolean> => {
+    if (state.user?.email && UNLIMITED_EMAILS.includes(state.user.email)) {
+      return true;
+    }
+    
     try {
       const today = new Date().toISOString().split('T')[0];
       const stored = await AsyncStorage.getItem(DAILY_LIMIT_KEY);
@@ -273,11 +274,6 @@ export function GachaScreen() {
     value: r.id,
   }));
 
-  const pullCountOptions = PULL_COUNT_OPTIONS.map(opt => ({
-    label: `${opt.value} ${t.pulls || '張'}`,
-    value: opt.value,
-  }));
-
   const canViewPool = selectedRegionId;
   const canSubmit = selectedCountryId && selectedRegionId;
 
@@ -423,13 +419,29 @@ export function GachaScreen() {
         )}
 
         {selectedRegionId && (
-          <Select
-            label={state.language === 'zh-TW' ? '抽取張數' : (t.pullCount || 'Pull Count')}
-            options={pullCountOptions}
-            value={pullCount}
-            onChange={(value) => setPullCount(value as number)}
-            placeholder={`${pullCount} ${t.pulls || '張'}`}
-          />
+          <View style={{ backgroundColor: '#ffffff', borderRadius: 16, padding: 16 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 12 }}>
+              {state.language === 'zh-TW' ? '抽取張數' : (t.pullCount || 'Pull Count')}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={{ fontSize: 12, color: '#94a3b8' }}>5</Text>
+              <Text style={{ fontSize: 24, fontWeight: '800', color: '#6366f1' }}>
+                {pullCount} {t.pulls || '張'}
+              </Text>
+              <Text style={{ fontSize: 12, color: '#94a3b8' }}>12</Text>
+            </View>
+            <Slider
+              style={{ width: '100%', height: 40 }}
+              minimumValue={5}
+              maximumValue={12}
+              step={1}
+              value={pullCount}
+              onValueChange={(value) => setPullCount(Math.round(value))}
+              minimumTrackTintColor="#6366f1"
+              maximumTrackTintColor="#e2e8f0"
+              thumbTintColor="#6366f1"
+            />
+          </View>
         )}
 
         {canViewPool && (

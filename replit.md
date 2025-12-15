@@ -12,6 +12,8 @@ The app connects to an external backend API for location data and itinerary gene
 - **Removed district selector**: Users now only need to select Country and City/Region to start gacha
 - **Fixed navigation to results**: Changed from AppContext state-based navigation to expo-router `router.push()` for proper navigation after gacha completion
 - **Pool preview now uses city-level**: Pool preview aggregates to the city/region level instead of requiring district selection
+- **Pull count slider**: Changed from dropdown to horizontal slider with range 5-12 cards
+- **Unlimited generations for VIP**: Users logged in with `s8869420@gmail.com` bypass daily generation limits
 - **Simplified GachaScreen.tsx**: Removed district-related states and simplified selection flow
 
 ### Infrastructure Upgrade (December 15, 2024)
