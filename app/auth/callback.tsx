@@ -12,8 +12,27 @@ export default function AuthCallback() {
     handleCallback();
   }, []);
 
+  const navigateAfterLogin = (role: string, isApproved?: boolean) => {
+    if (role === 'merchant') {
+      if (isApproved === false) {
+        router.replace('/pending-approval');
+      } else {
+        router.replace('/merchant-dashboard');
+      }
+    } else if (role === 'specialist') {
+      if (isApproved === false) {
+        router.replace('/pending-approval');
+      } else {
+        router.replace('/specialist-dashboard');
+      }
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
+
   const handleCallback = async () => {
     const token = params.token as string;
+    const portal = params.portal as string;
 
     if (token) {
       try {
@@ -25,17 +44,22 @@ export default function AuthCallback() {
 
         if (response.ok) {
           const userData = await response.json();
-          if (userData && userData.name) {
+          if (userData && (userData.name || userData.id)) {
+            const userRole = userData.role || portal || 'traveler';
+            
             setUser({
               id: userData.id,
-              name: userData.name,
+              name: userData.name || userData.email?.split('@')[0] || 'User',
               email: userData.email || null,
-              avatar: userData.avatar || null,
-              firstName: userData.firstName || userData.name.split(' ')[0],
-              provider: 'replit',
+              avatar: userData.avatar || userData.profileImageUrl || null,
+              firstName: userData.firstName || userData.name?.split(' ')[0] || null,
+              role: userRole,
+              isApproved: userData.isApproved,
+              provider: userData.provider || 'google',
               providerId: userData.id,
-            });
-            router.replace('/(tabs)');
+            }, token);
+            
+            navigateAfterLogin(userRole, userData.isApproved);
             return;
           }
         }
