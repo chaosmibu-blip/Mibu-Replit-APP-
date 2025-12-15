@@ -61,6 +61,43 @@ export interface CouponData {
   terms: LocalizedContent;
 }
 
+export interface MerchantInfo {
+  id: string;
+  name: string;
+  badge?: string;
+  discount?: string;
+  description?: string;
+}
+
+export interface GachaPoolItem {
+  id: string;
+  name: LocalizedContent;
+  category: string;
+  rarity: 'N' | 'R' | 'SR' | 'SSR' | 'SP';
+  imageUrl?: string;
+  merchant?: MerchantInfo;
+}
+
+export interface GachaPoolResponse {
+  city: string;
+  district: string;
+  items: GachaPoolItem[];
+  totalCount: number;
+}
+
+export interface GachaPullPayload {
+  userId: string;
+  city: string;
+  district: string;
+  itemCount: number;
+}
+
+export interface GachaPullResponse {
+  success: boolean;
+  items: GachaItem[];
+  meta: GachaMeta;
+}
+
 export interface GachaItem {
   id: number;
   place_name: LocalizedContent;
@@ -84,6 +121,7 @@ export interface GachaItem {
   store_promo?: LocalizedContent;
   is_promo_active?: boolean;
   merchant_id?: string;
+  merchant?: MerchantInfo;
   remaining_coupons?: number;
   place_id?: string | null;
   verified_name?: string | null;
@@ -93,6 +131,8 @@ export interface GachaItem {
   primary_type?: string | null;
   location?: { lat: number; lng: number } | null;
   is_location_verified?: boolean;
+  imageUrl?: string;
+  rarity?: 'N' | 'R' | 'SR' | 'SSR' | 'SP';
 }
 
 export interface GachaMeta {

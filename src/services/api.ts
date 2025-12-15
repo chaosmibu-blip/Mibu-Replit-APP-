@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -91,6 +91,29 @@ class ApiService {
     if (params.city) queryParams.append('city', params.city);
     
     return this.request(`/api/place/promo?${queryParams}`);
+  }
+
+  async getGachaPool(city: string, district: string): Promise<GachaPoolResponse> {
+    try {
+      const data = await this.request<GachaPoolResponse>(`/api/gacha/pool/${encodeURIComponent(city)}/${encodeURIComponent(district)}`);
+      return data;
+    } catch (error) {
+      console.error('Failed to get gacha pool:', error);
+      throw error;
+    }
+  }
+
+  async pullGacha(payload: GachaPullPayload): Promise<GachaPullResponse> {
+    try {
+      const data = await this.request<GachaPullResponse>('/api/gacha/pull', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      return data;
+    } catch (error) {
+      console.error('Failed to pull gacha:', error);
+      throw error;
+    }
   }
 }
 
