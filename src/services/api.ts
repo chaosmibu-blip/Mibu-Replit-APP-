@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -162,6 +162,84 @@ class ApiService {
   async removeGlobalExclusion(token: string, id: number): Promise<void> {
     await this.request(`/api/admin/global-exclusions/${id}`, {
       method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async register(params: {
+    username: string;
+    password: string;
+    name: string;
+    role: UserRole;
+  }): Promise<AuthResponse> {
+    return this.request<AuthResponse>('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  async login(username: string, password: string): Promise<AuthResponse> {
+    return this.request<AuthResponse>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+  }
+
+  async getUserWithToken(token: string): Promise<User> {
+    return this.request<User>('/api/auth/user', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async getMerchantDailyCode(token: string): Promise<MerchantDailyCode> {
+    return this.request<MerchantDailyCode>('/api/merchant/daily-code', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async getMerchantCredits(token: string): Promise<MerchantCredits> {
+    return this.request<MerchantCredits>('/api/merchant/credits', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async purchaseCredits(token: string, amount: number): Promise<{ checkoutUrl: string }> {
+    return this.request<{ checkoutUrl: string }>('/api/merchant/credits/purchase', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ amount }),
+    });
+  }
+
+  async getSpecialistMe(token: string): Promise<SpecialistInfo> {
+    return this.request<SpecialistInfo>('/api/specialist/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async toggleSpecialistOnline(token: string): Promise<{ specialist: SpecialistInfo }> {
+    return this.request<{ specialist: SpecialistInfo }>('/api/specialist/toggle-online', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async getSpecialistServices(token: string): Promise<{ relations: ServiceRelation[] }> {
+    return this.request<{ relations: ServiceRelation[] }>('/api/specialist/services', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

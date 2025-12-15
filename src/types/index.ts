@@ -13,18 +13,59 @@ export type LocalizedContent = string | { [key in Language]?: string };
 
 export type PlanTier = 'free' | 'partner' | 'premium';
 
+export type UserRole = 'consumer' | 'merchant' | 'specialist' | 'admin';
+
 export interface User {
   id: string;
   name?: string;
   email: string | null;
+  username?: string;
   firstName?: string | null;
   lastName?: string | null;
   avatar?: string | null;
   profileImageUrl?: string | null;
-  role?: 'user' | 'admin' | 'merchant' | 'specialist';
+  role?: UserRole;
+  isApproved?: boolean;
   provider?: string | null;
   providerId?: string | null;
   isMerchant?: boolean;
+  token?: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+export interface MerchantDailyCode {
+  code: string;
+  expiresAt: string;
+}
+
+export interface MerchantCredits {
+  creditBalance: number;
+  merchantId: number;
+}
+
+export interface SpecialistInfo {
+  id: number;
+  userId: string;
+  name: string;
+  isOnline: boolean;
+  isAvailable: boolean;
+  serviceRegion?: string;
+}
+
+export interface ServiceRelation {
+  id: number;
+  travelerId: string;
+  specialistId: number;
+  status: 'active' | 'completed' | 'cancelled';
+  createdAt: string;
+  traveler?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface SosEvent {
