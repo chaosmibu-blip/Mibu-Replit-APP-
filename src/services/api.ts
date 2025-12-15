@@ -46,11 +46,19 @@ class ApiService {
     regionId: number;
     language: Language;
     itemCount: number;
-  }): Promise<{ itinerary: any }> {
-    return this.request('/api/gacha/itinerary', {
+  }): Promise<{ itinerary?: any; meta?: { code?: string }; error?: string; success?: boolean }> {
+    const url = `${this.baseUrl}/api/gacha/itinerary`;
+    const response = await fetch(url, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
       body: JSON.stringify(params),
     });
+    
+    const data = await response.json();
+    return data;
   }
 
   async getCurrentUser(): Promise<User | null> {

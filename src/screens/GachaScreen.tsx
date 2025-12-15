@@ -192,23 +192,42 @@ export function GachaScreen() {
         itemCount: pullCount,
       });
 
+      if (response.meta?.code === 'NO_PLACES_AVAILABLE' || response.error) {
+        setShowLoadingAd(false);
+        const errorMessage = response.error || (state.language === 'zh-TW' ? '該區域暫無景點' : 'No places available in this area');
+        Alert.alert(
+          state.language === 'zh-TW' ? '提示' : 'Notice',
+          errorMessage
+        );
+        return;
+      }
+
+      if (!response.itinerary || !response.itinerary.items || response.itinerary.items.length === 0) {
+        setShowLoadingAd(false);
+        Alert.alert(
+          state.language === 'zh-TW' ? '提示' : 'Notice',
+          state.language === 'zh-TW' ? '該區域暫無景點，請嘗試其他地區' : 'No places available in this area. Please try another region.'
+        );
+        return;
+      }
+
       const { itinerary } = response;
 
       const items: GachaItem[] = itinerary.items.map((item: any, index: number) => ({
         id: Date.now() + index,
-        place_name: item.place?.name || `${itinerary.location.district.name} ${item.subcategory.name}`,
-        description: `${itinerary.location.region.name} ${itinerary.location.district.name}`,
+        place_name: item.place?.name || `${itinerary.location.district?.name || ''} ${item.subcategory?.name || ''}`,
+        description: `${itinerary.location.region?.name || ''} ${itinerary.location.district?.name || ''}`,
         ai_description: item.place?.description || '',
-        category: item.category.code,
+        category: item.category?.code || '',
         suggested_time: '',
         duration: '1h',
         search_query: '',
-        color_hex: item.category.colorHex || '#6366f1',
-        country: itinerary.location.country.name,
-        city: itinerary.location.region.nameZh || itinerary.location.region.name,
-        cityDisplay: itinerary.location.region.name,
-        district: itinerary.location.district.nameZh || itinerary.location.district.name,
-        districtDisplay: itinerary.location.district.name,
+        color_hex: item.category?.colorHex || '#6366f1',
+        country: itinerary.location.country?.name || '',
+        city: itinerary.location.region?.nameZh || itinerary.location.region?.name || '',
+        cityDisplay: itinerary.location.region?.name || '',
+        district: itinerary.location.district?.nameZh || itinerary.location.district?.name || '',
+        districtDisplay: itinerary.location.district?.name || '',
         collectedAt: new Date().toISOString(),
         is_coupon: false,
         coupon_data: null,
@@ -231,9 +250,9 @@ export function GachaScreen() {
         items,
         meta: {
           date: new Date().toISOString().split('T')[0],
-          country: itinerary.location.country.name,
-          city: itinerary.location.region.nameZh || itinerary.location.region.name,
-          locked_district: itinerary.location.district.nameZh || itinerary.location.district.name,
+          country: itinerary.location.country?.name || '',
+          city: itinerary.location.region?.nameZh || itinerary.location.region?.name || '',
+          locked_district: itinerary.location.district?.nameZh || itinerary.location.district?.name || '',
           user_level: pullCount,
         },
       };
@@ -242,7 +261,10 @@ export function GachaScreen() {
     } catch (error) {
       console.error('Gacha failed:', error);
       setShowLoadingAd(false);
-      Alert.alert('Error', 'Failed to generate itinerary. Please try again.');
+      Alert.alert(
+        state.language === 'zh-TW' ? '錯誤' : 'Error',
+        state.language === 'zh-TW' ? '生成行程失敗，請稍後再試' : 'Failed to generate itinerary. Please try again.'
+      );
     }
   };
 
