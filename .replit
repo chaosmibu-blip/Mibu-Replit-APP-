@@ -96,3 +96,8 @@ integrations = ["twilio:1.0.0"]
 deploymentTarget = "autoscale"
 run = ["npx", "serve", "dist", "-l", "5000"]
 build = ["sh", "-c", "npm run build"]
+
+[userenv]
+
+[userenv.shared]
+EXPO_PUBLIC_API_URL = "https://gacha-travel--s8869420.replit.app"
