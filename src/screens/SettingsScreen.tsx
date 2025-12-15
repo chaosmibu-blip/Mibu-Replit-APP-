@@ -122,6 +122,28 @@ export function SettingsScreen() {
         </TouchableOpacity>
       </View>
 
+      {state.user?.role === 'admin' && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            {state.language === 'zh-TW' ? '管理員' : 'Admin'}
+          </Text>
+          <TouchableOpacity style={styles.adminCard} onPress={() => router.push('/admin-exclusions')}>
+            <View style={styles.adminIconContainer}>
+              <Ionicons name="ban-outline" size={24} color="#6366f1" />
+            </View>
+            <View style={styles.adminInfo}>
+              <Text style={styles.adminTitle}>
+                {state.language === 'zh-TW' ? '全域排除管理' : 'Global Exclusions'}
+              </Text>
+              <Text style={styles.adminSubtitle}>
+                {state.language === 'zh-TW' ? '管理所有使用者不會抽到的地點' : 'Manage places excluded for all users'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
           {state.language === 'zh-TW' ? '關於' : 'About'}
@@ -306,6 +328,37 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   sosSubtitle: {
+    fontSize: 13,
+    color: '#64748b',
+  },
+  adminCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#c7d2fe',
+    gap: 12,
+  },
+  adminIconContainer: {
+    width: 44,
+    height: 44,
+    backgroundColor: '#eef2ff',
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  adminInfo: {
+    flex: 1,
+  },
+  adminTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 2,
+  },
+  adminSubtitle: {
     fontSize: 13,
     color: '#64748b',
   },

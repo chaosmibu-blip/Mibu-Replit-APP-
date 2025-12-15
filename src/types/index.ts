@@ -214,6 +214,16 @@ export interface ItineraryV3Payload {
   pace: ItineraryPace;
 }
 
+export interface GlobalExclusion {
+  id: number;
+  userId: null;
+  placeName: string;
+  district: string;
+  city: string;
+  penaltyScore: number;
+  createdAt: string;
+}
+
 export type AppView = 'home' | 'gacha_module' | 'planner_module' | 'settings' | 'result' | 'login';
 export type GachaSubView = 'gacha' | 'collection' | 'itembox';
 export type PlannerSubView = 'location' | 'itinerary' | 'chat' | 'service';

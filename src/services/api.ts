@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -128,6 +128,44 @@ class ApiService {
       console.error('Failed to pull gacha:', error);
       throw error;
     }
+  }
+
+  async getGlobalExclusions(token: string): Promise<GlobalExclusion[]> {
+    try {
+      const data = await this.request<{ exclusions: GlobalExclusion[] }>('/api/admin/global-exclusions', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      return data.exclusions || [];
+    } catch (error) {
+      console.error('Failed to get global exclusions:', error);
+      throw error;
+    }
+  }
+
+  async addGlobalExclusion(token: string, params: {
+    placeName: string;
+    district: string;
+    city: string;
+  }): Promise<GlobalExclusion> {
+    const data = await this.request<{ success: boolean; exclusion: GlobalExclusion }>('/api/admin/global-exclusions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+    return data.exclusion;
+  }
+
+  async removeGlobalExclusion(token: string, id: number): Promise<void> {
+    await this.request(`/api/admin/global-exclusions/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
   }
 }
 
