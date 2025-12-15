@@ -101,6 +101,8 @@ export default function LoginScreen() {
             firstName: userData.firstName || userData.name.split(' ')[0],
             role: userData.role || selectedPortal,
             isApproved: userData.isApproved,
+            isSuperAdmin: userData.isSuperAdmin || false,
+            accessibleRoles: userData.accessibleRoles || [],
             provider: 'google',
             providerId: userData.id,
           }, token);
@@ -249,6 +251,8 @@ export default function LoginScreen() {
             profileImageUrl: userData.profileImageUrl || null,
             role: userData.role || selectedPortal,
             isApproved: userData.isApproved,
+            isSuperAdmin: userData.isSuperAdmin || false,
+            accessibleRoles: userData.accessibleRoles || [],
             provider: userData.provider || 'google',
             providerId: userData.id,
           }, token);
@@ -285,6 +289,8 @@ export default function LoginScreen() {
             firstName: userData.firstName || userData.name.split(' ')[0],
             role: userData.role || selectedPortal,
             isApproved: userData.isApproved,
+            isSuperAdmin: userData.isSuperAdmin || false,
+            accessibleRoles: userData.accessibleRoles || [],
             provider: 'google',
             providerId: userData.id,
           });

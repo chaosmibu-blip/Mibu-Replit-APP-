@@ -55,6 +55,8 @@ export default function AuthCallback() {
               firstName: userData.firstName || userData.name?.split(' ')[0] || null,
               role: userRole,
               isApproved: userData.isApproved,
+              isSuperAdmin: userData.isSuperAdmin || false,
+              accessibleRoles: userData.accessibleRoles || [],
               provider: userData.provider || 'google',
               providerId: userData.id,
             }, token);

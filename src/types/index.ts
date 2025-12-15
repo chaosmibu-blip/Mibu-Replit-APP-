@@ -26,6 +26,8 @@ export interface User {
   profileImageUrl?: string | null;
   role?: UserRole;
   isApproved?: boolean;
+  isSuperAdmin?: boolean;
+  accessibleRoles?: string[];
   provider?: string | null;
   providerId?: string | null;
   isMerchant?: boolean;
