@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, FlatList, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../../../src/context/AppContext';
 import { apiService } from '../../../src/services/api';
@@ -12,6 +12,8 @@ export default function GachaScreen() {
   const [drawCount, setDrawCount] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [gachaResults, setGachaResults] = useState<GachaResult[]>([]);
+  const [countryModalVisible, setCountryModalVisible] = useState(false);
+  const [cityModalVisible, setCityModalVisible] = useState(false);
   
   const countries = [{ id: 'tw', name: '台灣' }, { id: 'jp', name: '日本' }];
   const cities: Record<string, { id: string; name: string }[]> = {
@@ -22,6 +24,12 @@ export default function GachaScreen() {
   const handleSelectCountry = (countryId: string) => {
     setSelectedCountry(countryId);
     setSelectedCity(null);
+    setCountryModalVisible(false);
+  };
+
+  const handleSelectCity = (cityId: string) => {
+    setSelectedCity(cityId);
+    setCityModalVisible(false);
   };
 
   const handleDrawGacha = async () => {
@@ -54,6 +62,17 @@ export default function GachaScreen() {
     }
   };
 
+  const getSelectedCountryName = () => {
+    const country = countries.find(c => c.id === selectedCountry);
+    return country?.name || '請選擇國家';
+  };
+
+  const getSelectedCityName = () => {
+    if (!selectedCountry) return '請先選擇國家';
+    const city = cities[selectedCountry]?.find(c => c.id === selectedCity);
+    return city?.name || '請選擇城市';
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -61,34 +80,27 @@ export default function GachaScreen() {
         
         <View style={styles.settingsBox}>
           <Text style={styles.label}>選擇探索國家</Text>
-          <View style={styles.optionRow}>
-            {countries.map(country => (
-              <TouchableOpacity
-                key={country.id}
-                style={[styles.optionButton, selectedCountry === country.id && styles.optionButtonActive]}
-                onPress={() => handleSelectCountry(country.id)}
-              >
-                <Text style={[styles.optionText, selectedCountry === country.id && styles.optionTextActive]}>
-                  {country.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <TouchableOpacity 
+            style={styles.selectButton} 
+            onPress={() => setCountryModalVisible(true)}
+          >
+            <Text style={[styles.selectButtonText, !selectedCountry && styles.placeholderText]}>
+              {getSelectedCountryName()}
+            </Text>
+            <Text style={styles.dropdownArrow}>▼</Text>
+          </TouchableOpacity>
 
           <Text style={styles.label}>選擇城市/地區</Text>
-          <View style={styles.optionRow}>
-            {selectedCountry && cities[selectedCountry]?.map(city => (
-              <TouchableOpacity
-                key={city.id}
-                style={[styles.optionButton, selectedCity === city.id && styles.optionButtonActive]}
-                onPress={() => setSelectedCity(city.id)}
-              >
-                <Text style={[styles.optionText, selectedCity === city.id && styles.optionTextActive]}>
-                  {city.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <TouchableOpacity 
+            style={[styles.selectButton, !selectedCountry && styles.selectButtonDisabled]} 
+            onPress={() => selectedCountry && setCityModalVisible(true)}
+            disabled={!selectedCountry}
+          >
+            <Text style={[styles.selectButtonText, !selectedCity && styles.placeholderText]}>
+              {getSelectedCityName()}
+            </Text>
+            <Text style={styles.dropdownArrow}>▼</Text>
+          </TouchableOpacity>
           
           <View style={styles.drawCountContainer}>
             <Text style={styles.label}>行程數量</Text>
@@ -130,6 +142,60 @@ export default function GachaScreen() {
           </View>
         )}
       </ScrollView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={countryModalVisible}
+        onRequestClose={() => setCountryModalVisible(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setCountryModalVisible(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>選擇國家</Text>
+            <FlatList
+              data={countries}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.modalItem, selectedCountry === item.id && styles.modalItemActive]}
+                  onPress={() => handleSelectCountry(item.id)}
+                >
+                  <Text style={[styles.modalItemText, selectedCountry === item.id && styles.modalItemTextActive]}>
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={cityModalVisible}
+        onRequestClose={() => setCityModalVisible(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setCityModalVisible(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>選擇城市</Text>
+            <FlatList
+              data={selectedCountry ? cities[selectedCountry] : []}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.modalItem, selectedCity === item.id && styles.modalItemActive]}
+                  onPress={() => handleSelectCity(item.id)}
+                >
+                  <Text style={[styles.modalItemText, selectedCity === item.id && styles.modalItemTextActive]}>
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -140,21 +206,32 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#333' },
   settingsBox: { backgroundColor: 'white', borderRadius: 12, padding: 20, marginBottom: 20 },
   label: { fontSize: 16, color: '#666', marginBottom: 8, marginTop: 12 },
-  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  optionButton: { 
-    paddingHorizontal: 16, 
-    paddingVertical: 10, 
-    borderRadius: 8, 
-    backgroundColor: '#f0f0f0',
+  selectButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#f8f9fa',
     borderWidth: 1,
     borderColor: '#ddd',
   },
-  optionButtonActive: { 
-    backgroundColor: '#4A90E2', 
-    borderColor: '#4A90E2' 
+  selectButtonDisabled: {
+    backgroundColor: '#f0f0f0',
+    opacity: 0.6,
   },
-  optionText: { fontSize: 14, color: '#666' },
-  optionTextActive: { color: 'white', fontWeight: '600' },
+  selectButtonText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  placeholderText: {
+    color: '#999',
+  },
+  dropdownArrow: {
+    fontSize: 12,
+    color: '#666',
+  },
   drawCountContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 },
   stepper: { flexDirection: 'row', alignItems: 'center' },
   stepperButton: { fontSize: 24, paddingHorizontal: 16, color: '#4A90E2', fontWeight: 'bold' },
@@ -168,4 +245,41 @@ const styles = StyleSheet.create({
   resultCard: { backgroundColor: 'white', padding: 16, borderRadius: 8, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
   placeName: { fontSize: 16, fontWeight: '500', color: '#333' },
   couponText: { color: '#28a745', marginTop: 8, fontWeight: 'bold' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+    maxHeight: '50%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
+    color: '#333',
+  },
+  modalItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  modalItemActive: {
+    backgroundColor: '#EBF5FF',
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  modalItemTextActive: {
+    color: '#4A90E2',
+    fontWeight: '600',
+  },
 });
