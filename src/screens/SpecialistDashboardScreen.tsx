@@ -177,6 +177,34 @@ export function SpecialistDashboardScreen() {
           </View>
           <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/specialist/history' as any)}
+        >
+          <View style={styles.menuIcon}>
+            <Ionicons name="time-outline" size={24} color="#6366f1" />
+          </View>
+          <View style={styles.menuContent}>
+            <Text style={styles.menuTitle}>{isZh ? '服務歷史' : 'Service History'}</Text>
+            <Text style={styles.menuSubtitle}>{isZh ? '查看過往服務記錄' : 'View past service records'}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/specialist/profile' as any)}
+        >
+          <View style={styles.menuIcon}>
+            <Ionicons name="person-circle-outline" size={24} color="#6366f1" />
+          </View>
+          <View style={styles.menuContent}>
+            <Text style={styles.menuTitle}>{isZh ? '專員資料' : 'Specialist Profile'}</Text>
+            <Text style={styles.menuSubtitle}>{isZh ? '查看與編輯個人資料' : 'View and edit profile'}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.sectionTitle}>{translations.activeServices}</Text>

@@ -8,21 +8,31 @@ The app connects to an external backend API for location data and itinerary gene
 
 ## Recent Changes (December 2024)
 
-### Merchant & Specialist Sub-Pages (December 16, 2024)
+### Complete Merchant & Specialist Backend (December 16, 2024)
 - **New Merchant Screens**:
   - `MerchantTransactionsScreen`: View transaction history with purchase/usage/refund tracking
   - `MerchantVerifyScreen`: Verify other merchants' codes with merchantId + code input
+  - `MerchantPlacesScreen`: Claim and manage places with search functionality
+  - `MerchantProductsScreen`: Create, edit, delete products with modal form
+  - `MerchantProfileScreen`: View merchant profile info (balance, plan, status)
 - **New Specialist Screens**:
   - `SpecialistTravelersScreen`: View active travelers being served
   - `SpecialistTrackingScreen`: Live location tracking with Socket.IO integration
+  - `SpecialistHistoryScreen`: View service history with filter (all/active/completed)
+  - `SpecialistProfileScreen`: View/edit specialist profile, toggle availability
 - **Updated Dashboard Screens**:
-  - Added menu navigation links to sub-pages
+  - Added menu navigation links to all sub-pages
   - Consistent styling with menu icons and chevrons
 - **Route Structure**:
   - `/merchant/transactions` - Transaction history
   - `/merchant/verify` - Verify merchant codes
+  - `/merchant/places` - Place management
+  - `/merchant/products` - Product management
+  - `/merchant/profile` - Merchant profile
   - `/specialist/travelers` - Active travelers list
   - `/specialist/tracking` - Live location map
+  - `/specialist/history` - Service history
+  - `/specialist/profile` - Specialist profile
 - **API Updates**:
   - `verifyMerchantCode()` now requires merchantId and code
   - `updateSpecialistAvailability()` - PATCH availability status

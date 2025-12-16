@@ -183,6 +183,48 @@ export function MerchantDashboardScreen() {
           </View>
           <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/merchant/places' as any)}
+        >
+          <View style={styles.menuIcon}>
+            <Ionicons name="storefront-outline" size={24} color="#6366f1" />
+          </View>
+          <View style={styles.menuContent}>
+            <Text style={styles.menuTitle}>{isZh ? '店家管理' : 'Place Management'}</Text>
+            <Text style={styles.menuSubtitle}>{isZh ? '認領與管理店家' : 'Claim and manage places'}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/merchant/products' as any)}
+        >
+          <View style={styles.menuIcon}>
+            <Ionicons name="cube-outline" size={24} color="#6366f1" />
+          </View>
+          <View style={styles.menuContent}>
+            <Text style={styles.menuTitle}>{isZh ? '商品管理' : 'Product Management'}</Text>
+            <Text style={styles.menuSubtitle}>{isZh ? '建立與編輯商品' : 'Create and edit products'}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/merchant/profile' as any)}
+        >
+          <View style={styles.menuIcon}>
+            <Ionicons name="person-circle-outline" size={24} color="#6366f1" />
+          </View>
+          <View style={styles.menuContent}>
+            <Text style={styles.menuTitle}>{isZh ? '商家資料' : 'Merchant Profile'}</Text>
+            <Text style={styles.menuSubtitle}>{isZh ? '查看商家資訊' : 'View merchant info'}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.topUpSection}>
