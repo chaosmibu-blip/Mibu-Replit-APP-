@@ -114,6 +114,31 @@ export default function LoginScreen() {
       if (response.ok) {
         const userData = await response.json();
         if (userData && userData.name) {
+          // For super admins, switch to the selected portal role
+          let finalActiveRole = userData.activeRole || userData.role || selectedPortal;
+          
+          if (userData.isSuperAdmin && selectedPortal !== finalActiveRole) {
+            try {
+              const switchResponse = await fetch(`${API_BASE_URL}/api/auth/switch-role`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ role: selectedPortal }),
+              });
+              
+              if (switchResponse.ok) {
+                const switchData = await switchResponse.json();
+                finalActiveRole = switchData.activeRole || selectedPortal;
+              }
+            } catch (switchError) {
+              console.error('Failed to switch role:', switchError);
+              // Continue with selected portal as activeRole for navigation
+              finalActiveRole = selectedPortal;
+            }
+          }
+          
           setUser({
             id: userData.id,
             name: userData.name,
@@ -121,7 +146,7 @@ export default function LoginScreen() {
             avatar: userData.avatar || null,
             firstName: userData.firstName || userData.name.split(' ')[0],
             role: userData.role || selectedPortal,
-            activeRole: userData.activeRole || userData.role || selectedPortal,
+            activeRole: finalActiveRole,
             isApproved: userData.isApproved,
             isSuperAdmin: userData.isSuperAdmin || false,
             accessibleRoles: userData.accessibleRoles || [],
@@ -129,7 +154,7 @@ export default function LoginScreen() {
             providerId: userData.id,
           }, token);
           setLoading(false);
-          navigateAfterLogin(userData.activeRole || userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          navigateAfterLogin(finalActiveRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         }
       } else {
         console.error('Failed to fetch user data:', response.status);
@@ -193,7 +218,9 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (state.isAuthenticated && state.user) {
-      navigateAfterLogin(state.user.role || 'traveler', state.user.isApproved, state.user.isSuperAdmin, state.user.accessibleRoles);
+      // Use activeRole for super admins, as it tracks the selected portal
+      const roleToUse = state.user.activeRole || state.user.role || 'traveler';
+      navigateAfterLogin(roleToUse, state.user.isApproved, state.user.isSuperAdmin, state.user.accessibleRoles);
     } else {
       setCheckingAuth(false);
     }
@@ -308,6 +335,31 @@ export default function LoginScreen() {
         const userData = await response.json();
         if (userData && userData.id) {
           const displayName = userData.firstName || userData.name || userData.email?.split('@')[0] || 'User';
+          
+          // For super admins, switch to the selected portal role
+          let finalActiveRole = userData.activeRole || userData.role || selectedPortal;
+          
+          if (userData.isSuperAdmin && selectedPortal !== finalActiveRole) {
+            try {
+              const switchResponse = await fetch(`${API_BASE_URL}/api/auth/switch-role`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ role: selectedPortal }),
+              });
+              
+              if (switchResponse.ok) {
+                const switchData = await switchResponse.json();
+                finalActiveRole = switchData.activeRole || selectedPortal;
+              }
+            } catch (switchError) {
+              console.error('Failed to switch role:', switchError);
+              finalActiveRole = selectedPortal;
+            }
+          }
+          
           setUser({
             id: userData.id,
             name: displayName,
@@ -317,7 +369,7 @@ export default function LoginScreen() {
             avatar: userData.profileImageUrl || userData.avatar || null,
             profileImageUrl: userData.profileImageUrl || null,
             role: userData.role || selectedPortal,
-            activeRole: userData.activeRole || userData.role || selectedPortal,
+            activeRole: finalActiveRole,
             isApproved: userData.isApproved,
             isSuperAdmin: userData.isSuperAdmin || false,
             accessibleRoles: userData.accessibleRoles || [],
@@ -325,7 +377,7 @@ export default function LoginScreen() {
             providerId: userData.id,
           }, token);
           setLoading(false);
-          navigateAfterLogin(userData.activeRole || userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          navigateAfterLogin(finalActiveRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         } else {
           console.error('Invalid user data: missing id');
           setLoading(false);
