@@ -311,13 +311,13 @@ class ApiService {
     });
   }
 
-  async verifyMerchantCode(token: string, code: string): Promise<{ success: boolean; message: string }> {
-    return this.request('/api/merchant/verify-code', {
+  async verifyMerchantCode(token: string, merchantId: number, code: string): Promise<{ valid: boolean; merchant?: any; error?: string }> {
+    return this.request('/api/merchant/verify', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ merchantId, code }),
     });
   }
 

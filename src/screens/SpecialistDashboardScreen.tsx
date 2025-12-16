@@ -149,6 +149,36 @@ export function SpecialistDashboardScreen() {
         )}
       </View>
 
+      <View style={styles.menuSection}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/specialist/travelers' as any)}
+        >
+          <View style={styles.menuIcon}>
+            <Ionicons name="people-outline" size={24} color="#6366f1" />
+          </View>
+          <View style={styles.menuContent}>
+            <Text style={styles.menuTitle}>{isZh ? '服務中旅客' : 'Active Travelers'}</Text>
+            <Text style={styles.menuSubtitle}>{isZh ? '查看服務中的旅客' : 'View travelers being served'}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/specialist/tracking' as any)}
+        >
+          <View style={styles.menuIcon}>
+            <Ionicons name="map-outline" size={24} color="#6366f1" />
+          </View>
+          <View style={styles.menuContent}>
+            <Text style={styles.menuTitle}>{isZh ? '即時位置追蹤' : 'Live Tracking'}</Text>
+            <Text style={styles.menuSubtitle}>{isZh ? '在地圖上查看旅客位置' : 'View travelers on map'}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.sectionTitle}>{translations.activeServices}</Text>
 
       {services.length === 0 ? (
@@ -282,6 +312,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6366f1',
     marginTop: 8,
+  },
+  menuSection: {
+    marginBottom: 24,
+    gap: 12,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+  },
+  menuIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#eef2ff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  menuContent: {
+    flex: 1,
+  },
+  menuTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 2,
+  },
+  menuSubtitle: {
+    fontSize: 13,
+    color: '#64748b',
   },
   sectionTitle: {
     fontSize: 18,
