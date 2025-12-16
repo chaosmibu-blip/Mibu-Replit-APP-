@@ -8,6 +8,27 @@ The app connects to an external backend API for location data and itinerary gene
 
 ## Recent Changes (December 2024)
 
+### API Service Updates (December 16, 2024)
+- **Complete Merchant API Integration**: Added all merchant endpoints to api.ts
+  - `getMerchantMe()` - Get merchant profile
+  - `registerMerchant()` - Register as merchant
+  - `verifyMerchantCode()` - Verify customer code
+  - `getMerchantTransactions()` - Transaction history
+  - `searchMerchantPlaces()` - Search for places to claim
+  - `claimMerchantPlace()` - Claim a place
+  - `getMerchantPlaces()` - List claimed places
+  - `updateMerchantPlace()` - Update place info
+  - `getMerchantProducts()` - List products
+  - `createMerchantProduct()` - Add product
+  - `updateMerchantProduct()` - Update product
+  - `deleteMerchantProduct()` - Delete product
+- **Specialist API Integration**: Added specialist registration endpoint
+  - `registerSpecialist()` - Register as specialist
+- **New Types Added**: `MerchantMe`, `MerchantTransaction`, `MerchantPlace`, `MerchantProduct`, `PlaceSearchResult`
+- **Super Admin Support**: User type now includes `isSuperAdmin` and `accessibleRoles` fields
+- **Portal Switcher**: Settings page shows portal switcher for super admins to access all dashboards
+- **Logout Flow Update**: Now properly clears token and redirects to login page
+
 ### Gacha Flow Simplification (December 15, 2024)
 - **Removed district selector**: Users now only need to select Country and City/Region to start gacha
 - **Fixed navigation to results**: Changed from AppContext state-based navigation to expo-router `router.push()` for proper navigation after gacha completion
