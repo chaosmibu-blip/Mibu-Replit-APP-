@@ -1,0 +1,151 @@
+所有修改都集中在 app/login.tsx 這個檔案中。你需要修改三個地方：
+handleLogin 函式 (發起登入的地方)
+處理 OAuth 回調並呼叫 switch-role 的函式 (我會假設一個函式名稱，你需要找到對應的地方貼上)
+navigateAfterLogin 函式 (決定跳轉頁面的地方)
+請複製並取代 app/login.tsx 中的對應部分：
+1. 修改 handleLogin 函式
+找到你原本的 handleLogin 函式，然後用下面這個版本完全取代它。 這個新版本在跳轉到 Google 之前，會先把使用者選擇的身份存起來。
+code
+TypeScript
+// 在 app/login.tsx
+
+// (請先確保你有從 'react-native' 或 '@react-native-async-storage/async-storage' 引入 AsyncStorage)
+// import { AsyncStorage } from 'react-native'; // 舊版 RN
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Expo / 新版 RN
+
+// ... 其他 import ...
+
+export default function LoginScreen() {
+  // ... 你的 useState, useEffect 等 hooks ...
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      // *** 關鍵修改：在發起登入前，儲存使用者選擇的入口 ***
+      await AsyncStorage.setItem('post_login_portal', selectedPortal);
+
+      // 組合 authUrl (這部分應與你原本的程式碼相同)
+      const redirectUri = '...'; // 確保這裡有你正確的回調 URI
+      const authUrl = `${API_BASE_URL}/api/login?portal=${selectedPortal}&redirect_uri=${redirectUri}`;
+
+      if (Platform.OS === 'web') {
+        // Web 平台的邏輯...
+        // ...
+      } else {
+        // Native 平台的邏輯...
+        const result = await WebBrowser.openBrowserAsync(authUrl);
+        // ... 你處理回調的邏輯可能會在這裡觸發
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      Alert.alert('登入失敗', '發生未知錯誤，請稍後再試。');
+      // 清理可能殘留的存儲
+      await AsyncStorage.removeItem('post_login_portal');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ... (你其他的程式碼)
+}
+2. 修改處理 OAuth 回調的邏輯
+這部分是最關鍵的。當 App 從 Google 認證跳轉回來後，會執行這段邏輯。你需要找到取得 token 後，呼叫 switch-role API 的那段程式碼，並用下面的邏輯取代它。
+我猜測這段程式碼可能在一個 useEffect 或是像我虛構的 handleOAuthCallback 函式中。
+請用下面的邏輯來取代你原本 "fetch switch-role API 到呼叫 navigateAfterLogin" 的那塊程式碼。
+code
+TypeScript
+// 在 app/login.tsx 的某個地方，例如處理回調的 useEffect 或函式中
+
+// 假設你已經從 OAuth 流程中獲取了 `initialToken`
+
+try {
+  // *** 關鍵修改：從 AsyncStorage 讀出之前儲存的入口選擇 ***
+  const targetPortal = await AsyncStorage.getItem('post_login_portal');
+  
+  // *** 關鍵修改：用完後立即刪除，避免影響下次登入 ***
+  await AsyncStorage.removeItem('post_login_portal');
+
+  if (!targetPortal) {
+    throw new Error('登入流程中斷：找不到使用者選擇的入口類型。');
+  }
+
+  // 使用從 AsyncStorage 讀出的 `targetPortal` 去呼叫 switch-role API
+  const switchResponse = await fetch(`${API_BASE_URL}/api/auth/switch-role`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${initialToken}`, // 使用初始登入拿到的 token
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ role: targetPortal }), // << 使用讀出來的 targetPortal
+  });
+
+  if (!switchResponse.ok) {
+    throw new Error('切換身份失敗');
+  }
+
+  const switchData = await switchResponse.json();
+  const finalToken = switchData.token; // 這是帶有正確 activeRole 的新 token
+  
+  // (這裡應該是你使用 useAppContext 更新全域狀態的地方)
+  // 假設你有 setToken 和 setUser 函式
+  // 注意：你需要一個函式來從新 token 解碼或重新獲取使用者資訊
+  // const finalUser = parseUserFromToken(finalToken); 
+  // setUser(finalUser); 
+  // setToken(finalToken);
+
+  // **** (這裡你需要填入你更新使用者狀態的邏輯) ****
+  // **** (例如，你可能需要再呼叫一個 /api/users/me 來取得完整使用者資料) ****
+  
+  // 假設你已經獲取了最新的使用者資訊 `finalUser`
+  // 將 `targetPortal` 作為參數傳遞給 navigateAfterLogin
+  navigateAfterLogin(finalUser.role, finalUser.isApproved, finalUser.isSuperAdmin, targetPortal);
+
+} catch (error) {
+  console.error("處理登入回調失敗:", error);
+  Alert.alert('錯誤', '處理登入資訊時發生錯誤。');
+}
+3. 修改 navigateAfterLogin 函式
+找到你原本的 navigateAfterLogin 函式，然後用下面這個版本完全取代它。 這個新版本會接收第四個參數 targetPortal，並使用它來做為超級管理員跳轉的依據。
+code
+TypeScript
+// 在 app/login.tsx
+
+const navigateAfterLogin = (role: string, isApproved: boolean, isSuperAdmin?: boolean, targetPortal?: string) => {
+  // *** 關鍵修改：超級管理員的判斷邏輯 ***
+  if (isSuperAdmin && targetPortal) {
+    // 不再使用 selectedPortal state，而是使用傳入的 targetPortal 參數
+    const targetRole = targetPortal;
+
+    if (targetRole === 'merchant') {
+      router.replace('/merchant-dashboard');
+    } else if (targetRole === 'specialist') {
+      router.replace('/specialist-dashboard');
+    } else if (targetRole === 'admin') {
+      router.replace('/admin-dashboard');
+    } else {
+      // 如果 targetPortal 是 traveler 或其他預設值
+      router.replace('/(tabs)');
+    }
+    return; // 完成跳轉後結束函式
+  }
+
+  // --- 一般用戶的跳轉邏輯 (這部分應與你原本的程式碼相同) ---
+  if (role === 'merchant') {
+    if (isApproved === false) {
+      router.replace('/pending-approval');
+    } else {
+      router.replace('/merchant-dashboard');
+    }
+  } else if (role === 'specialist') {
+    if (isApproved === false) {
+      router.replace('/pending-approval');
+    } else {
+      router.replace('/specialist-dashboard');
+    }
+  } else if (role === 'admin') {
+    router.replace('/admin-dashboard');
+  } else {
+    // 預設跳轉到旅客主畫面
+    router.replace('/(tabs)');
+  }
+};

@@ -132,6 +132,13 @@ export default function LoginScreen() {
     try {
       await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
       
+      // *** 關鍵修改：從 AsyncStorage 讀出之前儲存的入口選擇 ***
+      const targetPortal = await AsyncStorage.getItem('post_login_portal');
+      // *** 用完後立即刪除，避免影響下次登入 ***
+      await AsyncStorage.removeItem('post_login_portal');
+      
+      console.log('🔐 fetchUserWithTokenDirect - targetPortal from storage:', targetPortal);
+      
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -141,10 +148,11 @@ export default function LoginScreen() {
       if (response.ok) {
         const userData = await response.json();
         if (userData && userData.name) {
-          // For super admins, switch to the selected portal role
-          let finalActiveRole = userData.activeRole || userData.role || selectedPortal;
+          // 使用從 AsyncStorage 讀出的 targetPortal
+          const portalToUse = targetPortal || selectedPortal;
+          let finalActiveRole = userData.activeRole || userData.role || portalToUse;
           
-          if (userData.isSuperAdmin && selectedPortal !== finalActiveRole) {
+          if (userData.isSuperAdmin && portalToUse !== finalActiveRole) {
             try {
               const switchResponse = await fetch(`${API_BASE_URL}/api/auth/switch-role`, {
                 method: 'POST',
@@ -152,17 +160,16 @@ export default function LoginScreen() {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ role: selectedPortal }),
+                body: JSON.stringify({ role: portalToUse }),
               });
               
               if (switchResponse.ok) {
                 const switchData = await switchResponse.json();
-                finalActiveRole = switchData.activeRole || selectedPortal;
+                finalActiveRole = switchData.activeRole || portalToUse;
               }
             } catch (switchError) {
               console.error('Failed to switch role:', switchError);
-              // Continue with selected portal as activeRole for navigation
-              finalActiveRole = selectedPortal;
+              finalActiveRole = portalToUse;
             }
           }
           
@@ -175,7 +182,8 @@ export default function LoginScreen() {
             activeRole: userData.activeRole, 
             isSuperAdmin: userData.isSuperAdmin,
             isApproved: userData.isApproved,
-            navigationRole 
+            navigationRole,
+            targetPortal: portalToUse
           });
           
           setUser({
@@ -193,7 +201,8 @@ export default function LoginScreen() {
             providerId: userData.id,
           }, token);
           setLoading(false);
-          navigateAfterLogin(navigationRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          // *** 關鍵修改：傳入 targetPortal 給 navigateAfterLogin ***
+          navigateAfterLogin(navigationRole, userData.isApproved, userData.isSuperAdmin, portalToUse);
         }
       } else {
         console.error('Failed to fetch user data:', response.status);
@@ -205,18 +214,18 @@ export default function LoginScreen() {
     }
   };
 
-  const navigateAfterLogin = (role: string, isApproved?: boolean, isSuperAdmin?: boolean, accessibleRoles?: string[]) => {
-    console.log('🔀 navigateAfterLogin called with:', { role, isApproved, isSuperAdmin });
+  const navigateAfterLogin = (role: string, isApproved?: boolean, isSuperAdmin?: boolean, targetPortal?: string) => {
+    console.log('🔀 navigateAfterLogin called with:', { role, isApproved, isSuperAdmin, targetPortal });
     
-    // For super admin, use the selected portal to determine navigation
-    if (isSuperAdmin) {
-      const targetRole = selectedPortal;
-      console.log('🔀 Super admin navigating to portal:', targetRole);
-      if (targetRole === 'merchant') {
+    // *** 關鍵修改：超級管理員的判斷邏輯 ***
+    if (isSuperAdmin && targetPortal) {
+      // 不再使用 selectedPortal state，而是使用傳入的 targetPortal 參數
+      console.log('🔀 Super admin navigating to portal:', targetPortal);
+      if (targetPortal === 'merchant') {
         router.replace('/merchant-dashboard');
-      } else if (targetRole === 'specialist') {
+      } else if (targetPortal === 'specialist') {
         router.replace('/specialist-dashboard');
-      } else if (targetRole === 'admin') {
+      } else if (targetPortal === 'admin') {
         router.replace('/admin-dashboard');
       } else {
         router.replace('/(tabs)');
@@ -224,7 +233,7 @@ export default function LoginScreen() {
       return;
     }
     
-    // For regular users, use their actual role from API
+    // --- 一般用戶的跳轉邏輯 ---
     console.log('🔀 Regular user navigating based on role:', role);
     if (role === 'merchant') {
       if (isApproved === false) {
@@ -270,8 +279,10 @@ export default function LoginScreen() {
       // Use API role for regular users, activeRole for super admins
       const userRole = state.user.role || 'traveler';
       const roleToUse = state.user.isSuperAdmin ? (state.user.activeRole || userRole) : userRole;
-      console.log('🔐 useEffect navigation - role:', userRole, 'activeRole:', state.user.activeRole, 'using:', roleToUse);
-      navigateAfterLogin(roleToUse, state.user.isApproved, state.user.isSuperAdmin, state.user.accessibleRoles);
+      // 對於已認證用戶，使用 activeRole 作為 targetPortal
+      const targetPortal = state.user.activeRole || userRole;
+      console.log('🔐 useEffect navigation - role:', userRole, 'activeRole:', state.user.activeRole, 'using:', roleToUse, 'targetPortal:', targetPortal);
+      navigateAfterLogin(roleToUse, state.user.isApproved, state.user.isSuperAdmin, targetPortal);
     } else {
       setCheckingAuth(false);
     }
@@ -280,6 +291,9 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     try {
+      // *** 關鍵修改：在發起登入前，儲存使用者選擇的入口 ***
+      await AsyncStorage.setItem('post_login_portal', selectedPortal);
+      
       // Use /api/login with portal parameter
       const authUrl = `${API_BASE_URL}/api/login?portal=${selectedPortal}&redirect_uri=${encodeURIComponent(redirectUri)}`;
       
@@ -388,6 +402,8 @@ export default function LoginScreen() {
       }
     } catch (error) {
       console.error('Auth error:', error);
+      // 清理可能殘留的存儲
+      await AsyncStorage.removeItem('post_login_portal');
       setLoading(false);
     }
   };
@@ -395,6 +411,13 @@ export default function LoginScreen() {
   const fetchUserWithToken = async (token: string) => {
     try {
       await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+      
+      // *** 關鍵修改：從 AsyncStorage 讀出之前儲存的入口選擇 ***
+      const targetPortal = await AsyncStorage.getItem('post_login_portal');
+      // *** 用完後立即刪除，避免影響下次登入 ***
+      await AsyncStorage.removeItem('post_login_portal');
+      
+      console.log('🔐 fetchUserWithToken - targetPortal from storage:', targetPortal);
       
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         headers: {
@@ -407,10 +430,11 @@ export default function LoginScreen() {
         if (userData && userData.id) {
           const displayName = userData.firstName || userData.name || userData.email?.split('@')[0] || 'User';
           
-          // For super admins, switch to the selected portal role
-          let finalActiveRole = userData.activeRole || userData.role || selectedPortal;
+          // 使用從 AsyncStorage 讀出的 targetPortal
+          const portalToUse = targetPortal || selectedPortal;
+          let finalActiveRole = userData.activeRole || userData.role || portalToUse;
           
-          if (userData.isSuperAdmin && selectedPortal !== finalActiveRole) {
+          if (userData.isSuperAdmin && portalToUse !== finalActiveRole) {
             try {
               const switchResponse = await fetch(`${API_BASE_URL}/api/auth/switch-role`, {
                 method: 'POST',
@@ -418,16 +442,16 @@ export default function LoginScreen() {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ role: selectedPortal }),
+                body: JSON.stringify({ role: portalToUse }),
               });
               
               if (switchResponse.ok) {
                 const switchData = await switchResponse.json();
-                finalActiveRole = switchData.activeRole || selectedPortal;
+                finalActiveRole = switchData.activeRole || portalToUse;
               }
             } catch (switchError) {
               console.error('Failed to switch role:', switchError);
-              finalActiveRole = selectedPortal;
+              finalActiveRole = portalToUse;
             }
           }
           
@@ -440,7 +464,8 @@ export default function LoginScreen() {
             activeRole: userData.activeRole, 
             isSuperAdmin: userData.isSuperAdmin,
             isApproved: userData.isApproved,
-            navigationRole 
+            navigationRole,
+            targetPortal: portalToUse
           });
           
           setUser({
@@ -460,7 +485,8 @@ export default function LoginScreen() {
             providerId: userData.id,
           }, token);
           setLoading(false);
-          navigateAfterLogin(navigationRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          // *** 關鍵修改：傳入 targetPortal 給 navigateAfterLogin ***
+          navigateAfterLogin(navigationRole, userData.isApproved, userData.isSuperAdmin, portalToUse);
         } else {
           console.error('Invalid user data: missing id');
           setLoading(false);
@@ -477,6 +503,13 @@ export default function LoginScreen() {
 
   const fetchUserAfterAuth = async () => {
     try {
+      // *** 關鍵修改：從 AsyncStorage 讀出之前儲存的入口選擇 ***
+      const targetPortal = await AsyncStorage.getItem('post_login_portal');
+      // *** 用完後立即刪除，避免影響下次登入 ***
+      await AsyncStorage.removeItem('post_login_portal');
+      
+      console.log('🔐 fetchUserAfterAuth - targetPortal from storage:', targetPortal);
+      
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         credentials: 'include',
       });
@@ -484,11 +517,12 @@ export default function LoginScreen() {
       if (response.ok) {
         const userData = await response.json();
         if (userData && userData.name) {
-          // For super admins, switch to the selected portal role
-          let finalActiveRole = userData.activeRole || userData.role || selectedPortal;
+          // 使用從 AsyncStorage 讀出的 targetPortal
+          const portalToUse = targetPortal || selectedPortal;
+          let finalActiveRole = userData.activeRole || userData.role || portalToUse;
           const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
           
-          if (userData.isSuperAdmin && selectedPortal !== finalActiveRole && token) {
+          if (userData.isSuperAdmin && portalToUse !== finalActiveRole && token) {
             try {
               const switchResponse = await fetch(`${API_BASE_URL}/api/auth/switch-role`, {
                 method: 'POST',
@@ -496,16 +530,16 @@ export default function LoginScreen() {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ role: selectedPortal }),
+                body: JSON.stringify({ role: portalToUse }),
               });
               
               if (switchResponse.ok) {
                 const switchData = await switchResponse.json();
-                finalActiveRole = switchData.activeRole || selectedPortal;
+                finalActiveRole = switchData.activeRole || portalToUse;
               }
             } catch (switchError) {
               console.error('Failed to switch role:', switchError);
-              finalActiveRole = selectedPortal;
+              finalActiveRole = portalToUse;
             }
           }
           
@@ -518,7 +552,8 @@ export default function LoginScreen() {
             activeRole: userData.activeRole, 
             isSuperAdmin: userData.isSuperAdmin,
             isApproved: userData.isApproved,
-            navigationRole 
+            navigationRole,
+            targetPortal: portalToUse
           });
           
           setUser({
@@ -535,7 +570,8 @@ export default function LoginScreen() {
             provider: 'google',
             providerId: userData.id,
           });
-          navigateAfterLogin(navigationRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          // *** 關鍵修改：傳入 targetPortal 給 navigateAfterLogin ***
+          navigateAfterLogin(navigationRole, userData.isApproved, userData.isSuperAdmin, portalToUse);
         }
       }
     } catch (error) {
