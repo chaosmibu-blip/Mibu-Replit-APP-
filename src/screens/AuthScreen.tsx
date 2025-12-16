@@ -26,7 +26,7 @@ type AuthMode = 'login' | 'register';
 const ROLE_OPTIONS: { value: UserRole; labelZh: string; labelEn: string; icon: string }[] = [
   { value: 'traveler', labelZh: '旅客', labelEn: 'Traveler', icon: 'airplane-outline' },
   { value: 'merchant', labelZh: '商家', labelEn: 'Merchant', icon: 'storefront-outline' },
-  { value: 'specialist', labelZh: '專家', labelEn: 'Specialist', icon: 'shield-checkmark-outline' },
+  { value: 'specialist', labelZh: '專員', labelEn: 'Specialist', icon: 'shield-checkmark-outline' },
 ];
 
 export function AuthScreen({ visible, onClose }: AuthScreenProps) {
@@ -53,7 +53,7 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
     hasAccount: isZh ? '已有帳號？' : 'Already have an account?',
     guestLogin: isZh ? '以訪客身份繼續' : 'Continue as Guest',
     guestNote: isZh ? '訪客模式下，資料僅保存在本機裝置' : 'In guest mode, data is only saved locally',
-    pendingApproval: isZh ? '商家和專家帳號需管理員審核後才能使用' : 'Merchant and Specialist accounts require admin approval',
+    pendingApproval: isZh ? '商家和專員帳號需管理員審核後才能使用' : 'Merchant and Specialist accounts require admin approval',
     loginFailed: isZh ? '登入失敗，請檢查帳號密碼' : 'Login failed, please check your credentials',
     registerFailed: isZh ? '註冊失敗，請稍後再試' : 'Registration failed, please try again',
   };

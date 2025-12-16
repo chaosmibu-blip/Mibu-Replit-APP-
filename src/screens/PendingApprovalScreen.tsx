@@ -17,13 +17,13 @@ export function PendingApprovalScreen() {
       ? '您的帳號正在等待管理員審核' 
       : 'Your account is pending admin approval',
     description: isZh
-      ? '商家和專家帳號需經過審核才能使用完整功能。審核通過後會通知您。'
+      ? '商家和專員帳號需經過審核才能使用完整功能。審核通過後會通知您。'
       : 'Merchant and Specialist accounts require approval for full access. You will be notified once approved.',
     role: isZh ? '申請身份' : 'Applied Role',
     logout: isZh ? '登出' : 'Logout',
     roleLabels: {
       merchant: isZh ? '商家' : 'Merchant',
-      specialist: isZh ? '專家' : 'Specialist',
+      specialist: isZh ? '專員' : 'Specialist',
     } as Record<string, string>,
   };
 

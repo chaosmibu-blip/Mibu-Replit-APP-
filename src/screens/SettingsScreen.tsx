@@ -159,7 +159,7 @@ export function SettingsScreen() {
             {(state.user?.isSuperAdmin || state.user?.accessibleRoles?.includes('admin')) && (
               <TouchableOpacity 
                 style={[styles.portalCard, { borderColor: '#f59e0b' }]}
-                onPress={() => router.push('/admin-exclusions')}
+                onPress={() => router.push('/admin-dashboard')}
               >
                 <Ionicons name="settings-outline" size={24} color="#f59e0b" />
                 <Text style={styles.portalLabel}>{state.language === 'zh-TW' ? '管理端' : 'Admin'}</Text>

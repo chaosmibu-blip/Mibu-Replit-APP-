@@ -132,6 +132,8 @@ export default function LoginScreen() {
       } else {
         router.replace('/specialist-dashboard');
       }
+    } else if (role === 'admin') {
+      router.replace('/admin-dashboard');
     } else {
       router.replace('/(tabs)');
     }
