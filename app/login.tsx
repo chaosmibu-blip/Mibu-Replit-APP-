@@ -217,25 +217,11 @@ export default function LoginScreen() {
   const navigateAfterLogin = (role: string, isApproved?: boolean, isSuperAdmin?: boolean, targetPortal?: string) => {
     console.log('🔀 navigateAfterLogin called with:', { role, isApproved, isSuperAdmin, targetPortal });
     
-    // *** 關鍵修改：超級管理員的判斷邏輯 ***
-    if (isSuperAdmin && targetPortal) {
-      // 不再使用 selectedPortal state，而是使用傳入的 targetPortal 參數
-      console.log('🔀 Super admin navigating to portal:', targetPortal);
-      if (targetPortal === 'merchant') {
-        router.replace('/merchant-dashboard');
-      } else if (targetPortal === 'specialist') {
-        router.replace('/specialist-dashboard');
-      } else if (targetPortal === 'admin') {
-        router.replace('/admin-dashboard');
-      } else {
-        router.replace('/(tabs)');
-      }
-      return;
-    }
+    // *** 關鍵修改：始終優先使用 targetPortal（用戶選擇的入口），而非後端返回的 role ***
+    const portalToUse = targetPortal || role;
+    console.log('🔀 Using portal:', portalToUse);
     
-    // --- 一般用戶的跳轉邏輯 ---
-    console.log('🔀 Regular user navigating based on role:', role);
-    if (role === 'merchant') {
+    if (portalToUse === 'merchant') {
       if (isApproved === false) {
         console.log('🔀 Merchant not approved, going to pending');
         router.replace('/pending-approval');
@@ -243,7 +229,7 @@ export default function LoginScreen() {
         console.log('🔀 Navigating to merchant-dashboard');
         router.replace('/merchant-dashboard');
       }
-    } else if (role === 'specialist') {
+    } else if (portalToUse === 'specialist') {
       if (isApproved === false) {
         console.log('🔀 Specialist not approved, going to pending');
         router.replace('/pending-approval');
@@ -251,7 +237,7 @@ export default function LoginScreen() {
         console.log('🔀 Navigating to specialist-dashboard');
         router.replace('/specialist-dashboard');
       }
-    } else if (role === 'admin') {
+    } else if (portalToUse === 'admin') {
       console.log('🔀 Navigating to admin-dashboard');
       router.replace('/admin-dashboard');
     } else {
