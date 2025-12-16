@@ -107,7 +107,7 @@ export default function LoginScreen() {
             providerId: userData.id,
           }, token);
           setLoading(false);
-          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved);
+          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         }
       } else {
         console.error('Failed to fetch user data:', response.status);
@@ -119,7 +119,23 @@ export default function LoginScreen() {
     }
   };
 
-  const navigateAfterLogin = (role: string, isApproved?: boolean) => {
+  const navigateAfterLogin = (role: string, isApproved?: boolean, isSuperAdmin?: boolean, accessibleRoles?: string[]) => {
+    // For super admin, use the selected portal to determine navigation
+    if (isSuperAdmin) {
+      const targetRole = selectedPortal;
+      if (targetRole === 'merchant') {
+        router.replace('/merchant-dashboard');
+      } else if (targetRole === 'specialist') {
+        router.replace('/specialist-dashboard');
+      } else if (targetRole === 'admin') {
+        router.replace('/admin-dashboard');
+      } else {
+        router.replace('/(tabs)');
+      }
+      return;
+    }
+    
+    // For regular users, use their actual role
     if (role === 'merchant') {
       if (isApproved === false) {
         router.replace('/pending-approval');
@@ -155,7 +171,7 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (state.isAuthenticated && state.user) {
-      navigateAfterLogin(state.user.role || 'traveler', state.user.isApproved);
+      navigateAfterLogin(state.user.role || 'traveler', state.user.isApproved, state.user.isSuperAdmin, state.user.accessibleRoles);
     } else {
       setCheckingAuth(false);
     }
@@ -259,7 +275,7 @@ export default function LoginScreen() {
             providerId: userData.id,
           }, token);
           setLoading(false);
-          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved);
+          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         } else {
           console.error('Invalid user data: missing id');
           setLoading(false);
@@ -296,7 +312,7 @@ export default function LoginScreen() {
             provider: 'google',
             providerId: userData.id,
           });
-          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved);
+          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         }
       }
     } catch (error) {
