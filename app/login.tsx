@@ -73,23 +73,50 @@ export default function LoginScreen() {
   const handleDeepLink = useCallback(async (event: { url: string }) => {
     const parsed = Linking.parse(event.url);
     
-    if (parsed.path === 'auth/callback' || event.url.includes('auth/callback')) {
+    if (parsed.path === 'auth/callback' || event.url.includes('auth/callback') || event.url.includes('token=') || event.url.includes('error=')) {
       // Handle error codes from callback
       if (parsed.queryParams?.error) {
         await WebBrowser.dismissBrowser();
         setLoading(false);
-        const errorCode = parsed.queryParams?.code as string;
-        const errorMessage = parsed.queryParams?.error as string;
+        const errorCode = parsed.queryParams?.error as string;
+        const errorMessage = parsed.queryParams?.message as string;
+        const isZh = state.language === 'zh-TW';
         
-        if (errorCode === 'ROLE_MISMATCH') {
-          const isZh = state.language === 'zh-TW';
-          Alert.alert(
-            isZh ? '權限不符' : 'Role Mismatch',
-            isZh ? '您的帳號無法使用此入口登入，請選擇正確的用戶別。' : 'Your account cannot access this portal. Please select the correct user type.',
-            [{ text: isZh ? '確定' : 'OK' }]
-          );
-        } else {
-          Alert.alert('Error', errorMessage || 'Login failed');
+        switch (errorCode) {
+          case 'NO_MERCHANT_DATA':
+            Alert.alert(
+              isZh ? '尚未註冊商家' : 'Not a Merchant',
+              isZh ? '您尚未註冊為商家，請先申請商家帳號' : (errorMessage || 'Please register as a merchant first'),
+              [{ text: isZh ? '確定' : 'OK' }]
+            );
+            break;
+          case 'NO_SPECIALIST_DATA':
+            Alert.alert(
+              isZh ? '尚未註冊專員' : 'Not a Specialist',
+              isZh ? '您尚未註冊為專員，請先申請專員帳號' : (errorMessage || 'Please register as a specialist first'),
+              [{ text: isZh ? '確定' : 'OK' }]
+            );
+            break;
+          case 'WRONG_PORTAL':
+            Alert.alert(
+              isZh ? '入口錯誤' : 'Wrong Portal',
+              isZh ? '請切換至正確的入口登入' : (errorMessage || 'Please switch to the correct portal'),
+              [{ text: isZh ? '確定' : 'OK' }]
+            );
+            break;
+          case 'PERMISSION_DENIED':
+            Alert.alert(
+              isZh ? '權限不足' : 'Permission Denied',
+              isZh ? '您沒有權限存取此功能' : (errorMessage || 'You do not have permission to access this feature'),
+              [{ text: isZh ? '確定' : 'OK' }]
+            );
+            break;
+          default:
+            Alert.alert(
+              isZh ? '登入失敗' : 'Login Failed',
+              errorMessage || (isZh ? '請稍後再試' : 'Please try again'),
+              [{ text: isZh ? '確定' : 'OK' }]
+            );
         }
         return;
       }
@@ -229,15 +256,8 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      // Map portal type to target_role for backend
-      const targetRoleMap: Record<PortalType, string> = {
-        'traveler': 'consumer',
-        'merchant': 'merchant',
-        'specialist': 'specialist',
-        'admin': 'admin',
-      };
-      const targetRole = targetRoleMap[selectedPortal];
-      const authUrl = `${API_BASE_URL}/api/auth/login?redirect_uri=${encodeURIComponent(redirectUri)}&portal=${selectedPortal}&target_role=${targetRole}`;
+      // Use /api/login with portal parameter
+      const authUrl = `${API_BASE_URL}/api/login?portal=${selectedPortal}&redirect_uri=${encodeURIComponent(redirectUri)}`;
       
       if (Platform.OS === 'web') {
         const width = 500;
@@ -278,18 +298,45 @@ export default function LoginScreen() {
             // Handle error codes from callback
             if (parsed.queryParams?.error) {
               setLoading(false);
-              const errorCode = parsed.queryParams?.code as string;
-              const errorMessage = parsed.queryParams?.error as string;
+              const errorCode = parsed.queryParams?.error as string;
+              const errorMessage = parsed.queryParams?.message as string;
+              const isZh = state.language === 'zh-TW';
               
-              if (errorCode === 'ROLE_MISMATCH') {
-                const isZh = state.language === 'zh-TW';
-                Alert.alert(
-                  isZh ? '權限不符' : 'Role Mismatch',
-                  isZh ? '您的帳號無法使用此入口登入，請選擇正確的用戶別。' : 'Your account cannot access this portal. Please select the correct user type.',
-                  [{ text: isZh ? '確定' : 'OK' }]
-                );
-              } else {
-                Alert.alert('Error', errorMessage || 'Login failed');
+              switch (errorCode) {
+                case 'NO_MERCHANT_DATA':
+                  Alert.alert(
+                    isZh ? '尚未註冊商家' : 'Not a Merchant',
+                    isZh ? '您尚未註冊為商家，請先申請商家帳號' : (errorMessage || 'Please register as a merchant first'),
+                    [{ text: isZh ? '確定' : 'OK' }]
+                  );
+                  break;
+                case 'NO_SPECIALIST_DATA':
+                  Alert.alert(
+                    isZh ? '尚未註冊專員' : 'Not a Specialist',
+                    isZh ? '您尚未註冊為專員，請先申請專員帳號' : (errorMessage || 'Please register as a specialist first'),
+                    [{ text: isZh ? '確定' : 'OK' }]
+                  );
+                  break;
+                case 'WRONG_PORTAL':
+                  Alert.alert(
+                    isZh ? '入口錯誤' : 'Wrong Portal',
+                    isZh ? '請切換至正確的入口登入' : (errorMessage || 'Please switch to the correct portal'),
+                    [{ text: isZh ? '確定' : 'OK' }]
+                  );
+                  break;
+                case 'PERMISSION_DENIED':
+                  Alert.alert(
+                    isZh ? '權限不足' : 'Permission Denied',
+                    isZh ? '您沒有權限存取此功能' : (errorMessage || 'You do not have permission to access this feature'),
+                    [{ text: isZh ? '確定' : 'OK' }]
+                  );
+                  break;
+                default:
+                  Alert.alert(
+                    isZh ? '登入失敗' : 'Login Failed',
+                    errorMessage || (isZh ? '請稍後再試' : 'Please try again'),
+                    [{ text: isZh ? '確定' : 'OK' }]
+                  );
               }
               return;
             }
