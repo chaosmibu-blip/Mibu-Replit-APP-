@@ -10,12 +10,15 @@ import {
   Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { MerchantDailyCode, MerchantCredits } from '../types';
 
 export function MerchantDashboardScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, setUser } = useApp();
+  const router = useRouter();
   const [dailyCode, setDailyCode] = useState<MerchantDailyCode | null>(null);
   const [credits, setCredits] = useState<MerchantCredits | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +39,14 @@ export function MerchantDashboardScreen() {
     min100: isZh ? '最低 100 點' : 'Minimum 100 points',
     loading: isZh ? '載入中...' : 'Loading...',
     error: isZh ? '載入失敗' : 'Failed to load',
+    logout: isZh ? '登出' : 'Logout',
+  };
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('@mibu_token');
+    await AsyncStorage.removeItem('@mibu_user');
+    setUser(null);
+    router.replace('/');
   };
 
   useEffect(() => {
@@ -107,7 +118,13 @@ export function MerchantDashboardScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{translations.title}</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>{translations.title}</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={20} color="#ef4444" />
+          <Text style={styles.logoutText}>{translations.logout}</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.codeCard}>
         <Text style={styles.cardLabel}>{translations.dailyCode}</Text>
@@ -207,11 +224,30 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontSize: 16,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
   title: {
     fontSize: 28,
     fontWeight: '900',
     color: '#1e293b',
-    marginBottom: 24,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: '#fef2f2',
+    borderRadius: 12,
+  },
+  logoutText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ef4444',
   },
   codeCard: {
     backgroundColor: '#ffffff',

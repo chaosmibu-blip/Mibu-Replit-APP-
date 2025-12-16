@@ -9,12 +9,15 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { SpecialistInfo, ServiceRelation } from '../types';
 
 export function SpecialistDashboardScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, setUser } = useApp();
+  const router = useRouter();
   const [specialist, setSpecialist] = useState<SpecialistInfo | null>(null);
   const [services, setServices] = useState<ServiceRelation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +35,14 @@ export function SpecialistDashboardScreen() {
     loading: isZh ? '載入中...' : 'Loading...',
     since: isZh ? '開始於' : 'Since',
     region: isZh ? '地區' : 'Region',
+    logout: isZh ? '登出' : 'Logout',
+  };
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('@mibu_token');
+    await AsyncStorage.removeItem('@mibu_user');
+    setUser(null);
+    router.replace('/');
   };
 
   useEffect(() => {
@@ -94,7 +105,13 @@ export function SpecialistDashboardScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{translations.title}</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>{translations.title}</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={20} color="#ef4444" />
+          <Text style={styles.logoutText}>{translations.logout}</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.statusCard}>
         <View style={styles.statusHeader}>
@@ -184,11 +201,30 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontSize: 16,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
   title: {
     fontSize: 28,
     fontWeight: '900',
     color: '#1e293b',
-    marginBottom: 24,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: '#fef2f2',
+    borderRadius: 12,
+  },
+  logoutText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ef4444',
   },
   statusCard: {
     backgroundColor: '#ffffff',
