@@ -317,6 +317,26 @@ export interface GlobalExclusion {
   createdAt: string;
 }
 
+export interface AdminUser {
+  id: string;
+  email: string | null;
+  name?: string;
+  role: UserRole;
+  isApproved: boolean;
+  createdAt: string;
+}
+
+export interface PlaceDraft {
+  id: number;
+  placeName: string;
+  district?: string;
+  city?: string;
+  category?: string;
+  submittedBy?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
+
 export type AppView = 'home' | 'gacha_module' | 'planner_module' | 'settings' | 'result' | 'login';
 export type GachaSubView = 'gacha' | 'collection' | 'itembox';
 export type PlannerSubView = 'location' | 'itinerary' | 'chat' | 'service';

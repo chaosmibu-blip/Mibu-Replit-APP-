@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -389,6 +389,73 @@ class ApiService {
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(params),
+    });
+  }
+
+  async getAdminUsers(token: string): Promise<{ users: AdminUser[] }> {
+    return this.request('/api/admin/users', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async getAdminPendingUsers(token: string): Promise<{ users: AdminUser[] }> {
+    return this.request('/api/admin/users/pending', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async approveUser(token: string, userId: string, isApproved: boolean): Promise<{ user: AdminUser }> {
+    return this.request(`/api/admin/users/${userId}/approve`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ isApproved }),
+    });
+  }
+
+  async getPlaceDrafts(token: string): Promise<{ drafts: PlaceDraft[] }> {
+    return this.request('/api/admin/place-drafts', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async createPlaceDraft(token: string, params: {
+    placeName: string;
+    district?: string;
+    city?: string;
+    category?: string;
+  }): Promise<{ draft: PlaceDraft }> {
+    return this.request('/api/admin/place-drafts', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async deletePlaceDraft(token: string, draftId: number): Promise<{ success: boolean }> {
+    return this.request(`/api/admin/place-drafts/${draftId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async publishPlaceDraft(token: string, draftId: number): Promise<{ success: boolean }> {
+    return this.request(`/api/admin/place-drafts/${draftId}/publish`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
   }
 }

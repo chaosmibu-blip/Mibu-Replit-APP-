@@ -23,7 +23,7 @@ export function SpecialistDashboardScreen() {
   const isZh = state.language === 'zh-TW';
 
   const translations = {
-    title: isZh ? '專家後台' : 'Specialist Dashboard',
+    title: isZh ? '專員後台' : 'Specialist Dashboard',
     online: isZh ? '上線中' : 'Online',
     offline: isZh ? '離線' : 'Offline',
     toggleOnline: isZh ? '上線狀態' : 'Online Status',
