@@ -70,6 +70,56 @@ export interface ServiceRelation {
   };
 }
 
+export interface MerchantMe {
+  id: number;
+  userId: string;
+  businessName?: string;
+  contactEmail?: string;
+  isApproved: boolean;
+  creditBalance: number;
+  createdAt: string;
+}
+
+export interface MerchantTransaction {
+  id: number;
+  merchantId: number;
+  amount: number;
+  type: 'purchase' | 'usage' | 'refund';
+  description?: string;
+  createdAt: string;
+}
+
+export interface MerchantPlace {
+  id: number;
+  linkId: string;
+  merchantId: number;
+  placeName: string;
+  district?: string;
+  city?: string;
+  isVerified: boolean;
+  createdAt: string;
+}
+
+export interface MerchantProduct {
+  id: number;
+  merchantId: number;
+  placeId?: number;
+  name: string;
+  description?: string;
+  price?: number;
+  discountPrice?: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface PlaceSearchResult {
+  placeId: string;
+  placeName: string;
+  district?: string;
+  city?: string;
+  isClaimed: boolean;
+}
+
 export interface SosEvent {
   id: string;
   userId: string;
