@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -259,6 +259,136 @@ class ApiService {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
+    });
+  }
+
+  async getMerchantMe(token: string): Promise<MerchantMe> {
+    return this.request<MerchantMe>('/api/merchant/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async registerMerchant(token: string, params: {
+    businessName: string;
+    contactEmail?: string;
+  }): Promise<{ merchant: MerchantMe }> {
+    return this.request('/api/merchant/register', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async verifyMerchantCode(token: string, code: string): Promise<{ success: boolean; message: string }> {
+    return this.request('/api/merchant/verify-code', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ code }),
+    });
+  }
+
+  async getMerchantTransactions(token: string): Promise<{ transactions: MerchantTransaction[] }> {
+    return this.request('/api/merchant/transactions', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async searchMerchantPlaces(token: string, query: string): Promise<{ places: PlaceSearchResult[] }> {
+    return this.request(`/api/merchant/places/search?q=${encodeURIComponent(query)}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async claimMerchantPlace(token: string, placeId: string): Promise<{ place: MerchantPlace }> {
+    return this.request('/api/merchant/places/claim', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ placeId }),
+    });
+  }
+
+  async getMerchantPlaces(token: string): Promise<{ places: MerchantPlace[] }> {
+    return this.request('/api/merchant/places', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async updateMerchantPlace(token: string, linkId: string, params: Partial<MerchantPlace>): Promise<{ place: MerchantPlace }> {
+    return this.request(`/api/merchant/places/${linkId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async getMerchantProducts(token: string): Promise<{ products: MerchantProduct[] }> {
+    return this.request('/api/merchant/products', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async createMerchantProduct(token: string, params: {
+    name: string;
+    description?: string;
+    price?: number;
+    discountPrice?: number;
+    placeId?: number;
+  }): Promise<{ product: MerchantProduct }> {
+    return this.request('/api/merchant/products', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async updateMerchantProduct(token: string, productId: number, params: Partial<MerchantProduct>): Promise<{ product: MerchantProduct }> {
+    return this.request(`/api/merchant/products/${productId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async deleteMerchantProduct(token: string, productId: number): Promise<{ success: boolean }> {
+    return this.request(`/api/merchant/products/${productId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async registerSpecialist(token: string, params: {
+    serviceRegion?: string;
+  }): Promise<{ specialist: SpecialistInfo }> {
+    return this.request('/api/specialist/register', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
     });
   }
 }
