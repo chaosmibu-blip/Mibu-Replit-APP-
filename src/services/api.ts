@@ -264,6 +264,24 @@ class ApiService {
     });
   }
 
+  async updateSpecialistAvailability(token: string, isAvailable: boolean): Promise<{ specialist: SpecialistInfo }> {
+    return this.request<{ specialist: SpecialistInfo }>('/api/specialist/availability', {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ isAvailable }),
+    });
+  }
+
+  async getSpecialistTravelers(token: string): Promise<{ travelers: Array<{ serviceRelation: ServiceRelation; traveler: { id: string; firstName: string; lastName: string } }> }> {
+    return this.request('/api/specialist/travelers', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
   async getSpecialistServices(token: string): Promise<{ relations: ServiceRelation[] }> {
     return this.request<{ relations: ServiceRelation[] }>('/api/specialist/services', {
       headers: {

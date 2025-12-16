@@ -1,0 +1,210 @@
+=== 前端開發指令：商家端 & 專員端介面 ===
+
+【開發摘要】
+根據後端 API，前端需要建立三種角色的完整介面：商家後台、專員後台、以及角色切換機制。
+
+---
+
+## 一、角色切換機制
+
+【運作邏輯】
+1. 登入後呼叫 GET /api/auth/user
+2. 讀取回傳的 activeRole 決定顯示哪個介面
+3. 如果 isSuperAdmin = true，顯示角色切換下拉選單
+4. 切換角色時呼叫 POST /api/auth/switch-role
+
+【API】
+// 取得用戶資料
+GET https://gacha-travel--s8869420.replit.app/api/auth/user
+Headers: { Authorization: Bearer ${token} }
+
+// 回傳格式
+{
+  id: string,
+  email: string,
+  role: string,           // 資料庫角色
+  activeRole: string,     // 當前使用角色（決定顯示介面）
+  isSuperAdmin: boolean,  // 是否為超級管理員
+  accessibleRoles: string[]  // 可切換的角色列表
+}
+
+// 切換角色
+POST https://gacha-travel--s8869420.replit.app/api/auth/switch-role
+Headers: { Authorization: Bearer ${token}, Content-Type: application/json }
+Body: { role: 'merchant' | 'specialist' | 'traveler' | 'admin' }
+
+---
+
+## 二、商家後台介面
+
+【需要建立的頁面】
+
+### 1. 商家儀表板 (MerchantDashboard)
+顯示：商家名稱、點數餘額、今日核銷碼
+
+// 取得商家資料
+GET /api/merchant/me
+回傳: { id, name, email, creditBalance, subscriptionPlan, ... }
+
+// 取得每日核銷碼
+GET /api/merchant/daily-code
+回傳: { code: 'ABC123', date: '2025-12-16' }
+
+
+### 2. 購買點數頁面 (PurchaseCredits)
+選擇點數數量 → 選擇付款方式（Stripe/Recur）→ 付款
+
+// 購買點數
+POST /api/merchant/credits/purchase
+Body: { amount: 100, provider: 'stripe' | 'recur' }
+回傳 (Stripe): { clientSecret: 'pi_xxx', transactionId: 1 }
+回傳 (Recur): { redirectUrl: 'https://...', transactionId: 1 }
+
+
+### 3. 交易記錄頁面 (TransactionHistory)
+列出商家的所有交易
+
+// 取得交易記錄
+GET /api/merchant/transactions
+回傳: [{ id, amount, provider, paymentStatus, createdAt, paidAt }]
+
+
+### 4. 核銷碼驗證頁面 (VerifyCode)
+輸入其他商家的核銷碼進行驗證
+
+// 驗證核銷碼
+POST /api/merchant/verify
+Body: { merchantId: 1, code: 'ABC123' }
+回傳: { valid: true, merchant: {...} } 或 { valid: false, error: '...' }
+
+---
+
+## 三、專員後台介面
+
+【需要建立的頁面】
+
+### 1. 專員儀表板 (SpecialistDashboard)
+顯示：專員名稱、服務區域、當前服務旅客數、可用狀態
+
+// 取得專員資料
+GET /api/specialist/me
+回傳: { id, name, serviceRegion, isAvailable, currentTravelers, maxTravelers }
+
+// 更新可用狀態
+PATCH /api/specialist/availability
+Body: { isAvailable: true | false }
+
+
+### 2. 旅客列表頁面 (ActiveTravelers)
+列出當前服務中的旅客
+
+// 取得服務中旅客
+GET /api/specialist/travelers
+回傳: [{ serviceRelation, traveler: { id, firstName, lastName } }]
+
+
+### 3. 即時位置追蹤頁面 (LocationTracking)
+在地圖上顯示旅客即時位置
+
+// Socket.IO 連線
+import { io } from 'socket.io-client';
+
+const socket = io('https://gacha-travel--s8869420.replit.app', {
+  auth: { token: jwtToken },
+  transports: ['websocket', 'polling'],
+});
+
+// 訂閱旅客位置
+socket.emit('specialist_subscribe', {});
+
+// 監聽旅客位置更新
+socket.on('traveler_location', (data) => {
+  // data: { travelerId, serviceId, lat, lng, timestamp }
+  updateMapMarker(data.travelerId, data.lat, data.lng);
+});
+
+// 監聽服務中旅客列表
+socket.on('active_travelers', (data) => {
+  // data: { count, travelers: [...] }
+});
+
+
+### 4. 聊天室頁面 (ChatRoom)
+與旅客即時聊天（Twilio Conversations）
+
+// 取得 Twilio Access Token
+GET /api/chat/token
+回傳: { token: 'xxx', identity: 'user_123' }
+
+// 使用 Twilio Conversations SDK 初始化聊天
+import { Client } from '@twilio/conversations';
+
+const client = new Client(token);
+client.on('initialized', () => {
+  // 加入對話
+});
+
+---
+
+## 四、路由結構建議
+
+// App.tsx 或 Navigation
+function AppNavigator({ user }) {
+  switch (user.activeRole) {
+    case 'traveler':
+      return <TravelerNavigator />;
+    case 'merchant':
+      return <MerchantNavigator />;
+    case 'specialist':
+      return <SpecialistNavigator />;
+    case 'admin':
+      return <AdminNavigator />;
+    default:
+      return <LoginScreen />;
+  }
+}
+
+// MerchantNavigator
+- /merchant/dashboard     → MerchantDashboard
+- /merchant/purchase      → PurchaseCredits
+- /merchant/transactions  → TransactionHistory
+- /merchant/verify        → VerifyCode
+
+// SpecialistNavigator
+- /specialist/dashboard   → SpecialistDashboard
+- /specialist/travelers   → ActiveTravelers
+- /specialist/tracking    → LocationTracking
+- /specialist/chat/:id    → ChatRoom
+
+---
+
+## 五、UI 元件建議
+
+【角色切換器】放在導航列或側邊欄
+{user.isSuperAdmin && (
+  <RoleSwitcher 
+    currentRole={user.activeRole}
+    roles={user.accessibleRoles}
+    onSwitch={handleRoleSwitch}
+  />
+)}
+
+【商家每日核銷碼】大字顯示，方便給客人看
+<View style={styles.codeCard}>
+  <Text style={styles.codeLabel}>今日核銷碼</Text>
+  <Text style={styles.codeValue}>{dailyCode}</Text>
+  <Text style={styles.codeDate}>{date}</Text>
+</View>
+
+【專員地圖】使用 react-native-maps 顯示旅客位置
+<MapView>
+  {travelers.map(t => (
+    <Marker 
+      key={t.travelerId}
+      coordinate={{ latitude: t.lat, longitude: t.lng }}
+      title={t.travelerName}
+    />
+  ))}
+</MapView>
+
+=== 指令結束 ===

@@ -57,6 +57,8 @@ export interface SpecialistInfo {
   isOnline: boolean;
   isAvailable: boolean;
   serviceRegion?: string;
+  currentTravelers?: number;
+  maxTravelers?: number;
 }
 
 export interface ServiceRelation {
@@ -74,10 +76,13 @@ export interface ServiceRelation {
 export interface MerchantMe {
   id: number;
   userId: string;
+  name?: string;
+  email?: string;
   businessName?: string;
   contactEmail?: string;
   isApproved: boolean;
   creditBalance: number;
+  subscriptionPlan?: string;
   createdAt: string;
 }
 
