@@ -401,6 +401,31 @@ export default function LoginScreen() {
       if (response.ok) {
         const userData = await response.json();
         if (userData && userData.name) {
+          // For super admins, switch to the selected portal role
+          let finalActiveRole = userData.activeRole || userData.role || selectedPortal;
+          const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+          
+          if (userData.isSuperAdmin && selectedPortal !== finalActiveRole && token) {
+            try {
+              const switchResponse = await fetch(`${API_BASE_URL}/api/auth/switch-role`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ role: selectedPortal }),
+              });
+              
+              if (switchResponse.ok) {
+                const switchData = await switchResponse.json();
+                finalActiveRole = switchData.activeRole || selectedPortal;
+              }
+            } catch (switchError) {
+              console.error('Failed to switch role:', switchError);
+              finalActiveRole = selectedPortal;
+            }
+          }
+          
           setUser({
             id: userData.id,
             name: userData.name,
@@ -408,14 +433,14 @@ export default function LoginScreen() {
             avatar: userData.avatar || null,
             firstName: userData.firstName || userData.name.split(' ')[0],
             role: userData.role || selectedPortal,
-            activeRole: userData.activeRole || userData.role || selectedPortal,
+            activeRole: finalActiveRole,
             isApproved: userData.isApproved,
             isSuperAdmin: userData.isSuperAdmin || false,
             accessibleRoles: userData.accessibleRoles || [],
             provider: 'google',
             providerId: userData.id,
           });
-          navigateAfterLogin(userData.activeRole || userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          navigateAfterLogin(finalActiveRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         }
       }
     } catch (error) {
