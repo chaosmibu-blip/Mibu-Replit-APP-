@@ -8,6 +8,7 @@ import {
   Platform,
   Modal,
   Image,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -73,12 +74,32 @@ export default function LoginScreen() {
     const parsed = Linking.parse(event.url);
     
     if (parsed.path === 'auth/callback' || event.url.includes('auth/callback')) {
+      // Handle error codes from callback
+      if (parsed.queryParams?.error) {
+        await WebBrowser.dismissBrowser();
+        setLoading(false);
+        const errorCode = parsed.queryParams?.code as string;
+        const errorMessage = parsed.queryParams?.error as string;
+        
+        if (errorCode === 'ROLE_MISMATCH') {
+          const isZh = state.language === 'zh-TW';
+          Alert.alert(
+            isZh ? '權限不符' : 'Role Mismatch',
+            isZh ? '您的帳號無法使用此入口登入，請選擇正確的用戶別。' : 'Your account cannot access this portal. Please select the correct user type.',
+            [{ text: isZh ? '確定' : 'OK' }]
+          );
+        } else {
+          Alert.alert('Error', errorMessage || 'Login failed');
+        }
+        return;
+      }
+      
       if (parsed.queryParams?.token) {
         await WebBrowser.dismissBrowser();
         await fetchUserWithTokenDirect(parsed.queryParams.token as string);
       }
     }
-  }, []);
+  }, [state.language]);
 
   const fetchUserWithTokenDirect = async (token: string) => {
     try {
@@ -180,7 +201,15 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const authUrl = `${API_BASE_URL}/api/auth/login?redirect_uri=${encodeURIComponent(redirectUri)}&portal=${selectedPortal}`;
+      // Map portal type to target_role for backend
+      const targetRoleMap: Record<PortalType, string> = {
+        'traveler': 'consumer',
+        'merchant': 'merchant',
+        'specialist': 'specialist',
+        'admin': 'admin',
+      };
+      const targetRole = targetRoleMap[selectedPortal];
+      const authUrl = `${API_BASE_URL}/api/auth/login?redirect_uri=${encodeURIComponent(redirectUri)}&portal=${selectedPortal}&target_role=${targetRole}`;
       
       if (Platform.OS === 'web') {
         const width = 500;
@@ -213,10 +242,29 @@ export default function LoginScreen() {
         const handleAuthCallback = async (event: { url: string }) => {
           const parsed = Linking.parse(event.url);
           
-          if (event.url.includes('auth/callback') || event.url.includes('token=')) {
+          if (event.url.includes('auth/callback') || event.url.includes('token=') || event.url.includes('error=')) {
             subscription.remove();
             
             await WebBrowser.dismissBrowser();
+            
+            // Handle error codes from callback
+            if (parsed.queryParams?.error) {
+              setLoading(false);
+              const errorCode = parsed.queryParams?.code as string;
+              const errorMessage = parsed.queryParams?.error as string;
+              
+              if (errorCode === 'ROLE_MISMATCH') {
+                const isZh = state.language === 'zh-TW';
+                Alert.alert(
+                  isZh ? '權限不符' : 'Role Mismatch',
+                  isZh ? '您的帳號無法使用此入口登入，請選擇正確的用戶別。' : 'Your account cannot access this portal. Please select the correct user type.',
+                  [{ text: isZh ? '確定' : 'OK' }]
+                );
+              } else {
+                Alert.alert('Error', errorMessage || 'Login failed');
+              }
+              return;
+            }
             
             if (parsed.queryParams?.token) {
               await fetchUserWithToken(parsed.queryParams.token as string);
