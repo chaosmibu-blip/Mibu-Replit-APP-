@@ -25,6 +25,7 @@ export interface User {
   avatar?: string | null;
   profileImageUrl?: string | null;
   role?: UserRole;
+  activeRole?: UserRole;
   isApproved?: boolean;
   isSuperAdmin?: boolean;
   accessibleRoles?: string[];

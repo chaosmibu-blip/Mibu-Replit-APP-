@@ -121,6 +121,7 @@ export default function LoginScreen() {
             avatar: userData.avatar || null,
             firstName: userData.firstName || userData.name.split(' ')[0],
             role: userData.role || selectedPortal,
+            activeRole: userData.activeRole || userData.role || selectedPortal,
             isApproved: userData.isApproved,
             isSuperAdmin: userData.isSuperAdmin || false,
             accessibleRoles: userData.accessibleRoles || [],
@@ -128,7 +129,7 @@ export default function LoginScreen() {
             providerId: userData.id,
           }, token);
           setLoading(false);
-          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          navigateAfterLogin(userData.activeRole || userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         }
       } else {
         console.error('Failed to fetch user data:', response.status);
@@ -316,6 +317,7 @@ export default function LoginScreen() {
             avatar: userData.profileImageUrl || userData.avatar || null,
             profileImageUrl: userData.profileImageUrl || null,
             role: userData.role || selectedPortal,
+            activeRole: userData.activeRole || userData.role || selectedPortal,
             isApproved: userData.isApproved,
             isSuperAdmin: userData.isSuperAdmin || false,
             accessibleRoles: userData.accessibleRoles || [],
@@ -323,7 +325,7 @@ export default function LoginScreen() {
             providerId: userData.id,
           }, token);
           setLoading(false);
-          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          navigateAfterLogin(userData.activeRole || userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         } else {
           console.error('Invalid user data: missing id');
           setLoading(false);
@@ -354,13 +356,14 @@ export default function LoginScreen() {
             avatar: userData.avatar || null,
             firstName: userData.firstName || userData.name.split(' ')[0],
             role: userData.role || selectedPortal,
+            activeRole: userData.activeRole || userData.role || selectedPortal,
             isApproved: userData.isApproved,
             isSuperAdmin: userData.isSuperAdmin || false,
             accessibleRoles: userData.accessibleRoles || [],
             provider: 'google',
             providerId: userData.id,
           });
-          navigateAfterLogin(userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          navigateAfterLogin(userData.activeRole || userData.role || selectedPortal, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         }
       }
     } catch (error) {

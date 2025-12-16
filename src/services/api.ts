@@ -195,6 +195,16 @@ class ApiService {
     });
   }
 
+  async switchRole(token: string, role: UserRole): Promise<{ user: User; activeRole: string }> {
+    return this.request<{ user: User; activeRole: string }>('/api/auth/switch-role', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ role }),
+    });
+  }
+
   async getMerchantDailyCode(token: string): Promise<MerchantDailyCode> {
     return this.request<MerchantDailyCode>('/api/merchant/daily-code', {
       headers: {

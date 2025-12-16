@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { SpecialistInfo, ServiceRelation } from '../types';
+import { RoleSwitcher } from '../components/RoleSwitcher';
 
 export function SpecialistDashboardScreen() {
   const { state, getToken, setUser } = useApp();
@@ -106,7 +107,10 @@ export function SpecialistDashboardScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>{translations.title}</Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.title}>{translations.title}</Text>
+          {state.user?.isSuperAdmin && <RoleSwitcher compact />}
+        </View>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={20} color="#ef4444" />
           <Text style={styles.logoutText}>{translations.logout}</Text>
@@ -206,6 +210,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 24,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   title: {
     fontSize: 28,

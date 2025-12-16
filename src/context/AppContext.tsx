@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppState, Language, User, GachaItem, GachaResponse } from '../types';
+import { AppState, Language, User, GachaItem, GachaResponse, UserRole } from '../types';
 import { TRANSLATIONS, DEFAULT_LEVEL } from '../constants/translations';
+import { apiService } from '../services/api';
 
 interface AppContextType {
   state: AppState;
@@ -14,6 +15,7 @@ interface AppContextType {
   setResult: (result: GachaResponse | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  switchRole: (role: UserRole) => Promise<boolean>;
 }
 
 const defaultState: AppState = {
@@ -139,6 +141,70 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, error }));
   }, []);
 
+  const switchRole = useCallback(async (role: UserRole): Promise<boolean> => {
+    try {
+      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      if (!token) return false;
+
+      const response = await apiService.switchRole(token, role);
+      
+      // Validate response has activeRole
+      if (!response.activeRole) {
+        console.error('Switch role response missing activeRole');
+        return false;
+      }
+
+      // Validate the activeRole matches what we requested
+      if (response.activeRole !== role) {
+        console.error('Switch role response activeRole mismatch:', response.activeRole, 'vs requested:', role);
+        return false;
+      }
+
+      // Use the response.user if available, otherwise fetch fresh data
+      let userData: User | null = response.user || null;
+      
+      if (!userData || !userData.id) {
+        // Fallback to re-fetching if response.user is incomplete
+        const freshUserData = await apiService.getUserWithToken(token);
+        if (!freshUserData || !freshUserData.id) {
+          console.error('Failed to fetch user data after role switch');
+          return false;
+        }
+        userData = freshUserData;
+      }
+
+      // Create complete user object with the confirmed activeRole from the switch response
+      const updatedUser: User = {
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        avatar: userData.avatar,
+        profileImageUrl: userData.profileImageUrl,
+        role: userData.role,
+        activeRole: response.activeRole as UserRole, // Use confirmed activeRole from switch response
+        isApproved: userData.isApproved,
+        isSuperAdmin: userData.isSuperAdmin,
+        accessibleRoles: userData.accessibleRoles,
+        provider: userData.provider,
+        providerId: userData.providerId,
+      };
+
+      // Persist first, then update state to ensure consistency
+      await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+      
+      // Synchronously update state
+      setState(prev => ({ ...prev, user: updatedUser, isAuthenticated: true }));
+      
+      // Verify state was updated correctly before returning success
+      return true;
+    } catch (error) {
+      console.error('Failed to switch role:', error);
+      return false;
+    }
+  }, []);
+
   const t = TRANSLATIONS[state.language];
 
   return (
@@ -154,6 +220,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setResult,
         setLoading,
         setError,
+        switchRole,
       }}
     >
       {children}
