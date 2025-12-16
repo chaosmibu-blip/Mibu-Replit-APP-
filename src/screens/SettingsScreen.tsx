@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { Language } from '../types';
 import { AuthScreen } from './AuthScreen';
@@ -18,8 +19,10 @@ export function SettingsScreen() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('token');
     setUser(null);
+    router.replace('/');
   };
 
   const handleSOSPress = () => {

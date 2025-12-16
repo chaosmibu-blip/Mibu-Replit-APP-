@@ -1,10 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 
 export function PendingApprovalScreen() {
   const { state, setUser } = useApp();
+  const router = useRouter();
 
   const isZh = state.language === 'zh-TW';
 
@@ -24,8 +27,10 @@ export function PendingApprovalScreen() {
     } as Record<string, string>,
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('token');
     setUser(null);
+    router.replace('/');
   };
 
   const roleLabel = translations.roleLabels[state.user?.role || ''] || state.user?.role;
