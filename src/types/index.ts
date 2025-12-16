@@ -362,3 +362,25 @@ export interface AppState {
   view: AppView;
   isAuthenticated: boolean;
 }
+
+export interface Announcement {
+  id: number;
+  content: string;
+  title?: string;
+  createdAt?: string;
+}
+
+export interface AppEvent {
+  id: number;
+  title: string;
+  content: string;
+  eventType: 'flash' | 'holiday';
+  startDate?: string;
+  endDate?: string;
+  createdAt?: string;
+}
+
+export interface HomeContentResponse {
+  announcements: Announcement[];
+  events: AppEvent[];
+}
