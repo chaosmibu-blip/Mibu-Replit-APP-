@@ -62,7 +62,7 @@ const PORTAL_CONFIGS: Record<string, PortalConfig[]> = {
 export default function LoginScreen() {
   const { setUser, state } = useApp();
   const [loading, setLoading] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(false);
   const [selectedPortal, setSelectedPortal] = useState<PortalType>('traveler');
   const [showPortalMenu, setShowPortalMenu] = useState(false);
 
@@ -273,20 +273,6 @@ export default function LoginScreen() {
       subscription.remove();
     };
   }, [handleDeepLink]);
-
-  useEffect(() => {
-    if (state.isAuthenticated && state.user) {
-      // Use API role for regular users, activeRole for super admins
-      const userRole = state.user.role || 'traveler';
-      const roleToUse = state.user.isSuperAdmin ? (state.user.activeRole || userRole) : userRole;
-      // 對於已認證用戶，使用 activeRole 作為 targetPortal
-      const targetPortal = state.user.activeRole || userRole;
-      console.log('🔐 useEffect navigation - role:', userRole, 'activeRole:', state.user.activeRole, 'using:', roleToUse, 'targetPortal:', targetPortal);
-      navigateAfterLogin(roleToUse, state.user.isApproved, state.user.isSuperAdmin, targetPortal);
-    } else {
-      setCheckingAuth(false);
-    }
-  }, [state.isAuthenticated, state.user]);
 
   const handleLogin = async () => {
     setLoading(true);
