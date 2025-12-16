@@ -384,3 +384,31 @@ export interface HomeContentResponse {
   announcements: Announcement[];
   events: AppEvent[];
 }
+
+export interface DrawnCoupon {
+  id: number;
+  title: string;
+  description?: string;
+  discountType?: 'percentage' | 'fixed';
+  discountValue?: number;
+  expiresAt?: string;
+}
+
+export interface GachaResultPlace {
+  id: string;
+  name: string;
+  category?: string;
+  address?: string;
+  district?: string;
+  city?: string;
+}
+
+export interface GachaResult {
+  place: GachaResultPlace;
+  drawnCoupon?: DrawnCoupon;
+}
+
+export interface DrawGachaRequest {
+  cityId: string;
+  count: number;
+}

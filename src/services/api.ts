@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, HomeContentResponse } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, HomeContentResponse, DrawGachaRequest, GachaResult } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -489,6 +489,16 @@ class ApiService {
 
   async getHomeContent(): Promise<HomeContentResponse> {
     return this.request<HomeContentResponse>('/api/home/content');
+  }
+
+  async drawGacha(params: DrawGachaRequest): Promise<GachaResult[]> {
+    return this.request<GachaResult[]>('/api/gacha/draw', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
   }
 }
 
