@@ -166,13 +166,25 @@ export default function LoginScreen() {
             }
           }
           
+          // Use API role for navigation, activeRole for super admins
+          const userRole = userData.role || 'traveler';
+          const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
+          
+          console.log('🔐 User data from API:', { 
+            role: userData.role, 
+            activeRole: userData.activeRole, 
+            isSuperAdmin: userData.isSuperAdmin,
+            isApproved: userData.isApproved,
+            navigationRole 
+          });
+          
           setUser({
             id: userData.id,
             name: userData.name,
             email: userData.email || null,
             avatar: userData.avatar || null,
             firstName: userData.firstName || userData.name.split(' ')[0],
-            role: userData.role || selectedPortal,
+            role: userRole,
             activeRole: finalActiveRole,
             isApproved: userData.isApproved,
             isSuperAdmin: userData.isSuperAdmin || false,
@@ -181,7 +193,7 @@ export default function LoginScreen() {
             providerId: userData.id,
           }, token);
           setLoading(false);
-          navigateAfterLogin(finalActiveRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          navigateAfterLogin(navigationRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         }
       } else {
         console.error('Failed to fetch user data:', response.status);
@@ -194,9 +206,12 @@ export default function LoginScreen() {
   };
 
   const navigateAfterLogin = (role: string, isApproved?: boolean, isSuperAdmin?: boolean, accessibleRoles?: string[]) => {
+    console.log('🔀 navigateAfterLogin called with:', { role, isApproved, isSuperAdmin });
+    
     // For super admin, use the selected portal to determine navigation
     if (isSuperAdmin) {
       const targetRole = selectedPortal;
+      console.log('🔀 Super admin navigating to portal:', targetRole);
       if (targetRole === 'merchant') {
         router.replace('/merchant-dashboard');
       } else if (targetRole === 'specialist') {
@@ -209,22 +224,29 @@ export default function LoginScreen() {
       return;
     }
     
-    // For regular users, use their actual role
+    // For regular users, use their actual role from API
+    console.log('🔀 Regular user navigating based on role:', role);
     if (role === 'merchant') {
       if (isApproved === false) {
+        console.log('🔀 Merchant not approved, going to pending');
         router.replace('/pending-approval');
       } else {
+        console.log('🔀 Navigating to merchant-dashboard');
         router.replace('/merchant-dashboard');
       }
     } else if (role === 'specialist') {
       if (isApproved === false) {
+        console.log('🔀 Specialist not approved, going to pending');
         router.replace('/pending-approval');
       } else {
+        console.log('🔀 Navigating to specialist-dashboard');
         router.replace('/specialist-dashboard');
       }
     } else if (role === 'admin') {
+      console.log('🔀 Navigating to admin-dashboard');
       router.replace('/admin-dashboard');
     } else {
+      console.log('🔀 Navigating to tabs (traveler)');
       router.replace('/(tabs)');
     }
   };
@@ -245,8 +267,10 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (state.isAuthenticated && state.user) {
-      // Use activeRole for super admins, as it tracks the selected portal
-      const roleToUse = state.user.activeRole || state.user.role || 'traveler';
+      // Use API role for regular users, activeRole for super admins
+      const userRole = state.user.role || 'traveler';
+      const roleToUse = state.user.isSuperAdmin ? (state.user.activeRole || userRole) : userRole;
+      console.log('🔐 useEffect navigation - role:', userRole, 'activeRole:', state.user.activeRole, 'using:', roleToUse);
       navigateAfterLogin(roleToUse, state.user.isApproved, state.user.isSuperAdmin, state.user.accessibleRoles);
     } else {
       setCheckingAuth(false);
@@ -407,6 +431,18 @@ export default function LoginScreen() {
             }
           }
           
+          // Use API role for navigation, activeRole for super admins
+          const userRole = userData.role || 'traveler';
+          const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
+          
+          console.log('🔐 fetchUserWithToken - User data:', { 
+            role: userData.role, 
+            activeRole: userData.activeRole, 
+            isSuperAdmin: userData.isSuperAdmin,
+            isApproved: userData.isApproved,
+            navigationRole 
+          });
+          
           setUser({
             id: userData.id,
             name: displayName,
@@ -415,7 +451,7 @@ export default function LoginScreen() {
             lastName: userData.lastName || null,
             avatar: userData.profileImageUrl || userData.avatar || null,
             profileImageUrl: userData.profileImageUrl || null,
-            role: userData.role || selectedPortal,
+            role: userRole,
             activeRole: finalActiveRole,
             isApproved: userData.isApproved,
             isSuperAdmin: userData.isSuperAdmin || false,
@@ -424,7 +460,7 @@ export default function LoginScreen() {
             providerId: userData.id,
           }, token);
           setLoading(false);
-          navigateAfterLogin(finalActiveRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          navigateAfterLogin(navigationRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         } else {
           console.error('Invalid user data: missing id');
           setLoading(false);
@@ -473,13 +509,25 @@ export default function LoginScreen() {
             }
           }
           
+          // Use API role for navigation, activeRole for super admins
+          const userRole = userData.role || 'traveler';
+          const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
+          
+          console.log('🔐 fetchUserAfterAuth - User data:', { 
+            role: userData.role, 
+            activeRole: userData.activeRole, 
+            isSuperAdmin: userData.isSuperAdmin,
+            isApproved: userData.isApproved,
+            navigationRole 
+          });
+          
           setUser({
             id: userData.id,
             name: userData.name,
             email: userData.email || null,
             avatar: userData.avatar || null,
             firstName: userData.firstName || userData.name.split(' ')[0],
-            role: userData.role || selectedPortal,
+            role: userRole,
             activeRole: finalActiveRole,
             isApproved: userData.isApproved,
             isSuperAdmin: userData.isSuperAdmin || false,
@@ -487,7 +535,7 @@ export default function LoginScreen() {
             provider: 'google',
             providerId: userData.id,
           });
-          navigateAfterLogin(finalActiveRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
+          navigateAfterLogin(navigationRole, userData.isApproved, userData.isSuperAdmin, userData.accessibleRoles);
         }
       }
     } catch (error) {
