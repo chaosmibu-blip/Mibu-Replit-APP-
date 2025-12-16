@@ -8,6 +8,24 @@ The app connects to an external backend API for location data and itinerary gene
 
 ## Recent Changes (December 2024)
 
+### Admin Dashboard & Multi-Role System (December 16, 2024)
+- **Admin Dashboard Screen**: Complete admin management interface with 4 tabs
+  - 待審核用戶 (Pending Users): Review and approve merchant/specialist registrations
+  - 所有用戶 (All Users): Browse all registered users with role badges
+  - 地點草稿 (Place Drafts): Review and publish user-submitted places
+  - 全域排除 (Global Exclusions): Manage places excluded from all gacha results
+- **Admin API Methods**: Added to api.ts
+  - `getAdminUsers()` - List all users
+  - `getAdminPendingUsers()` - Get pending approvals
+  - `approveUser()` - Approve user registrations
+  - `getPlaceDrafts()` - Get place drafts
+  - `publishDraft()` - Publish draft to live
+  - `addGlobalExclusion()` - Add exclusion
+  - `deleteGlobalExclusion()` - Remove exclusion
+- **Terminology Update**: Changed 「專家」to「專員」(specialist) across all screens
+- **Role Navigation Fix**: Admin role now properly redirects to `/admin-dashboard`
+- **Portal Switcher**: Super admins see portal buttons for all 4 dashboards
+
 ### API Service Updates (December 16, 2024)
 - **Complete Merchant API Integration**: Added all merchant endpoints to api.ts
   - `getMerchantMe()` - Get merchant profile
