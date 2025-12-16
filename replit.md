@@ -8,6 +8,32 @@ The app connects to an external backend API for location data and itinerary gene
 
 ## Recent Changes (December 2024)
 
+### Merchant & Specialist Sub-Pages (December 16, 2024)
+- **New Merchant Screens**:
+  - `MerchantTransactionsScreen`: View transaction history with purchase/usage/refund tracking
+  - `MerchantVerifyScreen`: Verify other merchants' codes with merchantId + code input
+- **New Specialist Screens**:
+  - `SpecialistTravelersScreen`: View active travelers being served
+  - `SpecialistTrackingScreen`: Live location tracking with Socket.IO integration
+- **Updated Dashboard Screens**:
+  - Added menu navigation links to sub-pages
+  - Consistent styling with menu icons and chevrons
+- **Route Structure**:
+  - `/merchant/transactions` - Transaction history
+  - `/merchant/verify` - Verify merchant codes
+  - `/specialist/travelers` - Active travelers list
+  - `/specialist/tracking` - Live location map
+- **API Updates**:
+  - `verifyMerchantCode()` now requires merchantId and code
+  - `updateSpecialistAvailability()` - PATCH availability status
+  - `getSpecialistTravelers()` - Get active traveler list
+
+### Role Switching Mechanism (December 16, 2024)
+- **activeRole Field**: User type includes `activeRole` to track current interface
+- **switchRole API**: POST `/api/auth/switch-role` to change active interface
+- **RoleSwitcher Component**: Displayed for super admins in dashboard headers
+- **Robust State Management**: Role switching validates server response before navigation
+
 ### Admin Dashboard & Multi-Role System (December 16, 2024)
 - **Admin Dashboard Screen**: Complete admin management interface with 4 tabs
   - 待審核用戶 (Pending Users): Review and approve merchant/specialist registrations
