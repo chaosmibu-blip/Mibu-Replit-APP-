@@ -419,3 +419,77 @@ export interface RegionPoolCoupon {
   discount: string | null;
   merchantId: number;
 }
+
+// Inventory / Itembox Types
+export type InventoryItemType = 'coupon' | 'ticket' | 'gift';
+
+export interface InventoryItem {
+  id: number;
+  userId: string;
+  itemType: InventoryItemType;
+  title: string;
+  description: string | null;
+  merchantId: number | null;
+  merchantName?: string;
+  isRead: boolean;
+  isRedeemed: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+export interface RedeemResponse {
+  success: boolean;
+  message: string;
+  expiresAt: string;
+  redemptionId: number;
+}
+
+// Collection with Promo
+export interface CollectionWithPromo {
+  id: number;
+  placeName: string;
+  country: string;
+  city: string;
+  district: string;
+  category: string;
+  hasPromo: boolean;
+  promoTitle: string | null;
+  promoDescription: string | null;
+}
+
+export interface CollectionWithPromoResponse {
+  collections: CollectionWithPromo[];
+  grouped: Record<string, CollectionWithPromo[]>;
+  hasPromoItems: boolean;
+}
+
+export interface AutoSaveCollectionResponse {
+  success: boolean;
+  isNew: boolean;
+  hasPromo: boolean;
+  promoTitle: string | null;
+}
+
+// Ads
+export type AdPlacement = 'gacha_start' | 'gacha_result' | 'collection_view' | 'item_use';
+
+export interface AdConfig {
+  placementKey: string;
+  adUnitIdIos: string;
+  adUnitIdAndroid: string;
+  adType: string;
+  fallbackImageUrl: string | null;
+  showFrequency: number;
+}
+
+// Notifications
+export interface NotificationStatus {
+  itembox: number;
+  collection: number;
+}
+
+// Merchant Redemption Code
+export interface MerchantRedemptionCode {
+  code: string;
+  expiresAt: string;
+}

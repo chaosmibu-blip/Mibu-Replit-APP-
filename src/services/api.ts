@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams, RegionPoolCoupon } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams, RegionPoolCoupon, InventoryItem, RedeemResponse, CollectionWithPromoResponse, AutoSaveCollectionResponse, AdConfig, NotificationStatus, MerchantRedemptionCode, AdPlacement } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -530,6 +530,92 @@ class ApiService {
 
   async getRegionCouponPool(token: string, regionId: number): Promise<RegionPoolCoupon[]> {
     return this.request<RegionPoolCoupon[]>(`/api/coupons/region/${regionId}/pool`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  // Ads API
+  async getAdPlacement(placement: AdPlacement, platform: 'ios' | 'android' | 'web'): Promise<{ ad: AdConfig | null }> {
+    return this.request<{ ad: AdConfig | null }>(`/api/ads/placements?placement=${placement}&platform=${platform}`);
+  }
+
+  // Notifications API
+  async getNotifications(token: string): Promise<{ notifications: NotificationStatus }> {
+    return this.request<{ notifications: NotificationStatus }>('/api/notifications', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async markNotificationSeen(token: string, type: 'itembox' | 'collection'): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/api/notifications/${type}/seen`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  // Inventory / Itembox API
+  async getInventory(token: string): Promise<{ items: InventoryItem[] }> {
+    return this.request<{ items: InventoryItem[] }>('/api/inventory', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async markInventoryItemRead(token: string, itemId: number): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/api/inventory/${itemId}/read`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async redeemInventoryItem(token: string, itemId: number, redemptionCode: string): Promise<RedeemResponse> {
+    return this.request<RedeemResponse>(`/api/inventory/${itemId}/redeem`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ redemptionCode }),
+    });
+  }
+
+  // Collection with Promo API
+  async getCollectionWithPromo(token: string): Promise<CollectionWithPromoResponse> {
+    return this.request<CollectionWithPromoResponse>('/api/collection/with-promo', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async autoSaveToCollection(token: string, params: {
+    placeName: string;
+    country: string;
+    city: string;
+    district: string;
+    category: string;
+    description?: string;
+  }): Promise<AutoSaveCollectionResponse> {
+    return this.request<AutoSaveCollectionResponse>('/api/collection/auto-save', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  // Merchant Redemption Code API
+  async getMerchantRedemptionCode(token: string): Promise<MerchantRedemptionCode> {
+    return this.request<MerchantRedemptionCode>('/api/merchant/redemption-code', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

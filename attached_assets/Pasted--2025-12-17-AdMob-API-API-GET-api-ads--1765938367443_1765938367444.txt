@@ -1,0 +1,113 @@
+前端同步指令 (2025-12-17)
+用戶需求說明
+整合 AdMob 廣告、道具箱系統、優惠券核銷流程、圖鑑自動收集並顯示商家優惠資訊。
+
+API 變更
+公開 API:
+
+GET /api/ads/placements?placement=xxx&platform=ios - 取得廣告設定
+需登入 API:
+
+GET /api/notifications - 取得未讀通知狀態
+POST /api/notifications/:type/seen - 標記通知已讀
+GET /api/inventory - 取得道具箱
+POST /api/inventory/:id/read - 標記道具已讀
+POST /api/inventory/:id/redeem - 核銷優惠券（需輸入商家核銷碼）
+GET /api/collection/with-promo - 取得圖鑑（含商家優惠狀態）
+POST /api/collection/auto-save - 行程生成後自動存入圖鑑
+商家 API:
+
+GET /api/merchant/redemption-code - 取得今日核銷碼
+API 呼叫範例
+// 取得廣告設定
+const adResponse = await fetch('https://gacha-travel--s8869420.replit.app/api/ads/placements?placement=gacha_start&platform=ios');
+const { ad } = await adResponse.json();
+// ad: { placementKey, adUnitIdIos, adUnitIdAndroid, adType, fallbackImageUrl, showFrequency }
+// 取得未讀通知
+const notifResponse = await fetch('https://gacha-travel--s8869420.replit.app/api/notifications', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+const { notifications } = await notifResponse.json();
+// notifications: { itembox: number, collection: number }
+// 取得道具箱
+const inventoryResponse = await fetch('https://gacha-travel--s8869420.replit.app/api/inventory', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+const { items } = await inventoryResponse.json();
+// 核銷優惠券
+const redeemResponse = await fetch(`https://gacha-travel--s8869420.replit.app/api/inventory/${itemId}/redeem`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({ redemptionCode: 'ABCD1234' })
+});
+const { success, expiresAt, message } = await redeemResponse.json();
+// 取得圖鑑（含優惠狀態）
+const collectionResponse = await fetch('https://gacha-travel--s8869420.replit.app/api/collection/with-promo', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+const { collections, grouped, hasPromoItems } = await collectionResponse.json();
+// 自動存入圖鑑
+const saveResponse = await fetch('https://gacha-travel--s8869420.replit.app/api/collection/auto-save', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    placeName: '台北101',
+    country: 'Taiwan',
+    city: 'Taipei',
+    district: 'Xinyi',
+    category: 'Attractions',
+    description: '...'
+  })
+});
+const { isNew, hasPromo, promoTitle } = await saveResponse.json();
+// 商家: 取得今日核銷碼
+const codeResponse = await fetch('https://gacha-travel--s8869420.replit.app/api/merchant/redemption-code', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+const { code, expiresAt } = await codeResponse.json();
+// code: 每日隨機生成的 8 碼核銷碼
+回傳資料格式
+// 道具箱項目
+interface InventoryItem {
+  id: number;
+  userId: string;
+  itemType: 'coupon' | 'ticket' | 'gift';
+  title: string;
+  description: string | null;
+  merchantId: number | null;
+  isRead: boolean;
+  isRedeemed: boolean;
+  expiresAt: Date | null;
+  createdAt: Date;
+}
+// 核銷回應
+interface RedeemResponse {
+  success: boolean;
+  message: string;
+  expiresAt: Date; // 3分鐘後
+  redemptionId: number;
+}
+// 圖鑑項目（含優惠）
+interface CollectionWithPromo {
+  id: number;
+  placeName: string;
+  country: string;
+  city: string;
+  district: string;
+  category: string;
+  hasPromo: boolean;
+  promoTitle: string | null;
+  promoDescription: string | null;
+}
+前端改動建議
+AdMob 整合 - 在 gacha_start, gacha_result, collection_view, item_use 時機呼叫廣告
+道具箱頁面 - 顯示用戶抽到的優惠券，未讀顯示紅點
+優惠券核銷 - 輸入核銷碼後顯示 3 分鐘倒數
+圖鑑優化 - 有商家優惠的地點顯示促銷標記
+未讀通知紅點 - 道具箱/圖鑑 icon 顯示未讀數量
