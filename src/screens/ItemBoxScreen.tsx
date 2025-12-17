@@ -7,7 +7,7 @@ import { apiService } from '../services/api';
 import { InventoryItem } from '../types';
 
 export function ItemBoxScreen() {
-  const { state, t } = useApp();
+  const { state, setUnreadCount } = useApp();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -28,14 +28,17 @@ export function ItemBoxScreen() {
       }
       
       const data = await apiService.getInventory(token);
-      setItems(data.items || []);
+      const inventoryItems = data.items || [];
+      setItems(inventoryItems);
+      const unreadCount = inventoryItems.filter((item: InventoryItem) => !item.isRead).length;
+      setUnreadCount(unreadCount);
     } catch (error) {
       console.error('Failed to load inventory:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [setUnreadCount]);
 
   useEffect(() => {
     loadInventory();
@@ -50,6 +53,8 @@ export function ItemBoxScreen() {
     } else if (countdown === 0) {
       setRedeemSuccess(false);
       setCountdown(null);
+      setRedeemModalVisible(false);
+      setSelectedItem(null);
     }
     return () => { if (timer) clearInterval(timer); };
   }, [countdown]);
@@ -65,7 +70,12 @@ export function ItemBoxScreen() {
         const token = await AsyncStorage.getItem('@mibu_token');
         if (token) {
           await apiService.markInventoryItemRead(token, item.id);
-          setItems(prev => prev.map(i => i.id === item.id ? { ...i, isRead: true } : i));
+          setItems(prev => {
+            const updated = prev.map(i => i.id === item.id ? { ...i, isRead: true } : i);
+            const newUnreadCount = updated.filter(i => !i.isRead).length;
+            setUnreadCount(newUnreadCount);
+            return updated;
+          });
         }
       } catch (error) {
         console.error('Failed to mark item as read:', error);

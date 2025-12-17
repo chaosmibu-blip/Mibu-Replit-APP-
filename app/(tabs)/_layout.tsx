@@ -1,14 +1,56 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { Platform, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useApp } from '../../src/context/AppContext';
 
+function TabIconWithBadge({ 
+  icon, 
+  focused, 
+  color, 
+  badgeCount 
+}: { 
+  icon: string; 
+  focused: boolean; 
+  color: string; 
+  badgeCount?: number;
+}) {
+  return (
+    <View style={{ position: 'relative' }}>
+      <Ionicons name={(focused ? icon : `${icon}-outline`) as any} size={24} color={color} />
+      {badgeCount !== undefined && badgeCount > 0 && (
+        <View style={{
+          position: 'absolute',
+          top: -4,
+          right: -8,
+          backgroundColor: '#ef4444',
+          borderRadius: 10,
+          minWidth: 16,
+          height: 16,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: 4,
+        }}>
+          <Text style={{ color: '#ffffff', fontSize: 10, fontWeight: '700' }}>
+            {badgeCount > 99 ? '99+' : badgeCount}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
 export default function TabLayout() {
-  const { t } = useApp();
+  const { t, state, refreshUnreadCount } = useApp();
+  
+  useEffect(() => {
+    if (state.isAuthenticated) {
+      refreshUnreadCount();
+    }
+  }, [state.isAuthenticated, refreshUnreadCount]);
 
   return (
     <Tabs
@@ -56,7 +98,12 @@ export default function TabLayout() {
         options={{
           title: t.navGacha,
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'dice' : 'dice-outline'} size={24} color={color} />
+            <TabIconWithBadge 
+              icon="gift" 
+              focused={focused} 
+              color={color} 
+              badgeCount={state.unreadItemCount} 
+            />
           ),
         }}
       />

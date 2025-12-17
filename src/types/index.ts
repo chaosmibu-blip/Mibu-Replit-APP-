@@ -361,6 +361,7 @@ export interface AppState {
   collection: GachaItem[];
   view: AppView;
   isAuthenticated: boolean;
+  unreadItemCount: number;
 }
 
 export type AnnouncementType = 'announcement' | 'flash_event' | 'holiday_event';

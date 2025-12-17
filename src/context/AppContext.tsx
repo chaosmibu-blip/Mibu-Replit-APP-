@@ -16,6 +16,8 @@ interface AppContextType {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   switchRole: (role: UserRole) => Promise<boolean>;
+  refreshUnreadCount: () => Promise<void>;
+  setUnreadCount: (count: number) => void;
 }
 
 const defaultState: AppState = {
@@ -32,6 +34,7 @@ const defaultState: AppState = {
   collection: [],
   view: 'home',
   isAuthenticated: false,
+  unreadItemCount: 0,
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -205,6 +208,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const refreshUnreadCount = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      if (!token) return;
+      
+      const data = await apiService.getInventory(token);
+      const unreadCount = (data.items || []).filter((item: any) => !item.isRead).length;
+      setState(prev => ({ ...prev, unreadItemCount: unreadCount }));
+    } catch (error) {
+      console.error('Failed to refresh unread count:', error);
+    }
+  }, []);
+
+  const setUnreadCount = useCallback((count: number) => {
+    setState(prev => ({ ...prev, unreadItemCount: count }));
+  }, []);
+
   const t = TRANSLATIONS[state.language];
 
   return (
@@ -221,6 +241,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setLoading,
         setError,
         switchRole,
+        refreshUnreadCount,
+        setUnreadCount,
       }}
     >
       {children}
