@@ -260,26 +260,48 @@ export function CollectionScreen() {
                                 const description = getDescription(item);
                                 const date = formatDate(item.collectedAt);
 
+                                const hasPromo = item.is_promo_active || item.merchant;
+                                const hasCoupon = item.is_coupon && item.coupon_data;
+
                                 return (
                                   <TouchableOpacity
                                     key={`${item.id}-${idx}`}
                                     style={[
                                       styles.itemCard,
                                       { borderColor: categoryColor + '40' },
+                                      hasPromo && styles.promoCard,
                                     ]}
                                     onPress={() => setSelectedItem(item)}
                                   >
                                     <View style={styles.itemHeader}>
                                       <Text style={styles.itemDate}>{date}</Text>
-                                      <View
-                                        style={[
-                                          styles.itemBadge,
-                                          { backgroundColor: categoryColor },
-                                        ]}
-                                      >
-                                        <Text style={styles.itemBadgeText}>
-                                          {getCategoryLabel(category, language)}
-                                        </Text>
+                                      <View style={{ flexDirection: 'row', gap: 6 }}>
+                                        {hasPromo && (
+                                          <View style={styles.promoBadge}>
+                                            <Ionicons name="storefront" size={10} color="#ffffff" />
+                                            <Text style={styles.promoBadgeText}>
+                                              {language === 'zh-TW' ? '合作' : 'Partner'}
+                                            </Text>
+                                          </View>
+                                        )}
+                                        {hasCoupon && (
+                                          <View style={styles.couponBadge}>
+                                            <Ionicons name="ticket" size={10} color="#ffffff" />
+                                            <Text style={styles.couponBadgeText}>
+                                              {language === 'zh-TW' ? '優惠' : 'Coupon'}
+                                            </Text>
+                                          </View>
+                                        )}
+                                        <View
+                                          style={[
+                                            styles.itemBadge,
+                                            { backgroundColor: categoryColor },
+                                          ]}
+                                        >
+                                          <Text style={styles.itemBadgeText}>
+                                            {getCategoryLabel(category, language)}
+                                          </Text>
+                                        </View>
                                       </View>
                                     </View>
                                     <Text style={styles.itemName}>{placeName}</Text>
@@ -290,6 +312,12 @@ export function CollectionScreen() {
                                       >
                                         {description}
                                       </Text>
+                                    )}
+                                    {item.merchant && (
+                                      <View style={styles.merchantInfo}>
+                                        <Ionicons name="business-outline" size={12} color="#6366f1" />
+                                        <Text style={styles.merchantName}>{item.merchant.name}</Text>
+                                      </View>
                                     )}
                                   </TouchableOpacity>
                                 );
@@ -550,5 +578,48 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#ffffff',
+  },
+  promoCard: {
+    borderColor: '#6366f1',
+    borderWidth: 2,
+  },
+  promoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 3,
+  },
+  promoBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  couponBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 3,
+  },
+  couponBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  merchantInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 4,
+  },
+  merchantName: {
+    fontSize: 12,
+    color: '#6366f1',
+    fontWeight: '600',
   },
 });
