@@ -1,10 +1,12 @@
 import { MerchantCouponTier } from '../types';
+import { MibuBrand } from '../../constants/Colors';
 
 export interface TierStyle {
   backgroundColor: string;
   borderColor: string;
   textColor: string;
   gradientColors: [string, string];
+  glowColor: string;
   label: string;
   labelEn: string;
   probability: number;
@@ -12,46 +14,51 @@ export interface TierStyle {
 
 export const TIER_STYLES: Record<MerchantCouponTier, TierStyle> = {
   SP: {
-    backgroundColor: '#fef3c7',
-    borderColor: '#f59e0b',
-    textColor: '#b45309',
-    gradientColors: ['#fbbf24', '#f59e0b'],
+    backgroundColor: '#FFF8E7',
+    borderColor: '#D4A24C',
+    textColor: '#8B6914',
+    gradientColors: ['#F5D78E', '#D4A24C'],
+    glowColor: 'rgba(212, 162, 76, 0.4)',
     label: '傳說',
     labelEn: 'Legendary',
     probability: 2,
   },
   SSR: {
-    backgroundColor: '#fce7f3',
-    borderColor: '#ec4899',
-    textColor: '#be185d',
-    gradientColors: ['#f472b6', '#ec4899'],
+    backgroundColor: '#FFF0F5',
+    borderColor: '#C97B8B',
+    textColor: '#8B4D5C',
+    gradientColors: ['#E8A8B8', '#C97B8B'],
+    glowColor: 'rgba(201, 123, 139, 0.35)',
     label: '超稀有',
     labelEn: 'Super Rare',
     probability: 8,
   },
   SR: {
-    backgroundColor: '#ede9fe',
-    borderColor: '#8b5cf6',
-    textColor: '#6d28d9',
-    gradientColors: ['#a78bfa', '#8b5cf6'],
+    backgroundColor: '#F5F0FA',
+    borderColor: '#9B7BB8',
+    textColor: '#6B4B88',
+    gradientColors: ['#B8A0D0', '#9B7BB8'],
+    glowColor: 'rgba(155, 123, 184, 0.3)',
     label: '稀有',
     labelEn: 'Rare',
     probability: 15,
   },
   S: {
-    backgroundColor: '#dbeafe',
-    borderColor: '#3b82f6',
-    textColor: '#1d4ed8',
-    gradientColors: ['#60a5fa', '#3b82f6'],
+    backgroundColor: '#F0F5F8',
+    borderColor: '#7BA0B8',
+    textColor: '#4B6B88',
+    gradientColors: ['#A0C0D0', '#7BA0B8'],
+    glowColor: 'rgba(123, 160, 184, 0.25)',
     label: '高級',
     labelEn: 'Superior',
     probability: 23,
   },
   R: {
-    backgroundColor: '#f1f5f9',
-    borderColor: '#64748b',
-    textColor: '#334155',
-    gradientColors: ['#94a3b8', '#64748b'],
+    backgroundColor: MibuBrand.cream,
+    borderColor: MibuBrand.tan,
+    textColor: MibuBrand.brownDark,
+    gradientColors: [MibuBrand.tanLight, MibuBrand.tan],
+    glowColor: 'rgba(176, 136, 96, 0.2)',
     label: '普通',
     labelEn: 'Regular',
     probability: 32,

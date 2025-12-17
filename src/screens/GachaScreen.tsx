@@ -29,18 +29,20 @@ const DAILY_LIMIT_KEY = '@mibu_daily_limit';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const RARITY_COLORS: Record<string, string> = {
-  SP: '#fbbf24',
-  SSR: '#a855f7',
-  SR: '#3b82f6',
-  R: '#22c55e',
+  SP: '#D4A24C',
+  SSR: '#C97B8B',
+  SR: '#9B7BB8',
+  S: '#7BA0B8',
+  R: '#B08860',
   N: '#94a3b8',
 };
 
 const RARITY_BG_COLORS: Record<string, string> = {
-  SP: '#fef3c7',
-  SSR: '#f3e8ff',
-  SR: '#dbeafe',
-  R: '#dcfce7',
+  SP: '#FFF8E7',
+  SSR: '#FFF0F5',
+  SR: '#F5F0FA',
+  S: '#F0F5F8',
+  R: '#F5E6D3',
   N: '#f1f5f9',
 };
 

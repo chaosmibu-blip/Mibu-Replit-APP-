@@ -16,6 +16,7 @@ import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { MerchantDailyCode, MerchantCredits } from '../types';
 import { RoleSwitcher } from '../components/RoleSwitcher';
+import { MibuBrand } from '../../constants/Colors';
 
 export function MerchantDashboardScreen() {
   const { state, getToken, setUser } = useApp();
@@ -146,7 +147,7 @@ export function MerchantDashboardScreen() {
 
       <View style={styles.creditsCard}>
         <View style={styles.creditsHeader}>
-          <Ionicons name="wallet-outline" size={24} color="#6366f1" />
+          <Ionicons name="wallet-outline" size={24} color={MibuBrand.brown} />
           <Text style={styles.cardLabel}>{translations.credits}</Text>
         </View>
         <Text style={styles.creditsAmount}>
@@ -161,13 +162,13 @@ export function MerchantDashboardScreen() {
           onPress={() => router.push('/merchant/transactions' as any)}
         >
           <View style={styles.menuIcon}>
-            <Ionicons name="receipt-outline" size={24} color="#6366f1" />
+            <Ionicons name="receipt-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{isZh ? '交易記錄' : 'Transaction History'}</Text>
             <Text style={styles.menuSubtitle}>{isZh ? '查看所有交易' : 'View all transactions'}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -175,13 +176,13 @@ export function MerchantDashboardScreen() {
           onPress={() => router.push('/merchant/verify' as any)}
         >
           <View style={styles.menuIcon}>
-            <Ionicons name="shield-checkmark-outline" size={24} color="#6366f1" />
+            <Ionicons name="shield-checkmark-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{isZh ? '驗證核銷碼' : 'Verify Code'}</Text>
             <Text style={styles.menuSubtitle}>{isZh ? '驗證其他商家的核銷碼' : 'Verify merchant codes'}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -189,13 +190,13 @@ export function MerchantDashboardScreen() {
           onPress={() => router.push('/merchant/places' as any)}
         >
           <View style={styles.menuIcon}>
-            <Ionicons name="storefront-outline" size={24} color="#6366f1" />
+            <Ionicons name="storefront-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{isZh ? '店家管理' : 'Place Management'}</Text>
             <Text style={styles.menuSubtitle}>{isZh ? '認領與管理店家' : 'Claim and manage places'}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -203,27 +204,27 @@ export function MerchantDashboardScreen() {
           onPress={() => router.push('/merchant/products' as any)}
         >
           <View style={styles.menuIcon}>
-            <Ionicons name="cube-outline" size={24} color="#6366f1" />
+            <Ionicons name="cube-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{isZh ? '商品管理' : 'Product Management'}</Text>
             <Text style={styles.menuSubtitle}>{isZh ? '建立與編輯商品' : 'Create and edit products'}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/merchant/coupons' as any)}
         >
-          <View style={[styles.menuIcon, { backgroundColor: '#fef3c7' }]}>
-            <Ionicons name="pricetag-outline" size={24} color="#f59e0b" />
+          <View style={[styles.menuIcon, { backgroundColor: MibuBrand.highlight }]}>
+            <Ionicons name="pricetag-outline" size={24} color={MibuBrand.warning} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{isZh ? '優惠券管理' : 'Coupon Management'}</Text>
             <Text style={styles.menuSubtitle}>{isZh ? '創建與管理優惠券' : 'Create and manage coupons'}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -231,13 +232,13 @@ export function MerchantDashboardScreen() {
           onPress={() => router.push('/merchant/profile' as any)}
         >
           <View style={styles.menuIcon}>
-            <Ionicons name="person-circle-outline" size={24} color="#6366f1" />
+            <Ionicons name="person-circle-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{isZh ? '商家資料' : 'Merchant Profile'}</Text>
             <Text style={styles.menuSubtitle}>{isZh ? '查看商家資訊' : 'View merchant info'}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
       </View>
 
@@ -297,7 +298,7 @@ export function MerchantDashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   content: {
     padding: 20,
@@ -311,7 +312,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: MibuBrand.copper,
     fontSize: 16,
   },
   header: {
@@ -328,7 +329,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.brown,
   },
   logoutButton: {
     flexDirection: 'row',
@@ -345,42 +346,42 @@ const styles = StyleSheet.create({
     color: '#ef4444',
   },
   codeCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 2,
-    borderColor: '#6366f1',
+    borderColor: MibuBrand.brown,
   },
   cardLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginBottom: 12,
   },
   codeText: {
     fontSize: 48,
     fontWeight: '900',
-    color: '#6366f1',
+    color: MibuBrand.brown,
     letterSpacing: 8,
     marginBottom: 8,
   },
   expiryText: {
     fontSize: 13,
-    color: '#94a3b8',
+    color: MibuBrand.copper,
   },
   errorText: {
     fontSize: 16,
-    color: '#ef4444',
+    color: MibuBrand.error,
   },
   creditsCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     padding: 24,
     marginBottom: 24,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   creditsHeader: {
     flexDirection: 'row',
@@ -391,12 +392,12 @@ const styles = StyleSheet.create({
   creditsAmount: {
     fontSize: 36,
     fontWeight: '800',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   creditsUnit: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   menuSection: {
     marginBottom: 24,
@@ -405,17 +406,17 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   menuIcon: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.highlight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -426,12 +427,12 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 2,
   },
   menuSubtitle: {
     fontSize: 13,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   topUpSection: {
     marginTop: 8,
@@ -439,12 +440,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 13,
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginBottom: 16,
   },
   amountButtons: {
@@ -454,17 +455,17 @@ const styles = StyleSheet.create({
   },
   amountButton: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   amountButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   paymentButtons: {
     gap: 12,
@@ -478,10 +479,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   stripeButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
   },
   recurButton: {
-    backgroundColor: '#10b981',
+    backgroundColor: MibuBrand.success,
   },
   paymentButtonText: {
     fontSize: 16,

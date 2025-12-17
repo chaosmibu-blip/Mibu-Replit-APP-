@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { Card } from '../components/ui/Card';
+import { MibuBrand } from '../../constants/Colors';
 
 export function HomeScreen() {
   const { t } = useApp();
@@ -16,7 +17,7 @@ export function HomeScreen() {
 
       <Card style={styles.announcementCard}>
         <View style={styles.cardHeader}>
-          <Ionicons name="megaphone" size={20} color="#b45309" />
+          <Ionicons name="megaphone" size={20} color={MibuBrand.brown} />
           <Text style={styles.cardTitle}>{t.announcements}</Text>
         </View>
         <View style={styles.announcementContent}>
@@ -29,16 +30,16 @@ export function HomeScreen() {
         </View>
       </Card>
 
-      <Card style={styles.flashCard} backgroundColor="#f43f5e">
+      <Card style={styles.flashCard}>
         <View style={styles.cardHeader}>
           <Ionicons name="flash" size={20} color="#ffffff" />
           <Text style={[styles.cardTitle, { color: '#ffffff' }]}>{t.flashEvents}</Text>
         </View>
         <View style={styles.announcementContent}>
-          <Text style={[styles.announcementText, { color: 'rgba(255,255,255,0.9)' }]}>
+          <Text style={[styles.announcementText, { color: 'rgba(255,255,255,0.95)' }]}>
             🎁 冬季限定：宜蘭礁溪溫泉季 - 收集溫泉景點獲得特別優惠！
           </Text>
-          <Text style={[styles.announcementText, { color: 'rgba(255,255,255,0.9)' }]}>
+          <Text style={[styles.announcementText, { color: 'rgba(255,255,255,0.95)' }]}>
             🌟 本週熱門：台北信義區聖誕市集巡禮
           </Text>
         </View>
@@ -50,7 +51,7 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   content: {
     padding: 20,
@@ -64,21 +65,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 36,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.brown,
     letterSpacing: -1,
   },
   subtitle: {
     fontSize: 16,
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginTop: 4,
   },
   announcementCard: {
-    backgroundColor: '#fffbeb',
+    backgroundColor: MibuBrand.highlight,
     borderWidth: 1,
-    borderColor: '#fde68a',
+    borderColor: MibuBrand.tan,
     marginBottom: 16,
   },
   flashCard: {
+    backgroundColor: MibuBrand.brown,
     marginBottom: 24,
   },
   cardHeader: {
@@ -90,14 +92,14 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#b45309',
+    color: MibuBrand.brownDark,
   },
   announcementContent: {
     gap: 8,
   },
   announcementText: {
     fontSize: 14,
-    color: '#92400e',
+    color: MibuBrand.brownDark,
     lineHeight: 20,
   },
 });

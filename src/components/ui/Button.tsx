@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
+import { MibuBrand } from '../../../constants/Colors';
 
 interface ButtonProps {
   title: string;
@@ -55,7 +56,7 @@ export function Button({
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' ? '#6366f1' : '#ffffff'} />
+        <ActivityIndicator color={variant === 'outline' ? MibuBrand.brown : '#ffffff'} />
       ) : (
         <Text style={[getTextStyle(), textStyle]}>{title}</Text>
       )}
@@ -72,15 +73,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primary: {
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
   },
   secondary: {
-    backgroundColor: '#1e293b',
+    backgroundColor: MibuBrand.dark,
   },
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#6366f1',
+    borderColor: MibuBrand.brown,
   },
   disabled: {
     opacity: 0.5,
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   outlineText: {
-    color: '#6366f1',
+    color: MibuBrand.brown,
     fontSize: 16,
     fontWeight: '700',
   },

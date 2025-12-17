@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useApp } from '../../src/context/AppContext';
+import { MibuBrand } from '../../constants/Colors';
 
 function TabIconWithBadge({ 
   icon, 
@@ -55,24 +56,24 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#6366f1',
-        tabBarInactiveTintColor: '#94a3b8',
+        tabBarActiveTintColor: MibuBrand.brown,
+        tabBarInactiveTintColor: MibuBrand.copper,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
             position: 'absolute',
-            backgroundColor: 'rgba(255,255,255,0.95)',
+            backgroundColor: 'rgba(253, 248, 243, 0.98)',
             borderTopWidth: 0,
             height: 88,
             paddingBottom: 24,
             paddingTop: 8,
           },
           default: {
-            backgroundColor: '#ffffff',
+            backgroundColor: MibuBrand.creamLight,
             borderTopWidth: 1,
-            borderTopColor: '#f1f5f9',
+            borderTopColor: MibuBrand.tanLight,
             height: 64,
             paddingBottom: 8,
             paddingTop: 8,
