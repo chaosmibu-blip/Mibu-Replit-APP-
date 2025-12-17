@@ -153,50 +153,6 @@ export function SettingsScreen() {
         </TouchableOpacity>
       </View>
 
-      {(state.user?.isSuperAdmin || (state.user?.accessibleRoles && state.user.accessibleRoles.length > 1)) && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {state.language === 'zh-TW' ? '切換入口' : 'Switch Portal'}
-          </Text>
-          <View style={styles.portalGrid}>
-            <TouchableOpacity 
-              style={[styles.portalCard, { borderColor: '#6366f1' }]}
-              onPress={() => router.push('/(tabs)')}
-            >
-              <Ionicons name="airplane-outline" size={24} color="#6366f1" />
-              <Text style={styles.portalLabel}>{state.language === 'zh-TW' ? '旅客' : 'Traveler'}</Text>
-            </TouchableOpacity>
-            {(state.user?.isSuperAdmin || state.user?.accessibleRoles?.includes('merchant')) && (
-              <TouchableOpacity 
-                style={[styles.portalCard, { borderColor: '#10b981' }]}
-                onPress={() => router.push('/merchant-dashboard')}
-              >
-                <Ionicons name="storefront-outline" size={24} color="#10b981" />
-                <Text style={styles.portalLabel}>{state.language === 'zh-TW' ? '商家端' : 'Merchant'}</Text>
-              </TouchableOpacity>
-            )}
-            {(state.user?.isSuperAdmin || state.user?.accessibleRoles?.includes('specialist')) && (
-              <TouchableOpacity 
-                style={[styles.portalCard, { borderColor: '#a855f7' }]}
-                onPress={() => router.push('/specialist-dashboard')}
-              >
-                <Ionicons name="shield-checkmark-outline" size={24} color="#a855f7" />
-                <Text style={styles.portalLabel}>{state.language === 'zh-TW' ? '專員端' : 'Specialist'}</Text>
-              </TouchableOpacity>
-            )}
-            {(state.user?.isSuperAdmin || state.user?.accessibleRoles?.includes('admin')) && (
-              <TouchableOpacity 
-                style={[styles.portalCard, { borderColor: '#f59e0b' }]}
-                onPress={() => router.push('/admin-dashboard')}
-              >
-                <Ionicons name="settings-outline" size={24} color="#f59e0b" />
-                <Text style={styles.portalLabel}>{state.language === 'zh-TW' ? '管理端' : 'Admin'}</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      )}
-
       {state.user?.role === 'admin' && !state.user?.isSuperAdmin && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -455,23 +411,4 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748b',
   },
-  portalGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  portalCard: {
-    width: '47%',
-    backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-    borderWidth: 2,
-    gap: 8,
-  },
-  portalLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#334155',
-  },
-});
+  });
