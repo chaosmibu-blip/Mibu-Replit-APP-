@@ -90,12 +90,18 @@ export function MerchantPlacesScreen() {
     }
   };
 
-  const handleClaim = async (placeId: string) => {
+  const handleClaim = async (place: PlaceSearchResult) => {
     try {
-      setClaiming(placeId);
+      setClaiming(place.placeId);
       const token = await getToken();
       if (!token) return;
-      await apiService.claimMerchantPlace(token, placeId);
+      await apiService.claimMerchantPlace(token, {
+        placeName: place.placeName,
+        district: place.district,
+        city: place.city,
+        country: '台灣',
+        placeCacheId: place.placeId,
+      });
       Alert.alert(isZh ? '成功' : 'Success', translations.claimSuccess);
       setShowSearch(false);
       setSearchQuery('');
@@ -239,7 +245,7 @@ export function MerchantPlacesScreen() {
                   ) : (
                     <TouchableOpacity
                       style={styles.claimBadge}
-                      onPress={() => handleClaim(result.placeId)}
+                      onPress={() => handleClaim(result)}
                       disabled={claiming === result.placeId}
                     >
                       {claiming === result.placeId ? (

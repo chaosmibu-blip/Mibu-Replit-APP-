@@ -360,13 +360,30 @@ class ApiService {
     return data;
   }
 
-  async claimMerchantPlace(token: string, placeId: string): Promise<{ place: MerchantPlace }> {
+  async claimMerchantPlace(token: string, place: {
+    placeName: string;
+    district?: string;
+    city?: string;
+    country?: string;
+    placeCacheId?: string;
+    googlePlaceId?: string;
+  }): Promise<{ place: MerchantPlace }> {
+    const requestBody = {
+      placeName: place.placeName,
+      district: place.district || '',
+      city: place.city || '',
+      country: place.country || '台灣',
+      placeCacheId: place.placeCacheId,
+      googlePlaceId: place.googlePlaceId,
+    };
+    console.log('🏪 Claim request body:', requestBody);
+    
     return this.request('/api/merchant/places/claim', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ placeId }),
+      body: JSON.stringify(requestBody),
     });
   }
 
