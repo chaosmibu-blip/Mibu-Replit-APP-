@@ -8,6 +8,20 @@ The app connects to an external backend API for location data and itinerary gene
 
 ## Recent Changes (December 2024)
 
+### Inventory & Tab Badge System (December 17, 2024)
+- **ItemBoxScreen**: Complete inventory page showing user's collected coupons and items
+  - Unread items display red border and dot indicator
+  - Coupon redemption flow with merchant code verification
+  - 3-minute countdown timer after successful redemption
+  - Auto-close modal when countdown expires
+- **Tab Badge Notification**: Gacha tab shows red badge with unread item count
+  - `setUnreadCount` function in AppContext for efficient state updates
+  - No redundant API calls - unread count calculated from existing data
+- **Collection Screen Updates**: Partner and coupon badges on collection items
+  - Purple "合作/Partner" badge for merchant-affiliated places
+  - Orange "優惠/Coupon" badge for places with active coupons
+  - Merchant name display for affiliated items
+
 ### Unified Pool Preview with Coupons (December 17, 2024)
 - **Unified Pool Modal**: Single 「查看獎池」button shows both rare places and coupons in one modal
 - **Coupon Section**: SP/SSR coupons displayed at top of pool preview with gold (SSR) or purple (SP) borders
