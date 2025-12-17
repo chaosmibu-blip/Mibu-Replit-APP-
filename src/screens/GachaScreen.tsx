@@ -168,18 +168,13 @@ export function GachaScreen() {
     setPrizePoolData(null);
     
     try {
-      const city = selectedRegion.nameZh || selectedRegion.nameEn || '';
       const token = await AsyncStorage.getItem('@mibu_token');
       
-      const [poolResult, couponResult, prizePoolResult] = await Promise.allSettled([
-        apiService.getGachaPool(city),
+      const [couponResult, prizePoolResult] = await Promise.allSettled([
         token ? apiService.getRegionCouponPool(token, selectedRegionId) : Promise.resolve([]),
         apiService.getPrizePool(selectedRegionId)
       ]);
       
-      if (poolResult.status === 'fulfilled') {
-        setPoolData(poolResult.value);
-      }
       if (couponResult.status === 'fulfilled') {
         setCouponPoolData(couponResult.value || []);
       }

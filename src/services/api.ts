@@ -47,7 +47,7 @@ class ApiService {
     language: Language;
     itemCount: number;
   }, token?: string): Promise<ItineraryGenerateResponse> {
-    const url = `${this.baseUrl}/api/gacha/itinerary`;
+    const url = `${this.baseUrl}/api/gacha/itinerary/v3`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -108,19 +108,7 @@ class ApiService {
     return this.request(`/api/place/promo?${queryParams}`);
   }
 
-  async getGachaPool(city: string, district?: string): Promise<GachaPoolResponse> {
-    try {
-      const path = district 
-        ? `/api/gacha/pool/${encodeURIComponent(city)}/${encodeURIComponent(district)}`
-        : `/api/gacha/pool/${encodeURIComponent(city)}`;
-      const data = await this.request<GachaPoolResponse>(path);
-      return data;
-    } catch (error) {
-      console.error('Failed to get gacha pool:', error);
-      throw error;
-    }
-  }
-
+  
   async pullGacha(payload: GachaPullPayload): Promise<GachaPullResponse> {
     try {
       const data = await this.request<GachaPullResponse>('/api/gacha/pull', {
