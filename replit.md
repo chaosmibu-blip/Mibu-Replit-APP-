@@ -85,3 +85,4 @@ Preferred communication style: Simple, everyday language.
 - **Twilio**: For SMS sending capabilities (credentials managed via Replit Connectors).
 - **Stripe & Recur**: Payment gateways for merchant top-ups.
 - **Socket.IO**: For live location tracking in specialist features.
+

@@ -108,7 +108,17 @@ class ApiService {
     return this.request(`/api/place/promo?${queryParams}`);
   }
 
-  
+  async getGachaPool(city: string): Promise<GachaPoolResponse> {
+    try {
+      const encodedCity = encodeURIComponent(city);
+      const data = await this.request<GachaPoolResponse>(`/api/gacha/pool/${encodedCity}`);
+      return data;
+    } catch (error) {
+      console.error('Failed to get gacha pool:', error);
+      throw error;
+    }
+  }
+
   async pullGacha(payload: GachaPullPayload): Promise<GachaPullResponse> {
     try {
       const data = await this.request<GachaPullResponse>('/api/gacha/pull', {

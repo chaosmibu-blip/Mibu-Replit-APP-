@@ -283,10 +283,19 @@ export interface GachaPoolItem {
 }
 
 export interface GachaPoolResponse {
-  city: string;
-  district: string;
-  items: GachaPoolItem[];
-  totalCount: number;
+  success: boolean;
+  pool: {
+    city: string;
+    jackpots: Array<{
+      id: number;
+      placeName: string;
+      category: string;
+      subCategory: string;
+      rating: string | null;
+    }>;
+    totalInPool: number;
+    jackpotCount: number;
+  };
 }
 
 export interface GachaPullPayload {

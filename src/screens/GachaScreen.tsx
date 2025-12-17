@@ -168,13 +168,18 @@ export function GachaScreen() {
     setPrizePoolData(null);
     
     try {
+      const city = selectedRegion.nameZh || selectedRegion.nameEn || '';
       const token = await AsyncStorage.getItem('@mibu_token');
       
-      const [couponResult, prizePoolResult] = await Promise.allSettled([
+      const [poolResult, couponResult, prizePoolResult] = await Promise.allSettled([
+        apiService.getGachaPool(city),
         token ? apiService.getRegionCouponPool(token, selectedRegionId) : Promise.resolve([]),
         apiService.getPrizePool(selectedRegionId)
       ]);
       
+      if (poolResult.status === 'fulfilled') {
+        setPoolData(poolResult.value);
+      }
       if (couponResult.status === 'fulfilled') {
         setCouponPoolData(couponResult.value || []);
       }
@@ -422,11 +427,9 @@ export function GachaScreen() {
     );
   };
 
-  const getRareItems = () => {
-    if (!poolData?.items) return [];
-    return poolData.items.filter(item => 
-      item.rarity === 'SP' || item.rarity === 'SSR' || item.rarity === 'SR'
-    );
+  const getJackpotItems = () => {
+    if (!poolData?.pool?.jackpots) return [];
+    return poolData.pool.jackpots;
   };
 
   return (
@@ -586,23 +589,75 @@ export function GachaScreen() {
               </View>
             ) : (
               <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {((prizePoolData?.coupons?.length || 0) > 0 || couponPoolData.length > 0) ? (
+                {((prizePoolData?.coupons?.length || 0) > 0 || couponPoolData.length > 0 || (poolData?.pool?.jackpots?.length || 0) > 0) ? (
                   <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 }}>
-                    {prizePoolData?.region?.name && (
+                    {(prizePoolData?.region?.name || poolData?.pool?.city) && (
                       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
                         <Ionicons name="location" size={16} color="#6366f1" />
                         <Text style={{ fontSize: 13, color: '#6366f1', marginLeft: 6, fontWeight: '600' }}>
-                          {prizePoolData.region.name}
+                          {prizePoolData?.region?.name || poolData?.pool?.city}
                         </Text>
+                        {poolData?.pool && (
+                          <Text style={{ fontSize: 11, color: '#94a3b8', marginLeft: 8 }}>
+                            ({state.language === 'zh-TW' ? `共 ${poolData.pool.totalInPool} 個地點` : `${poolData.pool.totalInPool} places total`})
+                          </Text>
+                        )}
                       </View>
                     )}
                     
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                      <Ionicons name="ticket" size={18} color="#d97706" />
-                      <Text style={{ fontSize: 14, fontWeight: '700', color: '#d97706', marginLeft: 6 }}>
-                        {state.language === 'zh-TW' ? 'SP/SSR 稀有優惠券' : 'SP/SSR Rare Coupons'} ({(prizePoolData?.coupons?.length || 0) + couponPoolData.length})
-                      </Text>
-                    </View>
+                    {(poolData?.pool?.jackpots?.length || 0) > 0 && (
+                      <>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                          <Ionicons name="star" size={18} color="#f59e0b" />
+                          <Text style={{ fontSize: 14, fontWeight: '700', color: '#f59e0b', marginLeft: 6 }}>
+                            {state.language === 'zh-TW' ? '大獎景點' : 'Jackpot Places'} ({poolData?.pool?.jackpotCount || 0})
+                          </Text>
+                        </View>
+                        
+                        {poolData?.pool?.jackpots?.map((jackpot) => (
+                          <View
+                            key={`jackpot-${jackpot.id}`}
+                            style={{
+                              backgroundColor: '#fffbeb',
+                              borderRadius: 12,
+                              padding: 14,
+                              marginBottom: 10,
+                              borderWidth: 2,
+                              borderColor: '#fbbf24',
+                            }}
+                          >
+                            <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', marginBottom: 4 }}>
+                              {jackpot.placeName}
+                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Ionicons name="pricetag-outline" size={12} color="#94a3b8" />
+                                <Text style={{ fontSize: 11, color: '#94a3b8', marginLeft: 4 }}>
+                                  {jackpot.category}{jackpot.subCategory ? ` · ${jackpot.subCategory}` : ''}
+                                </Text>
+                              </View>
+                              {jackpot.rating && (
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                  <Ionicons name="star" size={10} color="#fbbf24" />
+                                  <Text style={{ fontSize: 11, color: '#94a3b8', marginLeft: 2 }}>
+                                    {jackpot.rating}
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
+                          </View>
+                        ))}
+                      </>
+                    )}
+                    
+                    {((prizePoolData?.coupons?.length || 0) > 0 || couponPoolData.length > 0) && (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12, marginTop: 8 }}>
+                        <Ionicons name="ticket" size={18} color="#d97706" />
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#d97706', marginLeft: 6 }}>
+                          {state.language === 'zh-TW' ? 'SP/SSR 稀有優惠券' : 'SP/SSR Rare Coupons'} ({(prizePoolData?.coupons?.length || 0) + couponPoolData.length})
+                        </Text>
+                      </View>
+                    )}
                     
                     {prizePoolData?.coupons?.map((coupon) => (
                       <View
