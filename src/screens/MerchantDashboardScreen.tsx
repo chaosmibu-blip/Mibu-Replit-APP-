@@ -214,6 +214,20 @@ export function MerchantDashboardScreen() {
 
         <TouchableOpacity
           style={styles.menuItem}
+          onPress={() => router.push('/merchant/coupons' as any)}
+        >
+          <View style={[styles.menuIcon, { backgroundColor: '#fef3c7' }]}>
+            <Ionicons name="pricetag-outline" size={24} color="#f59e0b" />
+          </View>
+          <View style={styles.menuContent}>
+            <Text style={styles.menuTitle}>{isZh ? '優惠券管理' : 'Coupon Management'}</Text>
+            <Text style={styles.menuSubtitle}>{isZh ? '創建與管理優惠券' : 'Create and manage coupons'}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
           onPress={() => router.push('/merchant/profile' as any)}
         >
           <View style={styles.menuIcon}>

@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams, RegionPoolCoupon, InventoryItem, InventoryResponse, InventoryConfig, RarityConfig, RedeemResponse, CollectionWithPromoResponse, AutoSaveCollectionResponse, AdConfig, NotificationStatus, MerchantRedemptionCode, AdPlacement, ItineraryGenerateResponse, UserProfile, UpdateProfileParams, ProfileResponse, SosEligibility, SosSendParams, SosSendResponse, SosAlertsResponse, SosAlert } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams, RegionPoolCoupon, InventoryItem, InventoryResponse, InventoryConfig, RarityConfig, RedeemResponse, CollectionWithPromoResponse, AutoSaveCollectionResponse, AdConfig, NotificationStatus, MerchantRedemptionCode, AdPlacement, ItineraryGenerateResponse, UserProfile, UpdateProfileParams, ProfileResponse, SosEligibility, SosSendParams, SosSendResponse, SosAlertsResponse, SosAlert, MerchantApplyParams, MerchantApplyResponse, MerchantAnalytics, MerchantCoupon, MerchantCouponsResponse, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -421,6 +421,63 @@ class ApiService {
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(params),
+    });
+  }
+
+  // Merchant Apply & Analytics
+  async applyMerchant(token: string, params: MerchantApplyParams): Promise<MerchantApplyResponse> {
+    return this.request('/api/merchant/apply', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async getMerchantAnalytics(token: string): Promise<MerchantAnalytics> {
+    return this.request('/api/merchant/analytics', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  // Merchant Coupons CRUD
+  async getMerchantCoupons(token: string): Promise<MerchantCouponsResponse> {
+    return this.request('/api/merchant/coupons', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async createMerchantCoupon(token: string, params: CreateMerchantCouponParams): Promise<{ success: boolean; coupon: MerchantCoupon }> {
+    return this.request('/api/merchant/coupons', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async updateMerchantCoupon(token: string, couponId: number, params: UpdateMerchantCouponParams): Promise<{ success: boolean; coupon: MerchantCoupon }> {
+    return this.request(`/api/merchant/coupons/${couponId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async deleteMerchantCoupon(token: string, couponId: number): Promise<{ success: boolean }> {
+    return this.request(`/api/merchant/coupons/${couponId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
   }
 

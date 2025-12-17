@@ -73,17 +73,110 @@ export interface ServiceRelation {
   };
 }
 
+export type MerchantStatus = 'pending' | 'approved' | 'rejected';
+export type MerchantLevel = 'free' | 'pro' | 'premium';
+export type MerchantCouponTier = 'SP' | 'SSR' | 'SR' | 'S' | 'R';
+
 export interface MerchantMe {
   id: number;
   userId: string;
   name?: string;
   email?: string;
+  ownerName?: string;
   businessName?: string;
+  taxId?: string;
+  businessCategory?: string;
+  address?: string;
+  phone?: string;
+  mobile?: string;
   contactEmail?: string;
+  status: MerchantStatus;
+  merchantLevel: MerchantLevel;
   isApproved: boolean;
   creditBalance: number;
   subscriptionPlan?: string;
   createdAt: string;
+}
+
+export interface MerchantApplyParams {
+  ownerName: string;
+  businessName: string;
+  taxId?: string;
+  businessCategory: string;
+  address: string;
+  phone?: string;
+  mobile: string;
+  email: string;
+}
+
+export interface MerchantApplyResponse {
+  success: boolean;
+  merchant: MerchantMe;
+  isNew: boolean;
+  message: string;
+}
+
+export interface MerchantAnalytics {
+  success: boolean;
+  merchant: MerchantMe;
+  stats: {
+    totalCoupons: number;
+    activeCoupons: number;
+    redeemedCoupons: number;
+    totalRedemptions: number;
+    monthlyRedemptions: number;
+    viewCount: number;
+  };
+  placeLinks: {
+    id: number;
+    placeName: string;
+    district?: string;
+    city?: string;
+    isVerified: boolean;
+  }[];
+}
+
+export interface MerchantCoupon {
+  id: number;
+  merchantId: number;
+  name: string;
+  tier: MerchantCouponTier;
+  content: string;
+  terms: string | null;
+  quantity: number;
+  remainingQuantity: number;
+  validFrom: string | null;
+  validUntil: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMerchantCouponParams {
+  name: string;
+  tier: MerchantCouponTier;
+  content: string;
+  terms?: string;
+  quantity: number;
+  validFrom?: string;
+  validUntil?: string;
+  isActive?: boolean;
+}
+
+export interface UpdateMerchantCouponParams {
+  name?: string;
+  tier?: MerchantCouponTier;
+  content?: string;
+  terms?: string;
+  quantity?: number;
+  validFrom?: string;
+  validUntil?: string;
+  isActive?: boolean;
+}
+
+export interface MerchantCouponsResponse {
+  success: boolean;
+  coupons: MerchantCoupon[];
 }
 
 export interface MerchantTransaction {
