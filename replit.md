@@ -8,40 +8,6 @@ Mibu is a React Native/Expo mobile application that gamifies travel planning usi
 
 Preferred communication style: Simple, everyday language.
 
-## Agent 開發守則
-
-### 1. Backend Agnostic
-- 只負責 UI 和 API 串接
-- 後端邏輯是黑盒子，不要試圖猜測後端資料庫結構
-- 只依賴 API 契約定義的端點和 Type
-
-### 2. Type Consistency
-- 嚴格遵守 `types/` 資料夾中的 TypeScript 定義
-- 如果 API 回傳的資料跟 Type 不符，**請先報錯，不要擅自修改 Type**
-- Type 不符代表後端改壞了，需要通知後端修正
-
-### 3. Routing
-- 使用 **Expo Router**
-- 請使用 `router.push()` 而非 `navigation.navigate()`
-
-### 4. Styling
-- 嚴格使用 **NativeWind (Tailwind)**
-- 禁止使用 `StyleSheet.create`，除非 Tailwind 無法實現
-
-### 5. 禁止事項
-- ❌ 使用 HTML 標籤（`<div>`, `<span>` 等）
-- ❌ 依賴 Browser Cookie（必須用 Bearer Token）
-- ❌ 猜測後端資料庫結構
-
-### 6. 依賴鎖定
-- 除非用戶明確允許，禁止修改 `package.json` 或安裝新套件
-
-### 7. 與後端協作
-如遇到 API 問題或需要新端點，請告知用戶，讓後端 Agent 處理：
-1. 新增/修改端點
-2. 更新 `docs/API_CONTRACT.md`
-3. 提供前端同步指令
-
 ## System Architecture
 
 ### Frontend Framework
@@ -89,12 +55,87 @@ Preferred communication style: Simple, everyday language.
 - **Gacha Flow Simplification**: Removed district selection, streamlined navigation to results, and improved pool preview.
 - **Payment Gateway Integration**: Dual support for Stripe and Recur payments.
 
-## Backend API
+## External Dependencies
 
+### Backend API
+- **Base URL**: `https://gacha-travel--s8869420.replit.app`
+- **Key Endpoints**:
+    - Location data: `/api/locations/countries`, `/api/locations/regions/:countryId`, `/api/locations/districts/:regionId`
+    - Gacha: `/api/gacha/itinerary`
+    - Authentication & User Management: `/api/auth/user`, `/api/auth/login`, `/api/auth/switch-role`, `/api/auth/register` (for merchant/specialist), `/api/admin/users`, `/api/admin/pending-users`, `/api/admin/approve-user`
+    - SOS: `/api/user/sos-link`, `/api/sos/trigger`
+    - Location Update: `/api/location/update`
+    - Merchant Specific: `/api/merchant/me`, `/api/merchant/transactions`, `/api/merchant/verify`, `/api/merchant/places`, `/api/merchant/products`, `/api/merchant/apply`, `/api/merchant/analytics`, `/api/merchant/coupons` (CRUD)
+    - Specialist Specific: `/api/specialist/register`, `/api/specialist/travelers`, `/api/specialist/tracking` (Socket.IO for live tracking)
+    - Coupons: `/api/coupons/region/:regionId/pool`
+
+### Key NPM Packages
+- `@react-native-async-storage/async-storage`
+- `@react-native-community/slider`
+- `react-native-webview`
+- `expo-haptics`
+- `expo-blur`
+- `@expo/vector-icons`, `expo-symbols`
+- `expo-location`
+- `react-native-maps`
+- `expo-clipboard`
+- `react-native-reanimated`
+
+### Third-Party Integrations
+- **Twilio**: For SMS sending capabilities (credentials managed via Replit Connectors).
+- **Stripe & Recur**: Payment gateways for merchant top-ups.
+- **Socket.IO**: For live location tracking in specialist features.
+
+# Mibu 旅行扭蛋 - Expo App
+
+## Overview
+這是 Mibu 旅行扭蛋的消費者/商家端/專員端/管理端 App，使用 Expo + React Native 開發。
+
+## 後端 API 資訊
 - **Base URL**: `https://gacha-travel--s8869420.replit.app`
 - **認證方式**: Bearer Token（Header: `Authorization: Bearer ${token}`）
 
-### 主要 API 端點
+## Agent 開發守則
+
+### 1. Backend Agnostic
+- 你只負責 UI 和 API 串接
+- 後端邏輯是黑盒子，不要試圖猜測後端資料庫結構
+- 只依賴 API 契約定義的端點和 Type
+
+### 2. Type Consistency
+- 嚴格遵守 `types/` 資料夾中的 TypeScript 定義
+- 如果 API 回傳的資料跟 Type 不符，**請先報錯，不要擅自修改 Type**
+- Type 不符代表後端改壞了，需要通知後端修正
+
+### 3. Routing
+- 使用 **Expo Router**
+- 請使用 `router.push()` 而非 `navigation.navigate()`
+
+### 4. Styling
+- 嚴格使用 **NativeWind (Tailwind)**
+- 禁止使用 `StyleSheet.create`，除非 Tailwind 無法實現
+
+### 5. 禁止事項
+- ❌ 使用 HTML 標籤（`<div>`, `<span>` 等）
+- ❌ 依賴 Browser Cookie（必須用 Bearer Token）
+- ❌ 猜測後端資料庫結構
+
+### 6. 依賴鎖定
+- 除非用戶明確允許，禁止修改 `package.json` 或安裝新套件
+
+---
+
+## 統一錯誤處理
+
+| 狀態碼 | 處理方式 |
+|--------|----------|
+| 401 | 執行登出並導向登入頁 |
+| 400 | 顯示 Toast 錯誤訊息 |
+| 500 | 顯示「系統錯誤，請稍後再試」|
+
+---
+
+## 主要 API 端點
 
 | 功能 | 方法 | 端點 | 認證 |
 |------|------|------|------|
@@ -107,27 +148,20 @@ Preferred communication style: Simple, everyday language.
 | 取得國家列表 | GET | /api/locations/countries | 否 |
 | 取得公告 | GET | /api/announcements | 否 |
 
-### 其他端點
-- Location data: `/api/locations/regions/:countryId`, `/api/locations/districts/:regionId`
-- Authentication: `/api/auth/login`, `/api/auth/switch-role`, `/api/auth/register`
-- Admin: `/api/admin/users`, `/api/admin/pending-users`, `/api/admin/approve-user`
-- SOS: `/api/user/sos-link`, `/api/sos/trigger`
-- Location Update: `/api/location/update`
-- Merchant: `/api/merchant/me`, `/api/merchant/transactions`, `/api/merchant/verify`, `/api/merchant/places`, `/api/merchant/products`, `/api/merchant/apply`, `/api/merchant/analytics`, `/api/merchant/coupons`
-- Specialist: `/api/specialist/register`, `/api/specialist/travelers`, `/api/specialist/tracking`
-- Coupons: `/api/coupons/region/:regionId/pool`
+---
 
-### 統一錯誤處理
+## 與後端協作
 
-| 狀態碼 | 處理方式 |
-|--------|----------|
-| 401 | 執行登出並導向登入頁 |
-| 400 | 顯示 Toast 錯誤訊息 |
-| 500 | 顯示「系統錯誤，請稍後再試」|
+如遇到 API 問題或需要新端點，請告知用戶，讓後端 Agent 處理：
+1. 新增/修改端點
+2. 更新 `docs/API_CONTRACT.md`
+3. 提供前端同步指令
+
+---
 
 ## Design System
 
-### 主色調（UI 元素）
+### 主色調
 - Primary: `#6366f1` (Indigo)
 - Success: `#10b981` (Emerald)
 - Error: `#ef4444` (Red)
@@ -140,24 +174,47 @@ Preferred communication style: Simple, everyday language.
 - S: 藍色 `#3b82f6`
 - R: 灰色 `#9ca3af`
 
-### Mibu 品牌色（已在 ItemBoxScreen 等使用）
-- Primary: `#7A5230` (brown), `#B08860` (copper), `#4A2B13` (dark)
-- Background: `#F5E6D3` (cream), `#FDFBF8` (cream light), `#FFFEFA` (warm white)
-- Accents: `#C9A87C` (tan), `#E8D5C4` (tan light), `#5A3420` (brown dark)
+# Mibu 旅行扭蛋 - Expo App
 
-## Key NPM Packages
-- `@react-native-async-storage/async-storage`
-- `@react-native-community/slider`
-- `react-native-webview`
-- `expo-haptics`
-- `expo-blur`
-- `@expo/vector-icons`, `expo-symbols`
-- `expo-location`
-- `react-native-maps`
-- `expo-clipboard`
-- `react-native-reanimated`
+## Overview
+這是 Mibu 旅行扭蛋的 **消費者/商家/專員/管理端** App，使用 Expo + React Native 開發。
+管理端在 App 中提供輕量管理功能，完整管理功能請使用 Web Admin。
 
-## Third-Party Integrations
-- **Twilio**: For SMS sending capabilities (credentials managed via Replit Connectors).
-- **Stripe & Recur**: Payment gateways for merchant top-ups.
-- **Socket.IO**: For live location tracking in specialist features.
+## 後端資訊
+- **Base URL**: `https://gacha-travel--s8869420.replit.app`
+- **認證方式**: `Authorization: Bearer ${token}`
+
+## Agent 開發守則
+
+### 1. 接收後端指令
+- 用戶會貼來「📱 前端指令」，請照指令實作
+- 指令包含：TypeScript Interface、API 呼叫範例、UI 建議
+
+### 2. 技術規範
+- **Routing**: 使用 Expo Router，用 `router.push()`
+- **Styling**: 使用 NativeWind (Tailwind)，禁止 `StyleSheet.create`
+- **組件**: 只用 React Native 原生組件（`<View>`, `<Text>`, `<FlatList>`）
+
+### 3. 禁止事項
+- ❌ 使用 HTML 標籤
+- ❌ 依賴 Browser Cookie
+- ❌ 猜測後端資料庫結構
+- ❌ 擅自修改 TypeScript Type（不符時先報錯）
+
+### 4. 錯誤處理
+- 401: 登出並導向登入頁
+- 400: 顯示 Toast 錯誤
+- 500: 顯示「系統錯誤」
+
+### 5. 依賴鎖定
+- 除非用戶允許，禁止安裝新套件
+
+### 6. 遇到問題時
+- 如需新 API 或修改現有 API，請告知用戶
+- 用戶會轉達給後端 Agent 處理
+
+## Design System
+- Primary: `#6366f1`
+- Success: `#10b981`
+- Error: `#ef4444`
+- 稀有度: SP 金、SSR 粉、SR 紫、S 藍、R 灰
