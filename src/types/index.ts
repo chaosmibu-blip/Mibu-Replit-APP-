@@ -543,3 +543,85 @@ export interface MerchantRedemptionCode {
   code: string;
   expiresAt: string;
 }
+
+// User Profile (Settings Page)
+export type Gender = 'male' | 'female' | 'other';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  profileImageUrl: string | null;
+  role: UserRole;
+  gender: Gender | null;
+  birthDate: string | null;
+  phone: string | null;
+  dietaryRestrictions: string[];
+  medicalHistory: string[];
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  emergencyContactRelation: string | null;
+  preferredLanguage: Language;
+}
+
+export interface UpdateProfileParams {
+  firstName?: string;
+  lastName?: string;
+  gender?: Gender;
+  birthDate?: string;
+  phone?: string;
+  dietaryRestrictions?: string[];
+  medicalHistory?: string[];
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelation?: string;
+  preferredLanguage?: Language;
+}
+
+export interface ProfileResponse {
+  success: boolean;
+  message: string;
+  profile: UserProfile;
+}
+
+// SOS System
+export type SosAlertStatus = 'pending' | 'acknowledged' | 'resolved' | 'cancelled';
+
+export interface SosAlert {
+  id: number;
+  userId: string;
+  serviceOrderId: number | null;
+  plannerId: number | null;
+  location: string | null;
+  locationAddress: string | null;
+  message: string | null;
+  status: SosAlertStatus;
+  acknowledgedBy: string | null;
+  acknowledgedAt: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+}
+
+export interface SosEligibility {
+  eligible: boolean;
+  reason: string | null;
+}
+
+export interface SosSendParams {
+  serviceOrderId?: number;
+  plannerId?: number;
+  location?: string;
+  locationAddress?: string;
+  message?: string;
+}
+
+export interface SosSendResponse {
+  success: boolean;
+  alertId: number;
+  message: string;
+}
+
+export interface SosAlertsResponse {
+  alerts: SosAlert[];
+}

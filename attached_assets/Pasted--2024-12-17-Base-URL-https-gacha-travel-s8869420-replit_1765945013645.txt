@@ -1,0 +1,406 @@
+前端同步指令 - 設定頁面完整版
+
+日期: 2024-12-17
+後端 Base URL: https://gacha-travel--s8869420.replit.app
+
+---
+
+一、功能需求總覽
+
+模組          功能                                              備註
+個人資料      姓名、性別、生日、Email、手機、飲食禁忌、疾病史、緊急聯絡人    飲食禁忌/疾病史為標籤輸入
+登出          清除登入狀態，跳轉回初始畫面
+語言          下拉選單切換語系，套用至全介面                         zh-TW, en, ja, ko
+安全中心      SOS 求救按鈕，推播至旅程策畫師+管理端                   需購買旅程服務解鎖
+語言快捷      初始畫面右上角圖示切換語系
+購買服務      跳轉至旅程服務購買頁面
+
+---
+
+二、API 規格
+
+1. 登出 API
+
+POST /api/auth/logout
+
+Response: 
+{ 
+  success: true, 
+  message: "已成功登出" 
+}
+
+前端處理:
+- 清除本地 token
+- 清除 AsyncStorage/SecureStore
+- 跳轉至初始畫面 (Welcome/Login)
+
+---
+
+2. 取得個人資料 API
+
+GET /api/profile
+Headers: { Authorization: Bearer <token> }
+
+Response: {
+  id: string,                           // 用戶資料庫 ID
+  email: string,                        // Email (唯讀)
+  firstName: string | null,             // 名
+  lastName: string | null,              // 姓
+  profileImageUrl: string | null,       // 大頭照
+  role: string,                         // 角色
+  gender: "male" | "female" | "other" | null,  // 性別
+  birthDate: string | null,             // 出生年月日 (ISO: "1990-05-15")
+  phone: string | null,                 // 手機
+  dietaryRestrictions: string[],        // 飲食禁忌 (標籤陣列)
+  medicalHistory: string[],             // 疾病史 (標籤陣列)
+  emergencyContactName: string | null,  // 緊急聯絡人姓名
+  emergencyContactPhone: string | null, // 緊急聯絡人電話
+  emergencyContactRelation: string | null, // 關係 (配偶/父母/朋友等)
+  preferredLanguage: "zh-TW" | "en" | "ja" | "ko"  // 語系
+}
+
+---
+
+3. 更新個人資料 API
+
+PATCH /api/profile
+Headers: { Authorization: Bearer <token> }
+
+Body: {
+  firstName?: string,
+  lastName?: string,
+  gender?: "male" | "female" | "other",
+  birthDate?: string,                  // ISO 格式: "1990-05-15"
+  phone?: string,
+  dietaryRestrictions?: string[],      // 完整標籤陣列
+  medicalHistory?: string[],           // 完整標籤陣列
+  emergencyContactName?: string,
+  emergencyContactPhone?: string,
+  emergencyContactRelation?: string,
+  preferredLanguage?: "zh-TW" | "en" | "ja" | "ko"
+}
+
+Response: {
+  success: true,
+  message: "個人資料已更新",
+  profile: { ... }  // 更新後的資料
+}
+
+Error (400): { error: "資料格式錯誤", details: [...] }
+
+---
+
+4. 檢查 SOS 資格 API
+
+GET /api/sos/eligibility
+Headers: { Authorization: Bearer <token> }
+
+Response: {
+  eligible: boolean,     // true = 已購買旅程服務，可使用 SOS
+  reason: string | null  // 若無資格，顯示: "需購買旅程服務才能使用安全中心功能"
+}
+
+前端處理:
+- eligible = false: 顯示鎖定狀態 + 「購買服務」按鈕
+- eligible = true: 顯示 SOS 按鈕
+
+---
+
+5. 發送 SOS 求救 API
+
+POST /api/sos/alert
+Headers: { Authorization: Bearer <token> }
+
+Body: {
+  serviceOrderId?: number,      // 關聯的旅程訂單 ID
+  plannerId?: number,           // 負責的旅程策畫師 ID
+  location?: string,            // GPS 座標 "25.0330,121.5654"
+  locationAddress?: string,     // 可讀地址 (可用 reverse geocoding)
+  message?: string              // 附加訊息
+}
+
+Response (成功 200): {
+  success: true,
+  alertId: number,
+  message: "求救訊號已發送，我們會盡快聯繫您"
+}
+
+Response (無資格 403): {
+  error: "需購買旅程服務才能使用 SOS 求救功能",
+  requiresPurchase: true
+}
+
+後端行為:
+- 發送推播通知至旅程策畫師
+- 發送推播通知至管理端
+
+---
+
+6. 取得 SOS 記錄 API
+
+GET /api/sos/alerts
+Headers: { Authorization: Bearer <token> }
+
+Response: {
+  alerts: [{
+    id: number,
+    userId: string,
+    serviceOrderId: number | null,
+    plannerId: number | null,
+    location: string | null,
+    locationAddress: string | null,
+    message: string | null,
+    status: "pending" | "acknowledged" | "resolved" | "cancelled",
+    acknowledgedBy: string | null,
+    acknowledgedAt: string | null,
+    resolvedAt: string | null,
+    createdAt: string
+  }]
+}
+
+狀態說明:
+- pending: 等待處理
+- acknowledged: 已確認
+- resolved: 已解決
+- cancelled: 已取消
+
+---
+
+7. 取消 SOS 求救 API
+
+PATCH /api/sos/alerts/:id/cancel
+Headers: { Authorization: Bearer <token> }
+
+Response: { success: true, alert: {...} }
+
+Error (404): { error: "找不到求救記錄" }
+Error (400): { error: "無法取消已處理的求救" }
+
+---
+
+三、前端實作建議
+
+1. 設定頁面結構
+
+設定 (Settings)
+|-- 個人資料 (Profile)
+|   |-- 用戶 ID（唯讀顯示）
+|   |-- 姓名（firstName + lastName）
+|   |-- 性別（下拉: 男/女/其他）
+|   |-- 出生年月日（日期選擇器）
+|   |-- Email（唯讀）
+|   |-- 手機
+|   |-- 飲食禁忌（標籤輸入）
+|   |-- 疾病史（標籤輸入）
+|   |-- 緊急聯絡人（姓名、電話、關係）
+|-- 語言設定（下拉選單）
+|-- 安全中心 <- 需購買旅程服務解鎖
+|   |-- SOS 緊急求救按鈕（長按3秒觸發）
+|   |-- 求救記錄列表
+|-- 購買服務 -> 跳轉至購買頁面
+|-- 登出 -> 清除 token，跳轉初始畫面
+
+---
+
+2. 標籤輸入組件 (Tag Input)
+
+interface TagInputProps {
+  value: string[];
+  onChange: (tags: string[]) => void;
+  placeholder?: string;
+}
+
+const TagInput: React.FC<TagInputProps> = ({ value, onChange, placeholder }) => {
+  const [inputValue, setInputValue] = useState("");
+
+  const addTag = () => {
+    if (inputValue.trim() && !value.includes(inputValue.trim())) {
+      onChange([...value, inputValue.trim()]);
+      setInputValue("");
+    }
+  };
+
+  const removeTag = (index: number) => {
+    onChange(value.filter((_, i) => i !== index));
+  };
+
+  return (
+    <View>
+      {/* 標籤列表 */}
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {value.map((tag, idx) => (
+          <View key={idx} style={styles.tag}>
+            <Text>{tag}</Text>
+            <TouchableOpacity onPress={() => removeTag(idx)}>
+              <Text style={{ marginLeft: 4 }}>x</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
+      
+      {/* 輸入框 */}
+      <View style={{ flexDirection: "row", marginTop: 8 }}>
+        <TextInput
+          value={inputValue}
+          onChangeText={setInputValue}
+          placeholder={placeholder}
+          onSubmitEditing={addTag}
+          style={{ flex: 1 }}
+        />
+        <Button title="新增" onPress={addTag} />
+      </View>
+    </View>
+  );
+};
+
+// 使用範例
+<TagInput
+  value={dietaryRestrictions}
+  onChange={setDietaryRestrictions}
+  placeholder="輸入飲食禁忌，如：素食、海鮮過敏"
+/>
+
+---
+
+3. SOS 觸發方式
+
+觸發方式              實作說明
+長按 SOS 按鈕 3 秒    onLongPress + 3秒進度圈動畫
+音量鍵連按 5 下       監聽 VolumeUp/VolumeDown 事件 (2秒內)
+用力搖晃 3 次         DeviceMotion API 偵測加速度變化
+
+// 音量鍵偵測 (React Native)
+import { DeviceEventEmitter } from "react-native";
+
+const useSosVolumeKeyTrigger = (onTrigger: () => void) => {
+  const pressCountRef = useRef(0);
+  const timerRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener("volumeKeyPress", () => {
+      pressCountRef.current += 1;
+      
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        pressCountRef.current = 0;
+      }, 2000);
+      
+      if (pressCountRef.current >= 5) {
+        pressCountRef.current = 0;
+        onTrigger();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [onTrigger]);
+};
+
+---
+
+4. 語言切換
+
+const languages = [
+  { code: "zh-TW", label: "繁體中文" },
+  { code: "en", label: "English" },
+  { code: "ja", label: "日本語" },
+  { code: "ko", label: "한국어" },
+];
+
+const handleLanguageChange = async (code: string) => {
+  // 1. 更新後端
+  await fetch("/api/profile", {
+    method: "PATCH",
+    headers: { 
+      "Authorization": "Bearer " + token,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ preferredLanguage: code })
+  });
+  
+  // 2. 切換 i18n
+  i18n.changeLanguage(code);
+  
+  // 3. 儲存本地 (下次啟動用)
+  await AsyncStorage.setItem("preferredLanguage", code);
+};
+
+---
+
+5. 初始畫面右上角語言切換
+
+// 在 Welcome/Home 頁面右上角
+<TouchableOpacity 
+  style={styles.languageIcon}
+  onPress={() => setShowLanguageModal(true)}
+>
+  <Text style={{ fontSize: 24 }}>語言</Text>
+</TouchableOpacity>
+
+// 語言選擇 Modal
+<Modal visible={showLanguageModal}>
+  {languages.map(lang => (
+    <TouchableOpacity 
+      key={lang.code}
+      onPress={() => handleLanguageChange(lang.code)}
+    >
+      <Text>{lang.label}</Text>
+    </TouchableOpacity>
+  ))}
+</Modal>
+
+---
+
+6. 管理端：用戶資料庫查詢 API (已存在)
+
+GET /api/admin/users
+Headers: { Authorization: Bearer <admin_token> }
+Query: ?search=關鍵字&page=1&limit=20
+
+Response: {
+  users: User[],
+  total: number,
+  page: number,
+  limit: number
+}
+
+---
+
+四、資料型別參考
+
+// 用戶個人資料
+interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  profileImageUrl: string | null;
+  role: "traveler" | "merchant" | "specialist" | "admin";
+  gender: "male" | "female" | "other" | null;
+  birthDate: string | null;
+  phone: string | null;
+  dietaryRestrictions: string[];
+  medicalHistory: string[];
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  emergencyContactRelation: string | null;
+  preferredLanguage: "zh-TW" | "en" | "ja" | "ko";
+}
+
+// SOS 求救記錄
+interface SosAlert {
+  id: number;
+  userId: string;
+  serviceOrderId: number | null;
+  plannerId: number | null;
+  location: string | null;
+  locationAddress: string | null;
+  message: string | null;
+  status: "pending" | "acknowledged" | "resolved" | "cancelled";
+  acknowledgedBy: string | null;
+  acknowledgedAt: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+}
+
+// 語言選項
+type SupportedLanguage = "zh-TW" | "en" | "ja" | "ko";

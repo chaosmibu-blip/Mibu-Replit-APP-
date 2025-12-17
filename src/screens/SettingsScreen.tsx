@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { Language } from '../types';
 import { AuthScreen } from './AuthScreen';
+import { apiService } from '../services/api';
 
 const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
   { code: 'zh-TW', label: '繁體中文', flag: '🇹🇼' },
@@ -18,11 +19,32 @@ export function SettingsScreen() {
   const { state, t, setLanguage, setUser } = useApp();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const router = useRouter();
+  const isZh = state.language === 'zh-TW';
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('token');
-    setUser(null);
-    router.replace('/');
+    Alert.alert(
+      isZh ? '確認登出' : 'Confirm Logout',
+      isZh ? '確定要登出嗎？' : 'Are you sure you want to logout?',
+      [
+        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        {
+          text: isZh ? '登出' : 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('@mibu_token');
+              if (token) {
+                await apiService.logout(token).catch(() => {});
+              }
+            } catch {}
+            
+            await AsyncStorage.multiRemove(['@mibu_token', 'token']);
+            setUser(null);
+            router.replace('/');
+          },
+        },
+      ]
+    );
   };
 
   const handleSOSPress = () => {
@@ -69,29 +91,35 @@ export function SettingsScreen() {
           {state.language === 'zh-TW' ? '帳號' : 'Account'}
         </Text>
         {state.isAuthenticated ? (
-          <View style={styles.accountCard}>
-            <View style={styles.accountInfo}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {state.user?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
-                </Text>
+          <>
+            <TouchableOpacity style={styles.profileCard} onPress={() => router.push('/profile' as any)}>
+              <View style={styles.accountInfo}>
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>
+                    {state.user?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
+                  </Text>
+                </View>
+                <View style={styles.profileTextContainer}>
+                  <Text style={styles.accountName}>
+                    {state.user?.firstName || state.user?.name || 'User'}
+                  </Text>
+                  <Text style={styles.accountEmail}>
+                    {state.user?.email || ''}
+                  </Text>
+                  <Text style={styles.editHint}>
+                    {state.language === 'zh-TW' ? '點擊編輯個人資料' : 'Tap to edit profile'}
+                  </Text>
+                </View>
               </View>
-              <View>
-                <Text style={styles.accountName}>
-                  {state.user?.firstName || state.user?.name || 'User'}
-                </Text>
-                <Text style={styles.accountEmail}>
-                  {state.user?.email || ''}
-                </Text>
-              </View>
-            </View>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </TouchableOpacity>
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
               <Ionicons name="log-out-outline" size={20} color="#ef4444" />
               <Text style={styles.logoutText}>
                 {state.language === 'zh-TW' ? '登出' : 'Logout'}
               </Text>
             </TouchableOpacity>
-          </View>
+          </>
         ) : (
           <TouchableOpacity style={styles.loginButton} onPress={() => setShowAuthModal(true)}>
             <Ionicons name="log-in-outline" size={20} color="#ffffff" />
@@ -295,6 +323,24 @@ const styles = StyleSheet.create({
   accountEmail: {
     fontSize: 14,
     color: '#64748b',
+  },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#f1f5f9',
+    marginBottom: 12,
+  },
+  profileTextContainer: {
+    flex: 1,
+  },
+  editHint: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 4,
   },
   logoutButton: {
     flexDirection: 'row',

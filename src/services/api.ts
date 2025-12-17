@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams, RegionPoolCoupon, InventoryItem, InventoryResponse, InventoryConfig, RarityConfig, RedeemResponse, CollectionWithPromoResponse, AutoSaveCollectionResponse, AdConfig, NotificationStatus, MerchantRedemptionCode, AdPlacement, ItineraryGenerateResponse } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams, RegionPoolCoupon, InventoryItem, InventoryResponse, InventoryConfig, RarityConfig, RedeemResponse, CollectionWithPromoResponse, AutoSaveCollectionResponse, AdConfig, NotificationStatus, MerchantRedemptionCode, AdPlacement, ItineraryGenerateResponse, UserProfile, UpdateProfileParams, ProfileResponse, SosEligibility, SosSendParams, SosSendResponse, SosAlertsResponse, SosAlert } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -645,6 +645,70 @@ class ApiService {
   // Merchant Redemption Code API
   async getMerchantRedemptionCode(token: string): Promise<MerchantRedemptionCode> {
     return this.request<MerchantRedemptionCode>('/api/merchant/redemption-code', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  // Profile APIs
+  async getProfile(token: string): Promise<UserProfile> {
+    return this.request<UserProfile>('/api/profile', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async updateProfile(token: string, params: UpdateProfileParams): Promise<ProfileResponse> {
+    return this.request<ProfileResponse>('/api/profile', {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async logout(token: string): Promise<{ success: boolean; message: string }> {
+    return this.request<{ success: boolean; message: string }>('/api/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  // SOS APIs
+  async getSosEligibility(token: string): Promise<SosEligibility> {
+    return this.request<SosEligibility>('/api/sos/eligibility', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async sendSosAlert(token: string, params: SosSendParams): Promise<SosSendResponse> {
+    return this.request<SosSendResponse>('/api/sos/alert', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async getSosAlerts(token: string): Promise<SosAlertsResponse> {
+    return this.request<SosAlertsResponse>('/api/sos/alerts', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async cancelSosAlert(token: string, alertId: number): Promise<{ success: boolean; alert: SosAlert }> {
+    return this.request<{ success: boolean; alert: SosAlert }>(`/api/sos/alerts/${alertId}/cancel`, {
+      method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
