@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { InventoryItem, CouponTier } from '../types';
+import { MibuBrand } from '../../constants/Colors';
 
 const MAX_SLOTS = 30;
 const GRID_COLS = 6;
@@ -12,11 +13,11 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SLOT_SIZE = (SCREEN_WIDTH - 48) / GRID_COLS - 8;
 
 const TIER_STYLES: Record<CouponTier, { borderColor: string; bgColor: string; glowColor: string; animate: boolean }> = {
-  SP: { borderColor: '#fbbf24', bgColor: '#fef3c7', glowColor: 'rgba(251, 191, 36, 0.6)', animate: true },
-  SSR: { borderColor: '#a855f7', bgColor: '#f3e8ff', glowColor: 'rgba(168, 85, 247, 0.4)', animate: false },
-  SR: { borderColor: '#3b82f6', bgColor: '#dbeafe', glowColor: 'transparent', animate: false },
-  S: { borderColor: '#22c55e', bgColor: '#dcfce7', glowColor: 'transparent', animate: false },
-  R: { borderColor: '#9ca3af', bgColor: '#f3f4f6', glowColor: 'transparent', animate: false },
+  SP: { borderColor: MibuBrand.tierSP, bgColor: MibuBrand.tierSPBg, glowColor: 'rgba(212, 162, 76, 0.6)', animate: true },
+  SSR: { borderColor: MibuBrand.tierSSR, bgColor: MibuBrand.tierSSRBg, glowColor: 'rgba(176, 136, 96, 0.4)', animate: false },
+  SR: { borderColor: MibuBrand.tierSR, bgColor: MibuBrand.tierSRBg, glowColor: 'transparent', animate: false },
+  S: { borderColor: MibuBrand.tierS, bgColor: MibuBrand.tierSBg, glowColor: 'transparent', animate: false },
+  R: { borderColor: MibuBrand.tierR, bgColor: MibuBrand.tierRBg, glowColor: 'transparent', animate: false },
 };
 
 const TIER_ICONS: Record<CouponTier, string> = {
@@ -392,9 +393,9 @@ export function ItemBoxScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#0f172a', alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color="#fbbf24" />
-        <Text style={{ marginTop: 16, color: '#94a3b8' }}>
+      <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
+        <Text style={{ marginTop: 16, color: MibuBrand.brownLight }}>
           {state.language === 'zh-TW' ? '載入中...' : 'Loading...'}
         </Text>
       </View>
@@ -402,15 +403,15 @@ export function ItemBoxScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0f172a' }}>
-      <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: '#1e293b' }}>
+    <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+      <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: MibuBrand.cream }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={{ fontSize: 20, fontWeight: '800', color: '#ffffff' }}>
+          <Text style={{ fontSize: 20, fontWeight: '800', color: MibuBrand.dark }}>
             {state.language === 'zh-TW' ? '道具箱' : 'Item Box'}
           </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e293b', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
-            <Ionicons name="cube" size={16} color="#fbbf24" />
-            <Text style={{ fontSize: 14, fontWeight: '700', color: '#fbbf24', marginLeft: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: MibuBrand.cream, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
+            <Ionicons name="cube" size={16} color={MibuBrand.brown} />
+            <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.brown, marginLeft: 6 }}>
               {slotCount}/{maxSlots}
             </Text>
           </View>
@@ -445,7 +446,7 @@ export function ItemBoxScreen() {
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#fbbf24']} tintColor="#fbbf24" />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[MibuBrand.brown]} tintColor={MibuBrand.brown} />
         }
       >
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
@@ -469,8 +470,8 @@ export function ItemBoxScreen() {
         transparent={true}
         onRequestClose={() => setDetailModalVisible(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <View style={{ backgroundColor: '#1e293b', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, borderWidth: 2, borderColor: selectedItem ? TIER_STYLES[selectedItem.tier]?.borderColor : '#475569' }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, borderWidth: 2, borderColor: selectedItem ? TIER_STYLES[selectedItem.tier]?.borderColor : MibuBrand.tan }}>
             {selectedItem && (
               <>
                 <View style={{ alignItems: 'center', marginBottom: 20 }}>
@@ -498,26 +499,26 @@ export function ItemBoxScreen() {
                   </Text>
                 </View>
 
-                <Text style={{ fontSize: 18, fontWeight: '800', color: '#ffffff', textAlign: 'center', marginBottom: 8 }}>
+                <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark, textAlign: 'center', marginBottom: 8 }}>
                   {selectedItem.title}
                 </Text>
 
                 {selectedItem.description && (
-                  <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center', marginBottom: 16 }}>
+                  <Text style={{ fontSize: 14, color: MibuBrand.brownLight, textAlign: 'center', marginBottom: 16 }}>
                     {selectedItem.description}
                   </Text>
                 )}
 
                 {selectedItem.merchantName && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                    <Ionicons name="storefront-outline" size={14} color="#64748b" />
-                    <Text style={{ fontSize: 13, color: '#64748b', marginLeft: 6 }}>{selectedItem.merchantName}</Text>
+                    <Ionicons name="storefront-outline" size={14} color={MibuBrand.copper} />
+                    <Text style={{ fontSize: 13, color: MibuBrand.copper, marginLeft: 6 }}>{selectedItem.merchantName}</Text>
                   </View>
                 )}
 
                 {selectedItem.expiresAt && (
-                  <View style={{ backgroundColor: selectedItem.isExpired ? '#7f1d1d' : '#1e3a5f', padding: 12, borderRadius: 12, marginBottom: 20 }}>
-                    <Text style={{ fontSize: 12, color: selectedItem.isExpired ? '#fca5a5' : '#93c5fd', textAlign: 'center' }}>
+                  <View style={{ backgroundColor: selectedItem.isExpired ? MibuBrand.error : MibuBrand.cream, padding: 12, borderRadius: 12, marginBottom: 20 }}>
+                    <Text style={{ fontSize: 12, color: selectedItem.isExpired ? '#ffffff' : MibuBrand.brown, textAlign: 'center' }}>
                       {selectedItem.isExpired
                         ? (state.language === 'zh-TW' ? '已過期' : 'Expired')
                         : `${state.language === 'zh-TW' ? '有效期至' : 'Valid until'} ${new Date(selectedItem.expiresAt).toLocaleDateString()}`
@@ -529,9 +530,9 @@ export function ItemBoxScreen() {
                 <View style={{ flexDirection: 'row', gap: 12 }}>
                   <TouchableOpacity
                     onPress={() => setDetailModalVisible(false)}
-                    style={{ flex: 1, backgroundColor: '#475569', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+                    style={{ flex: 1, backgroundColor: MibuBrand.tan, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
                   >
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark }}>
                       {state.language === 'zh-TW' ? '關閉' : 'Close'}
                     </Text>
                   </TouchableOpacity>
@@ -539,9 +540,9 @@ export function ItemBoxScreen() {
                   {selectedItem.status === 'active' && !selectedItem.isExpired && (
                     <TouchableOpacity
                       onPress={handleOpenRedeem}
-                      style={{ flex: 1, backgroundColor: '#fbbf24', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+                      style={{ flex: 1, backgroundColor: MibuBrand.brown, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
                     >
-                      <Text style={{ fontSize: 16, fontWeight: '700', color: '#1e293b' }}>
+                      <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
                         {state.language === 'zh-TW' ? '核銷' : 'Redeem'}
                       </Text>
                     </TouchableOpacity>
@@ -560,26 +561,26 @@ export function ItemBoxScreen() {
         transparent={true}
         onRequestClose={() => !redeemSuccess && setRedeemModalVisible(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <View style={{ backgroundColor: '#1e293b', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
             {redeemSuccess ? (
               <View style={{ alignItems: 'center' }}>
-                <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: MibuBrand.success, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                   <Ionicons name="checkmark-circle" size={48} color="#ffffff" />
                 </View>
-                <Text style={{ fontSize: 20, fontWeight: '800', color: '#22c55e', marginBottom: 8 }}>
+                <Text style={{ fontSize: 20, fontWeight: '800', color: MibuBrand.success, marginBottom: 8 }}>
                   {state.language === 'zh-TW' ? '核銷成功！' : 'Redeemed!'}
                 </Text>
-                <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center', marginBottom: 16 }}>
+                <Text style={{ fontSize: 14, color: MibuBrand.brownLight, textAlign: 'center', marginBottom: 16 }}>
                   {state.language === 'zh-TW' ? '請出示此畫面給商家確認' : 'Please show this screen to the merchant'}
                 </Text>
                 
                 {countdown !== null && (
-                  <View style={{ backgroundColor: '#fbbf24', paddingHorizontal: 32, paddingVertical: 20, borderRadius: 16, marginBottom: 20 }}>
-                    <Text style={{ fontSize: 48, fontWeight: '900', color: '#1e293b', textAlign: 'center' }}>
+                  <View style={{ backgroundColor: MibuBrand.brown, paddingHorizontal: 32, paddingVertical: 20, borderRadius: 16, marginBottom: 20 }}>
+                    <Text style={{ fontSize: 48, fontWeight: '900', color: '#ffffff', textAlign: 'center' }}>
                       {formatCountdown(countdown)}
                     </Text>
-                    <Text style={{ fontSize: 12, color: '#78350f', textAlign: 'center', marginTop: 4 }}>
+                    <Text style={{ fontSize: 12, color: MibuBrand.cream, textAlign: 'center', marginTop: 4 }}>
                       {state.language === 'zh-TW' ? '倒數計時' : 'Countdown'}
                     </Text>
                   </View>
@@ -587,9 +588,9 @@ export function ItemBoxScreen() {
 
                 <TouchableOpacity
                   onPress={() => setRedeemModalVisible(false)}
-                  style={{ backgroundColor: '#475569', paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12 }}
+                  style={{ backgroundColor: MibuBrand.tan, paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12 }}
                 >
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark }}>
                     {state.language === 'zh-TW' ? '完成' : 'Done'}
                   </Text>
                 </TouchableOpacity>
@@ -597,47 +598,47 @@ export function ItemBoxScreen() {
             ) : (
               <>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <Text style={{ fontSize: 18, fontWeight: '800', color: '#ffffff' }}>
+                  <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark }}>
                     {state.language === 'zh-TW' ? '核銷優惠券' : 'Redeem Coupon'}
                   </Text>
                   <TouchableOpacity onPress={() => setRedeemModalVisible(false)}>
-                    <Ionicons name="close" size={24} color="#94a3b8" />
+                    <Ionicons name="close" size={24} color={MibuBrand.brownLight} />
                   </TouchableOpacity>
                 </View>
 
                 {selectedItem && (
-                  <View style={{ backgroundColor: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: TIER_STYLES[selectedItem.tier]?.borderColor }}>
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff', marginBottom: 4 }}>
+                  <View style={{ backgroundColor: MibuBrand.cream, borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: TIER_STYLES[selectedItem.tier]?.borderColor }}>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark, marginBottom: 4 }}>
                       {selectedItem.title}
                     </Text>
                     {selectedItem.description && (
-                      <Text style={{ fontSize: 13, color: '#94a3b8' }}>{selectedItem.description}</Text>
+                      <Text style={{ fontSize: 13, color: MibuBrand.brownLight }}>{selectedItem.description}</Text>
                     )}
                   </View>
                 )}
 
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#94a3b8', marginBottom: 8 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: MibuBrand.brownLight, marginBottom: 8 }}>
                   {state.language === 'zh-TW' ? '請輸入商家核銷碼' : 'Enter Merchant Redemption Code'}
                 </Text>
                 <TextInput
                   value={redemptionCode}
                   onChangeText={setRedemptionCode}
                   placeholder={state.language === 'zh-TW' ? '8位核銷碼' : '8-digit code'}
-                  placeholderTextColor="#64748b"
+                  placeholderTextColor={MibuBrand.copper}
                   autoCapitalize="characters"
                   maxLength={8}
                   style={{
-                    backgroundColor: '#0f172a',
+                    backgroundColor: MibuBrand.cream,
                     borderRadius: 12,
                     padding: 16,
                     fontSize: 24,
                     fontWeight: '700',
                     textAlign: 'center',
                     letterSpacing: 4,
-                    color: '#fbbf24',
+                    color: MibuBrand.brown,
                     marginBottom: 20,
                     borderWidth: 2,
-                    borderColor: '#475569',
+                    borderColor: MibuBrand.tan,
                   }}
                 />
 
@@ -645,16 +646,16 @@ export function ItemBoxScreen() {
                   onPress={handleRedeem}
                   disabled={redeeming || redemptionCode.length < 8}
                   style={{
-                    backgroundColor: redemptionCode.length >= 8 ? '#fbbf24' : '#475569',
+                    backgroundColor: redemptionCode.length >= 8 ? MibuBrand.brown : MibuBrand.tan,
                     paddingVertical: 16,
                     borderRadius: 12,
                     alignItems: 'center',
                   }}
                 >
                   {redeeming ? (
-                    <ActivityIndicator color="#1e293b" />
+                    <ActivityIndicator color="#ffffff" />
                   ) : (
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: redemptionCode.length >= 8 ? '#1e293b' : '#64748b' }}>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: redemptionCode.length >= 8 ? '#ffffff' : MibuBrand.brownLight }}>
                       {state.language === 'zh-TW' ? '確認核銷' : 'Confirm Redemption'}
                     </Text>
                   )}
@@ -672,23 +673,23 @@ export function ItemBoxScreen() {
         transparent={true}
         onRequestClose={() => setDeleteModalVisible(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <View style={{ backgroundColor: '#1e293b', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
             <View style={{ alignItems: 'center', marginBottom: 20 }}>
-              <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: '#7f1d1d', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                <Ionicons name="trash" size={28} color="#ef4444" />
+              <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: '#fef2f2', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                <Ionicons name="trash" size={28} color={MibuBrand.error} />
               </View>
-              <Text style={{ fontSize: 18, fontWeight: '800', color: '#ffffff', marginBottom: 8 }}>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark, marginBottom: 8 }}>
                 {state.language === 'zh-TW' ? '確定刪除？' : 'Delete Item?'}
               </Text>
-              <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
+              <Text style={{ fontSize: 14, color: MibuBrand.brownLight, textAlign: 'center' }}>
                 {state.language === 'zh-TW' ? '此操作無法復原' : 'This action cannot be undone'}
               </Text>
             </View>
 
             {selectedItem && (
-              <View style={{ backgroundColor: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 20 }}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: '#ffffff', textAlign: 'center' }}>
+              <View style={{ backgroundColor: MibuBrand.cream, borderRadius: 12, padding: 12, marginBottom: 20 }}>
+                <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.dark, textAlign: 'center' }}>
                   {selectedItem.title}
                 </Text>
               </View>
@@ -697,9 +698,9 @@ export function ItemBoxScreen() {
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity
                 onPress={() => setDeleteModalVisible(false)}
-                style={{ flex: 1, backgroundColor: '#475569', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+                style={{ flex: 1, backgroundColor: MibuBrand.tan, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
               >
-                <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark }}>
                   {state.language === 'zh-TW' ? '取消' : 'Cancel'}
                 </Text>
               </TouchableOpacity>
@@ -707,7 +708,7 @@ export function ItemBoxScreen() {
               <TouchableOpacity
                 onPress={handleDelete}
                 disabled={deleting}
-                style={{ flex: 1, backgroundColor: '#ef4444', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+                style={{ flex: 1, backgroundColor: MibuBrand.error, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
               >
                 {deleting ? (
                   <ActivityIndicator color="#ffffff" />
