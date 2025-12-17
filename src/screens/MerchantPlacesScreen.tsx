@@ -100,7 +100,8 @@ export function MerchantPlacesScreen() {
         district: place.district,
         city: place.city,
         country: '台灣',
-        placeCacheId: place.placeId,
+        placeCacheId: String(place.id),
+        googlePlaceId: place.placeId,
       });
       Alert.alert(isZh ? '成功' : 'Success', translations.claimSuccess);
       setShowSearch(false);

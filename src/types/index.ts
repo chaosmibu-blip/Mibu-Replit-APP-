@@ -224,6 +224,7 @@ export interface MerchantProduct {
 }
 
 export interface PlaceSearchResult {
+  id: number;
   placeId: string;
   placeName: string;
   district?: string;
