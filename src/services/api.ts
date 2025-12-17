@@ -332,11 +332,32 @@ class ApiService {
   }
 
   async searchMerchantPlaces(token: string, query: string): Promise<{ places: PlaceSearchResult[] }> {
-    return this.request(`/api/merchant/places/search?q=${encodeURIComponent(query)}`, {
+    console.log('🔍 Search query:', query);
+    console.log('🔐 Token:', token ? 'exists' : 'missing');
+    
+    const response = await fetch(`${this.baseUrl}/api/merchant/places/search?query=${encodeURIComponent(query)}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
     });
+    
+    console.log('📡 Response status:', response.status);
+    
+    if (response.status === 401) {
+      console.log('❌ 401 Unauthorized - redirecting to login');
+      throw new Error('UNAUTHORIZED');
+    }
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log('❌ Error response:', errorText);
+      throw new Error(`Search failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('✅ Search results:', data);
+    return data;
   }
 
   async claimMerchantPlace(token: string, placeId: string): Promise<{ place: MerchantPlace }> {

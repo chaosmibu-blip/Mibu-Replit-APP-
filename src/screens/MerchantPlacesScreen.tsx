@@ -72,11 +72,19 @@ export function MerchantPlacesScreen() {
     try {
       setSearching(true);
       const token = await getToken();
-      if (!token) return;
+      if (!token) {
+        router.push('/login');
+        return;
+      }
       const data = await apiService.searchMerchantPlaces(token, searchQuery);
       setSearchResults(data.places || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Search failed:', error);
+      if (error.message === 'UNAUTHORIZED') {
+        router.push('/login');
+        return;
+      }
+      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '搜尋失敗，請稍後再試' : 'Search failed, please try again');
     } finally {
       setSearching(false);
     }
