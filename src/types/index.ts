@@ -423,6 +423,8 @@ export interface RegionPoolCoupon {
 
 // Inventory / Itembox Types
 export type InventoryItemType = 'coupon' | 'ticket' | 'gift';
+export type InventoryItemStatus = 'active' | 'expired' | 'redeemed' | 'deleted';
+export type CouponTier = 'SP' | 'SSR' | 'SR' | 'S' | 'R';
 
 export interface InventoryItem {
   id: number;
@@ -436,6 +438,30 @@ export interface InventoryItem {
   isRedeemed: boolean;
   expiresAt: string | null;
   createdAt: string;
+  slotIndex: number;
+  tier: CouponTier;
+  status: InventoryItemStatus;
+  isExpired: boolean;
+  isDeleted: boolean;
+}
+
+export interface InventoryResponse {
+  items: InventoryItem[];
+  slotCount: number;
+  maxSlots: number;
+  isFull: boolean;
+}
+
+export interface InventoryConfig {
+  maxSlots: number;
+}
+
+export interface RarityConfig {
+  spRate: number;
+  ssrRate: number;
+  srRate: number;
+  sRate: number;
+  rRate: number;
 }
 
 export interface RedeemResponse {

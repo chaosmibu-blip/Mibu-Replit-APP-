@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams, RegionPoolCoupon, InventoryItem, RedeemResponse, CollectionWithPromoResponse, AutoSaveCollectionResponse, AdConfig, NotificationStatus, MerchantRedemptionCode, AdPlacement } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams, RegionPoolCoupon, InventoryItem, InventoryResponse, InventoryConfig, RarityConfig, RedeemResponse, CollectionWithPromoResponse, AutoSaveCollectionResponse, AdConfig, NotificationStatus, MerchantRedemptionCode, AdPlacement } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -560,17 +560,42 @@ class ApiService {
   }
 
   // Inventory / Itembox API
-  async getInventory(token: string): Promise<{ items: InventoryItem[] }> {
-    return this.request<{ items: InventoryItem[] }>('/api/inventory', {
+  async getInventory(token: string): Promise<InventoryResponse> {
+    return this.request<InventoryResponse>('/api/inventory', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     });
   }
 
+  async getInventoryItem(token: string, itemId: number): Promise<{ item: InventoryItem }> {
+    return this.request<{ item: InventoryItem }>(`/api/inventory/${itemId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async getInventoryConfig(): Promise<InventoryConfig> {
+    return this.request<InventoryConfig>('/api/inventory/config');
+  }
+
+  async getRarityConfig(): Promise<{ config: RarityConfig }> {
+    return this.request<{ config: RarityConfig }>('/api/rarity-config');
+  }
+
   async markInventoryItemRead(token: string, itemId: number): Promise<{ success: boolean }> {
     return this.request<{ success: boolean }>(`/api/inventory/${itemId}/read`, {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async deleteInventoryItem(token: string, itemId: number): Promise<{ success: boolean; message: string }> {
+    return this.request<{ success: boolean; message: string }>(`/api/inventory/${itemId}`, {
+      method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
