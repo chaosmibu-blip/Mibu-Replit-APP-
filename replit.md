@@ -59,7 +59,7 @@ Preferred communication style: Simple, everyday language.
     - Authentication & User Management: `/api/auth/user`, `/api/auth/login`, `/api/auth/switch-role`, `/api/auth/register` (for merchant/specialist), `/api/admin/users`, `/api/admin/pending-users`, `/api/admin/approve-user`
     - SOS: `/api/user/sos-link`, `/api/sos/trigger`
     - Location Update: `/api/location/update`
-    - Merchant Specific: `/api/merchant/me`, `/api/merchant/transactions`, `/api/merchant/verify`, `/api/merchant/places`, `/api/merchant/products`
+    - Merchant Specific: `/api/merchant/me`, `/api/merchant/transactions`, `/api/merchant/verify`, `/api/merchant/places`, `/api/merchant/products`, `/api/merchant/apply`, `/api/merchant/analytics`, `/api/merchant/coupons` (CRUD)
     - Specialist Specific: `/api/specialist/register`, `/api/specialist/travelers`, `/api/specialist/tracking` (Socket.IO for live tracking)
     - Coupons: `/api/coupons/region/:regionId/pool`
 
