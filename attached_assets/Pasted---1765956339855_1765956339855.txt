@@ -1,0 +1,191 @@
+============================================
+前端完整工作清單 - 商家後台模組
+============================================
+
+【一、新頁面/路由】
+
+1. /merchant/login - 商家登入頁
+2. /merchant/register - 商家註冊申請頁
+3. /merchant/dashboard - 商家儀表板（數據總覽）
+4. /merchant/profile - 商家資料編輯
+5. /merchant/places - 行程卡管理列表
+6. /merchant/places/:id - 行程卡編輯
+7. /merchant/places/:id/upgrade - 行程卡升級
+8. /merchant/coupons - 優惠券模板管理
+9. /merchant/coupons/create - 新增優惠券模板
+10. /merchant/coupons/:id/edit - 編輯優惠券模板
+11. /merchant/subscription - 訂閱方案管理
+12. /merchant/subscription/success - 支付成功回調頁
+13. /merchant/credits - 點數管理
+14. /merchant/transactions - 交易紀錄
+15. /merchant/redemption - 今日核銷碼顯示頁
+
+【二、UI 組件】
+
+1. MerchantNav - 商家後台導航列
+2. PlaceCardEditor - 行程卡編輯器
+3. CouponTemplateForm - 優惠券模板表單
+4. SubscriptionPlanCard - 訂閱方案卡片
+5. AnalyticsDashboard - 數據分析儀表板
+6. DailyCodeDisplay - 今日核銷碼顯示（大字體、倒數計時）
+7. PlaceLevelBadge - 行程卡等級標籤 (free/pro/premium)
+8. MerchantStatusBadge - 商家狀態標籤 (pending/approved/rejected)
+
+【三、TypeScript 型別定義】
+
+// 商家相關
+interface Merchant {
+  id: number;
+  userId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  merchantLevel: 'free' | 'pro' | 'premium';
+  subscriptionPlan: string;
+  creditBalance: number;
+  dailySeedCode: string;
+}
+
+// 行程卡相關
+interface MerchantPlaceLink {
+  id: number;
+  merchantId: number;
+  placeName: string;
+  district: string;
+  city: string;
+  country: string;
+  description?: string;
+  categoryId?: number;
+  status: 'pending' | 'approved' | 'rejected';
+  cardLevel: 'free' | 'pro' | 'premium';
+  promoMessage?: string;
+  promoImageUrl?: string;
+}
+
+// 優惠券模板
+interface MerchantCoupon {
+  id: number;
+  merchantId: number;
+  name: string;
+  description?: string;
+  rarity: 'R' | 'S' | 'SR' | 'SSR' | 'SP';
+  discountType: 'percentage' | 'fixed' | 'freebie';
+  discountValue?: number;
+  validDays: number;
+  isActive: boolean;
+}
+
+// 數據分析
+interface MerchantAnalytics {
+  totalViews: number;
+  totalCouponsIssued: number;
+  totalCouponsRedeemed: number;
+  totalRevenue: number;
+  periodStart: string;
+  periodEnd: string;
+}
+
+【四、多語系字串 (i18n)】
+
+zh-TW:
+  merchant.dashboard: "商家後台"
+  merchant.places: "行程卡管理"
+  merchant.coupons: "優惠券管理"
+  merchant.subscription: "訂閱方案"
+  merchant.credits: "點數餘額"
+  merchant.dailyCode: "今日核銷碼"
+  merchant.level.free: "免費版"
+  merchant.level.pro: "專業版"
+  merchant.level.premium: "旗艦版"
+  merchant.status.pending: "審核中"
+  merchant.status.approved: "已通過"
+  merchant.status.rejected: "已拒絕"
+  coupon.rarity.R: "普通"
+  coupon.rarity.S: "稀有"
+  coupon.rarity.SR: "超稀有"
+  coupon.rarity.SSR: "極稀有"
+  coupon.rarity.SP: "特別版"
+
+en:
+  merchant.dashboard: "Merchant Dashboard"
+  merchant.places: "Place Cards"
+  merchant.coupons: "Coupons"
+  merchant.subscription: "Subscription"
+  merchant.credits: "Credits"
+  merchant.dailyCode: "Daily Code"
+  merchant.level.free: "Free"
+  merchant.level.pro: "Pro"
+  merchant.level.premium: "Premium"
+
+ja:
+  merchant.dashboard: "店舗管理"
+  merchant.places: "旅程カード"
+  merchant.coupons: "クーポン"
+  merchant.subscription: "サブスクリプション"
+
+ko:
+  merchant.dashboard: "상점 관리"
+  merchant.places: "여행 카드"
+  merchant.coupons: "쿠폰"
+  merchant.subscription: "구독"
+
+【五、狀態管理邏輯】
+
+1. useMerchant() - 商家資料 hook
+2. useMerchantPlaces() - 行程卡列表 hook
+3. useMerchantCoupons() - 優惠券模板 hook
+4. useMerchantAnalytics() - 數據分析 hook
+5. useSubscription() - 訂閱狀態 hook
+
+【六、UI 互動邏輯】
+
+1. 核銷碼顯示 - 每日 00:00 自動更新
+2. 訂閱升級流程 - Stripe Checkout 整合
+3. 行程卡等級限制 - 根據商家等級顯示可用功能
+4. 優惠券等級限制 - free只能R/S, pro可SR, premium可SSR/SP
+5. 數據圖表 - 使用 recharts 顯示分析數據
+
+【七、API 端點清單】
+
+基礎:
+- GET  /api/merchant/me
+- POST /api/merchant/apply
+- GET  /api/merchant/analytics
+
+行程卡:
+- GET  /api/merchant/places
+- POST /api/merchant/places/claim
+- PUT  /api/merchant/places/:linkId
+- POST /api/merchant/places/:linkId/upgrade
+- POST /api/merchant/places/:linkId/upgrade/confirm
+
+優惠券:
+- GET    /api/merchant/coupons
+- POST   /api/merchant/coupons
+- PUT    /api/merchant/coupons/:id
+- DELETE /api/merchant/coupons/:id
+
+訂閱:
+- GET  /api/merchant/subscription
+- GET  /api/merchant/subscription/plans
+- POST /api/merchant/subscription/upgrade
+- POST /api/merchant/subscription/confirm
+
+核銷:
+- GET  /api/merchant/redemption-code
+- POST /api/merchant/verify-code
+
+點數:
+- GET  /api/merchant/credits
+- POST /api/merchant/credits/purchase
+- POST /api/merchant/credits/confirm
+- GET  /api/merchant/transactions
+
+【八、後端基礎 URL】
+
+開發環境: https://591965a7-25f6-479c-b527-3890b1193c21-00-1m08cwv9a4rev.picard.replit.dev
+部署環境: https://gacha-travel--s8869420.replit.app
+
+注意: OAuth 登入請使用開發環境 URL
+============================================
