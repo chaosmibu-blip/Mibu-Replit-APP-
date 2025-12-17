@@ -8,13 +8,14 @@ The app connects to an external backend API for location data and itinerary gene
 
 ## Recent Changes (December 2024)
 
-### Coupon Pool Feature (December 17, 2024)
-- **Coupon Pool Modal**: Users can preview SP/SSR rare coupons available in selected regions
-- **Dual Pool Buttons**: GachaScreen now shows two side-by-side buttons: 「獎池」(item pool) and 「優惠券」(coupon pool)
-- **RegionPoolCoupon Type**: New type for coupon pool items with id, title, description, discount, rarity, merchantName
+### Unified Pool Preview with Coupons (December 17, 2024)
+- **Unified Pool Modal**: Single 「查看獎池」button shows both rare places and coupons in one modal
+- **Coupon Section**: SP/SSR coupons displayed at top of pool preview with gold (SSR) or purple (SP) borders
+- **Places Section**: Rare places (SP/SSR/SR) displayed below coupons in 2-column grid
+- **RegionPoolCoupon Type**: Type for coupon pool items with id, title, description, discount, rarity, merchantName
 - **API Integration**: `getRegionCouponPool(token, regionId)` fetches coupons from `/api/coupons/region/:regionId/pool`
-- **UI Design**: SSR coupons displayed with gold borders, SP coupons with purple borders
-- **Bilingual Support**: All coupon pool UI elements support zh-TW and English
+- **Parallel Loading**: Both pool data and coupon data loaded simultaneously for better performance
+- **Bilingual Support**: All pool preview UI elements support zh-TW and English
 
 ### Complete Merchant & Specialist Backend (December 16, 2024)
 - **New Merchant Screens**:

@@ -58,10 +58,7 @@ export function GachaScreen() {
   const [poolModalVisible, setPoolModalVisible] = useState(false);
   const [poolData, setPoolData] = useState<GachaPoolResponse | null>(null);
   const [loadingPool, setLoadingPool] = useState(false);
-  
-  const [couponPoolModalVisible, setCouponPoolModalVisible] = useState(false);
   const [couponPoolData, setCouponPoolData] = useState<RegionPoolCoupon[]>([]);
-  const [loadingCouponPool, setLoadingCouponPool] = useState(false);
   
   const [showLoadingAd, setShowLoadingAd] = useState(false);
   const [isApiComplete, setIsApiComplete] = useState(false);
@@ -162,38 +159,29 @@ export function GachaScreen() {
     
     setLoadingPool(true);
     setPoolModalVisible(true);
+    setPoolData(null);
+    setCouponPoolData([]);
     
     try {
       const city = selectedRegion.nameZh || selectedRegion.nameEn || '';
-      const data = await apiService.getGachaPool(city);
-      setPoolData(data);
+      const token = await AsyncStorage.getItem('@mibu_token');
+      
+      const [poolResult, couponResult] = await Promise.allSettled([
+        apiService.getGachaPool(city),
+        token ? apiService.getRegionCouponPool(token, selectedRegionId) : Promise.resolve([])
+      ]);
+      
+      if (poolResult.status === 'fulfilled') {
+        setPoolData(poolResult.value);
+      }
+      if (couponResult.status === 'fulfilled') {
+        setCouponPoolData(couponResult.value || []);
+      }
     } catch (error) {
       console.error('Failed to load pool:', error);
       setPoolData(null);
     } finally {
       setLoadingPool(false);
-    }
-  };
-
-  const handleViewCouponPool = async () => {
-    if (!selectedRegionId) return;
-    
-    setLoadingCouponPool(true);
-    setCouponPoolModalVisible(true);
-    
-    try {
-      const token = await AsyncStorage.getItem('@mibu_token');
-      if (token) {
-        const data = await apiService.getRegionCouponPool(token, selectedRegionId);
-        setCouponPoolData(data || []);
-      } else {
-        setCouponPoolData([]);
-      }
-    } catch (error) {
-      console.error('Failed to load coupon pool:', error);
-      setCouponPoolData([]);
-    } finally {
-      setLoadingCouponPool(false);
     }
   };
 
@@ -493,47 +481,24 @@ export function GachaScreen() {
         )}
 
         {canViewPool && (
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#eef2ff',
-                borderRadius: 16,
-                paddingVertical: 14,
-                paddingHorizontal: 16,
-                gap: 6,
-              }}
-              onPress={handleViewPool}
-            >
-              <Ionicons name="eye-outline" size={18} color="#6366f1" />
-              <Text style={{ fontSize: 14, fontWeight: '700', color: '#6366f1' }}>
-                {t.viewPool || '獎池'}
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#fef3c7',
-                borderRadius: 16,
-                paddingVertical: 14,
-                paddingHorizontal: 16,
-                gap: 6,
-              }}
-              onPress={handleViewCouponPool}
-            >
-              <Ionicons name="ticket-outline" size={18} color="#d97706" />
-              <Text style={{ fontSize: 14, fontWeight: '700', color: '#d97706' }}>
-                {state.language === 'zh-TW' ? '優惠券' : 'Coupons'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#eef2ff',
+              borderRadius: 16,
+              paddingVertical: 14,
+              paddingHorizontal: 20,
+              gap: 8,
+            }}
+            onPress={handleViewPool}
+          >
+            <Ionicons name="eye-outline" size={20} color="#6366f1" />
+            <Text style={{ fontSize: 15, fontWeight: '700', color: '#6366f1' }}>
+              {t.viewPool || '查看獎池'}
+            </Text>
+          </TouchableOpacity>
         )}
 
         <Button
@@ -602,185 +567,109 @@ export function GachaScreen() {
                 </Text>
               </View>
             ) : (
-              <View style={{ flex: 1 }}>
-                <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 }}>
-                  <Text style={{ fontSize: 14, fontWeight: '700', color: '#64748b' }}>
-                    {t.rareItems || '稀有道具'} ({getRareItems().length})
-                  </Text>
-                </View>
-                
-                {getRareItems().length > 0 ? (
-                  <FlatList
-                    data={getRareItems()}
-                    renderItem={renderPoolItem}
-                    keyExtractor={(item) => item.id}
-                    numColumns={2}
-                    contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 40 }}
-                    showsVerticalScrollIndicator={false}
-                  />
-                ) : (
-                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 }}>
-                    <View
-                      style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: 40,
-                        backgroundColor: '#f1f5f9',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: 16,
-                      }}
-                    >
-                      <Ionicons name="cube-outline" size={40} color="#94a3b8" />
+              <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                {couponPoolData.length > 0 && (
+                  <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                      <Ionicons name="ticket" size={18} color="#d97706" />
+                      <Text style={{ fontSize: 14, fontWeight: '700', color: '#d97706', marginLeft: 6 }}>
+                        {state.language === 'zh-TW' ? '稀有優惠券' : 'Rare Coupons'} ({couponPoolData.length})
+                      </Text>
                     </View>
-                    <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
-                      {t.noRareItems || '此區域尚無稀有道具'}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        visible={couponPoolModalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setCouponPoolModalVisible(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            justifyContent: 'flex-end',
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: '#ffffff',
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              maxHeight: '85%',
-              minHeight: '50%',
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 20,
-                borderBottomWidth: 1,
-                borderBottomColor: '#f1f5f9',
-              }}
-            >
-              <Text style={{ fontSize: 18, fontWeight: '800', color: '#1e293b' }}>
-                {state.language === 'zh-TW' ? '稀有優惠券' : 'Rare Coupons'}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setCouponPoolModalVisible(false)}
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  backgroundColor: '#f1f5f9',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Ionicons name="close" size={20} color="#64748b" />
-              </TouchableOpacity>
-            </View>
-
-            {loadingCouponPool ? (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 }}>
-                <ActivityIndicator size="large" color="#d97706" />
-                <Text style={{ marginTop: 16, color: '#64748b', fontSize: 14 }}>
-                  {state.language === 'zh-TW' ? '載入優惠券中...' : 'Loading coupons...'}
-                </Text>
-              </View>
-            ) : (
-              <ScrollView style={{ flex: 1, padding: 16 }}>
-                {couponPoolData.length > 0 ? (
-                  couponPoolData.map((coupon) => (
-                    <View
-                      key={coupon.id}
-                      style={{
-                        backgroundColor: coupon.rarity === 'SSR' ? '#fef3c7' : '#f3e8ff',
-                        borderRadius: 16,
-                        padding: 16,
-                        marginBottom: 12,
-                        borderWidth: 2,
-                        borderColor: coupon.rarity === 'SSR' ? '#fbbf24' : '#a855f7',
-                      }}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                        <View
-                          style={{
-                            backgroundColor: coupon.rarity === 'SSR' ? '#fbbf24' : '#a855f7',
-                            paddingHorizontal: 10,
-                            paddingVertical: 4,
-                            borderRadius: 8,
-                            marginRight: 8,
-                          }}
-                        >
-                          <Text style={{ fontSize: 12, fontWeight: '800', color: '#ffffff' }}>
-                            {coupon.rarity}
-                          </Text>
-                        </View>
-                        {coupon.discount && (
+                    
+                    {couponPoolData.map((coupon) => (
+                      <View
+                        key={coupon.id}
+                        style={{
+                          backgroundColor: coupon.rarity === 'SSR' ? '#fef3c7' : '#f3e8ff',
+                          borderRadius: 12,
+                          padding: 14,
+                          marginBottom: 10,
+                          borderWidth: 2,
+                          borderColor: coupon.rarity === 'SSR' ? '#fbbf24' : '#a855f7',
+                        }}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
                           <View
                             style={{
-                              backgroundColor: '#ef4444',
+                              backgroundColor: coupon.rarity === 'SSR' ? '#fbbf24' : '#a855f7',
                               paddingHorizontal: 8,
                               paddingVertical: 3,
                               borderRadius: 6,
+                              marginRight: 8,
                             }}
                           >
-                            <Text style={{ fontSize: 11, fontWeight: '700', color: '#ffffff' }}>
-                              {coupon.discount}
+                            <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>
+                              {coupon.rarity}
+                            </Text>
+                          </View>
+                          {coupon.discount && (
+                            <View
+                              style={{
+                                backgroundColor: '#ef4444',
+                                paddingHorizontal: 6,
+                                paddingVertical: 2,
+                                borderRadius: 4,
+                              }}
+                            >
+                              <Text style={{ fontSize: 10, fontWeight: '700', color: '#ffffff' }}>
+                                {coupon.discount}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                        
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', marginBottom: 2 }}>
+                          {coupon.title}
+                        </Text>
+                        
+                        {coupon.merchantName && (
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Ionicons name="storefront-outline" size={12} color="#94a3b8" />
+                            <Text style={{ fontSize: 11, color: '#94a3b8', marginLeft: 4 }}>
+                              {coupon.merchantName}
                             </Text>
                           </View>
                         )}
                       </View>
-                      
-                      <Text style={{ fontSize: 16, fontWeight: '700', color: '#1e293b', marginBottom: 4 }}>
-                        {coupon.title}
-                      </Text>
-                      
-                      {coupon.description && (
-                        <Text style={{ fontSize: 13, color: '#64748b', marginBottom: 8 }}>
-                          {coupon.description}
-                        </Text>
-                      )}
-                      
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Ionicons name="storefront-outline" size={14} color="#94a3b8" />
-                        <Text style={{ fontSize: 12, color: '#94a3b8', marginLeft: 4 }}>
-                          {coupon.merchantName}
-                        </Text>
+                    ))}
+                  </View>
+                )}
+
+                <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="location" size={18} color="#6366f1" />
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: '#6366f1', marginLeft: 6 }}>
+                      {t.rareItems || '稀有景點'} ({getRareItems().length})
+                    </Text>
+                  </View>
+                </View>
+                
+                {getRareItems().length > 0 ? (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 10, paddingBottom: 40 }}>
+                    {getRareItems().map((item) => (
+                      <View key={item.id} style={{ width: '50%', padding: 6 }}>
+                        {renderPoolItem({ item })}
                       </View>
-                    </View>
-                  ))
+                    ))}
+                  </View>
                 ) : (
-                  <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 60 }}>
+                  <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
                     <View
                       style={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: 40,
+                        width: 60,
+                        height: 60,
+                        borderRadius: 30,
                         backgroundColor: '#f1f5f9',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        marginBottom: 16,
+                        marginBottom: 12,
                       }}
                     >
-                      <Ionicons name="ticket-outline" size={40} color="#94a3b8" />
+                      <Ionicons name="cube-outline" size={28} color="#94a3b8" />
                     </View>
-                    <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
-                      {state.language === 'zh-TW' ? '此區域尚無稀有優惠券' : 'No rare coupons in this region'}
+                    <Text style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center' }}>
+                      {t.noRareItems || '此區域尚無稀有景點'}
                     </Text>
                   </View>
                 )}
