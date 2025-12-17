@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, HomeContentResponse } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -487,8 +487,45 @@ class ApiService {
     });
   }
 
-  async getHomeContent(): Promise<HomeContentResponse> {
-    return this.request<HomeContentResponse>('/api/home/content');
+  async getAnnouncements(): Promise<AnnouncementsResponse> {
+    return this.request<AnnouncementsResponse>('/api/announcements');
+  }
+
+  async getAdminAnnouncements(token: string): Promise<AnnouncementsResponse> {
+    return this.request<AnnouncementsResponse>('/api/admin/announcements', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async createAnnouncement(token: string, params: CreateAnnouncementParams): Promise<{ success: boolean; announcement: Announcement }> {
+    return this.request('/api/admin/announcements', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async updateAnnouncement(token: string, id: number, params: UpdateAnnouncementParams): Promise<{ success: boolean; announcement: Announcement }> {
+    return this.request(`/api/admin/announcements/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async deleteAnnouncement(token: string, id: number): Promise<{ success: boolean; message: string }> {
+    return this.request(`/api/admin/announcements/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
   }
 }
 

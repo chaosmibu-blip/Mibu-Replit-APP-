@@ -363,24 +363,47 @@ export interface AppState {
   isAuthenticated: boolean;
 }
 
+export type AnnouncementType = 'announcement' | 'flash_event' | 'holiday_event';
+
 export interface Announcement {
   id: number;
-  content: string;
-  title?: string;
-  createdAt?: string;
-}
-
-export interface AppEvent {
-  id: number;
+  type: AnnouncementType;
   title: string;
   content: string;
-  eventType: 'flash' | 'holiday';
+  imageUrl?: string;
+  linkUrl?: string;
   startDate?: string;
   endDate?: string;
-  createdAt?: string;
+  isActive: boolean;
+  priority: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface HomeContentResponse {
+export interface AnnouncementsResponse {
   announcements: Announcement[];
-  events: AppEvent[];
+}
+
+export interface CreateAnnouncementParams {
+  type: AnnouncementType;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  linkUrl?: string;
+  startDate?: string;
+  endDate?: string;
+  isActive?: boolean;
+  priority?: number;
+}
+
+export interface UpdateAnnouncementParams {
+  type?: AnnouncementType;
+  title?: string;
+  content?: string;
+  imageUrl?: string;
+  linkUrl?: string;
+  startDate?: string;
+  endDate?: string;
+  isActive?: boolean;
+  priority?: number;
 }
