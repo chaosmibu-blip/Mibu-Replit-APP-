@@ -15,6 +15,7 @@ import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { SpecialistInfo, ServiceRelation } from '../types';
 import { RoleSwitcher } from '../components/RoleSwitcher';
+import { MibuBrand } from '../../constants/Colors';
 
 export function SpecialistDashboardScreen() {
   const { state, getToken, setUser } = useApp();
@@ -98,7 +99,7 @@ export function SpecialistDashboardScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{translations.loading}</Text>
       </View>
     );
@@ -246,7 +247,7 @@ export function SpecialistDashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   content: {
     padding: 20,
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: MibuBrand.copper,
     fontSize: 16,
   },
   header: {
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.brown,
   },
   logoutButton: {
     flexDirection: 'row',
@@ -291,15 +292,15 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ef4444',
+    color: MibuBrand.error,
   },
   statusCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     padding: 20,
     marginBottom: 24,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   statusHeader: {
     flexDirection: 'row',
@@ -326,7 +327,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   toggleContainer: {
     width: 60,
@@ -334,11 +335,11 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: 14,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   regionText: {
     fontSize: 14,
-    color: '#6366f1',
+    color: MibuBrand.brown,
     marginTop: 8,
   },
   menuSection: {
@@ -348,17 +349,17 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   menuIcon: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.highlight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -369,49 +370,49 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 2,
   },
   menuSubtitle: {
     fontSize: 13,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 16,
   },
   emptyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 40,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginTop: 12,
   },
   servicesList: {
     gap: 12,
   },
   serviceCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   serviceAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -422,18 +423,18 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 4,
   },
   serviceDate: {
     fontSize: 13,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   serviceStatus: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.highlight,
   },
   serviceStatusActive: {
     backgroundColor: '#dcfce7',
@@ -441,6 +442,6 @@ const styles = StyleSheet.create({
   serviceStatusText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
 });

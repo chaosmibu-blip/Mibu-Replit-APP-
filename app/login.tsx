@@ -20,7 +20,7 @@ import { API_BASE_URL } from '../src/constants/translations';
 import { UserRole } from '../src/types';
 import { MibuBrand } from '../constants/Colors';
 
-const AUTH_TOKEN_KEY = 'mibu_auth_token';
+const AUTH_TOKEN_KEY = '@mibu_token';
 
 type PortalType = 'traveler' | 'merchant' | 'specialist' | 'admin';
 
