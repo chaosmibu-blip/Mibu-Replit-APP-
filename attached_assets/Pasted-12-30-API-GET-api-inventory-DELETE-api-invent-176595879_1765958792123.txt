@@ -1,0 +1,178 @@
+12. 道具箱 30 格遊戲風格 ✅ 後端已完成
+後端 API：
+
+GET /api/inventory                      # 取得道具箱
+DELETE /api/inventory/:itemId           # 刪除道具（需二次確認）
+前端需實現：
+
+6x5 格子佈局（共 30 格）
+空格顯示為灰色虛線框
+有道具的格子顯示道具圖示
+點擊道具 → 右側選單（核銷、刪除）
+刪除需二次確認 Modal
+檢查項目：
+
+ 30 格網格佈局
+ 遊戲風格 UI
+ 刪除二次確認
+13. 過期優惠券變灰色 ⚠️ 需前端實現
+後端已提供：
+
+interface InventoryItem {
+  validUntil: string;
+  status: 'active' | 'expired' | 'redeemed';
+}
+前端需實現：
+
+const isExpired = new Date(item.validUntil) < new Date();
+// 過期優惠券：
+// 1. 整張卡片變灰色（opacity: 0.5 或 grayscale filter）
+// 2. 點擊核銷時顯示「已過期」提示
+// 3. 不主動消失，保留在道具箱中
+檢查項目：
+
+ 過期優惠券灰色顯示
+ 核銷時提示「已過期」
+14. 優惠券五等級機率與特效 ✅ 後端已完成
+機率配置： SP 2%, SSR 8%, SR 15%, S 23%, R 32%
+
+前端需實現：
+
+const TIER_STYLES = {
+  SP: { color: '#FFD700', glow: true, animation: 'rainbow' },
+  SSR: { color: '#FF6B6B', glow: true, animation: 'pulse' },
+  SR: { color: '#9B59B6', glow: false, animation: 'shine' },
+  S: { color: '#3498DB', glow: false, animation: null },
+  R: { color: '#95A5A6', glow: false, animation: null },
+};
+// 特效：
+// SP: 全域跑馬燈 + 載入動畫
+// SSR: 獎池顯示 + 中獎特效
+// SR: 中獎特效
+// S: 道具箱圖片
+// R: 基本顯示
+檢查項目：
+
+ 各等級顏色區分
+ SP 全域跑馬燈
+ SSR/SR 中獎特效
+ 優惠券背景圖片顯示
+---
+## 第二份（2/3）：設定
+```markdown
+## ⚙️ 【設定】
+### 1. 個人資料完整欄位 ✅ 後端已完成
+**後端 API：**
+GET /api/profile
+PATCH /api/profile
+
+**資料結構：**
+```typescript
+interface UserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  gender: 'male' | 'female' | 'other';
+  birthDate: string;
+  email: string;
+  phone: string;
+  dietaryRestrictions: string[];      // 飲食禁忌（標籤陣列）
+  medicalHistory: string[];           // 疾病史（標籤陣列）
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactRelation: string;
+  preferredLanguage: 'zh-TW' | 'en' | 'ja' | 'ko';
+}
+前端需實現：
+
+顯示用戶資料庫 ID
+所有欄位可編輯
+飲食禁忌/疾病史：可多次新增標籤，標籤可刪除
+緊急連絡人區塊
+檢查項目：
+
+ 完整個人資料表單
+ 標籤式輸入（飲食禁忌、疾病史）
+ 緊急連絡人編輯
+2. 登出功能 ✅ 後端已完成
+後端 API：
+
+GET /api/logout
+POST /api/auth/logout
+檢查項目：
+
+ 點擊登出 → 清除本地 token → 跳轉回初始畫面
+3. 語言下拉選單 ✅ 後端已完成
+支援語言：
+
+const LANGUAGES = [
+  { code: 'zh-TW', label: '繁體中文' },
+  { code: 'en', label: 'English' },
+  { code: 'ja', label: '日本語' },
+  { code: 'ko', label: '한국어' },
+];
+檢查項目：
+
+ 使用下拉選單（非按鈕）
+ 切換後全介面套用
+4. 安全中心 SOS 求救 ✅ 後端已完成
+後端 API：
+
+GET /api/sos/eligibility               # 檢查是否有資格（需購買旅程服務）
+POST /api/sos/alert                    # 發送 SOS 求救
+Body: {
+  location?: string,                   // GPS 座標
+  locationAddress?: string,
+  message?: string
+}
+前端需實現：
+
+先檢查資格 (eligibility)
+無資格：顯示「需購買旅程服務才能使用」
+有資格：顯示 SOS 按鈕
+點擊 SOS → 確認 Modal → 發送求救
+檢查項目：
+
+ 資格檢查
+ SOS 按鈕 UI
+ 發送確認 Modal
+5. 手機側邊鍵 5 下觸發 SOS ❌ 需前端實現
+前端需實現：
+
+// 使用 react-native-keyevent 或類似套件
+// npm install react-native-keyevent
+// 邏輯：2 秒內連按 5 下側邊鍵（電源鍵或音量鍵）觸發 SOS
+let pressCount = 0;
+let lastPressTime = 0;
+const handleKeyPress = () => {
+  const now = Date.now();
+  if (now - lastPressTime < 500) {
+    pressCount++;
+    if (pressCount >= 5) {
+      triggerSOS();
+      pressCount = 0;
+    }
+  } else {
+    pressCount = 1;
+  }
+  lastPressTime = now;
+};
+檢查項目：
+
+ 安裝硬體按鍵監聽套件
+ 實現連按 5 下偵測
+ 觸發 SOS 流程
+6. 初始畫面語系切換 ✅ 後端已完成
+檢查項目：
+
+ 初始畫面右上角有語系切換按鈕
+ 使用 Globe 圖示
+ 點擊彈出語言選單
+7. 購買服務頁面 ✅ 後端已完成
+後端 API：
+
+GET /api/stripe/products-with-prices    # 取得服務方案
+POST /api/stripe/create-checkout-session # 建立付款
+檢查項目：
+
+ 購買流程正常
