@@ -22,6 +22,9 @@ import { MibuBrand } from '../constants/Colors';
 
 const AUTH_TOKEN_KEY = '@mibu_token';
 
+// OAuth 登入專用開發環境 URL（後端要求）
+const OAUTH_BASE_URL = 'https://591965a7-25f6-479c-b527-3890b1193c21-00-1m08cwv9a4rev.picard.replit.dev';
+
 type PortalType = 'traveler' | 'merchant' | 'specialist' | 'admin';
 
 interface PortalConfig {
@@ -267,8 +270,8 @@ export default function LoginScreen() {
       // *** 關鍵修改：在發起登入前，儲存使用者選擇的入口 ***
       await AsyncStorage.setItem('post_login_portal', selectedPortal);
       
-      // Use /api/login with portal parameter
-      const authUrl = `${API_BASE_URL}/api/login?portal=${selectedPortal}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      // Use /api/login with portal parameter - OAuth 使用開發環境 URL
+      const authUrl = `${OAUTH_BASE_URL}/api/login?portal=${selectedPortal}&redirect_uri=${encodeURIComponent(redirectUri)}`;
       
       if (Platform.OS === 'web') {
         const width = 500;

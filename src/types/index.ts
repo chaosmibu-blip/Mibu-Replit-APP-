@@ -718,3 +718,75 @@ export interface SosSendResponse {
 export interface SosAlertsResponse {
   alerts: SosAlert[];
 }
+
+// ============================================
+// 行程卡商家/優惠券欄位
+// ============================================
+export interface ItineraryCardMerchantPromo {
+  title: string;
+  description: string;
+}
+
+export interface ItineraryCardCouponData {
+  tier: CouponTier;
+  name: string;
+  validUntil: string;
+}
+
+export interface ItineraryCard {
+  id: number;
+  place_name: LocalizedContent;
+  description: LocalizedContent;
+  category: Category;
+  district?: string;
+  city?: string;
+  country?: string;
+  has_merchant: boolean;
+  merchant_promo?: ItineraryCardMerchantPromo;
+  is_coupon?: boolean;
+  coupon_data?: ItineraryCardCouponData;
+}
+
+// ============================================
+// 圖鑑項目（含商家優惠狀態）
+// ============================================
+export interface CollectionItem {
+  id: number;
+  placeName: string;
+  category: string;
+  district: string;
+  city: string;
+  country: string;
+  hasPromo: boolean;
+  promoTitle?: string;
+  promoDescription?: string;
+  createdAt?: string;
+}
+
+export interface CollectionResponse {
+  items: CollectionItem[];
+  total: number;
+}
+
+// ============================================
+// 獎池相關
+// ============================================
+export interface PrizePoolCoupon {
+  id: number;
+  tier: CouponTier;
+  name: string;
+  merchantName: string;
+  placeName: string;
+}
+
+export interface PrizePoolResponse {
+  coupons: PrizePoolCoupon[];
+}
+
+// ============================================
+// 未讀計數
+// ============================================
+export interface UnreadCounts {
+  collection: number;
+  itembox: number;
+}

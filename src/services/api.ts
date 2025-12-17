@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants/translations';
-import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams, RegionPoolCoupon, InventoryItem, InventoryResponse, InventoryConfig, RarityConfig, RedeemResponse, CollectionWithPromoResponse, AutoSaveCollectionResponse, AdConfig, NotificationStatus, MerchantRedemptionCode, AdPlacement, ItineraryGenerateResponse, UserProfile, UpdateProfileParams, ProfileResponse, SosEligibility, SosSendParams, SosSendResponse, SosAlertsResponse, SosAlert, MerchantApplyParams, MerchantApplyResponse, MerchantAnalytics, MerchantCoupon, MerchantCouponsResponse, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../types';
+import { Country, Region, User, GachaItem, Language, GachaPoolResponse, GachaPullPayload, GachaPullResponse, GlobalExclusion, AuthResponse, UserRole, MerchantDailyCode, MerchantCredits, SpecialistInfo, ServiceRelation, MerchantMe, MerchantTransaction, MerchantPlace, MerchantProduct, PlaceSearchResult, AdminUser, PlaceDraft, Announcement, AnnouncementsResponse, CreateAnnouncementParams, UpdateAnnouncementParams, RegionPoolCoupon, InventoryItem, InventoryResponse, InventoryConfig, RarityConfig, RedeemResponse, CollectionWithPromoResponse, AutoSaveCollectionResponse, AdConfig, NotificationStatus, MerchantRedemptionCode, AdPlacement, ItineraryGenerateResponse, UserProfile, UpdateProfileParams, ProfileResponse, SosEligibility, SosSendParams, SosSendResponse, SosAlertsResponse, SosAlert, MerchantApplyParams, MerchantApplyResponse, MerchantAnalytics, MerchantCoupon, MerchantCouponsResponse, CreateMerchantCouponParams, UpdateMerchantCouponParams, AnnouncementType, PrizePoolResponse, UnreadCounts, CollectionItem, CollectionResponse } from '../types';
 import { Platform } from 'react-native';
 
 class ApiService {
@@ -766,6 +766,32 @@ class ApiService {
   async cancelSosAlert(token: string, alertId: number): Promise<{ success: boolean; alert: SosAlert }> {
     return this.request<{ success: boolean; alert: SosAlert }>(`/api/sos/alerts/${alertId}/cancel`, {
       method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  // ============================================
+  // 公告 API
+  // ============================================
+  async getAnnouncementsByType(type?: AnnouncementType): Promise<AnnouncementsResponse> {
+    const url = type ? `/api/announcements?type=${type}` : '/api/announcements';
+    return this.request<AnnouncementsResponse>(url);
+  }
+
+  // ============================================
+  // 獎池 API
+  // ============================================
+  async getPrizePool(regionId: number): Promise<PrizePoolResponse> {
+    return this.request<PrizePoolResponse>(`/api/gacha/prize-pool?regionId=${regionId}`);
+  }
+
+  // ============================================
+  // 未讀計數 API
+  // ============================================
+  async getUnreadCounts(token: string): Promise<UnreadCounts> {
+    return this.request<UnreadCounts>('/api/user/unread-counts', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

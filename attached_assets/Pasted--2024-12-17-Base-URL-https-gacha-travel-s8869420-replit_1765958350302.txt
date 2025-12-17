@@ -1,0 +1,208 @@
+📱 前端同步指令 - 完整功能盤點
+**日期：2024/12/17**
+**後端 Base URL：** `https://gacha-travel--s8869420.replit.app`
+---
+## 🏠 【首頁】
+### 1. 公告系統 ✅ 後端已完成
+**後端 API：**
+GET /api/announcements # 取得有效公告
+GET /api/announcements?type=announcement # 篩選類型
+
+**資料結構：**
+```typescript
+interface Announcement {
+  id: number;
+  type: 'announcement' | 'flash_event' | 'holiday_event';
+  title: string;
+  content: string;
+  imageUrl?: string;
+  linkUrl?: string;
+  startDate: string;
+  endDate?: string;
+  priority: number;
+}
+檢查項目：
+
+ 首頁新增公告區塊
+ 顯示公告標題、內容、圖片
+2. 快閃活動 ✅ 後端已完成
+後端 API：
+
+GET /api/announcements?type=flash_event
+檢查項目：
+
+ 首頁新增快閃活動區塊
+ 顯示活動時間倒數（可選）
+3. 節日限定活動 ✅ 後端已完成
+後端 API：
+
+GET /api/announcements?type=holiday_event
+檢查項目：
+
+ 首頁新增節日限定活動區塊
+4. 移除首頁「今天去哪玩?老天說了算」文字 ⚠️ 前端工作
+前端需實現：
+
+首頁：刪除「今天去哪玩?老天說了算」文字
+扭蛋頁：新增此文字作為歡迎語
+檢查項目：
+
+ 首頁移除該文字
+ 扭蛋頁新增該文字
+🎰 【扭蛋】
+1. 歡迎文字 ⚠️ 前端工作
+// 扭蛋頁面頂部
+// 舊：歡迎回來，{使用者名稱}
+// 新：今天去哪玩?老天說了算
+2. 探索國家改成下拉選單 ✅ 後端已完成
+後端 API：
+
+GET /api/locations/countries
+檢查項目：
+
+ 使用 <Picker> 或下拉選單組件（非按鈕式）
+3. 城市/地區改成下拉選單 ✅ 後端已完成
+後端 API：
+
+GET /api/locations/regions/:countryId
+檢查項目：
+
+ 使用 <Picker> 或下拉選單組件
+4. 「抽取張數」改成「行程數量」 ⚠️ 前端工作
+// 搜尋並替換：
+// 舊：抽取張數 → 新：行程數量
+// 舊：X 張 → 新：X（只顯示數字）
+// 位置：放在欄位最右側
+檢查項目：
+
+ 文字替換
+ 移除「張」字
+ 調整位置到欄位右側
+5. 查看獎池功能 ⚠️ 需前端實現
+後端 API： ✅ 已完成
+
+GET /api/gacha/prize-pool?regionId={regionId}
+回傳結構：
+
+interface PrizePoolResponse {
+  coupons: Array<{
+    id: number;
+    tier: 'SP' | 'SSR' | 'SR' | 'S' | 'R';
+    name: string;
+    merchantName: string;
+    placeName: string;
+  }>;
+}
+前端需實現：
+
+新增「查看獎池」按鈕
+點擊後彈出 Modal
+只顯示 SP、SSR 等級的優惠券
+檢查項目：
+
+ 新增「查看獎池」按鈕
+ 實現獎池 Modal
+6. ADMOB 廣告串接 ❌ 需前端實現
+// 安裝：npm install react-native-google-mobile-ads
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+// 扭蛋按鈕下方
+<BannerAd
+  unitId={TestIds.BANNER} // 正式環境替換為真實 ID
+  size={BannerAdSize.MEDIUM_RECTANGLE}
+/>
+檢查項目：
+
+ 安裝 react-native-google-mobile-ads
+ 配置 AdMob App ID
+ 扭蛋按鈕下方顯示 Banner 廣告
+7. 商家認領地點優惠券機制 ✅ 後端已完成
+行程卡回傳結構：
+
+interface ItineraryCard {
+  has_merchant: boolean;
+  merchant_promo?: {
+    title: string;
+    description: string;
+  };
+  is_coupon?: boolean;
+  coupon_data?: {
+    tier: string;
+    name: string;
+    validUntil: string;
+  };
+}
+檢查項目：
+
+ 行程卡顯示商家優惠資訊
+ 優惠券顯示
+8. 圖鑑功能 ✅ 後端已完成
+後端 API：
+
+GET /api/collections                    # 取得用戶圖鑑
+POST /api/collections                   # 新增到圖鑑（後端自動處理）
+GET /api/collections/with-promo         # 取得圖鑑（含商家優惠狀態）
+資料結構：
+
+interface CollectionItem {
+  id: number;
+  placeName: string;
+  category: string;
+  district: string;
+  city: string;
+  country: string;
+  hasPromo: boolean;
+  promoTitle?: string;
+  promoDescription?: string;
+}
+檢查項目：
+
+ 有優惠的行程卡右上角顯示「呼吸紅點」
+ 點擊卡片顯示優惠資訊 Modal
+9. 優惠券核銷 ✅ 後端已完成
+後端 API：
+
+POST /api/inventory/:itemId/redeem
+Body: { code: "核銷碼" }
+# 核銷成功後 3 分鐘自動刪除
+前端需實現：
+
+抽到優惠券時顯示特效動畫
+道具箱中點擊優惠券 → 選擇「核銷」
+彈出輸入核銷碼 Modal
+核銷成功提示，3 分鐘後自動消失
+檢查項目：
+
+ 優惠券中獎特效動畫
+ 核銷碼輸入 Modal
+ 核銷成功/失敗提示
+10. 頂部導航欄未讀紅點 ✅ 後端已完成
+後端 API：
+
+GET /api/user/unread-counts
+Response: {
+  collection: number,
+  itembox: number
+}
+檢查項目：
+
+ 圖鑑按鈕呼吸紅點
+ 道具箱按鈕呼吸紅點
+11. 圖鑑摺頁式選單 ⚠️ 需前端實現
+前端需實現：
+
+// 圖鑑按「國家 → 地區 → 八大種類」分層顯示
+// 使用 Accordion/Collapsible 組件
+// 結構：
+// 🇹🇼 台灣
+//   └─ 台北市
+//       ├─ 🍜 食
+//       ├─ 🏨 宿
+//       ├─ 🏔️ 景
+//       ├─ 🛍️ 購
+//       ├─ 🎮 娛
+//       ├─ 📚 學
+//       └─ 🎯 活
+檢查項目：
+
+ 實現三層摺頁式選單
+ 國家 → 地區 → 八大種類
