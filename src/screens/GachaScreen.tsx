@@ -22,6 +22,7 @@ import { apiService } from '../services/api';
 import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon } from '../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MibuBrand } from '../../constants/Colors';
 
 const UNLIMITED_EMAILS = ['s8869420@gmail.com'];
 
@@ -29,21 +30,21 @@ const DAILY_LIMIT_KEY = '@mibu_daily_limit';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const RARITY_COLORS: Record<string, string> = {
-  SP: '#D4A24C',
-  SSR: '#C97B8B',
-  SR: '#9B7BB8',
-  S: '#7BA0B8',
-  R: '#B08860',
-  N: '#94a3b8',
+  SP: MibuBrand.tierSP,
+  SSR: MibuBrand.tierSSR,
+  SR: MibuBrand.tierSR,
+  S: MibuBrand.tierS,
+  R: MibuBrand.tierR,
+  N: MibuBrand.tan,
 };
 
 const RARITY_BG_COLORS: Record<string, string> = {
-  SP: '#FFF8E7',
-  SSR: '#FFF0F5',
-  SR: '#F5F0FA',
-  S: '#F0F5F8',
-  R: '#F5E6D3',
-  N: '#f1f5f9',
+  SP: MibuBrand.tierSPBg,
+  SSR: MibuBrand.tierSSRBg,
+  SR: MibuBrand.tierSRBg,
+  S: MibuBrand.tierSBg,
+  R: MibuBrand.tierRBg,
+  N: MibuBrand.creamLight,
 };
 
 export function GachaScreen() {

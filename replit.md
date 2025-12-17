@@ -31,6 +31,12 @@ Preferred communication style: Simple, everyday language.
 ### Theming System
 - Light/dark mode support via `useColorScheme` hook.
 - Centralized color definitions in `constants/Colors.ts`.
+- **Mibu Brand Colors**: Warm earth-tone palette derived from logo:
+  - Primary: `#7A5230` (brown), `#B08860` (copper), `#4A2B13` (dark)
+  - Background: `#F5E6D3` (cream), `#FDFBF8` (cream light), `#FFFEFA` (warm white)
+  - Accents: `#C9A87C` (tan), `#E8D5C4` (tan light), `#5A3420` (brown dark)
+  - Tier colors: SP gold, SSR bronze, SR copper, S caramel, R tan (all earth-tone variants)
+- Tailwind extended with `mibu` color tokens in `tailwind.config.js`.
 
 ### Internationalization
 - Support for Traditional Chinese, English, Japanese, and Korean, with translation strings in `src/constants/translations.ts`.
