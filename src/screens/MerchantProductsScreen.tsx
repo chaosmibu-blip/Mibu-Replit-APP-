@@ -240,56 +240,61 @@ export function MerchantProductsScreen() {
       </ScrollView>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
               {editingProduct ? translations.edit : translations.addNew}
             </Text>
 
-            <Text style={styles.inputLabel}>{translations.name}</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.name}
-              onChangeText={text => setFormData({ ...formData, name: text })}
-              placeholder={translations.name}
-              placeholderTextColor="#94a3b8"
-            />
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+              <Text style={styles.inputLabel}>{translations.name}</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.name}
+                onChangeText={text => setFormData({ ...formData, name: text })}
+                placeholder={translations.name}
+                placeholderTextColor="#94a3b8"
+              />
 
-            <Text style={styles.inputLabel}>{translations.description}</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={formData.description}
-              onChangeText={text => setFormData({ ...formData, description: text })}
-              placeholder={translations.description}
-              placeholderTextColor="#94a3b8"
-              multiline
-              numberOfLines={3}
-            />
+              <Text style={styles.inputLabel}>{translations.description}</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={formData.description}
+                onChangeText={text => setFormData({ ...formData, description: text })}
+                placeholder={translations.description}
+                placeholderTextColor="#94a3b8"
+                multiline
+                numberOfLines={3}
+              />
 
-            <View style={styles.priceInputRow}>
-              <View style={styles.priceInputContainer}>
-                <Text style={styles.inputLabel}>{translations.price}</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.price}
-                  onChangeText={text => setFormData({ ...formData, price: text })}
-                  placeholder="0"
-                  placeholderTextColor="#94a3b8"
-                  keyboardType="numeric"
-                />
+              <View style={styles.priceInputRow}>
+                <View style={styles.priceInputContainer}>
+                  <Text style={styles.inputLabel}>{translations.price}</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={formData.price}
+                    onChangeText={text => setFormData({ ...formData, price: text })}
+                    placeholder="0"
+                    placeholderTextColor="#94a3b8"
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={styles.priceInputContainer}>
+                  <Text style={styles.inputLabel}>{translations.discountPrice}</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={formData.discountPrice}
+                    onChangeText={text => setFormData({ ...formData, discountPrice: text })}
+                    placeholder="0"
+                    placeholderTextColor="#94a3b8"
+                    keyboardType="numeric"
+                  />
+                </View>
               </View>
-              <View style={styles.priceInputContainer}>
-                <Text style={styles.inputLabel}>{translations.discountPrice}</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.discountPrice}
-                  onChangeText={text => setFormData({ ...formData, discountPrice: text })}
-                  placeholder="0"
-                  placeholderTextColor="#94a3b8"
-                  keyboardType="numeric"
-                />
-              </View>
-            </View>
+            </ScrollView>
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -311,7 +316,7 @@ export function MerchantProductsScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </KeyboardAvoidingView>
   );
