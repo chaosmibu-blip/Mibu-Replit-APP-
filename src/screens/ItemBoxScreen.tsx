@@ -1,21 +1,212 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
-import { InventoryItem } from '../types';
+import { InventoryItem, CouponTier } from '../types';
+
+const MAX_SLOTS = 30;
+const GRID_COLS = 6;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const SLOT_SIZE = (SCREEN_WIDTH - 48) / GRID_COLS - 8;
+
+const TIER_STYLES: Record<CouponTier, { borderColor: string; bgColor: string; glowColor: string; animate: boolean }> = {
+  SP: { borderColor: '#fbbf24', bgColor: '#fef3c7', glowColor: 'rgba(251, 191, 36, 0.6)', animate: true },
+  SSR: { borderColor: '#a855f7', bgColor: '#f3e8ff', glowColor: 'rgba(168, 85, 247, 0.4)', animate: false },
+  SR: { borderColor: '#3b82f6', bgColor: '#dbeafe', glowColor: 'transparent', animate: false },
+  S: { borderColor: '#22c55e', bgColor: '#dcfce7', glowColor: 'transparent', animate: false },
+  R: { borderColor: '#9ca3af', bgColor: '#f3f4f6', glowColor: 'transparent', animate: false },
+};
+
+const TIER_ICONS: Record<CouponTier, string> = {
+  SP: 'star',
+  SSR: 'diamond',
+  SR: 'trophy',
+  S: 'ribbon',
+  R: 'ticket',
+};
+
+interface InventorySlotProps {
+  item: InventoryItem | null;
+  index: number;
+  onPress: (item: InventoryItem) => void;
+  onLongPress: (item: InventoryItem) => void;
+  language: string;
+}
+
+function InventorySlot({ item, index, onPress, onLongPress, language }: InventorySlotProps) {
+  const [pulseAnim] = useState(new Animated.Value(1));
+
+  useEffect(() => {
+    if (item?.tier === 'SP') {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.05, duration: 800, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    }
+  }, [item?.tier, pulseAnim]);
+
+  if (!item) {
+    return (
+      <View
+        style={{
+          width: SLOT_SIZE,
+          height: SLOT_SIZE,
+          margin: 4,
+          borderRadius: 12,
+          backgroundColor: '#f1f5f9',
+          borderWidth: 2,
+          borderColor: '#e2e8f0',
+          borderStyle: 'dashed',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text style={{ fontSize: 10, color: '#cbd5e1' }}>{index + 1}</Text>
+      </View>
+    );
+  }
+
+  const tierStyle = TIER_STYLES[item.tier] || TIER_STYLES.R;
+  const isExpired = item.isExpired || Boolean(item.expiresAt && new Date(item.expiresAt) < new Date());
+  const isDisabled = item.status === 'redeemed' || item.status === 'deleted' || isExpired;
+
+  const SlotContent = (
+    <View
+      style={{
+        width: SLOT_SIZE,
+        height: SLOT_SIZE,
+        margin: 4,
+        borderRadius: 12,
+        backgroundColor: isDisabled ? '#e2e8f0' : tierStyle.bgColor,
+        borderWidth: 3,
+        borderColor: isDisabled ? '#9ca3af' : tierStyle.borderColor,
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: isDisabled ? 0.5 : 1,
+        shadowColor: tierStyle.glowColor,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: tierStyle.animate ? 1 : 0.5,
+        shadowRadius: tierStyle.animate ? 10 : 4,
+        elevation: tierStyle.animate ? 8 : 2,
+        position: 'relative',
+      }}
+    >
+      {!item.isRead && !isDisabled && (
+        <View
+          style={{
+            position: 'absolute',
+            top: -4,
+            right: -4,
+            width: 12,
+            height: 12,
+            borderRadius: 6,
+            backgroundColor: '#ef4444',
+            borderWidth: 2,
+            borderColor: '#ffffff',
+            zIndex: 10,
+          }}
+        />
+      )}
+
+      <Ionicons
+        name={(TIER_ICONS[item.tier] || 'ticket') as any}
+        size={20}
+        color={isDisabled ? '#9ca3af' : tierStyle.borderColor}
+      />
+
+      <Text
+        style={{
+          fontSize: 8,
+          fontWeight: '800',
+          color: isDisabled ? '#9ca3af' : tierStyle.borderColor,
+          marginTop: 2,
+        }}
+      >
+        {item.tier}
+      </Text>
+
+      {isExpired && (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 2,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            paddingHorizontal: 4,
+            paddingVertical: 1,
+            borderRadius: 4,
+          }}
+        >
+          <Text style={{ fontSize: 7, color: '#ffffff', fontWeight: '700' }}>
+            {language === 'zh-TW' ? '過期' : 'EXP'}
+          </Text>
+        </View>
+      )}
+
+      {item.status === 'redeemed' && (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 2,
+            backgroundColor: 'rgba(22, 163, 74, 0.9)',
+            paddingHorizontal: 4,
+            paddingVertical: 1,
+            borderRadius: 4,
+          }}
+        >
+          <Text style={{ fontSize: 7, color: '#ffffff', fontWeight: '700' }}>
+            {language === 'zh-TW' ? '已用' : 'USED'}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+
+  if (item.tier === 'SP' && !isDisabled) {
+    return (
+      <TouchableOpacity
+        onPress={() => onPress(item)}
+        onLongPress={() => onLongPress(item)}
+        disabled={isDisabled}
+      >
+        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+          {SlotContent}
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <TouchableOpacity
+      onPress={() => onPress(item)}
+      onLongPress={() => onLongPress(item)}
+      disabled={isDisabled}
+    >
+      {SlotContent}
+    </TouchableOpacity>
+  );
+}
 
 export function ItemBoxScreen() {
   const { state, setUnreadCount } = useApp();
   const [items, setItems] = useState<InventoryItem[]>([]);
+  const [slotCount, setSlotCount] = useState(0);
+  const [maxSlots, setMaxSlots] = useState(MAX_SLOTS);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [redeemModalVisible, setRedeemModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [redemptionCode, setRedemptionCode] = useState('');
   const [redeeming, setRedeeming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [redeemSuccess, setRedeemSuccess] = useState(false);
 
@@ -28,9 +219,11 @@ export function ItemBoxScreen() {
       }
       
       const data = await apiService.getInventory(token);
-      const inventoryItems = data.items || [];
+      const inventoryItems = (data.items || []).filter(i => !i.isDeleted);
       setItems(inventoryItems);
-      const unreadCount = inventoryItems.filter((item: InventoryItem) => !item.isRead).length;
+      setSlotCount(data.slotCount || inventoryItems.length);
+      setMaxSlots(data.maxSlots || MAX_SLOTS);
+      const unreadCount = inventoryItems.filter((item: InventoryItem) => !item.isRead && item.status === 'active').length;
       setUnreadCount(unreadCount);
     } catch (error) {
       console.error('Failed to load inventory:', error);
@@ -65,14 +258,14 @@ export function ItemBoxScreen() {
   };
 
   const handleItemPress = async (item: InventoryItem) => {
-    if (!item.isRead) {
+    if (!item.isRead && item.status === 'active') {
       try {
         const token = await AsyncStorage.getItem('@mibu_token');
         if (token) {
           await apiService.markInventoryItemRead(token, item.id);
           setItems(prev => {
             const updated = prev.map(i => i.id === item.id ? { ...i, isRead: true } : i);
-            const newUnreadCount = updated.filter(i => !i.isRead).length;
+            const newUnreadCount = updated.filter(i => !i.isRead && i.status === 'active').length;
             setUnreadCount(newUnreadCount);
             return updated;
           });
@@ -82,13 +275,22 @@ export function ItemBoxScreen() {
       }
     }
     
-    if (item.itemType === 'coupon' && !item.isRedeemed) {
-      setSelectedItem(item);
-      setRedemptionCode('');
-      setRedeemSuccess(false);
-      setCountdown(null);
-      setRedeemModalVisible(true);
-    }
+    setSelectedItem(item);
+    setDetailModalVisible(true);
+  };
+
+  const handleItemLongPress = (item: InventoryItem) => {
+    if (item.status === 'deleted' || item.isDeleted) return;
+    setSelectedItem(item);
+    setDeleteModalVisible(true);
+  };
+
+  const handleOpenRedeem = () => {
+    setDetailModalVisible(false);
+    setRedemptionCode('');
+    setRedeemSuccess(false);
+    setCountdown(null);
+    setTimeout(() => setRedeemModalVisible(true), 300);
   };
 
   const handleRedeem = async () => {
@@ -110,20 +312,57 @@ export function ItemBoxScreen() {
       if (response.success) {
         setRedeemSuccess(true);
         setCountdown(180);
-        setItems(prev => prev.map(i => i.id === selectedItem.id ? { ...i, isRedeemed: true } : i));
+        setItems(prev => prev.map(i => i.id === selectedItem.id ? { ...i, isRedeemed: true, status: 'redeemed' as const } : i));
       } else {
         Alert.alert(
           state.language === 'zh-TW' ? '核銷失敗' : 'Redemption Failed',
           response.message || (state.language === 'zh-TW' ? '核銷碼錯誤' : 'Invalid redemption code')
         );
       }
+    } catch (error: any) {
+      const errorMessage = error?.message || '';
+      if (errorMessage.includes('expired') || errorMessage.includes('過期')) {
+        Alert.alert(
+          state.language === 'zh-TW' ? '已過期' : 'Expired',
+          state.language === 'zh-TW' ? '此優惠券已過期' : 'This coupon has expired'
+        );
+      } else if (errorMessage.includes('redeemed') || errorMessage.includes('已使用')) {
+        Alert.alert(
+          state.language === 'zh-TW' ? '已使用' : 'Already Used',
+          state.language === 'zh-TW' ? '此優惠券已使用' : 'This coupon has already been used'
+        );
+      } else {
+        Alert.alert(
+          state.language === 'zh-TW' ? '錯誤' : 'Error',
+          state.language === 'zh-TW' ? '核銷失敗，請稍後再試' : 'Redemption failed. Please try again.'
+        );
+      }
+    } finally {
+      setRedeeming(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedItem) return;
+
+    setDeleting(true);
+    try {
+      const token = await AsyncStorage.getItem('@mibu_token');
+      if (!token) return;
+
+      const response = await apiService.deleteInventoryItem(token, selectedItem.id);
+      if (response.success) {
+        setDeleteModalVisible(false);
+        setSelectedItem(null);
+        await loadInventory();
+      }
     } catch (error) {
       Alert.alert(
         state.language === 'zh-TW' ? '錯誤' : 'Error',
-        state.language === 'zh-TW' ? '核銷失敗，請稍後再試' : 'Redemption failed. Please try again.'
+        state.language === 'zh-TW' ? '刪除失敗' : 'Delete failed'
       );
     } finally {
-      setRedeeming(false);
+      setDeleting(false);
     }
   };
 
@@ -133,210 +372,214 @@ export function ItemBoxScreen() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getItemIcon = (itemType: string) => {
-    switch (itemType) {
-      case 'coupon': return 'ticket';
-      case 'ticket': return 'pricetag';
-      case 'gift': return 'gift';
-      default: return 'cube';
-    }
+  const getTierLabel = (tier: CouponTier) => {
+    const labels: Record<CouponTier, string> = {
+      SP: 'Special',
+      SSR: 'Super Rare',
+      SR: 'Rare',
+      S: 'Standard',
+      R: 'Common',
+    };
+    return labels[tier] || tier;
   };
 
-  const getItemColor = (itemType: string) => {
-    switch (itemType) {
-      case 'coupon': return '#f59e0b';
-      case 'ticket': return '#6366f1';
-      case 'gift': return '#ec4899';
-      default: return '#64748b';
+  const slots: (InventoryItem | null)[] = Array(maxSlots).fill(null);
+  items.forEach(item => {
+    if (item.slotIndex >= 0 && item.slotIndex < maxSlots) {
+      slots[item.slotIndex] = item;
     }
-  };
+  });
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#f8fafc', alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color="#6366f1" />
-        <Text style={{ marginTop: 16, color: '#64748b' }}>
+      <View style={{ flex: 1, backgroundColor: '#0f172a', alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color="#fbbf24" />
+        <Text style={{ marginTop: 16, color: '#94a3b8' }}>
           {state.language === 'zh-TW' ? '載入中...' : 'Loading...'}
         </Text>
       </View>
     );
   }
 
-  if (items.length === 0) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: '#f8fafc',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 20,
-        }}
-      >
-        <View
-          style={{
-            width: 100,
-            height: 100,
-            borderRadius: 50,
-            backgroundColor: '#fef3c7',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 24,
-          }}
-        >
-          <Ionicons name="cube-outline" size={48} color="#f59e0b" />
-        </View>
-        <Text style={{ fontSize: 20, fontWeight: '700', color: '#64748b', marginBottom: 8 }}>
-          {state.language === 'zh-TW' ? '道具箱是空的' : 'Itembox is Empty'}
-        </Text>
-        <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
-          {state.language === 'zh-TW' ? '抽蛋獲得的優惠券會出現在這裡' : 'Coupons from gacha will appear here'}
-        </Text>
-      </View>
-    );
-  }
-
-  const unreadCount = items.filter(i => !i.isRead).length;
-
   return (
-    <View style={{ flex: 1, backgroundColor: '#f8fafc' }}>
+    <View style={{ flex: 1, backgroundColor: '#0f172a' }}>
+      <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: '#1e293b' }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ fontSize: 20, fontWeight: '800', color: '#ffffff' }}>
+            {state.language === 'zh-TW' ? '道具箱' : 'Item Box'}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1e293b', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
+            <Ionicons name="cube" size={16} color="#fbbf24" />
+            <Text style={{ fontSize: 14, fontWeight: '700', color: '#fbbf24', marginLeft: 6 }}>
+              {slotCount}/{maxSlots}
+            </Text>
+          </View>
+        </View>
+
+        <View style={{ flexDirection: 'row', marginTop: 12, gap: 8, flexWrap: 'wrap' }}>
+          {(['SP', 'SSR', 'SR', 'S', 'R'] as CouponTier[]).map(tier => {
+            const count = items.filter(i => i.tier === tier && i.status === 'active').length;
+            return (
+              <View
+                key={tier}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: TIER_STYLES[tier].bgColor,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: TIER_STYLES[tier].borderColor,
+                }}
+              >
+                <Text style={{ fontSize: 10, fontWeight: '700', color: TIER_STYLES[tier].borderColor }}>
+                  {tier}: {count}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#6366f1']} />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#fbbf24']} tintColor="#fbbf24" />
         }
       >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <Text style={{ fontSize: 14, color: '#64748b' }}>
-            {state.language === 'zh-TW' ? `共 ${items.length} 個道具` : `${items.length} items`}
-          </Text>
-          {unreadCount > 0 && (
-            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fef2f2', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#ef4444', marginRight: 6 }} />
-              <Text style={{ fontSize: 12, color: '#ef4444', fontWeight: '600' }}>
-                {state.language === 'zh-TW' ? `${unreadCount} 個未讀` : `${unreadCount} unread`}
-              </Text>
-            </View>
-          )}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+          {slots.map((item, index) => (
+            <InventorySlot
+              key={index}
+              item={item}
+              index={index}
+              onPress={handleItemPress}
+              onLongPress={handleItemLongPress}
+              language={state.language}
+            />
+          ))}
         </View>
-
-        {items.map((item) => {
-          const itemColor = getItemColor(item.itemType);
-          const isExpired = item.expiresAt && new Date(item.expiresAt) < new Date();
-
-          return (
-            <TouchableOpacity
-              key={item.id}
-              onPress={() => handleItemPress(item)}
-              disabled={item.isRedeemed || !!isExpired}
-              style={{
-                backgroundColor: '#ffffff',
-                borderRadius: 16,
-                padding: 16,
-                marginBottom: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                opacity: (item.isRedeemed || isExpired) ? 0.6 : 1,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 8,
-                elevation: 2,
-                borderWidth: !item.isRead ? 2 : 0,
-                borderColor: !item.isRead ? '#ef4444' : 'transparent',
-              }}
-            >
-              <View
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 12,
-                  backgroundColor: itemColor + '20',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: 12,
-                }}
-              >
-                <Ionicons name={getItemIcon(item.itemType) as any} size={24} color={itemColor} />
-              </View>
-
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                  <Text
-                    style={{ fontSize: 16, fontWeight: '700', color: '#1e293b', flex: 1 }}
-                    numberOfLines={1}
-                  >
-                    {item.title}
-                  </Text>
-                  {!item.isRead && (
-                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#ef4444', marginLeft: 8 }} />
-                  )}
-                </View>
-                
-                {item.description && (
-                  <Text style={{ fontSize: 13, color: '#64748b', marginBottom: 4 }} numberOfLines={1}>
-                    {item.description}
-                  </Text>
-                )}
-                
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  {item.merchantName && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="storefront-outline" size={12} color="#94a3b8" />
-                      <Text style={{ fontSize: 11, color: '#94a3b8', marginLeft: 4 }}>{item.merchantName}</Text>
-                    </View>
-                  )}
-                  {item.expiresAt && (
-                    <Text style={{ fontSize: 11, color: isExpired ? '#ef4444' : '#94a3b8' }}>
-                      {isExpired 
-                        ? (state.language === 'zh-TW' ? '已過期' : 'Expired')
-                        : `${state.language === 'zh-TW' ? '有效期至' : 'Valid until'} ${new Date(item.expiresAt).toLocaleDateString()}`
-                      }
-                    </Text>
-                  )}
-                </View>
-              </View>
-
-              {item.isRedeemed ? (
-                <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 }}>
-                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#16a34a' }}>
-                    {state.language === 'zh-TW' ? '已使用' : 'Used'}
-                  </Text>
-                </View>
-              ) : !isExpired && (
-                <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-              )}
-            </TouchableOpacity>
-          );
-        })}
       </ScrollView>
 
+      {/* Detail Modal */}
+      <Modal
+        visible={detailModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setDetailModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: '#1e293b', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, borderWidth: 2, borderColor: selectedItem ? TIER_STYLES[selectedItem.tier]?.borderColor : '#475569' }}>
+            {selectedItem && (
+              <>
+                <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                  <View
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: 40,
+                      backgroundColor: TIER_STYLES[selectedItem.tier]?.bgColor,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderWidth: 3,
+                      borderColor: TIER_STYLES[selectedItem.tier]?.borderColor,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <Ionicons
+                      name={(TIER_ICONS[selectedItem.tier] || 'ticket') as any}
+                      size={36}
+                      color={TIER_STYLES[selectedItem.tier]?.borderColor}
+                    />
+                  </View>
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: TIER_STYLES[selectedItem.tier]?.borderColor }}>
+                    {selectedItem.tier} - {getTierLabel(selectedItem.tier)}
+                  </Text>
+                </View>
+
+                <Text style={{ fontSize: 18, fontWeight: '800', color: '#ffffff', textAlign: 'center', marginBottom: 8 }}>
+                  {selectedItem.title}
+                </Text>
+
+                {selectedItem.description && (
+                  <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center', marginBottom: 16 }}>
+                    {selectedItem.description}
+                  </Text>
+                )}
+
+                {selectedItem.merchantName && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                    <Ionicons name="storefront-outline" size={14} color="#64748b" />
+                    <Text style={{ fontSize: 13, color: '#64748b', marginLeft: 6 }}>{selectedItem.merchantName}</Text>
+                  </View>
+                )}
+
+                {selectedItem.expiresAt && (
+                  <View style={{ backgroundColor: selectedItem.isExpired ? '#7f1d1d' : '#1e3a5f', padding: 12, borderRadius: 12, marginBottom: 20 }}>
+                    <Text style={{ fontSize: 12, color: selectedItem.isExpired ? '#fca5a5' : '#93c5fd', textAlign: 'center' }}>
+                      {selectedItem.isExpired
+                        ? (state.language === 'zh-TW' ? '已過期' : 'Expired')
+                        : `${state.language === 'zh-TW' ? '有效期至' : 'Valid until'} ${new Date(selectedItem.expiresAt).toLocaleDateString()}`
+                      }
+                    </Text>
+                  </View>
+                )}
+
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <TouchableOpacity
+                    onPress={() => setDetailModalVisible(false)}
+                    style={{ flex: 1, backgroundColor: '#475569', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+                  >
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
+                      {state.language === 'zh-TW' ? '關閉' : 'Close'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {selectedItem.status === 'active' && !selectedItem.isExpired && (
+                    <TouchableOpacity
+                      onPress={handleOpenRedeem}
+                      style={{ flex: 1, backgroundColor: '#fbbf24', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+                    >
+                      <Text style={{ fontSize: 16, fontWeight: '700', color: '#1e293b' }}>
+                        {state.language === 'zh-TW' ? '核銷' : 'Redeem'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Redeem Modal */}
       <Modal
         visible={redeemModalVisible}
         animationType="slide"
         transparent={true}
         onRequestClose={() => !redeemSuccess && setRedeemModalVisible(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <View style={{ backgroundColor: '#ffffff', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: '#1e293b', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
             {redeemSuccess ? (
               <View style={{ alignItems: 'center' }}>
-                <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#dcfce7', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                  <Ionicons name="checkmark-circle" size={48} color="#16a34a" />
+                <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: '#16a34a', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <Ionicons name="checkmark-circle" size={48} color="#ffffff" />
                 </View>
-                <Text style={{ fontSize: 20, fontWeight: '800', color: '#16a34a', marginBottom: 8 }}>
+                <Text style={{ fontSize: 20, fontWeight: '800', color: '#22c55e', marginBottom: 8 }}>
                   {state.language === 'zh-TW' ? '核銷成功！' : 'Redeemed!'}
                 </Text>
-                <Text style={{ fontSize: 14, color: '#64748b', textAlign: 'center', marginBottom: 16 }}>
+                <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center', marginBottom: 16 }}>
                   {state.language === 'zh-TW' ? '請出示此畫面給商家確認' : 'Please show this screen to the merchant'}
                 </Text>
                 
                 {countdown !== null && (
-                  <View style={{ backgroundColor: '#fef3c7', paddingHorizontal: 24, paddingVertical: 16, borderRadius: 16, marginBottom: 20 }}>
-                    <Text style={{ fontSize: 36, fontWeight: '900', color: '#d97706', textAlign: 'center' }}>
+                  <View style={{ backgroundColor: '#fbbf24', paddingHorizontal: 32, paddingVertical: 20, borderRadius: 16, marginBottom: 20 }}>
+                    <Text style={{ fontSize: 48, fontWeight: '900', color: '#1e293b', textAlign: 'center' }}>
                       {formatCountdown(countdown)}
                     </Text>
-                    <Text style={{ fontSize: 12, color: '#92400e', textAlign: 'center', marginTop: 4 }}>
+                    <Text style={{ fontSize: 12, color: '#78350f', textAlign: 'center', marginTop: 4 }}>
                       {state.language === 'zh-TW' ? '倒數計時' : 'Countdown'}
                     </Text>
                   </View>
@@ -344,7 +587,7 @@ export function ItemBoxScreen() {
 
                 <TouchableOpacity
                   onPress={() => setRedeemModalVisible(false)}
-                  style={{ backgroundColor: '#6366f1', paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12 }}
+                  style={{ backgroundColor: '#475569', paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12 }}
                 >
                   <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
                     {state.language === 'zh-TW' ? '完成' : 'Done'}
@@ -354,45 +597,47 @@ export function ItemBoxScreen() {
             ) : (
               <>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <Text style={{ fontSize: 18, fontWeight: '800', color: '#1e293b' }}>
+                  <Text style={{ fontSize: 18, fontWeight: '800', color: '#ffffff' }}>
                     {state.language === 'zh-TW' ? '核銷優惠券' : 'Redeem Coupon'}
                   </Text>
                   <TouchableOpacity onPress={() => setRedeemModalVisible(false)}>
-                    <Ionicons name="close" size={24} color="#64748b" />
+                    <Ionicons name="close" size={24} color="#94a3b8" />
                   </TouchableOpacity>
                 </View>
 
                 {selectedItem && (
-                  <View style={{ backgroundColor: '#fef3c7', borderRadius: 12, padding: 16, marginBottom: 20 }}>
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#92400e', marginBottom: 4 }}>
+                  <View style={{ backgroundColor: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: TIER_STYLES[selectedItem.tier]?.borderColor }}>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff', marginBottom: 4 }}>
                       {selectedItem.title}
                     </Text>
                     {selectedItem.description && (
-                      <Text style={{ fontSize: 13, color: '#a16207' }}>{selectedItem.description}</Text>
+                      <Text style={{ fontSize: 13, color: '#94a3b8' }}>{selectedItem.description}</Text>
                     )}
                   </View>
                 )}
 
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 8 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#94a3b8', marginBottom: 8 }}>
                   {state.language === 'zh-TW' ? '請輸入商家核銷碼' : 'Enter Merchant Redemption Code'}
                 </Text>
                 <TextInput
                   value={redemptionCode}
                   onChangeText={setRedemptionCode}
                   placeholder={state.language === 'zh-TW' ? '8位核銷碼' : '8-digit code'}
-                  placeholderTextColor="#94a3b8"
+                  placeholderTextColor="#64748b"
                   autoCapitalize="characters"
                   maxLength={8}
                   style={{
-                    backgroundColor: '#f1f5f9',
+                    backgroundColor: '#0f172a',
                     borderRadius: 12,
                     padding: 16,
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: '700',
                     textAlign: 'center',
                     letterSpacing: 4,
-                    color: '#1e293b',
+                    color: '#fbbf24',
                     marginBottom: 20,
+                    borderWidth: 2,
+                    borderColor: '#475569',
                   }}
                 />
 
@@ -400,22 +645,79 @@ export function ItemBoxScreen() {
                   onPress={handleRedeem}
                   disabled={redeeming || redemptionCode.length < 8}
                   style={{
-                    backgroundColor: redemptionCode.length >= 8 ? '#6366f1' : '#e2e8f0',
+                    backgroundColor: redemptionCode.length >= 8 ? '#fbbf24' : '#475569',
                     paddingVertical: 16,
                     borderRadius: 12,
                     alignItems: 'center',
                   }}
                 >
                   {redeeming ? (
-                    <ActivityIndicator color="#ffffff" />
+                    <ActivityIndicator color="#1e293b" />
                   ) : (
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: redemptionCode.length >= 8 ? '#ffffff' : '#94a3b8' }}>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: redemptionCode.length >= 8 ? '#1e293b' : '#64748b' }}>
                       {state.language === 'zh-TW' ? '確認核銷' : 'Confirm Redemption'}
                     </Text>
                   )}
                 </TouchableOpacity>
               </>
             )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={deleteModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: '#1e293b', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+              <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: '#7f1d1d', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                <Ionicons name="trash" size={28} color="#ef4444" />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: '#ffffff', marginBottom: 8 }}>
+                {state.language === 'zh-TW' ? '確定刪除？' : 'Delete Item?'}
+              </Text>
+              <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
+                {state.language === 'zh-TW' ? '此操作無法復原' : 'This action cannot be undone'}
+              </Text>
+            </View>
+
+            {selectedItem && (
+              <View style={{ backgroundColor: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 20 }}>
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#ffffff', textAlign: 'center' }}>
+                  {selectedItem.title}
+                </Text>
+              </View>
+            )}
+
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => setDeleteModalVisible(false)}
+                style={{ flex: 1, backgroundColor: '#475569', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
+                  {state.language === 'zh-TW' ? '取消' : 'Cancel'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleDelete}
+                disabled={deleting}
+                style={{ flex: 1, backgroundColor: '#ef4444', paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
+              >
+                {deleting ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
+                    {state.language === 'zh-TW' ? '刪除' : 'Delete'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

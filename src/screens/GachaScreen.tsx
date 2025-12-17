@@ -199,12 +199,13 @@ export function GachaScreen() {
     pendingResultRef.current = null;
 
     try {
+      const token = await AsyncStorage.getItem('@mibu_token');
       const response = await apiService.generateItinerary({
         countryId: selectedCountryId,
         regionId: selectedRegionId,
         language: state.language,
         itemCount: pullCount,
-      });
+      }, token || undefined);
 
       if (response.meta?.code === 'NO_PLACES_AVAILABLE' || response.error) {
         setShowLoadingAd(false);
@@ -226,37 +227,48 @@ export function GachaScreen() {
       }
 
       const { itinerary } = response;
+      const couponsWon = response.coupons_won || [];
 
-      const items: GachaItem[] = itinerary.items.map((item: any, index: number) => ({
-        id: Date.now() + index,
-        place_name: item.place?.name || `${itinerary.location.district?.name || ''} ${item.subcategory?.name || ''}`,
-        description: `${itinerary.location.region?.name || ''} ${itinerary.location.district?.name || ''}`,
-        ai_description: item.place?.description || '',
-        category: item.category?.code || '',
-        suggested_time: '',
-        duration: '1h',
-        search_query: '',
-        color_hex: item.category?.colorHex || '#6366f1',
-        country: itinerary.location.country?.name || '',
-        city: itinerary.location.region?.nameZh || itinerary.location.region?.name || '',
-        cityDisplay: itinerary.location.region?.name || '',
-        district: itinerary.location.district?.nameZh || itinerary.location.district?.name || '',
-        districtDisplay: itinerary.location.district?.name || '',
-        collectedAt: new Date().toISOString(),
-        is_coupon: false,
-        coupon_data: null,
-        place_id: item.place?.placeId || null,
-        verified_name: item.place?.name || null,
-        verified_address: item.place?.address || null,
-        google_rating: item.place?.rating || null,
-        google_types: item.place?.googleTypes || [],
-        primary_type: item.place?.primaryType || null,
-        location: item.place?.location || null,
-        is_location_verified: item.isVerified || false,
-        merchant: item.merchant || null,
-        coupon: item.coupon || null,
-        rarity: item.rarity || 'N',
-      }));
+      const items: GachaItem[] = itinerary.items.map((item: any, index: number) => {
+        const hasMerchantCoupon = item.is_coupon || (item.merchant_promo?.isPromoActive && item.coupon_data);
+        
+        return {
+          id: Date.now() + index,
+          place_name: item.place?.name || `${itinerary.location.district?.name || ''} ${item.subcategory?.name || ''}`,
+          description: `${itinerary.location.region?.name || ''} ${itinerary.location.district?.name || ''}`,
+          ai_description: item.place?.description || '',
+          category: item.category?.code || '',
+          suggested_time: '',
+          duration: '1h',
+          search_query: '',
+          color_hex: item.category?.colorHex || '#6366f1',
+          country: itinerary.location.country?.name || '',
+          city: itinerary.location.region?.nameZh || itinerary.location.region?.name || '',
+          cityDisplay: itinerary.location.region?.name || '',
+          district: itinerary.location.district?.nameZh || itinerary.location.district?.name || '',
+          districtDisplay: itinerary.location.district?.name || '',
+          collectedAt: new Date().toISOString(),
+          is_coupon: hasMerchantCoupon,
+          coupon_data: item.coupon_data || null,
+          place_id: item.place?.placeId || null,
+          verified_name: item.place?.name || null,
+          verified_address: item.place?.address || null,
+          google_rating: item.place?.rating || null,
+          google_types: item.place?.googleTypes || [],
+          primary_type: item.place?.primaryType || null,
+          location: item.place?.location || null,
+          is_location_verified: item.isVerified || false,
+          merchant: item.merchant || item.merchant_promo ? {
+            id: item.merchant?.id || item.merchant_promo?.merchantId || '',
+            name: item.merchant?.name || item.merchant_promo?.promoTitle || '',
+            description: item.merchant_promo?.promoDescription,
+            badge: item.merchant?.badge,
+            discount: item.merchant?.discount,
+          } : undefined,
+          coupon: item.coupon || null,
+          rarity: item.rarity || 'N',
+        };
+      });
 
       await incrementDailyCount();
 
@@ -268,7 +280,9 @@ export function GachaScreen() {
           city: itinerary.location.region?.nameZh || itinerary.location.region?.name || '',
           locked_district: itinerary.location.district?.nameZh || itinerary.location.district?.name || '',
           user_level: pullCount,
+          coupons_won: couponsWon.length,
         },
+        couponsWon,
       };
 
       setIsApiComplete(true);

@@ -240,6 +240,29 @@ export interface GachaMeta {
   city: string;
   locked_district: LocalizedContent;
   user_level: number;
+  coupons_won?: number;
+}
+
+export interface CouponWon {
+  tier: CouponTier;
+  placeName: string;
+  couponName: string;
+  inventoryId?: number;
+}
+
+export interface ItineraryGenerateResponse {
+  itinerary?: {
+    items: any[];
+    location: {
+      country?: { name: string };
+      region?: { name: string; nameZh?: string };
+      district?: { name: string; nameZh?: string };
+    };
+  };
+  coupons_won?: CouponWon[];
+  meta?: { code?: string };
+  error?: string;
+  success?: boolean;
 }
 
 export interface GachaResponse {
