@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
-import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams } from '../types';
+import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../types';
 import { TierBadge } from '../components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../constants/tierStyles';
 
@@ -125,20 +125,46 @@ export function MerchantCouponsScreen() {
       const token = await AsyncStorage.getItem('@mibu_token');
       if (!token) return;
 
-      const params: CreateMerchantCouponParams = {
-        name: formData.name.trim(),
-        tier: formData.tier,
-        content: formData.content.trim(),
-        terms: formData.terms.trim() || undefined,
-        quantity: parseInt(formData.quantity) || 100,
-        validUntil: formData.validUntil || undefined,
-        isActive: true,
-      };
+      const parsedQuantity = parseInt(formData.quantity, 10);
+      const quantity = isNaN(parsedQuantity) || parsedQuantity < 1 ? 100 : parsedQuantity;
 
       if (editingCoupon) {
-        await apiService.updateMerchantCoupon(token, editingCoupon.id, params);
+        const updateParams: UpdateMerchantCouponParams = {};
+        if (formData.name.trim() !== editingCoupon.name) {
+          updateParams.name = formData.name.trim();
+        }
+        if (formData.tier !== editingCoupon.tier) {
+          updateParams.tier = formData.tier;
+        }
+        if (formData.content.trim() !== editingCoupon.content) {
+          updateParams.content = formData.content.trim();
+        }
+        if (formData.terms.trim() !== (editingCoupon.terms || '')) {
+          updateParams.terms = formData.terms.trim() || undefined;
+        }
+        if (quantity !== editingCoupon.quantity) {
+          updateParams.quantity = quantity;
+        }
+        const validUntilVal = formData.validUntil || undefined;
+        const existingValidUntil = editingCoupon.validUntil ? editingCoupon.validUntil.split('T')[0] : undefined;
+        if (validUntilVal !== existingValidUntil) {
+          updateParams.validUntil = validUntilVal;
+        }
+        
+        if (Object.keys(updateParams).length > 0) {
+          await apiService.updateMerchantCoupon(token, editingCoupon.id, updateParams);
+        }
       } else {
-        await apiService.createMerchantCoupon(token, params);
+        const createParams: CreateMerchantCouponParams = {
+          name: formData.name.trim(),
+          tier: formData.tier,
+          content: formData.content.trim(),
+          terms: formData.terms.trim() || undefined,
+          quantity,
+          validUntil: formData.validUntil || undefined,
+          isActive: true,
+        };
+        await apiService.createMerchantCoupon(token, createParams);
       }
 
       setShowModal(false);
