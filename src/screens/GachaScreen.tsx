@@ -568,12 +568,12 @@ export function GachaScreen() {
               </View>
             ) : (
               <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {couponPoolData.length > 0 && (
-                  <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+                {couponPoolData.length > 0 ? (
+                  <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                       <Ionicons name="ticket" size={18} color="#d97706" />
                       <Text style={{ fontSize: 14, fontWeight: '700', color: '#d97706', marginLeft: 6 }}>
-                        {state.language === 'zh-TW' ? '稀有優惠券' : 'Rare Coupons'} ({couponPoolData.length})
+                        {state.language === 'zh-TW' ? 'SP/SSR 稀有優惠券' : 'SP/SSR Rare Coupons'} ({couponPoolData.length})
                       </Text>
                     </View>
                     
@@ -634,42 +634,23 @@ export function GachaScreen() {
                       </View>
                     ))}
                   </View>
-                )}
-
-                <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Ionicons name="location" size={18} color="#6366f1" />
-                    <Text style={{ fontSize: 14, fontWeight: '700', color: '#6366f1', marginLeft: 6 }}>
-                      {t.rareItems || '稀有景點'} ({getRareItems().length})
-                    </Text>
-                  </View>
-                </View>
-                
-                {getRareItems().length > 0 ? (
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 10, paddingBottom: 40 }}>
-                    {getRareItems().map((item) => (
-                      <View key={item.id} style={{ width: '50%', padding: 6 }}>
-                        {renderPoolItem({ item })}
-                      </View>
-                    ))}
-                  </View>
                 ) : (
-                  <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
+                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60 }}>
                     <View
                       style={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: 30,
-                        backgroundColor: '#f1f5f9',
+                        width: 80,
+                        height: 80,
+                        borderRadius: 40,
+                        backgroundColor: '#fef3c7',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        marginBottom: 12,
+                        marginBottom: 16,
                       }}
                     >
-                      <Ionicons name="cube-outline" size={28} color="#94a3b8" />
+                      <Ionicons name="ticket-outline" size={40} color="#d97706" />
                     </View>
-                    <Text style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center' }}>
-                      {t.noRareItems || '此區域尚無稀有景點'}
+                    <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
+                      {state.language === 'zh-TW' ? '此區域尚無稀有優惠券' : 'No rare coupons in this region'}
                     </Text>
                   </View>
                 )}
