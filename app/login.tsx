@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
 import { UserRole } from '../src/types';
+import { MibuBrand } from '../constants/Colors';
 
 const AUTH_TOKEN_KEY = 'mibu_auth_token';
 
@@ -34,28 +35,28 @@ interface PortalConfig {
 
 const PORTAL_CONFIGS: Record<string, PortalConfig[]> = {
   'zh-TW': [
-    { type: 'traveler', label: '旅客', color: '#6366f1', bgColor: '#eef2ff', subtitle: '探索台灣各地精彩景點', guestAllowed: true },
-    { type: 'merchant', label: '企業端', color: '#10b981', bgColor: '#ecfdf5', subtitle: '景點業者、餐廳、住宿等企業合作夥伴', guestAllowed: false },
-    { type: 'specialist', label: '專員端', color: '#a855f7', bgColor: '#faf5ff', subtitle: '旅遊專員服務入口', guestAllowed: false },
-    { type: 'admin', label: '管理端', color: '#f59e0b', bgColor: '#fffbeb', subtitle: '系統管理員專用入口', guestAllowed: false },
+    { type: 'traveler', label: '旅客', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '探索台灣各地精彩景點', guestAllowed: true },
+    { type: 'merchant', label: '企業端', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: '景點業者、餐廳、住宿等企業合作夥伴', guestAllowed: false },
+    { type: 'specialist', label: '專員端', color: '#9B7BB8', bgColor: '#F5F0FA', subtitle: '旅遊專員服務入口', guestAllowed: false },
+    { type: 'admin', label: '管理端', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: '系統管理員專用入口', guestAllowed: false },
   ],
   'en': [
-    { type: 'traveler', label: 'Traveler', color: '#6366f1', bgColor: '#eef2ff', subtitle: 'Explore amazing destinations', guestAllowed: true },
-    { type: 'merchant', label: 'Business', color: '#10b981', bgColor: '#ecfdf5', subtitle: 'For attractions, restaurants, and hotels', guestAllowed: false },
-    { type: 'specialist', label: 'Specialist', color: '#a855f7', bgColor: '#faf5ff', subtitle: 'Travel specialist service portal', guestAllowed: false },
-    { type: 'admin', label: 'Admin', color: '#f59e0b', bgColor: '#fffbeb', subtitle: 'System administrator portal', guestAllowed: false },
+    { type: 'traveler', label: 'Traveler', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: 'Explore amazing destinations', guestAllowed: true },
+    { type: 'merchant', label: 'Business', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: 'For attractions, restaurants, and hotels', guestAllowed: false },
+    { type: 'specialist', label: 'Specialist', color: '#9B7BB8', bgColor: '#F5F0FA', subtitle: 'Travel specialist service portal', guestAllowed: false },
+    { type: 'admin', label: 'Admin', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: 'System administrator portal', guestAllowed: false },
   ],
   'ja': [
-    { type: 'traveler', label: '旅行者', color: '#6366f1', bgColor: '#eef2ff', subtitle: '素晴らしい目的地を探索', guestAllowed: true },
-    { type: 'merchant', label: '企業', color: '#10b981', bgColor: '#ecfdf5', subtitle: '観光地、レストラン、宿泊施設向け', guestAllowed: false },
-    { type: 'specialist', label: 'スペシャリスト', color: '#a855f7', bgColor: '#faf5ff', subtitle: '旅行スペシャリストポータル', guestAllowed: false },
-    { type: 'admin', label: '管理者', color: '#f59e0b', bgColor: '#fffbeb', subtitle: 'システム管理者ポータル', guestAllowed: false },
+    { type: 'traveler', label: '旅行者', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '素晴らしい目的地を探索', guestAllowed: true },
+    { type: 'merchant', label: '企業', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: '観光地、レストラン、宿泊施設向け', guestAllowed: false },
+    { type: 'specialist', label: 'スペシャリスト', color: '#9B7BB8', bgColor: '#F5F0FA', subtitle: '旅行スペシャリストポータル', guestAllowed: false },
+    { type: 'admin', label: '管理者', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: 'システム管理者ポータル', guestAllowed: false },
   ],
   'ko': [
-    { type: 'traveler', label: '여행자', color: '#6366f1', bgColor: '#eef2ff', subtitle: '놀라운 여행지 탐험', guestAllowed: true },
-    { type: 'merchant', label: '기업', color: '#10b981', bgColor: '#ecfdf5', subtitle: '관광지, 레스토랑, 숙박 시설용', guestAllowed: false },
-    { type: 'specialist', label: '전문가', color: '#a855f7', bgColor: '#faf5ff', subtitle: '여행 전문가 서비스 포털', guestAllowed: false },
-    { type: 'admin', label: '관리자', color: '#f59e0b', bgColor: '#fffbeb', subtitle: '시스템 관리자 포털', guestAllowed: false },
+    { type: 'traveler', label: '여행자', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '놀라운 여행지 탐험', guestAllowed: true },
+    { type: 'merchant', label: '기업', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: '관광지, 레스토랑, 숙박 시설용', guestAllowed: false },
+    { type: 'specialist', label: '전문가', color: '#9B7BB8', bgColor: '#F5F0FA', subtitle: '여행 전문가 서비스 포털', guestAllowed: false },
+    { type: 'admin', label: '관리자', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: '시스템 관리자 포털', guestAllowed: false },
   ],
 };
 
@@ -568,7 +569,7 @@ export default function LoginScreen() {
   if (checkingAuth) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
       </View>
     );
   }
@@ -614,7 +615,7 @@ export default function LoginScreen() {
           <Text style={styles.headerTitle}>MIBU</Text>
         </View>
         <TouchableOpacity style={styles.globeButton}>
-          <Ionicons name="globe-outline" size={28} color="#64748b" />
+          <Ionicons name="globe-outline" size={28} color={MibuBrand.copper} />
         </TouchableOpacity>
       </View>
 
@@ -692,13 +693,13 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   header: {
     flexDirection: 'row',
@@ -721,7 +722,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     letterSpacing: 2,
   },
   globeButton: {
@@ -729,7 +730,7 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -750,7 +751,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 40,
     right: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     paddingVertical: 8,
     shadowColor: '#000',
@@ -759,6 +760,8 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     minWidth: 140,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
   },
   portalMenuItem: {
     paddingVertical: 14,
@@ -766,7 +769,7 @@ const styles = StyleSheet.create({
   },
   portalMenuText: {
     fontSize: 16,
-    color: '#334155',
+    color: MibuBrand.dark,
     textAlign: 'center',
   },
   content: {
@@ -778,13 +781,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 48,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brown,
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#64748b',
+    color: MibuBrand.copper,
     textAlign: 'center',
     marginBottom: 48,
   },
@@ -799,7 +802,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     paddingHorizontal: 32,
     borderRadius: 20,
-    shadowColor: '#000',
+    shadowColor: MibuBrand.brownDark,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -813,21 +816,21 @@ const styles = StyleSheet.create({
   guestButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   guestButtonText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#334155',
+    color: MibuBrand.dark,
   },
   note: {
     fontSize: 14,
-    color: '#6366f1',
+    color: MibuBrand.brown,
     textAlign: 'center',
     marginTop: 16,
   },
