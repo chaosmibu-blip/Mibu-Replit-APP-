@@ -18,7 +18,7 @@ interface RoleSwitcherProps {
 
 const ROLE_CONFIG: Record<UserRole, { label: { zh: string; en: string }; color: string; icon: string; route: string }> = {
   traveler: { label: { zh: '旅客', en: 'Traveler' }, color: '#6366f1', icon: 'airplane-outline', route: '/(tabs)' },
-  merchant: { label: { zh: '企業端', en: 'Business' }, color: '#10b981', icon: 'storefront-outline', route: '/merchant-dashboard' },
+  merchant: { label: { zh: '商家端', en: 'Merchant' }, color: '#10b981', icon: 'storefront-outline', route: '/merchant-dashboard' },
   specialist: { label: { zh: '專員端', en: 'Specialist' }, color: '#a855f7', icon: 'shield-checkmark-outline', route: '/specialist-dashboard' },
   admin: { label: { zh: '管理端', en: 'Admin' }, color: '#f59e0b', icon: 'settings-outline', route: '/admin-dashboard' },
 };

@@ -1,0 +1,251 @@
+# 第三份（3/3）：商家端
+```markdown
+## 🏪 【商家端】
+### 1. 用戶別名稱：企業端 → 商家端 ⚠️ 前端工作
+**前端需實現：**
+```typescript
+// 搜尋並替換所有「企業端」為「商家端」
+// 包含：登入頁角色選擇、翻譯檔案、導航選單
+檢查項目：
+
+ 全域搜尋替換
+2. 商家資料庫欄位 ✅ 後端已完成
+資料結構：
+
+interface MerchantProfile {
+  ownerName: string;       // 負責人姓名
+  businessName: string;    // 商家名稱
+  taxId?: string;          // 統一編號（選填）
+  businessCategory: string; // 營業類別
+  address: string;         // 地點
+  phone?: string;          // 電話
+  mobile: string;          // 手機
+  email: string;           // Email
+}
+3. 商家註冊送審流程 ✅ 後端已完成
+後端 API：
+
+POST /api/merchant/register
+Body: MerchantProfile
+Response: {
+  success: true,
+  merchant: { id, status: 'pending' }
+}
+前端需實現：
+
+顯示完整表單（8 個欄位）
+「取消」按鈕 → 跳回初始頁面
+「送審」按鈕 → 呼叫 API → 顯示「送審成功」→ 跳回初始頁面
+審核通過前，無法使用商家功能
+檢查項目：
+
+ 商家註冊表單
+ 取消/送審按鈕
+ 送審成功提示
+4. 記憶帳號密碼 ⚠️ 需前端實現
+前端需實現：
+
+import * as SecureStore from 'expo-secure-store';
+// 1. 登入頁新增「記住我」checkbox
+// 2. 勾選後，儲存帳號密碼到 SecureStore
+// 3. 下次開啟 App 自動填入
+const saveCredentials = async (email: string, password: string) => {
+  await SecureStore.setItemAsync('savedEmail', email);
+  await SecureStore.setItemAsync('savedPassword', password);
+};
+檢查項目：
+
+ 新增「記住我」選項
+ 安全儲存憑證
+ 自動填入
+5. Google 登入後商家資料填寫 ⚠️ 需前端實現
+後端 API：
+
+GET /api/merchant/me
+# 如果回傳 merchant: null，表示需要填寫資料
+前端需實現：
+
+Google 登入後呼叫 GET /api/merchant/me
+如果 merchant 為空 → 導向商家資料填寫頁
+填寫完成 → 送審 → 返回初始頁面
+審核通過後才能用 Google 登入進入商家功能
+檢查項目：
+
+ 登入後檢查商家資料
+ 導向填寫頁面
+ 送審流程
+🏪 【商家功能】
+1. 數據分析 ⚠️ 後端部分完成
+後端 API：
+
+GET /api/merchant/analytics
+目前回傳：
+
+{
+  totalPlaces: number,
+  activePlaces: number,
+  pendingPlaces: number,
+  promoActivePlaces: number
+}
+❌ 後端需新增的指標（待開發）：
+
+{
+  dailyCollectionCount: number,   // 每日被收錄圖鑑人數
+  totalCollectionUsers: number,   // 已有圖鑑卡人數
+  collectionClickCount: number,   // 圖鑑被點擊次數
+  couponUsageRate: number,        // 優惠券使用率
+  couponTotalUsed: number,        // 優惠券總使用次數
+  prizePoolViewCount: number,     // 被查看獎池人數
+}
+檢查項目：
+
+ 數據分析儀表板頁面
+ 顯示各項統計數據
+2. 行程卡管理 ✅ 後端已完成
+後端 API：
+
+GET /api/merchant/places                    # 取得商家行程卡
+POST /api/merchant/place-drafts             # 新增行程卡（送審）
+GET /api/merchant/place-drafts              # 取得草稿
+新增行程卡 Body：
+
+{
+  placeName: string,
+  description?: string,
+  categoryId: number,          // 八大種類（下拉選擇）
+  subcategoryId: number,
+  districtId: number,
+  regionId: number,
+  countryId: number,
+  googlePlaceId?: string,      // Google 地圖連結的 place_id
+  locationLat?: string,
+  locationLng?: string,
+}
+前端需實現：
+
+列表顯示已有行程卡
+右下角「+」按鈕新增
+新增表單：名稱、介紹、分類（下拉）、Google 地圖連結
+「送審」按鈕
+檢查項目：
+
+ 行程卡列表頁
+ 新增行程卡表單
+ 八大種類下拉選單
+ Google 地圖連結輸入
+3. 審核通過後編輯與優惠券設定 ✅ 後端已完成
+後端 API：
+
+PATCH /api/merchant/places/:id              # 編輯行程卡
+POST /api/merchant/places/:id/coupons       # 新增優惠券
+PATCH /api/merchant/coupons/:id             # 編輯優惠券
+DELETE /api/merchant/coupons/:id            # 刪除優惠券
+優惠券結構：
+
+interface MerchantCoupon {
+  id: number;
+  tier: 'SP' | 'SSR' | 'SR' | 'S' | 'R';
+  name: string;
+  content: string;
+  terms?: string;
+  quantity?: number;
+  validUntil?: string;
+  isActive: boolean;
+}
+檢查項目：
+
+ 行程卡編輯頁（審核通過後可見）
+ 優惠資訊編輯
+ 優惠券列表 CRUD
+ 啟用/停用開關
+4. 商家資料頁面 ✅ 後端已完成
+後端 API：
+
+GET /api/merchant/me
+PATCH /api/merchant/profile
+檢查項目：
+
+ 商家資料檢視頁
+ 編輯功能
+5. 商品管理（開發中） ⚠️ 待開發
+前端需實現：
+
+// 暫時顯示「開發中...」
+<View style={styles.placeholder}>
+  <Text>🚧 開發中...</Text>
+</View>
+6. 商家登出 ✅ 後端已完成
+檢查項目：
+
+ 登出後跳回初始頁面
+7. 購買頁面與權限系統 ⚠️ 需前端實現
+後端 API：
+
+GET /api/merchant/subscription/plans
+POST /api/merchant/subscription/upgrade
+等級說明：
+
+// 商家等級
+const MERCHANT_LEVELS = {
+  free: { maxCards: 1, analytics: false },
+  pro: { maxCards: 5, analytics: true },
+  premium: { maxCards: 20, analytics: true },
+};
+// 行程卡等級
+const CARD_LEVELS = {
+  free: { 
+    frame: false, 
+    promoEditable: false, 
+    maxCoupons: 1,
+    couponTiers: ['R'],
+  },
+  pro: { 
+    frame: true, 
+    promoEditable: true, 
+    maxCoupons: 5,
+    couponTiers: ['SSR', 'SR', 'S', 'R'],
+  },
+  premium: { 
+    frame: true, 
+    promoEditable: true, 
+    maxCoupons: 10,
+    couponTiers: ['SP', 'SSR', 'SR', 'S', 'R'],
+    specialEffect: true,
+  },
+};
+檢查項目：
+
+ 購買/升級頁面
+ 方案比較表
+ 根據等級限制功能
+✅ 完成檢查清單總覽
+功能	後端	前端
+公告系統	✅	需實現
+快閃/節日活動	✅	需實現
+首頁移除文字	-	需實現
+扭蛋歡迎語	-	需實現
+國家/城市下拉	✅	需確認
+行程數量文字	-	需實現
+查看獎池	✅	需實現
+ADMOB 廣告	需新增	需實現
+優惠券機制	✅	需確認
+圖鑑功能	✅	需確認/擴展
+優惠券核銷	✅	需實現
+未讀紅點	✅	需實現
+圖鑑摺頁選單	✅	需實現
+道具箱 30 格	✅	需實現
+過期優惠券灰色	✅	需實現
+優惠券等級特效	✅	需實現
+個人資料	✅	需實現
+登出	✅	需確認
+語言切換	✅	需確認
+SOS 求救	✅	需實現
+側邊鍵 5 下	-	需實現
+購買服務	✅	需確認
+企業端→商家端	-	需實現
+商家註冊	✅	需實現
+記憶帳密	-	需實現
+商家數據分析	⚠️ 需擴展	需實現
+行程卡管理	✅	需實現
+優惠券設定	✅	需實現
+購買/權限	✅	需實現

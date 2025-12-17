@@ -39,25 +39,25 @@ interface PortalConfig {
 const PORTAL_CONFIGS: Record<string, PortalConfig[]> = {
   'zh-TW': [
     { type: 'traveler', label: '旅客', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '探索台灣各地精彩景點', guestAllowed: true },
-    { type: 'merchant', label: '企業端', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: '景點業者、餐廳、住宿等企業合作夥伴', guestAllowed: false },
+    { type: 'merchant', label: '商家端', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: '景點業者、餐廳、住宿等商家合作夥伴', guestAllowed: false },
     { type: 'specialist', label: '專員端', color: '#9B7BB8', bgColor: '#F5F0FA', subtitle: '旅遊專員服務入口', guestAllowed: false },
     { type: 'admin', label: '管理端', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: '系統管理員專用入口', guestAllowed: false },
   ],
   'en': [
     { type: 'traveler', label: 'Traveler', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: 'Explore amazing destinations', guestAllowed: true },
-    { type: 'merchant', label: 'Business', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: 'For attractions, restaurants, and hotels', guestAllowed: false },
+    { type: 'merchant', label: 'Merchant', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: 'For attractions, restaurants, and hotels', guestAllowed: false },
     { type: 'specialist', label: 'Specialist', color: '#9B7BB8', bgColor: '#F5F0FA', subtitle: 'Travel specialist service portal', guestAllowed: false },
     { type: 'admin', label: 'Admin', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: 'System administrator portal', guestAllowed: false },
   ],
   'ja': [
     { type: 'traveler', label: '旅行者', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '素晴らしい目的地を探索', guestAllowed: true },
-    { type: 'merchant', label: '企業', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: '観光地、レストラン、宿泊施設向け', guestAllowed: false },
+    { type: 'merchant', label: '加盟店', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: '観光地、レストラン、宿泊施設向け', guestAllowed: false },
     { type: 'specialist', label: 'スペシャリスト', color: '#9B7BB8', bgColor: '#F5F0FA', subtitle: '旅行スペシャリストポータル', guestAllowed: false },
     { type: 'admin', label: '管理者', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: 'システム管理者ポータル', guestAllowed: false },
   ],
   'ko': [
     { type: 'traveler', label: '여행자', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '놀라운 여행지 탐험', guestAllowed: true },
-    { type: 'merchant', label: '기업', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: '관광지, 레스토랑, 숙박 시설용', guestAllowed: false },
+    { type: 'merchant', label: '가맹점', color: MibuBrand.success, bgColor: '#ecfdf5', subtitle: '관광지, 레스토랑, 숙박 시설용', guestAllowed: false },
     { type: 'specialist', label: '전문가', color: '#9B7BB8', bgColor: '#F5F0FA', subtitle: '여행 전문가 서비스 포털', guestAllowed: false },
     { type: 'admin', label: '관리자', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: '시스템 관리자 포털', guestAllowed: false },
   ],

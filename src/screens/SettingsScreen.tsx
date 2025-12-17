@@ -172,7 +172,7 @@ export function SettingsScreen() {
                 onPress={() => router.push('/merchant-dashboard')}
               >
                 <Ionicons name="storefront-outline" size={24} color="#10b981" />
-                <Text style={styles.portalLabel}>{state.language === 'zh-TW' ? '企業端' : 'Business'}</Text>
+                <Text style={styles.portalLabel}>{state.language === 'zh-TW' ? '商家端' : 'Merchant'}</Text>
               </TouchableOpacity>
             )}
             {(state.user?.isSuperAdmin || state.user?.accessibleRoles?.includes('specialist')) && (
