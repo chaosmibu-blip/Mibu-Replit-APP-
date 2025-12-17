@@ -19,7 +19,7 @@ import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
 import { LoadingAdScreen } from '../components/LoadingAdScreen';
 import { apiService } from '../services/api';
-import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon } from '../types';
+import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse } from '../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MibuBrand } from '../../constants/Colors';
@@ -62,6 +62,7 @@ export function GachaScreen() {
   const [poolData, setPoolData] = useState<GachaPoolResponse | null>(null);
   const [loadingPool, setLoadingPool] = useState(false);
   const [couponPoolData, setCouponPoolData] = useState<RegionPoolCoupon[]>([]);
+  const [prizePoolData, setPrizePoolData] = useState<PrizePoolResponse | null>(null);
   
   const [showLoadingAd, setShowLoadingAd] = useState(false);
   const [isApiComplete, setIsApiComplete] = useState(false);
@@ -164,14 +165,16 @@ export function GachaScreen() {
     setPoolModalVisible(true);
     setPoolData(null);
     setCouponPoolData([]);
+    setPrizePoolData(null);
     
     try {
       const city = selectedRegion.nameZh || selectedRegion.nameEn || '';
       const token = await AsyncStorage.getItem('@mibu_token');
       
-      const [poolResult, couponResult] = await Promise.allSettled([
+      const [poolResult, couponResult, prizePoolResult] = await Promise.allSettled([
         apiService.getGachaPool(city),
-        token ? apiService.getRegionCouponPool(token, selectedRegionId) : Promise.resolve([])
+        token ? apiService.getRegionCouponPool(token, selectedRegionId) : Promise.resolve([]),
+        apiService.getPrizePool(selectedRegionId)
       ]);
       
       if (poolResult.status === 'fulfilled') {
@@ -179,6 +182,9 @@ export function GachaScreen() {
       }
       if (couponResult.status === 'fulfilled') {
         setCouponPoolData(couponResult.value || []);
+      }
+      if (prizePoolResult.status === 'fulfilled') {
+        setPrizePoolData(prizePoolResult.value);
       }
     } catch (error) {
       console.error('Failed to load pool:', error);
@@ -585,18 +591,68 @@ export function GachaScreen() {
               </View>
             ) : (
               <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {couponPoolData.length > 0 ? (
+                {((prizePoolData?.coupons?.length || 0) > 0 || couponPoolData.length > 0) ? (
                   <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 }}>
+                    {prizePoolData?.region?.name && (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                        <Ionicons name="location" size={16} color="#6366f1" />
+                        <Text style={{ fontSize: 13, color: '#6366f1', marginLeft: 6, fontWeight: '600' }}>
+                          {prizePoolData.region.name}
+                        </Text>
+                      </View>
+                    )}
+                    
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                       <Ionicons name="ticket" size={18} color="#d97706" />
                       <Text style={{ fontSize: 14, fontWeight: '700', color: '#d97706', marginLeft: 6 }}>
-                        {state.language === 'zh-TW' ? 'SP/SSR 稀有優惠券' : 'SP/SSR Rare Coupons'} ({couponPoolData.length})
+                        {state.language === 'zh-TW' ? 'SP/SSR 稀有優惠券' : 'SP/SSR Rare Coupons'} ({(prizePoolData?.coupons?.length || 0) + couponPoolData.length})
                       </Text>
                     </View>
                     
+                    {prizePoolData?.coupons?.map((coupon) => (
+                      <View
+                        key={`prize-${coupon.id}`}
+                        style={{
+                          backgroundColor: coupon.rarity === 'SP' ? '#fef3c7' : '#ddd6fe',
+                          borderRadius: 12,
+                          padding: 14,
+                          marginBottom: 10,
+                          borderWidth: 2,
+                          borderColor: coupon.rarity === 'SP' ? '#f59e0b' : '#8b5cf6',
+                        }}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                          <View
+                            style={{
+                              backgroundColor: coupon.rarity === 'SP' ? '#f59e0b' : '#8b5cf6',
+                              paddingHorizontal: 8,
+                              paddingVertical: 3,
+                              borderRadius: 6,
+                              marginRight: 8,
+                            }}
+                          >
+                            <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>
+                              {coupon.rarity}
+                            </Text>
+                          </View>
+                        </View>
+                        
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', marginBottom: 4 }}>
+                          {coupon.title}
+                        </Text>
+                        
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Ionicons name="location-outline" size={12} color="#94a3b8" />
+                          <Text style={{ fontSize: 11, color: '#94a3b8', marginLeft: 4 }}>
+                            {coupon.placeName}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+                    
                     {couponPoolData.map((coupon) => (
                       <View
-                        key={coupon.id}
+                        key={`coupon-${coupon.id}`}
                         style={{
                           backgroundColor: coupon.rarity === 'SSR' ? '#fef3c7' : '#f3e8ff',
                           borderRadius: 12,

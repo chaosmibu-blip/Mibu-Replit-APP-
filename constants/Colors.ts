@@ -24,6 +24,16 @@ export const MibuBrand = {
   warning: '#D4A24C',
   error: '#C45C5C',
   info: '#6B8CAE',
+  tierSP: '#D4A24C',
+  tierSSR: '#B08860',
+  tierSR: '#9A7250',
+  tierS: '#C9A580',
+  tierR: '#D4B896',
+  tierSPBg: '#FFF3D4',
+  tierSSRBg: '#F5E6D3',
+  tierSRBg: '#EDE0D4',
+  tierSBg: '#F8F0E8',
+  tierRBg: '#FDFBF8',
 };
 
 const tintColorLight = MibuBrand.brown;

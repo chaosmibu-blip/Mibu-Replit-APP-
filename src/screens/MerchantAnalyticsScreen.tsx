@@ -16,13 +16,16 @@ import { apiService } from '../services/api';
 import { MibuBrand } from '../../constants/Colors';
 
 interface AnalyticsData {
+  totalItineraryCards: number;
   totalCoupons: number;
   activeCoupons: number;
-  redeemedCoupons: number;
-  totalRedemptions: number;
-  monthlyRedemptions: number;
-  viewCount: number;
-  placeCount: number;
+  couponRedemptions: number;
+  dailyCollectionCount: number;
+  totalCollectionUsers: number;
+  collectionClickCount: number;
+  couponUsageCount: number;
+  couponUsageRate: number;
+  prizePoolViews: number;
 }
 
 export function MerchantAnalyticsScreen() {
@@ -37,18 +40,21 @@ export function MerchantAnalyticsScreen() {
   const translations = {
     title: isZh ? '數據分析' : 'Analytics',
     loading: isZh ? '載入中...' : 'Loading...',
-    linkedPlaces: isZh ? '關聯店家' : 'Linked Places',
+    totalItineraryCards: isZh ? '行程卡總數' : 'Total Itinerary Cards',
     totalCoupons: isZh ? '優惠券總數' : 'Total Coupons',
     activeCoupons: isZh ? '啟用中' : 'Active Coupons',
-    redeemedCoupons: isZh ? '已核銷' : 'Redeemed',
-    totalRedemptions: isZh ? '總核銷次數' : 'Total Redemptions',
-    monthlyRedemptions: isZh ? '本月核銷' : 'Monthly Redemptions',
-    viewCount: isZh ? '瀏覽次數' : 'View Count',
-    comingSoon: isZh ? '即將推出' : 'Coming Soon',
+    couponRedemptions: isZh ? '優惠券核銷' : 'Coupon Redemptions',
+    dailyCollection: isZh ? '今日收錄次數' : 'Daily Collections',
+    totalCollectionUsers: isZh ? '累計收錄用戶' : 'Total Collection Users',
+    collectionClicks: isZh ? '圖鑑點擊次數' : 'Collection Clicks',
+    couponUsageCount: isZh ? '優惠券使用次數' : 'Coupon Usage Count',
+    couponUsageRate: isZh ? '使用率' : 'Usage Rate',
+    prizePoolViews: isZh ? '獎池瀏覽次數' : 'Prize Pool Views',
     noData: isZh ? '暫無數據' : 'No data',
-    places: isZh ? '個店家' : 'places',
+    comingSoon: isZh ? '即將推出' : 'Coming Soon',
     times: isZh ? '次' : 'times',
     count: isZh ? '張' : '',
+    users: isZh ? '人' : 'users',
   };
 
   useEffect(() => {
@@ -62,14 +68,19 @@ export function MerchantAnalyticsScreen() {
 
       const response = await apiService.getMerchantAnalytics(token);
       if (response.success) {
+        const a = response.analytics;
+        const s = response.stats;
         setAnalytics({
-          totalCoupons: response.stats?.totalCoupons || 0,
-          activeCoupons: response.stats?.activeCoupons || 0,
-          redeemedCoupons: response.stats?.redeemedCoupons || 0,
-          totalRedemptions: response.stats?.totalRedemptions || 0,
-          monthlyRedemptions: response.stats?.monthlyRedemptions || 0,
-          viewCount: response.stats?.viewCount || 0,
-          placeCount: response.placeLinks?.length || 0,
+          totalItineraryCards: a?.totalItineraryCards || 0,
+          totalCoupons: a?.totalCoupons || s?.totalCoupons || 0,
+          activeCoupons: a?.activeCoupons || s?.activeCoupons || 0,
+          couponRedemptions: a?.couponRedemptions || s?.totalRedemptions || 0,
+          dailyCollectionCount: a?.dailyCollectionCount || 0,
+          totalCollectionUsers: a?.totalCollectionUsers || 0,
+          collectionClickCount: a?.collectionClickCount || s?.viewCount || 0,
+          couponUsageCount: a?.couponUsageCount || 0,
+          couponUsageRate: a?.couponUsageRate || 0,
+          prizePoolViews: a?.prizePoolViews || 0,
         });
       }
     } catch (error) {
@@ -143,28 +154,15 @@ export function MerchantAnalyticsScreen() {
         }
       >
         <Text style={styles.sectionTitle}>
-          {isZh ? '店家概覽' : 'Place Overview'}
+          {isZh ? '行程卡與優惠券' : 'Itinerary Cards & Coupons'}
         </Text>
         <View style={styles.statsGrid}>
           <StatCard 
-            icon="storefront-outline" 
-            label={translations.linkedPlaces} 
-            value={analytics?.placeCount}
-            unit={translations.places}
+            icon="map-outline" 
+            label={translations.totalItineraryCards} 
+            value={analytics?.totalItineraryCards}
+            unit={translations.count}
           />
-          <StatCard 
-            icon="eye-outline" 
-            label={translations.viewCount} 
-            value={analytics?.viewCount}
-            unit={translations.times}
-            color="#0891b2"
-          />
-        </View>
-
-        <Text style={styles.sectionTitle}>
-          {isZh ? '優惠券統計' : 'Coupon Statistics'}
-        </Text>
-        <View style={styles.statsGrid}>
           <StatCard 
             icon="pricetag-outline" 
             label={translations.totalCoupons} 
@@ -180,29 +178,66 @@ export function MerchantAnalyticsScreen() {
           />
           <StatCard 
             icon="ticket-outline" 
-            label={translations.redeemedCoupons} 
-            value={analytics?.redeemedCoupons}
-            color="#f59e0b"
-          />
-          <StatCard 
-            icon="stats-chart-outline" 
-            label={translations.totalRedemptions} 
-            value={analytics?.totalRedemptions}
+            label={translations.couponRedemptions} 
+            value={analytics?.couponRedemptions}
             unit={translations.times}
-            color="#7c3aed"
+            color="#f59e0b"
           />
         </View>
 
         <Text style={styles.sectionTitle}>
-          {isZh ? '月度統計' : 'Monthly Statistics'}
+          {isZh ? '圖鑑收錄數據' : 'Collection Statistics'}
         </Text>
         <View style={styles.statsGrid}>
           <StatCard 
-            icon="calendar-outline" 
-            label={translations.monthlyRedemptions} 
-            value={analytics?.monthlyRedemptions}
+            icon="today-outline" 
+            label={translations.dailyCollection} 
+            value={analytics?.dailyCollectionCount}
+            unit={translations.times}
+            color="#0891b2"
+          />
+          <StatCard 
+            icon="people-outline" 
+            label={translations.totalCollectionUsers} 
+            value={analytics?.totalCollectionUsers}
+            unit={translations.users}
+            color="#7c3aed"
+          />
+          <StatCard 
+            icon="hand-left-outline" 
+            label={translations.collectionClicks} 
+            value={analytics?.collectionClickCount}
             unit={translations.times}
             color="#db2777"
+          />
+        </View>
+
+        <Text style={styles.sectionTitle}>
+          {isZh ? '優惠券使用數據' : 'Coupon Usage Statistics'}
+        </Text>
+        <View style={styles.statsGrid}>
+          <StatCard 
+            icon="receipt-outline" 
+            label={translations.couponUsageCount} 
+            value={analytics?.couponUsageCount}
+            unit={translations.times}
+            color="#10b981"
+          />
+          <StatCard 
+            icon="analytics-outline" 
+            label={translations.couponUsageRate} 
+            value={analytics?.couponUsageRate !== undefined 
+              ? Math.round(analytics.couponUsageRate * 100) 
+              : undefined}
+            unit="%"
+            color="#6366f1"
+          />
+          <StatCard 
+            icon="gift-outline" 
+            label={translations.prizePoolViews} 
+            value={analytics?.prizePoolViews}
+            unit={translations.times}
+            color="#ea580c"
           />
         </View>
       </ScrollView>

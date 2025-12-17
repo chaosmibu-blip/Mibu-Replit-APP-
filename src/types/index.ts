@@ -118,8 +118,20 @@ export interface MerchantApplyResponse {
 
 export interface MerchantAnalytics {
   success: boolean;
-  merchant: MerchantMe;
-  stats: {
+  merchant?: MerchantMe;
+  analytics: {
+    totalItineraryCards: number;
+    totalCoupons: number;
+    activeCoupons: number;
+    couponRedemptions: number;
+    dailyCollectionCount: number;
+    totalCollectionUsers: number;
+    collectionClickCount: number;
+    couponUsageCount: number;
+    couponUsageRate: number;
+    prizePoolViews: number;
+  };
+  stats?: {
     totalCoupons: number;
     activeCoupons: number;
     redeemedCoupons: number;
@@ -127,7 +139,7 @@ export interface MerchantAnalytics {
     monthlyRedemptions: number;
     viewCount: number;
   };
-  placeLinks: {
+  placeLinks?: {
     id: number;
     placeName: string;
     district?: string;
@@ -773,14 +785,20 @@ export interface CollectionResponse {
 // ============================================
 export interface PrizePoolCoupon {
   id: number;
-  tier: CouponTier;
-  name: string;
-  merchantName: string;
+  title: string;
+  rarity: 'SP' | 'SSR';
+  merchantId: string;
+  placeLinkId: number;
   placeName: string;
 }
 
 export interface PrizePoolResponse {
+  success: boolean;
   coupons: PrizePoolCoupon[];
+  region: {
+    id: number;
+    name: string;
+  };
 }
 
 // ============================================
