@@ -407,3 +407,15 @@ export interface UpdateAnnouncementParams {
   isActive?: boolean;
   priority?: number;
 }
+
+export type CouponRarity = 'SP' | 'SSR';
+
+export interface RegionPoolCoupon {
+  id: number;
+  title: string;
+  description: string | null;
+  rarity: CouponRarity;
+  merchantName: string;
+  discount: string | null;
+  merchantId: number;
+}
