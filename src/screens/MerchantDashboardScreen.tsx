@@ -159,6 +159,20 @@ export function MerchantDashboardScreen() {
       <View style={styles.menuSection}>
         <TouchableOpacity
           style={styles.menuItem}
+          onPress={() => router.push('/merchant/analytics' as any)}
+        >
+          <View style={[styles.menuIcon, { backgroundColor: MibuBrand.highlight }]}>
+            <Ionicons name="stats-chart-outline" size={24} color={MibuBrand.brown} />
+          </View>
+          <View style={styles.menuContent}>
+            <Text style={styles.menuTitle}>{isZh ? '數據分析' : 'Analytics'}</Text>
+            <Text style={styles.menuSubtitle}>{isZh ? '查看店家與優惠券統計' : 'View statistics and insights'}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
           onPress={() => router.push('/merchant/transactions' as any)}
         >
           <View style={styles.menuIcon}>
