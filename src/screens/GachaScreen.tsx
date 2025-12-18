@@ -211,9 +211,7 @@ export function GachaScreen() {
     try {
       const token = await AsyncStorage.getItem('@mibu_token');
       const response = await apiService.generateItinerary({
-        countryId: selectedCountryId,
         regionId: selectedRegionId,
-        language: state.language,
         itemCount: pullCount,
       }, token || undefined);
 
