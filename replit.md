@@ -218,3 +218,6 @@ Preferred communication style: Simple, everyday language.
 - Success: `#10b981`
 - Error: `#ef4444`
 - 稀有度: SP 金、SSR 粉、SR 紫、S 藍、R 灰
+
+- **Gacha Itinerary Logic**: ...no hardcoded location data.
+- **API 參數**: `/api/generate-itinerary` 使用 `regionId` (number) 或 `countryId` (number)，不再接受 country/city 字串。
