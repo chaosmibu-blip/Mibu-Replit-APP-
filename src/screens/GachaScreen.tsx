@@ -210,6 +210,14 @@ export function GachaScreen() {
 
     try {
       const token = await AsyncStorage.getItem('@mibu_token');
+      const selectedRegion = regions.find(r => r.id === selectedRegionId);
+      console.log('[Gacha] API Request:', {
+        endpoint: '/api/gacha/itinerary/v3',
+        regionId: selectedRegionId,
+        regionName: selectedRegion?.name || selectedRegion?.nameZh,
+        itemCount: pullCount,
+        hasToken: !!token
+      });
       const response = await apiService.generateItinerary({
         regionId: selectedRegionId,
         itemCount: pullCount,
