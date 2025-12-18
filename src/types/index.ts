@@ -366,14 +366,11 @@ export interface CouponWon {
 }
 
 export interface ItineraryGenerateResponse {
-  itinerary?: {
-    items: any[];
-    location: {
-      country?: { name: string };
-      region?: { name: string; nameZh?: string };
-      district?: { name: string; nameZh?: string };
-    };
-  };
+  targetDistrict?: string;
+  city?: string;
+  country?: string;
+  districtId?: number;
+  itinerary?: any[];
   coupons_won?: CouponWon[];
   meta?: { code?: string };
   error?: string;

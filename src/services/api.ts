@@ -44,9 +44,7 @@ class ApiService {
   async generateItinerary(params: {
     regionId?: number;
     countryId?: number;
-    level: number;
-    language: string;
-    collectedNames?: string[];
+    pace?: 'relaxed' | 'moderate' | 'intensive';
   }, token?: string): Promise<ItineraryGenerateResponse> {
     const url = `${this.baseUrl}/api/generate-itinerary`;
     const headers: Record<string, string> = {

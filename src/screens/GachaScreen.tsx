@@ -212,19 +212,17 @@ export function GachaScreen() {
     try {
       const token = await AsyncStorage.getItem('@mibu_token');
       const selectedRegion = regions.find(r => r.id === selectedRegionId);
+      const pace = pullCount <= 5 ? 'relaxed' : pullCount <= 8 ? 'moderate' : 'intensive';
       console.log('[Gacha] API Request:', {
         endpoint: '/api/generate-itinerary',
         regionId: selectedRegionId,
         regionName: selectedRegion?.name || selectedRegion?.nameZh,
-        level: pullCount,
-        language: state.language,
+        pace,
         hasToken: !!token
       });
       const response = await apiService.generateItinerary({
         regionId: selectedRegionId,
-        level: pullCount,
-        language: state.language,
-        collectedNames: [],
+        pace,
       }, token || undefined);
 
       if (response.errorCode || response.error) {
@@ -257,7 +255,8 @@ export function GachaScreen() {
         return;
       }
 
-      if (!response.itinerary || !response.itinerary.items || response.itinerary.items.length === 0) {
+      const itineraryItems = response.itinerary || [];
+      if (!itineraryItems || itineraryItems.length === 0) {
         setShowLoadingAd(false);
         Alert.alert(
           state.language === 'zh-TW' ? '提示' : 'Notice',
@@ -266,37 +265,36 @@ export function GachaScreen() {
         return;
       }
 
-      const { itinerary } = response;
       const couponsWon = response.coupons_won || [];
 
-      const items: GachaItem[] = itinerary.items.map((item: any, index: number) => {
+      const items: GachaItem[] = itineraryItems.map((item: any, index: number) => {
         const hasMerchantCoupon = item.is_coupon || (item.merchant_promo?.isPromoActive && item.coupon_data);
         
         return {
           id: Date.now() + index,
-          place_name: item.place?.name || `${itinerary.location.district?.name || ''} ${item.subcategory?.name || ''}`,
-          description: `${itinerary.location.region?.name || ''} ${itinerary.location.district?.name || ''}`,
-          ai_description: item.place?.description || '',
-          category: item.category?.code || '',
-          suggested_time: '',
-          duration: '1h',
+          place_name: item.place?.name || item.name || `${response.targetDistrict || ''} ${item.subcategory?.name || ''}`,
+          description: `${response.city || ''} ${response.targetDistrict || ''}`,
+          ai_description: item.place?.description || item.description || '',
+          category: item.category?.code || item.category || '',
+          suggested_time: item.suggestedTime || '',
+          duration: item.duration || '1h',
           search_query: '',
-          color_hex: item.category?.colorHex || '#6366f1',
-          country: itinerary.location.country?.name || '',
-          city: itinerary.location.region?.nameZh || itinerary.location.region?.name || '',
-          cityDisplay: itinerary.location.region?.name || '',
-          district: itinerary.location.district?.nameZh || itinerary.location.district?.name || '',
-          districtDisplay: itinerary.location.district?.name || '',
+          color_hex: item.category?.colorHex || item.colorHex || '#6366f1',
+          country: response.country || '',
+          city: response.city || '',
+          cityDisplay: response.city || '',
+          district: response.targetDistrict || '',
+          districtDisplay: response.targetDistrict || '',
           collectedAt: new Date().toISOString(),
           is_coupon: hasMerchantCoupon,
           coupon_data: item.coupon_data || null,
-          place_id: item.place?.placeId || null,
-          verified_name: item.place?.name || null,
-          verified_address: item.place?.address || null,
-          google_rating: item.place?.rating || null,
-          google_types: item.place?.googleTypes || [],
-          primary_type: item.place?.primaryType || null,
-          location: item.place?.location || null,
+          place_id: item.place?.placeId || item.placeId || null,
+          verified_name: item.place?.name || item.name || null,
+          verified_address: item.place?.address || item.address || null,
+          google_rating: item.place?.rating || item.rating || null,
+          google_types: item.place?.googleTypes || item.googleTypes || [],
+          primary_type: item.place?.primaryType || item.primaryType || null,
+          location: item.place?.location || item.location || null,
           is_location_verified: item.isVerified || false,
           merchant: item.merchant || item.merchant_promo ? {
             id: item.merchant?.id || item.merchant_promo?.merchantId || '',
@@ -316,9 +314,9 @@ export function GachaScreen() {
         items,
         meta: {
           date: new Date().toISOString().split('T')[0],
-          country: itinerary.location.country?.name || '',
-          city: itinerary.location.region?.nameZh || itinerary.location.region?.name || '',
-          locked_district: itinerary.location.district?.nameZh || itinerary.location.district?.name || '',
+          country: response.country || '',
+          city: response.city || '',
+          locked_district: response.targetDistrict || '',
           user_level: pullCount,
           coupons_won: couponsWon.length,
         },
