@@ -590,7 +590,7 @@ export function GachaScreen() {
               </View>
             ) : (
               <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-                {((prizePoolData?.coupons?.length || 0) > 0 || (couponPoolData?.length || 0) > 0) ? (
+                {((prizePoolData?.coupons?.length || 0) > 0 || (Array.isArray(couponPoolData) ? couponPoolData.length : 0) > 0) ? (
                   <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 }}>
                     {(prizePoolData?.region?.name || poolData?.pool?.city) && (
                       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
@@ -604,7 +604,7 @@ export function GachaScreen() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                       <Ionicons name="ticket" size={18} color="#d97706" />
                       <Text style={{ fontSize: 14, fontWeight: '700', color: '#d97706', marginLeft: 6 }}>
-                        {state.language === 'zh-TW' ? 'SP/SSR 稀有優惠券' : 'SP/SSR Rare Coupons'} ({(prizePoolData?.coupons?.length || 0) + (couponPoolData?.length || 0)})
+                        {state.language === 'zh-TW' ? 'SP/SSR 稀有優惠券' : 'SP/SSR Rare Coupons'} ({(prizePoolData?.coupons?.length || 0) + (Array.isArray(couponPoolData) ? couponPoolData.length : 0)})
                       </Text>
                     </View>
                     
@@ -649,7 +649,7 @@ export function GachaScreen() {
                       </View>
                     ))}
                     
-                    {(couponPoolData || []).map((coupon) => (
+                    {(Array.isArray(couponPoolData) ? couponPoolData : []).map((coupon) => (
                       <View
                         key={`coupon-${coupon.id}`}
                         style={{
