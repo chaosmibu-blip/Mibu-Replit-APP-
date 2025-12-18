@@ -42,10 +42,13 @@ class ApiService {
   }
 
   async generateItinerary(params: {
-    regionId: number;
-    itemCount: number;
+    regionId?: number;
+    countryId?: number;
+    level: number;
+    language: string;
+    collectedNames?: string[];
   }, token?: string): Promise<ItineraryGenerateResponse> {
-    const url = `${this.baseUrl}/api/gacha/itinerary/v3`;
+    const url = `${this.baseUrl}/api/generate-itinerary`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
