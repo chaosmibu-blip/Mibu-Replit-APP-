@@ -110,8 +110,8 @@ class ApiService {
 
   async getGachaPool(city: string): Promise<GachaPoolResponse> {
     try {
-      const encodedCity = encodeURIComponent(city);
-      const data = await this.request<GachaPoolResponse>(`/api/gacha/pool/${encodedCity}`);
+      const params = new URLSearchParams({ city });
+      const data = await this.request<GachaPoolResponse>(`/api/gacha/pool?${params}`);
       return data;
     } catch (error) {
       console.error('Failed to get gacha pool:', error);
