@@ -181,7 +181,8 @@ export function GachaScreen() {
         setPoolData(poolResult.value);
       }
       if (couponResult.status === 'fulfilled') {
-        setCouponPoolData(couponResult.value || []);
+        const couponData = couponResult.value as any;
+        setCouponPoolData(Array.isArray(couponData) ? couponData : (couponData?.coupons || []));
       }
       if (prizePoolResult.status === 'fulfilled') {
         setPrizePoolData(prizePoolResult.value);
