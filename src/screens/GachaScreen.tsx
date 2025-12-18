@@ -23,6 +23,7 @@ import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoo
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MibuBrand } from '../../constants/Colors';
+import { ErrorCode, ApiError } from '../shared/errors';
 
 const UNLIMITED_EMAILS = ['s8869420@gmail.com'];
 
@@ -226,9 +227,29 @@ export function GachaScreen() {
         collectedNames: [],
       }, token || undefined);
 
-      if (response.meta?.code === 'NO_PLACES_AVAILABLE' || response.error) {
+      if (response.errorCode || response.error) {
         setShowLoadingAd(false);
-        const errorMessage = response.error || (state.language === 'zh-TW' ? '該區域暫無景點' : 'No places available in this area');
+        const errorCode = response.errorCode;
+        
+        if (errorCode === ErrorCode.AUTH_REQUIRED || errorCode === ErrorCode.AUTH_TOKEN_EXPIRED) {
+          await AsyncStorage.removeItem('@mibu_token');
+          Alert.alert(
+            state.language === 'zh-TW' ? '登入已過期' : 'Session Expired',
+            state.language === 'zh-TW' ? '請重新登入' : 'Please login again'
+          );
+          router.push('/login');
+          return;
+        }
+        
+        if (errorCode === ErrorCode.GACHA_NO_CREDITS) {
+          Alert.alert(
+            state.language === 'zh-TW' ? '次數不足' : 'No Credits',
+            state.language === 'zh-TW' ? '請購買更多扭蛋次數' : 'Please purchase more gacha credits'
+          );
+          return;
+        }
+        
+        const errorMessage = response.message || response.error || (state.language === 'zh-TW' ? '該區域暫無景點' : 'No places available in this area');
         Alert.alert(
           state.language === 'zh-TW' ? '提示' : 'Notice',
           errorMessage

@@ -377,6 +377,8 @@ export interface ItineraryGenerateResponse {
   coupons_won?: CouponWon[];
   meta?: { code?: string };
   error?: string;
+  errorCode?: string;
+  message?: string;
   success?: boolean;
 }
 
@@ -398,6 +400,7 @@ export interface Country {
 export interface Region {
   id: number;
   countryId: number;
+  name?: string;
   nameEn: string;
   nameZh: string;
   nameJa: string | null;
