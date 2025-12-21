@@ -13,7 +13,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useApp } from '../context/AppContext';
 import { GachaItem } from '../types';
 import { getCategoryLabel, getCategoryColor } from '../constants/translations';
-import { MibuBrand } from '../../constants/Colors';
+import { MibuBrand, getCategoryToken } from '../../constants/Colors';
 
 const RARITY_COLORS: Record<string, string> = {
   SP: MibuBrand.tierSP,
@@ -40,7 +40,7 @@ interface ItemCardProps {
 }
 
 function ItemCard({ item, translations, language }: ItemCardProps) {
-  const categoryColor = getCategoryColor(item.category as string);
+  const categoryToken = getCategoryToken(item.category as string);
   const categoryLabel = getCategoryLabel(item.category as string, language as any);
 
   const getLocalizedContent = (content: any): string => {
@@ -97,9 +97,18 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
         shadowOpacity: 0.06,
         shadowRadius: 8,
         elevation: 2,
+        flexDirection: 'row',
+        overflow: 'hidden',
       }}
     >
-      <View style={{ padding: 20 }}>
+      {/* 左側類別條紋 */}
+      <View
+        style={{
+          width: 4,
+          backgroundColor: categoryToken.stripe,
+        }}
+      />
+      <View style={{ flex: 1, padding: 20 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <View
             style={{
@@ -114,15 +123,16 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
             </Text>
           </View>
 
+          {/* 類別標籤使用柔和色 */}
           <View
             style={{
-              backgroundColor: MibuBrand.cream,
+              backgroundColor: categoryToken.badge,
               paddingHorizontal: 12,
               paddingVertical: 5,
               borderRadius: 12,
             }}
           >
-            <Text style={{ fontSize: 12, fontWeight: '600', color: MibuBrand.brown }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: categoryToken.badgeText }}>
               {categoryLabel}
             </Text>
           </View>

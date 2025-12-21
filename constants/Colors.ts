@@ -36,6 +36,74 @@ export const MibuBrand = {
   tierRBg: '#FDFBF8',
 };
 
+export interface CategoryToken {
+  stripe: string;
+  badge: string;
+  badgeText: string;
+  icon: string;
+}
+
+export const CategoryTokens: Record<string, CategoryToken> = {
+  food: {
+    stripe: '#C4906A',
+    badge: '#F5E0D0',
+    badgeText: '#8B5A3C',
+    icon: '#C4906A',
+  },
+  stay: {
+    stripe: '#7A9A9A',
+    badge: '#E8F0F0',
+    badgeText: '#4A6A6A',
+    icon: '#7A9A9A',
+  },
+  education: {
+    stripe: '#9A8AAA',
+    badge: '#F0EAF5',
+    badgeText: '#6A5A7A',
+    icon: '#9A8AAA',
+  },
+  entertainment: {
+    stripe: '#C48A9A',
+    badge: '#F8E8EC',
+    badgeText: '#8A5A6A',
+    icon: '#C48A9A',
+  },
+  scenery: {
+    stripe: '#7AAA8A',
+    badge: '#E8F5EC',
+    badgeText: '#4A7A5A',
+    icon: '#7AAA8A',
+  },
+  shopping: {
+    stripe: '#C4A870',
+    badge: '#F8F0E0',
+    badgeText: '#8A7840',
+    icon: '#C4A870',
+  },
+  activity: {
+    stripe: '#9AAA7A',
+    badge: '#F0F5E8',
+    badgeText: '#6A7A4A',
+    icon: '#9AAA7A',
+  },
+  experience: {
+    stripe: '#C4A870',
+    badge: '#F8F0E0',
+    badgeText: '#8A7840',
+    icon: '#C4A870',
+  },
+};
+
+export const getCategoryToken = (category: string): CategoryToken => {
+  const key = category?.toLowerCase() || '';
+  return CategoryTokens[key] || {
+    stripe: MibuBrand.copper,
+    badge: MibuBrand.cream,
+    badgeText: MibuBrand.brown,
+    icon: MibuBrand.copper,
+  };
+};
+
 const tintColorLight = MibuBrand.brown;
 const tintColorDark = MibuBrand.cream;
 
