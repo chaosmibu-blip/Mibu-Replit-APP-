@@ -365,11 +365,22 @@ export interface CouponWon {
   inventoryId?: number;
 }
 
+export interface ItineraryV3Meta {
+  city?: string;
+  district?: string | null;
+  message?: string;
+  code?: string;
+  sortingMethod?: 'coordinate' | 'ai_reordered';
+  aiReorderResult?: 'reordered' | 'no_change' | 'no_numbers' | 'error';
+  categoryDistribution?: Record<string, number>;
+}
+
 export interface ItineraryGenerateResponse {
   success?: boolean;
   itinerary?: any[];
   couponsWon?: CouponWon[];
   themeIntro?: string;
+  meta?: ItineraryV3Meta;
   anchorDistrict?: string;
   pace?: string;
   totalPlaces?: number;
@@ -381,7 +392,6 @@ export interface ItineraryGenerateResponse {
   country?: string;
   districtId?: number;
   coupons_won?: CouponWon[];
-  meta?: { code?: string };
   error?: string;
   errorCode?: string;
   message?: string;
