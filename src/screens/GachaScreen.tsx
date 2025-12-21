@@ -264,14 +264,14 @@ export function GachaScreen() {
         return;
       }
 
-      const couponsWon = response.coupons_won || [];
+      const couponsWon = response.couponsWon || response.coupons_won || [];
 
       const items: GachaItem[] = itineraryItems.map((item: any, index: number) => {
         const hasMerchantCoupon = item.isCoupon || item.is_coupon || (item.merchantPromo?.isPromoActive && item.couponData);
         
         return {
           id: Date.now() + index,
-          place_name: item.placeName || item.place_name || item.verifiedName || `${item.district || ''} ${item.subCategory || ''}`,
+          place_name: item.placeName || item.place_name || item.verifiedName || `${item.district || response.anchorDistrict || ''} ${item.subCategory || ''}`,
           description: item.description || `${item.city || ''} ${item.district || ''}`,
           ai_description: item.description || '',
           category: item.category || '',
@@ -282,8 +282,8 @@ export function GachaScreen() {
           country: item.country || response.country || '',
           city: item.city || response.city || '',
           cityDisplay: item.city || response.city || '',
-          district: item.district || response.targetDistrict || '',
-          districtDisplay: item.district || response.targetDistrict || '',
+          district: item.district || response.anchorDistrict || response.targetDistrict || '',
+          districtDisplay: item.district || response.anchorDistrict || response.targetDistrict || '',
           collectedAt: new Date().toISOString(),
           is_coupon: hasMerchantCoupon,
           coupon_data: item.couponData || item.coupon_data || null,
@@ -315,7 +315,7 @@ export function GachaScreen() {
           date: new Date().toISOString().split('T')[0],
           country: response.country || '',
           city: response.city || '',
-          locked_district: response.targetDistrict || '',
+          locked_district: response.anchorDistrict || response.targetDistrict || '',
           user_level: pullCount,
           coupons_won: couponsWon.length,
         },

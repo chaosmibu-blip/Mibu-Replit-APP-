@@ -366,17 +366,25 @@ export interface CouponWon {
 }
 
 export interface ItineraryGenerateResponse {
+  success?: boolean;
+  itinerary?: any[];
+  couponsWon?: CouponWon[];
+  themeIntro?: string;
+  anchorDistrict?: string;
+  pace?: string;
+  totalPlaces?: number;
+  totalCouponsWon?: number;
+  categoryDistribution?: Record<string, number>;
+  sortingMethod?: string;
   targetDistrict?: string;
   city?: string;
   country?: string;
   districtId?: number;
-  itinerary?: any[];
   coupons_won?: CouponWon[];
   meta?: { code?: string };
   error?: string;
   errorCode?: string;
   message?: string;
-  success?: boolean;
 }
 
 export interface GachaResponse {
