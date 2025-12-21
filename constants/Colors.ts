@@ -104,6 +104,94 @@ export const getCategoryToken = (category: string): CategoryToken => {
   };
 };
 
+export interface MerchantColorScheme {
+  accent: string;
+  accentLight: string;
+  accentDark: string;
+  isValid: boolean;
+}
+
+const hexToHsl = (hex: string): { h: number; s: number; l: number } => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return { h: 0, s: 0, l: 50 };
+  
+  let r = parseInt(result[1], 16) / 255;
+  let g = parseInt(result[2], 16) / 255;
+  let b = parseInt(result[3], 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  
+  return { h: h * 360, s: s * 100, l: l * 100 };
+};
+
+const hslToHex = (h: number, s: number, l: number): string => {
+  s /= 100;
+  l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+};
+
+const MIBU_BROWN_HUE = 25;
+const MIBU_COPPER_HUE = 30;
+
+export const deriveMerchantScheme = (hex: string): MerchantColorScheme => {
+  const cleanHex = hex?.replace(/[^a-fA-F0-9]/g, '') || '';
+  
+  if (cleanHex.length !== 6) {
+    return {
+      accent: MibuBrand.copper,
+      accentLight: MibuBrand.copperLight,
+      accentDark: MibuBrand.brown,
+      isValid: false,
+    };
+  }
+  
+  const fullHex = `#${cleanHex}`;
+  let { h, s, l } = hexToHsl(fullHex);
+  
+  if (s > 70) s = 70;
+  if (s < 15) s = 35;
+  if (l < 25) l = 30;
+  if (l > 75) l = 65;
+  
+  const hueDiffBrown = Math.abs(h - MIBU_BROWN_HUE);
+  const hueDiffCopper = Math.abs(h - MIBU_COPPER_HUE);
+  if ((hueDiffBrown < 15 || hueDiffCopper < 15) && Math.abs(s - 50) < 20) {
+    h = h > MIBU_BROWN_HUE ? h + 20 : h - 20;
+    if (h < 0) h += 360;
+    if (h > 360) h -= 360;
+  }
+  
+  const accent = hslToHex(h, s, l);
+  const accentLight = hslToHex(h, Math.max(s - 20, 10), Math.min(l + 25, 92));
+  const accentDark = hslToHex(h, Math.min(s + 10, 60), Math.max(l - 15, 20));
+  
+  return {
+    accent,
+    accentLight,
+    accentDark,
+    isValid: true,
+  };
+};
+
 const tintColorLight = MibuBrand.brown;
 const tintColorDark = MibuBrand.cream;
 

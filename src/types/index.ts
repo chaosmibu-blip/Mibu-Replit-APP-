@@ -272,6 +272,9 @@ export interface MerchantInfo {
   badge?: string;
   discount?: string;
   description?: string;
+  brandColor?: string;
+  isPro?: boolean;
+  promo?: string;
 }
 
 export interface GachaPoolItem {

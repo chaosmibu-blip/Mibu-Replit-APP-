@@ -13,7 +13,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useApp } from '../context/AppContext';
 import { GachaItem } from '../types';
 import { getCategoryLabel, getCategoryColor } from '../constants/translations';
-import { MibuBrand, getCategoryToken } from '../../constants/Colors';
+import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../constants/Colors';
 
 const RARITY_COLORS: Record<string, string> = {
   SP: MibuBrand.tierSP,
@@ -42,6 +42,15 @@ interface ItemCardProps {
 function ItemCard({ item, translations, language }: ItemCardProps) {
   const categoryToken = getCategoryToken(item.category as string);
   const categoryLabel = getCategoryLabel(item.category as string, language as any);
+
+  const isMerchantPro = item.merchant?.isPro && item.merchant?.brandColor;
+  const merchantScheme = isMerchantPro 
+    ? deriveMerchantScheme(item.merchant!.brandColor!) 
+    : null;
+  
+  const stripeColor = merchantScheme ? merchantScheme.accent : categoryToken.stripe;
+  const titleColor = merchantScheme ? merchantScheme.accent : MibuBrand.dark;
+  const merchantPromo = item.merchant?.promo;
 
   const getLocalizedContent = (content: any): string => {
     if (typeof content === 'string') return content;
@@ -81,8 +90,8 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
   const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.N;
   const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.N;
 
-  const hasCoupon = item.coupon_data || item.merchant?.discount;
-  const couponText = (item.coupon_data?.title ? getLocalizedContent(item.coupon_data.title) : '') || item.merchant?.discount || '';
+  const hasCoupon = item.coupon_data;
+  const couponText = item.coupon_data?.title ? getLocalizedContent(item.coupon_data.title) : '';
   const couponCode = item.coupon_data?.code || '';
 
   return (
@@ -101,11 +110,11 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
         overflow: 'hidden',
       }}
     >
-      {/* 左側類別條紋 */}
+      {/* 左側條紋（商家PRO用品牌色，一般用類別色） */}
       <View
         style={{
           width: 4,
-          backgroundColor: categoryToken.stripe,
+          backgroundColor: stripeColor,
         }}
       />
       <View style={{ flex: 1, padding: 20 }}>
@@ -139,7 +148,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
         </View>
 
         <Text
-          style={{ fontSize: 20, fontWeight: '700', color: MibuBrand.dark, marginBottom: 8, letterSpacing: -0.3 }}
+          style={{ fontSize: 20, fontWeight: '700', color: titleColor, marginBottom: 8, letterSpacing: -0.3 }}
           numberOfLines={2}
         >
           {placeName}
@@ -153,6 +162,25 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
           </Text>
         ) : null}
 
+        {/* 商家優惠公告（PRO商家專屬） */}
+        {merchantPromo && (
+          <View
+            style={{
+              borderWidth: 1.5,
+              borderColor: merchantScheme?.accent || MibuBrand.copper,
+              borderStyle: 'dashed',
+              borderRadius: 12,
+              padding: 14,
+              marginBottom: 16,
+            }}
+          >
+            <Text style={{ fontSize: 13, fontWeight: '600', color: MibuBrand.dark }}>
+              🎁 {merchantPromo}
+            </Text>
+          </View>
+        )}
+
+        {/* 優惠券區塊（扭蛋獎勵） */}
         {hasCoupon && (
           <View
             style={{
