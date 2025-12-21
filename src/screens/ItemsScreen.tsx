@@ -13,20 +13,23 @@ import * as WebBrowser from 'expo-web-browser';
 import { useApp } from '../context/AppContext';
 import { GachaItem } from '../types';
 import { getCategoryLabel, getCategoryColor } from '../constants/translations';
+import { MibuBrand } from '../../constants/Colors';
 
 const RARITY_COLORS: Record<string, string> = {
-  SP: '#fbbf24',
-  SSR: '#a855f7',
-  SR: '#3b82f6',
-  R: '#22c55e',
+  SP: MibuBrand.tierSP,
+  SSR: MibuBrand.tierSSR,
+  SR: MibuBrand.tierSR,
+  S: MibuBrand.tierS,
+  R: MibuBrand.tierR,
   N: '#94a3b8',
 };
 
 const RARITY_BG_COLORS: Record<string, string> = {
-  SP: '#fef3c7',
-  SSR: '#f3e8ff',
-  SR: '#dbeafe',
-  R: '#dcfce7',
+  SP: MibuBrand.tierSPBg,
+  SSR: MibuBrand.tierSSRBg,
+  SR: MibuBrand.tierSRBg,
+  S: MibuBrand.tierSBg,
+  R: MibuBrand.tierRBg,
   N: '#f1f5f9',
 };
 
@@ -85,48 +88,48 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
   return (
     <View
       style={{
-        backgroundColor: '#ffffff',
-        borderRadius: 20,
+        backgroundColor: MibuBrand.warmWhite,
+        borderRadius: 16,
         marginHorizontal: 16,
-        marginBottom: 16,
-        borderWidth: 2,
-        borderColor: categoryColor,
-        overflow: 'hidden',
+        marginBottom: 12,
+        shadowColor: MibuBrand.brown,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        elevation: 2,
       }}
     >
       <View style={{ padding: 20 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
           <View
             style={{
-              backgroundColor: '#f8fafc',
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 20,
-              borderWidth: 1,
-              borderColor: '#e2e8f0',
+              backgroundColor: MibuBrand.creamLight,
+              paddingHorizontal: 10,
+              paddingVertical: 5,
+              borderRadius: 12,
             }}
           >
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#475569' }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: MibuBrand.copper }}>
               {getDurationText()}
             </Text>
           </View>
 
           <View
             style={{
-              backgroundColor: categoryColor + '20',
-              paddingHorizontal: 14,
-              paddingVertical: 6,
-              borderRadius: 20,
+              backgroundColor: MibuBrand.cream,
+              paddingHorizontal: 12,
+              paddingVertical: 5,
+              borderRadius: 12,
             }}
           >
-            <Text style={{ fontSize: 13, fontWeight: '700', color: categoryColor }}>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: MibuBrand.brown }}>
               {categoryLabel}
             </Text>
           </View>
         </View>
 
         <Text
-          style={{ fontSize: 24, fontWeight: '800', color: '#1e293b', marginBottom: 12 }}
+          style={{ fontSize: 20, fontWeight: '700', color: MibuBrand.dark, marginBottom: 8, letterSpacing: -0.3 }}
           numberOfLines={2}
         >
           {placeName}
@@ -134,7 +137,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
 
         {description ? (
           <Text
-            style={{ fontSize: 15, color: '#64748b', lineHeight: 24, marginBottom: 16 }}
+            style={{ fontSize: 14, color: MibuBrand.brownLight, lineHeight: 22, marginBottom: 16 }}
           >
             {description}
           </Text>
@@ -143,11 +146,9 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
         {hasCoupon && (
           <View
             style={{
-              borderWidth: 2,
-              borderColor: '#e5e7eb',
-              borderStyle: 'dashed',
+              backgroundColor: MibuBrand.highlight,
               borderRadius: 12,
-              padding: 16,
+              padding: 14,
               marginBottom: 16,
               flexDirection: 'row',
               alignItems: 'center',
@@ -156,22 +157,22 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
             <View
               style={{
                 backgroundColor: rarityBg,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 8,
-                marginRight: 12,
+                paddingHorizontal: 8,
+                paddingVertical: 4,
+                borderRadius: 6,
+                marginRight: 10,
               }}
             >
-              <Text style={{ fontSize: 12, fontWeight: '900', color: rarityColor }}>
+              <Text style={{ fontSize: 11, fontWeight: '800', color: rarityColor }}>
                 {rarity}
               </Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', marginBottom: 2 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: MibuBrand.dark, marginBottom: 2 }}>
                 {couponText}
               </Text>
               {couponCode && (
-                <Text style={{ fontSize: 12, color: '#64748b' }}>
+                <Text style={{ fontSize: 11, color: MibuBrand.copper }}>
                   CODE: {couponCode}
                 </Text>
               )}
@@ -181,19 +182,17 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
 
         <TouchableOpacity
           style={{
-            backgroundColor: '#f8fafc',
+            backgroundColor: MibuBrand.creamLight,
             borderRadius: 12,
-            paddingVertical: 16,
+            paddingVertical: 14,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: 1,
-            borderColor: '#e2e8f0',
           }}
           onPress={handleOpenMaps}
         >
-          <Ionicons name="location-outline" size={18} color="#64748b" />
-          <Text style={{ fontSize: 15, fontWeight: '600', color: '#64748b', marginLeft: 8 }}>
+          <Ionicons name="location-outline" size={16} color={MibuBrand.copper} />
+          <Text style={{ fontSize: 14, fontWeight: '600', color: MibuBrand.copper, marginLeft: 6 }}>
             {translations.viewOnMap || '在 Google 地圖中查看'}
           </Text>
         </TouchableOpacity>
@@ -218,7 +217,7 @@ export function ItemsScreen() {
       <View
         style={{
           flex: 1,
-          backgroundColor: '#f8fafc',
+          backgroundColor: MibuBrand.creamLight,
           alignItems: 'center',
           justifyContent: 'center',
           padding: 20,
@@ -226,33 +225,33 @@ export function ItemsScreen() {
       >
         <View
           style={{
-            width: 100,
-            height: 100,
-            borderRadius: 50,
-            backgroundColor: '#f1f5f9',
+            width: 90,
+            height: 90,
+            borderRadius: 45,
+            backgroundColor: MibuBrand.cream,
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: 24,
+            marginBottom: 20,
           }}
         >
-          <Ionicons name="cube-outline" size={48} color="#94a3b8" />
+          <Ionicons name="cube-outline" size={40} color={MibuBrand.copper} />
         </View>
-        <Text style={{ fontSize: 20, fontWeight: '700', color: '#64748b', marginBottom: 8 }}>
+        <Text style={{ fontSize: 18, fontWeight: '700', color: MibuBrand.brown, marginBottom: 6 }}>
           {t.noResults || '尚無結果'}
         </Text>
-        <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center', marginBottom: 32 }}>
+        <Text style={{ fontSize: 14, color: MibuBrand.brownLight, textAlign: 'center', marginBottom: 28 }}>
           {t.tryGachaFirst || '先來一發扭蛋吧！'}
         </Text>
         <TouchableOpacity
           style={{
-            backgroundColor: '#6366f1',
-            paddingVertical: 16,
-            paddingHorizontal: 32,
-            borderRadius: 16,
+            backgroundColor: MibuBrand.brown,
+            paddingVertical: 14,
+            paddingHorizontal: 28,
+            borderRadius: 24,
           }}
           onPress={handleBackToGacha}
         >
-          <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: MibuBrand.warmWhite }}>
             {t.startGacha || '開始扭蛋'}
           </Text>
         </TouchableOpacity>
@@ -271,44 +270,52 @@ export function ItemsScreen() {
   const cityName = getLocalizedString(meta?.city) || '';
   const districtName = getLocalizedString(meta?.locked_district) || '';
 
+  const themeIntro = (meta as any)?.themeIntro;
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#fdf2f2' }}>
+    <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
       <View
         style={{
-          paddingTop: 60,
+          paddingTop: 56,
           paddingHorizontal: 20,
-          paddingBottom: 20,
+          paddingBottom: 16,
           alignItems: 'center',
         }}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
           <Image
             source={require('../../assets/images/icon.png')}
-            style={{ width: 32, height: 32, marginRight: 8 }}
+            style={{ width: 28, height: 28, marginRight: 6 }}
             resizeMode="contain"
           />
-          <Text style={{ fontSize: 18, fontWeight: '700', color: '#1e293b' }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: MibuBrand.brown, letterSpacing: 1 }}>
             MIBU
           </Text>
         </View>
 
-        <Text style={{ fontSize: 36, fontWeight: '900', color: '#1e293b', marginBottom: 8 }}>
+        <Text style={{ fontSize: 32, fontWeight: '800', color: MibuBrand.dark, marginBottom: 4, letterSpacing: -0.5 }}>
           {cityName}
         </Text>
 
         {districtName && (
-          <Text style={{ fontSize: 16, color: '#64748b' }}>
+          <Text style={{ fontSize: 14, color: MibuBrand.brownLight }}>
             {t.exploring || '正在探索'}{' '}
-            <Text style={{ color: '#6366f1', fontWeight: '700' }}>
+            <Text style={{ color: MibuBrand.brown, fontWeight: '600' }}>
               {districtName}
             </Text>
+          </Text>
+        )}
+
+        {themeIntro && (
+          <Text style={{ fontSize: 13, color: MibuBrand.copper, marginTop: 8, textAlign: 'center', fontStyle: 'italic' }}>
+            "{themeIntro}"
           </Text>
         )}
       </View>
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: 8 }}
         showsVerticalScrollIndicator={false}
       >
         {items.map((item, index) => (
@@ -328,30 +335,31 @@ export function ItemsScreen() {
           left: 0,
           right: 0,
           paddingHorizontal: 20,
-          paddingBottom: 40,
-          paddingTop: 16,
+          paddingBottom: 36,
+          paddingTop: 12,
+          backgroundColor: 'transparent',
         }}
       >
         <TouchableOpacity
           style={{
-            backgroundColor: '#1e293b',
-            paddingVertical: 18,
-            borderRadius: 30,
+            backgroundColor: MibuBrand.brown,
+            paddingVertical: 16,
+            borderRadius: 28,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            shadowColor: '#000',
+            shadowColor: MibuBrand.dark,
             shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.2,
+            shadowOpacity: 0.15,
             shadowRadius: 12,
-            elevation: 8,
+            elevation: 6,
           }}
           onPress={handleBackToGacha}
         >
-          <Text style={{ fontSize: 17, fontWeight: '700', color: '#ffffff', marginRight: 8 }}>
+          <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.warmWhite, marginRight: 8 }}>
             {t.reGacha || '重新扭蛋'}
           </Text>
-          <Ionicons name="refresh" size={20} color="#ffffff" />
+          <Ionicons name="refresh" size={18} color={MibuBrand.warmWhite} />
         </TouchableOpacity>
       </View>
     </View>
