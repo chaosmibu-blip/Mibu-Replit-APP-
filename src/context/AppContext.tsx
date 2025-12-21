@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppState, Language, User, GachaItem, GachaResponse, UserRole } from '../types';
 import { TRANSLATIONS, DEFAULT_LEVEL } from '../constants/translations';
 import { apiService } from '../services/api';
+import { registerForPushNotifications, removePushToken } from '../services/notifications';
 
 interface AppContextType {
   state: AppState;
@@ -104,8 +105,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       if (token) {
         await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, token);
+        registerForPushNotifications(token).catch(err => {
+          console.log('Push notification registration skipped:', err);
+        });
       }
     } else {
+      const existingToken = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      if (existingToken) {
+        removePushToken(existingToken).catch(err => {
+          console.log('Push token removal skipped:', err);
+        });
+      }
       await AsyncStorage.removeItem(STORAGE_KEYS.USER);
       await AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
     }

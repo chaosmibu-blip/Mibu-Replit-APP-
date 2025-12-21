@@ -73,13 +73,32 @@ Preferred communication style: Simple, everyday language.
 - `@react-native-async-storage/async-storage`
 - `@react-native-community/slider`
 - `react-native-webview`
-- `expo-haptics`
-- `expo-blur`
-- `@expo/vector-icons`, `expo-symbols`
-- `expo-location`
-- `react-native-maps`
-- `expo-clipboard`
-- `react-native-reanimated`
+- `expo-notifications` - Push notifications
+- `expo-device` - Device detection for push
+- `expo-image-picker` - Photo selection and camera
+
+### iOS Submission Requirements (2024-2025)
+- **Bundle ID**: `com.mibu.travel`
+- **App Name**: Mibu
+- **Required Permissions**:
+  - Location (When In Use): Map display, SOS
+  - Location (Always): Specialist tracking
+  - Photo Library: Profile/review photos
+  - Camera: Take photos
+- **Privacy Policy**: Required (host at public URL)
+- **Test Account**: Provide demo account for Apple review
+- **Screenshots**: iPhone 1320×2868, iPad 2048×2732
+- **EAS Project ID**: Required for push notifications
+
+### Push Notification Flow
+- Registration: On user login (`src/services/notifications.ts`)
+- Token stored at: `POST /api/user/push-token`
+- Removal: On user logout (`DELETE /api/user/push-token`)
+
+### Image Upload Flow (`src/services/imageUpload.ts`)
+1. Request presigned URL: `POST /api/uploads/request-url`
+2. Upload to GCS: `PUT <uploadURL>`
+3. Access uploaded file: `GET /objects/<objectPath>`
 
 ### Third-Party Integrations
 - **Twilio**: For SMS sending capabilities (credentials managed via Replit Connectors).
