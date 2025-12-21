@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Linking,
@@ -11,7 +10,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { GachaItem, Language } from '../types';
-import { getCategoryLabel, getCategoryColor } from '../constants/translations';
+import { getCategoryLabel } from '../constants/translations';
+import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../constants/Colors';
 
 const getPlaceName = (item: GachaItem): string => {
   const name = item.place_name;
@@ -51,7 +51,7 @@ function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
   const placeName = getPlaceName(item);
   const description = getDescription(item);
   const category = typeof item.category === 'string' ? item.category.toLowerCase() : '';
-  const categoryColor = getCategoryColor(category);
+  const categoryToken = getCategoryToken(category);
   const date = formatDate(item.collectedAt);
   const cityDisplay = item.cityDisplay || item.city || '';
   const districtDisplay = item.districtDisplay || item.district || '';
@@ -72,41 +72,50 @@ function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
   return (
     <Modal visible transparent animationType="slide">
       <TouchableOpacity
-        style={styles.modalOverlay}
+        style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)', justifyContent: 'flex-end' }}
         activeOpacity={1}
         onPress={onClose}
       >
-        <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
-          <View style={[styles.modalHeader, { backgroundColor: categoryColor }]}>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Ionicons name="close" size={24} color="#475569" />
+        <View 
+          style={{ backgroundColor: MibuBrand.warmWhite, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%' }} 
+          onStartShouldSetResponder={() => true}
+        >
+          <View style={{ height: 120, position: 'relative', backgroundColor: categoryToken.badge, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}>
+            <TouchableOpacity 
+              style={{ position: 'absolute', top: 16, right: 16, width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 20, alignItems: 'center', justifyContent: 'center' }} 
+              onPress={onClose}
+            >
+              <Ionicons name="close" size={24} color={MibuBrand.dark} />
             </TouchableOpacity>
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>
+            <View style={{ position: 'absolute', bottom: 16, left: 20, backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 }}>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: categoryToken.badgeText }}>
                 {getCategoryLabel(category, language)}
               </Text>
             </View>
           </View>
 
-          <ScrollView style={styles.modalBody}>
-            <Text style={styles.modalTitle}>{placeName}</Text>
-            <View style={styles.metaRow}>
-              <Text style={styles.metaText}>{date}</Text>
+          <ScrollView style={{ padding: 20 }}>
+            <Text style={{ fontSize: 24, fontWeight: '900', color: MibuBrand.dark, marginBottom: 8 }}>{placeName}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+              <Text style={{ fontSize: 14, color: MibuBrand.brownLight }}>{date}</Text>
               {locationText && (
                 <>
-                  <Text style={styles.metaDot}>•</Text>
-                  <Text style={styles.metaText}>{locationText}</Text>
+                  <Text style={{ marginHorizontal: 8, color: MibuBrand.tanLight }}>•</Text>
+                  <Text style={{ fontSize: 14, color: MibuBrand.brownLight }}>{locationText}</Text>
                 </>
               )}
             </View>
 
             {description && (
-              <Text style={styles.modalDescription}>{description}</Text>
+              <Text style={{ fontSize: 16, color: MibuBrand.brownLight, lineHeight: 24, marginBottom: 20 }}>{description}</Text>
             )}
 
-            <TouchableOpacity style={styles.navigateButton} onPress={handleNavigate}>
+            <TouchableOpacity 
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: MibuBrand.brown, paddingVertical: 16, borderRadius: 16 }} 
+              onPress={handleNavigate}
+            >
               <Ionicons name="navigate" size={20} color="#ffffff" />
-              <Text style={styles.navigateButtonText}>在 Google 地圖中查看</Text>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>在 Google 地圖中查看</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -134,8 +143,17 @@ export function CollectionScreen() {
   const toggleCategory = (key: string) => {
     setOpenCategories(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(key)) newSet.delete(key);
-      else newSet.add(key);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        const regionPrefix = key.split('-')[0];
+        prev.forEach(existingKey => {
+          if (existingKey.startsWith(regionPrefix + '-')) {
+            newSet.delete(existingKey);
+          }
+        });
+        newSet.add(key);
+      }
       return newSet;
     });
   };
@@ -164,17 +182,20 @@ export function CollectionScreen() {
 
   if (collection.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Ionicons name="location-outline" size={64} color="#cbd5e1" />
-        <Text style={styles.emptyTitle}>{t.noCollection}</Text>
-        <Text style={styles.emptySubtitle}>{t.startToCollect}</Text>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, backgroundColor: MibuBrand.creamLight }}>
+        <Ionicons name="location-outline" size={64} color={MibuBrand.tanLight} />
+        <Text style={{ fontSize: 18, fontWeight: '700', color: MibuBrand.brownLight, marginTop: 16 }}>{t.noCollection}</Text>
+        <Text style={{ fontSize: 14, color: MibuBrand.tan, marginTop: 8 }}>{t.startToCollect}</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{t.myCollection}</Text>
+    <ScrollView 
+      style={{ flex: 1, backgroundColor: MibuBrand.creamLight }} 
+      contentContainerStyle={{ padding: 16, paddingTop: 60, paddingBottom: 100 }}
+    >
+      <Text style={{ fontSize: 28, fontWeight: '900', color: MibuBrand.dark, marginBottom: 16 }}>{t.myCollection}</Text>
 
       {Object.entries(groupedData)
         .sort((a, b) => b[1].items.length - a[1].items.length)
@@ -182,20 +203,30 @@ export function CollectionScreen() {
           const isRegionOpen = openRegions.has(regionKey);
 
           return (
-            <View key={regionKey} style={styles.regionCard}>
+            <View 
+              key={regionKey} 
+              style={{
+                backgroundColor: MibuBrand.warmWhite,
+                borderRadius: 16,
+                borderWidth: 2,
+                borderColor: MibuBrand.tanLight,
+                marginBottom: 12,
+                overflow: 'hidden',
+              }}
+            >
               <TouchableOpacity
-                style={styles.regionHeader}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 }}
                 onPress={() => toggleRegion(regionKey)}
               >
-                <View style={styles.regionInfo}>
-                  <View style={styles.regionIcon}>
-                    <Text style={styles.regionIconText}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ width: 40, height: 40, backgroundColor: MibuBrand.brown, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '900' }}>
                       {data.displayName.charAt(0)}
                     </Text>
                   </View>
                   <View>
-                    <Text style={styles.regionName}>{data.displayName}</Text>
-                    <Text style={styles.regionCount}>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark }}>{data.displayName}</Text>
+                    <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>
                       {data.items.length} {t.spots}
                     </Text>
                   </View>
@@ -203,45 +234,53 @@ export function CollectionScreen() {
                 <Ionicons
                   name={isRegionOpen ? 'chevron-up' : 'chevron-down'}
                   size={20}
-                  color="#94a3b8"
+                  color={MibuBrand.brownLight}
                 />
               </TouchableOpacity>
 
               {isRegionOpen && (
-                <View style={styles.regionContent}>
+                <View style={{ paddingHorizontal: 16, paddingBottom: 16, gap: 8 }}>
                   {Object.entries(data.byCategory)
                     .sort((a, b) => b[1].length - a[1].length)
                     .map(([category, categoryItems]) => {
-                      const categoryColor = getCategoryColor(category);
+                      const catToken = getCategoryToken(category);
                       const categoryKey = `${regionKey}-${category}`;
                       const isCategoryOpen = openCategories.has(categoryKey);
 
                       return (
                         <View key={categoryKey}>
                           <TouchableOpacity
-                            style={[
-                              styles.categoryHeader,
-                              { backgroundColor: categoryColor + '10' },
-                            ]}
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: 12,
+                              borderRadius: 12,
+                              backgroundColor: catToken.badge + '20',
+                            }}
                             onPress={() => toggleCategory(categoryKey)}
                           >
-                            <View style={styles.categoryInfo}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                               <View
-                                style={[
-                                  styles.categoryIndicator,
-                                  { backgroundColor: categoryColor },
-                                ]}
+                                style={{
+                                  width: 6,
+                                  height: 24,
+                                  borderRadius: 3,
+                                  backgroundColor: catToken.stripe,
+                                }}
                               />
-                              <Text style={styles.categoryName}>
+                              <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.dark }}>
                                 {getCategoryLabel(category, language)}
                               </Text>
                               <View
-                                style={[
-                                  styles.categoryCount,
-                                  { backgroundColor: categoryColor },
-                                ]}
+                                style={{
+                                  backgroundColor: catToken.badge,
+                                  paddingHorizontal: 8,
+                                  paddingVertical: 2,
+                                  borderRadius: 10,
+                                }}
                               >
-                                <Text style={styles.categoryCountText}>
+                                <Text style={{ fontSize: 12, fontWeight: '700', color: catToken.badgeText }}>
                                   {categoryItems.length}
                                 </Text>
                               </View>
@@ -249,12 +288,12 @@ export function CollectionScreen() {
                             <Ionicons
                               name={isCategoryOpen ? 'chevron-up' : 'chevron-down'}
                               size={16}
-                              color="#94a3b8"
+                              color={MibuBrand.brownLight}
                             />
                           </TouchableOpacity>
 
                           {isCategoryOpen && (
-                            <View style={styles.itemsList}>
+                            <View style={{ marginTop: 8, paddingLeft: 8, gap: 8 }}>
                               {categoryItems.map((item, idx) => {
                                 const placeName = getPlaceName(item);
                                 const description = getDescription(item);
@@ -262,63 +301,80 @@ export function CollectionScreen() {
 
                                 const hasPromo = item.is_promo_active || item.merchant;
                                 const hasCoupon = item.is_coupon && item.coupon_data;
+                                
+                                const isMerchantPro = item.merchant?.isPro && item.merchant?.brandColor;
+                                const merchantScheme = isMerchantPro 
+                                  ? deriveMerchantScheme(item.merchant!.brandColor!) 
+                                  : null;
+                                const stripeColor = merchantScheme ? merchantScheme.accent : catToken.stripe;
 
                                 return (
                                   <TouchableOpacity
                                     key={`${item.id}-${idx}`}
-                                    style={[
-                                      styles.itemCard,
-                                      { borderColor: categoryColor + '40' },
-                                      hasPromo && styles.promoCard,
-                                    ]}
+                                    style={{
+                                      backgroundColor: MibuBrand.warmWhite,
+                                      borderRadius: 16,
+                                      overflow: 'hidden',
+                                      flexDirection: 'row',
+                                      shadowColor: MibuBrand.brown,
+                                      shadowOffset: { width: 0, height: 2 },
+                                      shadowOpacity: 0.06,
+                                      shadowRadius: 8,
+                                      elevation: 2,
+                                    }}
                                     onPress={() => setSelectedItem(item)}
                                   >
-                                    <View style={styles.itemHeader}>
-                                      <Text style={styles.itemDate}>{date}</Text>
-                                      <View style={{ flexDirection: 'row', gap: 6 }}>
-                                        {hasPromo && (
-                                          <View style={styles.promoBadge}>
-                                            <Ionicons name="storefront" size={10} color="#ffffff" />
-                                            <Text style={styles.promoBadgeText}>
-                                              {language === 'zh-TW' ? '合作' : 'Partner'}
+                                    <View style={{ width: 4, backgroundColor: stripeColor }} />
+                                    <View style={{ flex: 1, padding: 16 }}>
+                                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                        <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>{date}</Text>
+                                        <View style={{ flexDirection: 'row', gap: 6 }}>
+                                          {hasPromo && (
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: MibuBrand.copper, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6, gap: 3 }}>
+                                              <Ionicons name="storefront" size={10} color="#ffffff" />
+                                              <Text style={{ fontSize: 10, fontWeight: '700', color: '#ffffff' }}>
+                                                {language === 'zh-TW' ? '合作' : 'Partner'}
+                                              </Text>
+                                            </View>
+                                          )}
+                                          {hasCoupon && (
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: MibuBrand.tierSP, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6, gap: 3 }}>
+                                              <Ionicons name="ticket" size={10} color="#ffffff" />
+                                              <Text style={{ fontSize: 10, fontWeight: '700', color: '#ffffff' }}>
+                                                {language === 'zh-TW' ? '優惠' : 'Coupon'}
+                                              </Text>
+                                            </View>
+                                          )}
+                                          <View
+                                            style={{
+                                              backgroundColor: catToken.badge,
+                                              paddingHorizontal: 8,
+                                              paddingVertical: 4,
+                                              borderRadius: 8,
+                                            }}
+                                          >
+                                            <Text style={{ fontSize: 10, fontWeight: '700', color: catToken.badgeText }}>
+                                              {getCategoryLabel(category, language)}
                                             </Text>
                                           </View>
-                                        )}
-                                        {hasCoupon && (
-                                          <View style={styles.couponBadge}>
-                                            <Ionicons name="ticket" size={10} color="#ffffff" />
-                                            <Text style={styles.couponBadgeText}>
-                                              {language === 'zh-TW' ? '優惠' : 'Coupon'}
-                                            </Text>
-                                          </View>
-                                        )}
-                                        <View
-                                          style={[
-                                            styles.itemBadge,
-                                            { backgroundColor: categoryColor },
-                                          ]}
-                                        >
-                                          <Text style={styles.itemBadgeText}>
-                                            {getCategoryLabel(category, language)}
-                                          </Text>
                                         </View>
                                       </View>
+                                      <Text style={{ fontSize: 16, fontWeight: '900', color: merchantScheme ? merchantScheme.accent : MibuBrand.dark, marginBottom: 4 }}>{placeName}</Text>
+                                      {description && (
+                                        <Text
+                                          style={{ fontSize: 14, color: MibuBrand.brownLight, lineHeight: 20 }}
+                                          numberOfLines={2}
+                                        >
+                                          {description}
+                                        </Text>
+                                      )}
+                                      {item.merchant && (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 4 }}>
+                                          <Ionicons name="business-outline" size={12} color={MibuBrand.copper} />
+                                          <Text style={{ fontSize: 12, color: MibuBrand.copper, fontWeight: '600' }}>{item.merchant.name}</Text>
+                                        </View>
+                                      )}
                                     </View>
-                                    <Text style={styles.itemName}>{placeName}</Text>
-                                    {description && (
-                                      <Text
-                                        style={styles.itemDescription}
-                                        numberOfLines={2}
-                                      >
-                                        {description}
-                                      </Text>
-                                    )}
-                                    {item.merchant && (
-                                      <View style={styles.merchantInfo}>
-                                        <Ionicons name="business-outline" size={12} color="#6366f1" />
-                                        <Text style={styles.merchantName}>{item.merchant.name}</Text>
-                                      </View>
-                                    )}
                                   </TouchableOpacity>
                                 );
                               })}
@@ -344,282 +400,3 @@ export function CollectionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  content: {
-    padding: 16,
-    paddingTop: 60,
-    paddingBottom: 100,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#1e293b',
-    marginBottom: 16,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 40,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#94a3b8',
-    marginTop: 16,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: '#cbd5e1',
-    marginTop: 8,
-  },
-  regionCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#f1f5f9',
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
-  regionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  regionInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  regionIcon: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#6366f1',
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  regionIconText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '900',
-  },
-  regionName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e293b',
-  },
-  regionCount: {
-    fontSize: 12,
-    color: '#94a3b8',
-  },
-  regionContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    gap: 8,
-  },
-  categoryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-    borderRadius: 12,
-  },
-  categoryInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  categoryIndicator: {
-    width: 6,
-    height: 24,
-    borderRadius: 3,
-  },
-  categoryName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#334155',
-  },
-  categoryCount: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  categoryCountText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  itemsList: {
-    marginTop: 8,
-    paddingLeft: 8,
-    gap: 8,
-  },
-  itemCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    borderWidth: 2,
-    padding: 16,
-  },
-  itemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  itemDate: {
-    fontSize: 12,
-    color: '#94a3b8',
-  },
-  itemBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  itemBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#1e293b',
-    marginBottom: 4,
-  },
-  itemDescription: {
-    fontSize: 14,
-    color: '#64748b',
-    lineHeight: 20,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '85%',
-  },
-  modalHeader: {
-    height: 120,
-    position: 'relative',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 40,
-    height: 40,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  categoryBadge: {
-    position: 'absolute',
-    bottom: 16,
-    left: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  categoryBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  modalBody: {
-    padding: 20,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#1e293b',
-    marginBottom: 8,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  metaText: {
-    fontSize: 14,
-    color: '#64748b',
-  },
-  metaDot: {
-    marginHorizontal: 8,
-    color: '#cbd5e1',
-  },
-  modalDescription: {
-    fontSize: 16,
-    color: '#475569',
-    lineHeight: 24,
-    marginBottom: 20,
-  },
-  navigateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#1e293b',
-    paddingVertical: 16,
-    borderRadius: 16,
-  },
-  navigateButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  promoCard: {
-    borderColor: '#6366f1',
-    borderWidth: 2,
-  },
-  promoBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#6366f1',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 6,
-    gap: 3,
-  },
-  promoBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  couponBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f59e0b',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 6,
-    gap: 3,
-  },
-  couponBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  merchantInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap: 4,
-  },
-  merchantName: {
-    fontSize: 12,
-    color: '#6366f1',
-    fontWeight: '600',
-  },
-});
