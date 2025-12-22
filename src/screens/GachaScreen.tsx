@@ -523,9 +523,31 @@ export function GachaScreen() {
 
         {selectedRegionId && (
           <View style={{ backgroundColor: '#ffffff', borderRadius: 16, padding: 16 }}>
-            <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b', marginBottom: 12 }}>
-              {state.language === 'zh-TW' ? '抽取張數' : (t.pullCount || 'Pull Count')}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b' }}>
+                {state.language === 'zh-TW' ? '抽取張數' : (t.pullCount || 'Pull Count')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  Alert.alert(
+                    state.language === 'zh-TW' ? '抽取張數說明' : 'Pull Count Info',
+                    state.language === 'zh-TW' 
+                      ? '每次扭蛋可抽取 5-12 張景點卡片。張數越多，行程越豐富！每日上限 36 張。'
+                      : 'You can draw 5-12 place cards per gacha. More cards mean a richer itinerary! Daily limit is 36 cards.'
+                  );
+                }}
+                style={{ 
+                  width: 24, 
+                  height: 24, 
+                  borderRadius: 12, 
+                  backgroundColor: '#e2e8f0', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}
+              >
+                <Ionicons name="information-circle-outline" size={18} color="#6366f1" />
+              </TouchableOpacity>
+            </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <Text style={{ fontSize: 12, color: '#94a3b8' }}>5</Text>
               <Text style={{ fontSize: 24, fontWeight: '800', color: '#6366f1' }}>

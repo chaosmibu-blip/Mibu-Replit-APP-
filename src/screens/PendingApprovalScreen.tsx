@@ -30,7 +30,7 @@ export function PendingApprovalScreen() {
   const handleLogout = async () => {
     await AsyncStorage.removeItem('token');
     setUser(null);
-    router.replace('/');
+    router.replace('/login');
   };
 
   const roleLabel = translations.roleLabels[state.user?.role || ''] || state.user?.role;

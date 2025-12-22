@@ -15,6 +15,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useApp } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
 import { UserRole } from '../src/types';
@@ -577,6 +578,78 @@ export default function LoginScreen() {
     router.replace('/(tabs)');
   };
 
+  const handleAppleLogin = async () => {
+    try {
+      setLoading(true);
+      
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (credential.identityToken) {
+        const response = await fetch(`${API_BASE_URL}/api/auth/apple`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            identityToken: credential.identityToken,
+            fullName: credential.fullName,
+            email: credential.email,
+            user: credential.user,
+            portal: selectedPortal,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.token && data.user) {
+          await AsyncStorage.setItem(AUTH_TOKEN_KEY, data.token);
+          
+          const userRole = data.user.role as UserRole || 'traveler';
+          const finalActiveRole = data.user.activeRole as UserRole || userRole;
+          
+          setUser({
+            id: data.user.id,
+            name: data.user.name || credential.fullName?.givenName || 'User',
+            email: data.user.email || credential.email || null,
+            avatar: data.user.avatar || null,
+            firstName: data.user.firstName || credential.fullName?.givenName || 'User',
+            role: userRole,
+            activeRole: finalActiveRole,
+            isApproved: data.user.isApproved,
+            isSuperAdmin: data.user.isSuperAdmin || false,
+            accessibleRoles: data.user.accessibleRoles || [],
+            provider: 'apple',
+            providerId: credential.user,
+          });
+          
+          navigateAfterLogin(userRole, data.user.isApproved, data.user.isSuperAdmin, selectedPortal);
+        } else {
+          Alert.alert(
+            state.language === 'zh-TW' ? '登入失敗' : 'Login Failed',
+            data.error || (state.language === 'zh-TW' ? '請稍後再試' : 'Please try again later')
+          );
+        }
+      }
+    } catch (error: any) {
+      if (error.code === 'ERR_REQUEST_CANCELED') {
+        console.log('Apple Sign In was canceled');
+      } else {
+        console.error('Apple Sign In error:', error);
+        Alert.alert(
+          state.language === 'zh-TW' ? '登入錯誤' : 'Login Error',
+          state.language === 'zh-TW' ? '無法完成 Apple 登入' : 'Could not complete Apple Sign In'
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (checkingAuth) {
     return (
       <View style={styles.loadingContainer}>
@@ -717,20 +790,13 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           {Platform.OS === 'ios' && (
-            <TouchableOpacity 
-              style={styles.appleButton} 
-              onPress={() => {
-                Alert.alert(
-                  state.language === 'zh-TW' ? '即將推出' : 'Coming Soon',
-                  state.language === 'zh-TW' ? 'Apple 登入功能即將上線' : 'Apple Sign In will be available soon'
-                );
-              }}
-            >
-              <Ionicons name="logo-apple" size={22} color="#ffffff" />
-              <Text style={styles.appleButtonText}>
-                {state.language === 'zh-TW' ? 'Apple 登入' : 'Sign in with Apple'}
-              </Text>
-            </TouchableOpacity>
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              cornerRadius={28}
+              style={{ width: '100%', height: 52, marginTop: 12 }}
+              onPress={handleAppleLogin}
+            />
           )}
 
           {currentPortal.guestAllowed && (

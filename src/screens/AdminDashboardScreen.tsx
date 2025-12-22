@@ -16,7 +16,7 @@ import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { AdminUser, PlaceDraft, GlobalExclusion } from '../types';
 
-type Tab = 'pending' | 'users' | 'drafts' | 'exclusions';
+type Tab = 'pending' | 'users' | 'drafts' | 'exclusions' | 'announcements';
 
 export function AdminDashboardScreen() {
   const { state, getToken, setUser } = useApp();
@@ -38,6 +38,7 @@ export function AdminDashboardScreen() {
     usersTab: isZh ? '用戶' : 'Users',
     draftsTab: isZh ? '草稿' : 'Drafts',
     exclusionsTab: isZh ? '排除' : 'Exclusions',
+    announcementsTab: isZh ? '公告' : 'Announcements',
     approve: isZh ? '核准' : 'Approve',
     reject: isZh ? '拒絕' : 'Reject',
     publish: isZh ? '發布' : 'Publish',
@@ -62,7 +63,7 @@ export function AdminDashboardScreen() {
     await AsyncStorage.removeItem('@mibu_token');
     await AsyncStorage.removeItem('@mibu_user');
     setUser(null);
-    router.replace('/');
+    router.replace('/login');
   };
 
   const roleLabels: Record<string, string> = {
@@ -228,7 +229,7 @@ export function AdminDashboardScreen() {
 
   const renderTabs = () => (
     <View style={styles.tabsContainer}>
-      {(['pending', 'users', 'drafts', 'exclusions'] as Tab[]).map(tab => (
+      {(['pending', 'users', 'drafts', 'exclusions', 'announcements'] as Tab[]).map(tab => (
         <TouchableOpacity
           key={tab}
           style={[styles.tab, activeTab === tab && styles.activeTab]}
@@ -431,6 +432,28 @@ export function AdminDashboardScreen() {
         return renderDrafts();
       case 'exclusions':
         return renderExclusions();
+      case 'announcements':
+        return (
+          <View style={styles.listContainer}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#7A5230',
+                borderRadius: 16,
+                padding: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}
+              onPress={() => router.push('/announcement-manage' as any)}
+            >
+              <Ionicons name="megaphone-outline" size={20} color="#FFFEFA" />
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#FFFEFA' }}>
+                {isZh ? '前往公告管理' : 'Go to Announcement Manager'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        );
     }
   };
 

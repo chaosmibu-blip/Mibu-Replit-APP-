@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, Dimensions } from 'react-native';
+import { View, Text, Modal, Dimensions, Image } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,6 +9,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { MibuBrand } from '../../constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const AD_WIDTH = 300;
@@ -110,7 +111,7 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
       <View
         style={{
           flex: 1,
-          backgroundColor: '#0f172a',
+          backgroundColor: MibuBrand.dark,
           alignItems: 'center',
           justifyContent: 'center',
           padding: 20,
@@ -126,7 +127,7 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
                   height: 120,
                   borderRadius: 60,
                   borderWidth: 4,
-                  borderColor: '#6366f1',
+                  borderColor: MibuBrand.copper,
                   borderTopColor: 'transparent',
                 },
                 spinStyle,
@@ -138,14 +139,18 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
                   width: 80,
                   height: 80,
                   borderRadius: 40,
-                  backgroundColor: '#6366f1',
+                  backgroundColor: MibuBrand.brown,
                   alignItems: 'center',
                   justifyContent: 'center',
                 },
                 pulseStyle,
               ]}
             >
-              <Ionicons name="dice" size={40} color="#ffffff" />
+              <Image
+                source={require('../../assets/images/icon.png')}
+                style={{ width: 50, height: 50 }}
+                resizeMode="contain"
+              />
             </Animated.View>
           </View>
 
@@ -153,7 +158,7 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
             style={{
               fontSize: 22,
               fontWeight: '800',
-              color: '#ffffff',
+              color: MibuBrand.cream,
               marginTop: 32,
               textAlign: 'center',
             }}
@@ -164,7 +169,7 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
           <Text
             style={{
               fontSize: 16,
-              color: '#94a3b8',
+              color: MibuBrand.tan,
               marginTop: 8,
               textAlign: 'center',
             }}
@@ -179,12 +184,12 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
                 width: 50,
                 height: 50,
                 borderRadius: 25,
-                backgroundColor: '#1e293b',
+                backgroundColor: MibuBrand.brownDark,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Text style={{ fontSize: 24, fontWeight: '900', color: '#6366f1' }}>
+              <Text style={{ fontSize: 24, fontWeight: '900', color: MibuBrand.copper }}>
                 {countdown}
               </Text>
             </View>
@@ -195,21 +200,21 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
           style={{
             width: AD_WIDTH,
             height: AD_HEIGHT,
-            backgroundColor: '#1e293b',
+            backgroundColor: MibuBrand.brownDark,
             borderRadius: 16,
             borderWidth: 2,
-            borderColor: '#334155',
+            borderColor: MibuBrand.brown,
             borderStyle: 'dashed',
             alignItems: 'center',
             justifyContent: 'center',
             marginTop: 20,
           }}
         >
-          <Ionicons name="megaphone-outline" size={48} color="#64748b" />
+          <Ionicons name="megaphone-outline" size={48} color={MibuBrand.tan} />
           <Text
             style={{
               fontSize: 14,
-              color: '#64748b',
+              color: MibuBrand.tan,
               marginTop: 12,
               textAlign: 'center',
             }}
@@ -219,7 +224,7 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
           <Text
             style={{
               fontSize: 12,
-              color: '#475569',
+              color: MibuBrand.copper,
               marginTop: 4,
             }}
           >

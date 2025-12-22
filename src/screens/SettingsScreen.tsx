@@ -44,7 +44,7 @@ export function SettingsScreen() {
             
             await AsyncStorage.multiRemove(['@mibu_token', 'token']);
             setUser(null);
-            router.replace('/');
+            router.replace('/login');
           },
         },
       ]

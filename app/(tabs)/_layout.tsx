@@ -111,10 +111,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="collection"
         options={{
-          title: t.navCollection,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'heart' : 'heart-outline'} size={24} color={color} />
-          ),
+          href: null,
         }}
       />
       <Tabs.Screen

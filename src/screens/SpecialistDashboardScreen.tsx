@@ -44,7 +44,7 @@ export function SpecialistDashboardScreen() {
     await AsyncStorage.removeItem('@mibu_token');
     await AsyncStorage.removeItem('@mibu_user');
     setUser(null);
-    router.replace('/');
+    router.replace('/login');
   };
 
   useEffect(() => {
