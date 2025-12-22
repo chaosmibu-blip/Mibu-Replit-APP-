@@ -166,7 +166,7 @@ export function SettingsScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
-                <Ionicons name="trash-outline" size={18} color="#94a3b8" />
+                <Ionicons name="trash-outline" size={18} color="#dc2626" />
                 <Text style={styles.deleteText}>
                   {isZh ? '刪除帳號' : 'Delete Account'}
                 </Text>
@@ -411,11 +411,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 10,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
   },
   deleteText: {
-    fontSize: 13,
-    color: '#94a3b8',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#dc2626',
   },
   loginButton: {
     flexDirection: 'row',
