@@ -247,7 +247,7 @@ export function ItemsScreen() {
   const meta = state.result?.meta;
 
   const handleBackToGacha = () => {
-    router.push('/(tabs)/gacha');
+    router.back();
   };
 
   if (items.length === 0) {
