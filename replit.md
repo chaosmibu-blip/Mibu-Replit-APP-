@@ -55,6 +55,38 @@ Preferred communication style: Simple, everyday language.
 - **Gacha Flow Simplification**: Removed district selection, streamlined navigation to results, and improved pool preview.
 - **Payment Gateway Integration**: Dual support for Stripe and Recur payments.
 
+### Dynamic Environment Configuration
+The project uses a **dynamic configuration system** to automatically switch between development and production modes:
+
+**Files:**
+- `app.json` - Minimal config for Expo Go compatibility (development)
+- `app.config.js` - Dynamic config that detects environment and loads appropriate settings
+
+**Environment Detection:**
+```javascript
+const IS_EAS_BUILD = process.env.EAS_BUILD === 'true';
+const IS_PRODUCTION = IS_EAS_BUILD || process.env.APP_ENV === 'production';
+```
+
+**Mode Behavior:**
+| Mode | Trigger | Config Loaded |
+|------|---------|---------------|
+| Development | `npx expo start` | Minimal (Expo Go friendly) |
+| Production | `eas build` | Full (bundleIdentifier, permissions, updates) |
+
+**Production-only settings (filtered out in dev):**
+- `ios.bundleIdentifier`, `android.package`
+- `ios.buildNumber`, `android.versionCode`
+- `ios.infoPlist` (permissions)
+- `android.permissions`
+- `updates` (OTA update config)
+- `runtimeVersion`, `extra.eas`
+
+**Usage:**
+- Development: Just run `npx expo start` - uses lightweight config
+- Production build: Run `eas build` - automatically loads full config
+- No manual switching required
+
 ## External Dependencies
 
 ### Backend API
