@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, Dimensions, Image } from 'react-native';
+import { View, Text, Modal, Dimensions, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withTiming,
   withSequence,
+  withDelay,
   Easing,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { MibuBrand } from '../../constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const AD_WIDTH = 300;
-const AD_HEIGHT = 250;
+const AD_WIDTH = SCREEN_WIDTH - 48;
+const AD_HEIGHT = 120;
 
 interface LoadingAdScreenProps {
   visible: boolean;
@@ -29,46 +30,74 @@ interface LoadingAdScreenProps {
 
 const FORCED_WAIT_SECONDS = 5;
 
+const PawPrint = ({ delay, x, y }: { delay: number; x: number; y: number }) => {
+  const opacity = useSharedValue(0.3);
+  const scale = useSharedValue(0.8);
+
+  useEffect(() => {
+    opacity.value = withDelay(
+      delay,
+      withRepeat(
+        withSequence(
+          withTiming(1, { duration: 600, easing: Easing.inOut(Easing.ease) }),
+          withTiming(0.3, { duration: 600, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      )
+    );
+    scale.value = withDelay(
+      delay,
+      withRepeat(
+        withSequence(
+          withTiming(1.1, { duration: 600, easing: Easing.inOut(Easing.ease) }),
+          withTiming(0.8, { duration: 600, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      )
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        {
+          position: 'absolute',
+          left: x,
+          top: y,
+        },
+        animatedStyle,
+      ]}
+    >
+      <View style={{ alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', gap: 3, marginBottom: 2 }}>
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#6B8DD6' }} />
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#6B8DD6' }} />
+        </View>
+        <View style={{ flexDirection: 'row', gap: 2 }}>
+          <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#6B8DD6' }} />
+          <View style={{ width: 10, height: 12, borderRadius: 5, backgroundColor: '#6B8DD6' }} />
+          <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#6B8DD6' }} />
+        </View>
+      </View>
+    </Animated.View>
+  );
+};
+
 export function LoadingAdScreen({ visible, onComplete, isApiComplete, translations }: LoadingAdScreenProps) {
   const [countdown, setCountdown] = useState(FORCED_WAIT_SECONDS);
   const [isTimerComplete, setIsTimerComplete] = useState(false);
-
-  const rotation = useSharedValue(0);
-  const scale = useSharedValue(1);
-  const pulseOpacity = useSharedValue(0.6);
 
   useEffect(() => {
     if (visible) {
       setCountdown(FORCED_WAIT_SECONDS);
       setIsTimerComplete(false);
-
-      rotation.value = withRepeat(
-        withTiming(360, { duration: 2000, easing: Easing.linear }),
-        -1,
-        false
-      );
-
-      scale.value = withRepeat(
-        withSequence(
-          withTiming(1.1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
-        ),
-        -1,
-        true
-      );
-
-      pulseOpacity.value = withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1000 }),
-          withTiming(0.6, { duration: 1000 })
-        ),
-        -1,
-        true
-      );
-    } else {
-      rotation.value = 0;
-      scale.value = 1;
-      pulseOpacity.value = 0.6;
     }
   }, [visible]);
 
@@ -95,72 +124,82 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
     }
   }, [isTimerComplete, isApiComplete, onComplete]);
 
-  const spinStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }],
-  }));
-
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: pulseOpacity.value,
-  }));
-
   const statusText = isApiComplete ? translations.almostReady : translations.pleaseWait;
 
   return (
     <Modal visible={visible} animationType="fade" transparent={false}>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: MibuBrand.dark,
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 20,
-        }}
-      >
-        <View style={{ alignItems: 'center', marginBottom: 40 }}>
-          <View style={{ position: 'relative', width: 120, height: 120, alignItems: 'center', justifyContent: 'center' }}>
-            <Animated.View
-              style={[
-                {
-                  position: 'absolute',
-                  width: 120,
-                  height: 120,
-                  borderRadius: 60,
-                  borderWidth: 4,
-                  borderColor: MibuBrand.copper,
-                  borderTopColor: 'transparent',
-                },
-                spinStyle,
-              ]}
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            backgroundColor: '#FFFFFF',
+            borderBottomWidth: 1,
+            borderBottomColor: '#E8E8E8',
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <TouchableOpacity style={{ padding: 4 }}>
+              <Ionicons name="chevron-back" size={24} color="#666666" />
+            </TouchableOpacity>
+            <Image
+              source={require('../../assets/images/icon.png')}
+              style={{ width: 36, height: 36 }}
+              resizeMode="contain"
             />
-            <Animated.View
-              style={[
-                {
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
-                  backgroundColor: MibuBrand.brown,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                },
-                pulseStyle,
-              ]}
+            <Text style={{ fontSize: 18, fontWeight: '700', color: '#333333' }}>MIBU</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+            <Ionicons name="globe-outline" size={22} color="#666666" />
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                backgroundColor: '#E0E0E0',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <Image
-                source={require('../../assets/images/icon.png')}
-                style={{ width: 50, height: 50 }}
-                resizeMode="contain"
-              />
-            </Animated.View>
+              <Text style={{ fontSize: 12, fontWeight: '600', color: '#666666' }}>MI</Text>
+            </View>
+            <Ionicons name="log-out-outline" size={22} color="#666666" />
+          </View>
+        </View>
+
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: 24,
+          }}
+        >
+          <View
+            style={{
+              width: 120,
+              height: 80,
+              position: 'relative',
+              marginBottom: 40,
+            }}
+          >
+            <PawPrint delay={0} x={0} y={30} />
+            <PawPrint delay={200} x={40} y={0} />
+            <PawPrint delay={400} x={80} y={30} />
+            <PawPrint delay={600} x={20} y={55} />
+            <PawPrint delay={800} x={60} y={55} />
           </View>
 
           <Text
             style={{
-              fontSize: 22,
+              fontSize: 24,
               fontWeight: '800',
-              color: MibuBrand.cream,
-              marginTop: 32,
+              color: '#333333',
               textAlign: 'center',
+              marginBottom: 12,
             }}
           >
             {translations.generatingItinerary}
@@ -168,70 +207,57 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
 
           <Text
             style={{
-              fontSize: 16,
-              color: MibuBrand.tan,
-              marginTop: 8,
+              fontSize: 15,
+              color: '#888888',
               textAlign: 'center',
+              marginBottom: 20,
             }}
           >
             {statusText}
           </Text>
-
-          {countdown > 0 && (
-            <View
-              style={{
-                marginTop: 16,
-                width: 50,
-                height: 50,
-                borderRadius: 25,
-                backgroundColor: MibuBrand.brownDark,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 24, fontWeight: '900', color: MibuBrand.copper }}>
-                {countdown}
-              </Text>
-            </View>
-          )}
         </View>
 
         <View
           style={{
-            width: AD_WIDTH,
-            height: AD_HEIGHT,
-            backgroundColor: MibuBrand.brownDark,
-            borderRadius: 16,
-            borderWidth: 2,
-            borderColor: MibuBrand.brown,
-            borderStyle: 'dashed',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: 20,
+            paddingHorizontal: 24,
+            paddingBottom: 40,
           }}
         >
-          <Ionicons name="megaphone-outline" size={48} color={MibuBrand.tan} />
-          <Text
+          <View
             style={{
-              fontSize: 14,
-              color: MibuBrand.tan,
-              marginTop: 12,
-              textAlign: 'center',
+              width: '100%',
+              height: AD_HEIGHT,
+              backgroundColor: '#FAFAFA',
+              borderRadius: 12,
+              borderWidth: 2,
+              borderColor: '#D0D0D0',
+              borderStyle: 'dashed',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            {translations.sponsorAd}
-          </Text>
-          <Text
-            style={{
-              fontSize: 12,
-              color: MibuBrand.copper,
-              marginTop: 4,
-            }}
-          >
-            {AD_WIDTH} x {AD_HEIGHT}
-          </Text>
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: '600',
+                color: '#B0B0B0',
+                letterSpacing: 1,
+                marginBottom: 4,
+              }}
+            >
+              ADVERTISEMENT
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: '#C0C0C0',
+              }}
+            >
+              Ad Space
+            </Text>
+          </View>
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 }
