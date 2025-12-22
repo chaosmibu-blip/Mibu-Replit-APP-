@@ -363,7 +363,6 @@ export function GachaScreen() {
     value: r.id,
   }));
 
-  const canViewPool = selectedRegionId;
   const canSubmit = selectedCountryId && selectedRegionId;
 
   const renderPoolItem = ({ item }: { item: GachaPoolItem }) => {
@@ -529,27 +528,6 @@ export function GachaScreen() {
               thumbTintColor="#6366f1"
             />
           </View>
-        )}
-
-        {canViewPool && (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#eef2ff',
-              borderRadius: 16,
-              paddingVertical: 14,
-              paddingHorizontal: 20,
-              gap: 8,
-            }}
-            onPress={handleViewPool}
-          >
-            <Ionicons name="eye-outline" size={20} color="#6366f1" />
-            <Text style={{ fontSize: 15, fontWeight: '700', color: '#6366f1' }}>
-              {t.viewPool || '查看獎池'}
-            </Text>
-          </TouchableOpacity>
         )}
 
         <Button

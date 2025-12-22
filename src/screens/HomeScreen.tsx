@@ -17,7 +17,7 @@ export function HomeScreen() {
 
       <Card style={styles.announcementCard}>
         <View style={styles.cardHeader}>
-          <Ionicons name="megaphone" size={20} color={MibuBrand.brown} />
+          <Ionicons name="megaphone" size={24} color={MibuBrand.brown} />
           <Text style={styles.cardTitle}>{t.announcements}</Text>
         </View>
         <View style={styles.announcementContent}>
@@ -32,7 +32,7 @@ export function HomeScreen() {
 
       <Card style={styles.flashCard}>
         <View style={styles.cardHeader}>
-          <Ionicons name="flash" size={20} color="#ffffff" />
+          <Ionicons name="flash" size={24} color="#ffffff" />
           <Text style={[styles.cardTitle, { color: '#ffffff' }]}>{t.flashEvents}</Text>
         </View>
         <View style={styles.announcementContent}>
@@ -77,29 +77,31 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.highlight,
     borderWidth: 1,
     borderColor: MibuBrand.tan,
-    marginBottom: 16,
+    marginBottom: 20,
+    padding: 20,
   },
   flashCard: {
     backgroundColor: MibuBrand.brown,
     marginBottom: 24,
+    padding: 20,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
+    gap: 10,
+    marginBottom: 16,
   },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
   announcementContent: {
-    gap: 8,
+    gap: 12,
   },
   announcementText: {
-    fontSize: 14,
+    fontSize: 16,
     color: MibuBrand.brownDark,
-    lineHeight: 20,
+    lineHeight: 24,
   },
 });

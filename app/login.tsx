@@ -63,12 +63,20 @@ const PORTAL_CONFIGS: Record<string, PortalConfig[]> = {
   ],
 };
 
+const LANGUAGE_OPTIONS: { code: 'zh-TW' | 'en' | 'ja' | 'ko'; label: string; flag: string }[] = [
+  { code: 'zh-TW', label: '繁體中文', flag: '🇹🇼' },
+  { code: 'en', label: 'English', flag: '🇺🇸' },
+  { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  { code: 'ko', label: '한국어', flag: '🇰🇷' },
+];
+
 export default function LoginScreen() {
-  const { setUser, state } = useApp();
+  const { setUser, state, setLanguage } = useApp();
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(false);
   const [selectedPortal, setSelectedPortal] = useState<PortalType>('traveler');
   const [showPortalMenu, setShowPortalMenu] = useState(false);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
 
   const redirectUri = Linking.createURL('auth/callback');
   const portals = PORTAL_CONFIGS[state.language] || PORTAL_CONFIGS['zh-TW'];
@@ -617,9 +625,37 @@ export default function LoginScreen() {
           />
           <Text style={styles.headerTitle}>MIBU</Text>
         </View>
-        <TouchableOpacity style={styles.globeButton}>
+        <TouchableOpacity 
+          style={styles.globeButton}
+          onPress={() => setShowLanguageMenu(!showLanguageMenu)}
+        >
           <Ionicons name="globe-outline" size={28} color={MibuBrand.copper} />
         </TouchableOpacity>
+        {showLanguageMenu && (
+          <View style={styles.languageMenu}>
+            {LANGUAGE_OPTIONS.map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                style={[
+                  styles.languageMenuItem,
+                  state.language === lang.code && styles.languageMenuItemActive,
+                ]}
+                onPress={() => {
+                  setLanguage(lang.code);
+                  setShowLanguageMenu(false);
+                }}
+              >
+                <Text style={styles.languageFlag}>{lang.flag}</Text>
+                <Text style={[
+                  styles.languageMenuText,
+                  state.language === lang.code && styles.languageMenuTextActive,
+                ]}>
+                  {lang.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
 
       <View style={styles.portalSwitcher}>
@@ -634,7 +670,9 @@ export default function LoginScreen() {
 
         {showPortalMenu && (
           <View style={styles.portalMenu}>
-            {portals.map((portal) => (
+            {portals
+              .filter((portal) => portal.type === 'traveler' || portal.type === 'admin')
+              .map((portal) => (
               <TouchableOpacity
                 key={portal.type}
                 style={[
@@ -677,6 +715,23 @@ export default function LoginScreen() {
               </>
             )}
           </TouchableOpacity>
+
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity 
+              style={styles.appleButton} 
+              onPress={() => {
+                Alert.alert(
+                  state.language === 'zh-TW' ? '即將推出' : 'Coming Soon',
+                  state.language === 'zh-TW' ? 'Apple 登入功能即將上線' : 'Apple Sign In will be available soon'
+                );
+              }}
+            >
+              <Ionicons name="logo-apple" size={22} color="#ffffff" />
+              <Text style={styles.appleButtonText}>
+                {state.language === 'zh-TW' ? 'Apple 登入' : 'Sign in with Apple'}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           {currentPortal.guestAllowed && (
             <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
@@ -772,8 +827,60 @@ const styles = StyleSheet.create({
   },
   portalMenuText: {
     fontSize: 16,
-    color: MibuBrand.dark,
-    textAlign: 'center',
+    color: '#64748b',
+  },
+  languageMenu: {
+    position: 'absolute',
+    top: 110,
+    right: 20,
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 16,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    minWidth: 160,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+    zIndex: 1000,
+  },
+  languageMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  languageMenuItemActive: {
+    backgroundColor: MibuBrand.highlight,
+  },
+  languageFlag: {
+    fontSize: 20,
+  },
+  languageMenuText: {
+    fontSize: 15,
+    color: '#64748b',
+  },
+  languageMenuTextActive: {
+    color: MibuBrand.brown,
+    fontWeight: '700',
+  },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#000000',
+    paddingVertical: 16,
+    borderRadius: 28,
+    marginTop: 12,
+  },
+  appleButtonText: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   content: {
     flex: 1,
