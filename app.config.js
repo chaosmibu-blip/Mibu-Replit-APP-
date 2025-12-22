@@ -77,7 +77,7 @@ const productionConfig = {
     ],
   },
   updates: {
-    url: 'https://u.expo.dev/YOUR_PROJECT_ID',
+    url: 'https://u.expo.dev/f1c74b9b-747d-450c-8c99-22a7729b4a31',
     fallbackToCacheTimeout: 0,
   },
   runtimeVersion: {
@@ -85,7 +85,7 @@ const productionConfig = {
   },
   extra: {
     eas: {
-      projectId: 'YOUR_EAS_PROJECT_ID',
+      projectId: 'f1c74b9b-747d-450c-8c99-22a7729b4a31',
     },
   },
 };
