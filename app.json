@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Mibu",
-    "slug": "mibu-travel",
+    "name": "expo-on-replit",
+    "slug": "expo-on-replit",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,30 +9,14 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": false,
-      "bundleIdentifier": "com.chaos.mibu",
-      "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Mibu 需要您的位置來顯示地圖、分享位置給旅行專員，以及在緊急情況時發送 SOS 求救訊號。",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Mibu 需要背景定位權限，以便旅行專員能持續追蹤您的位置確保旅途安全。您可以隨時在設定中關閉此權限。",
-        "NSPhotoLibraryUsageDescription": "Mibu 需要存取您的相簿，以便上傳個人頭像或傳送圖片給旅行專員，儲存優惠卷截圖。",
-        "NSCameraUsageDescription": "Mibu 需要使用相機，以便您拍攝並上傳旅行照片。"
-      }
+      "supportsTablet": true
     },
     "android": {
-      "package": "com.chaos.mibu",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#F5E6D3"
+        "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
-      "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
-      ]
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
@@ -44,32 +28,15 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-screen.jpg",
-          "resizeMode": "cover",
-          "backgroundColor": "#F5E6D3"
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Mibu 需要背景定位權限，以便旅行專員能持續追蹤您的位置確保旅途安全。"
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Mibu 需要存取您的相簿，以便上傳個人頭像或傳送圖片給旅行專員，儲存優惠卷截圖。",
-          "cameraPermission": "Mibu 需要使用相機，以便您拍攝並上傳旅行照片。"
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
-      }
     }
   }
 }
