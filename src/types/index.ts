@@ -839,3 +839,39 @@ export interface UnreadCounts {
   collection: number;
   itembox: number;
 }
+
+// ============================================
+// 每日抽卡限制
+// ============================================
+export interface GachaItineraryMeta {
+  city: string;
+  anchorDistrict: string | null;
+  pace: 'relaxed' | 'moderate' | 'packed';
+  totalPlaces: number;
+  totalCouponsWon: number;
+  categoryDistribution: Record<string, number>;
+  sortingMethod: 'coordinate' | 'ai_reordered';
+  aiReorderResult: string;
+  dailyLimit: number;
+  dailyPullCount: number;
+  remainingQuota: number;
+}
+
+export interface DailyLimitExceededResponse {
+  success: false;
+  error: string;
+  code: 'DAILY_LIMIT_EXCEEDED' | 'EXCEEDS_REMAINING_QUOTA';
+  dailyLimit: number;
+  currentCount: number;
+  remainingQuota: number;
+}
+
+// ============================================
+// 刪除帳號
+// ============================================
+export interface DeleteAccountResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+  code?: 'UNAUTHORIZED' | 'MERCHANT_ACCOUNT_EXISTS' | 'DELETE_FAILED' | 'SERVER_ERROR';
+}

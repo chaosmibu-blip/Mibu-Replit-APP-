@@ -224,9 +224,9 @@ export function GachaScreen() {
         itemCount: pullCount,
       }, token || undefined);
 
-      if (response.errorCode || response.error) {
+      if (response.errorCode || response.error || (response as any).code) {
         setShowLoadingAd(false);
-        const errorCode = response.errorCode;
+        const errorCode = response.errorCode || (response as any).code;
         
         if (errorCode === ErrorCode.AUTH_REQUIRED || errorCode === ErrorCode.AUTH_TOKEN_EXPIRED) {
           await AsyncStorage.removeItem('@mibu_token');
@@ -242,6 +242,23 @@ export function GachaScreen() {
           Alert.alert(
             state.language === 'zh-TW' ? '次數不足' : 'No Credits',
             state.language === 'zh-TW' ? '請購買更多扭蛋次數' : 'Please purchase more gacha credits'
+          );
+          return;
+        }
+
+        if (errorCode === 'DAILY_LIMIT_EXCEEDED') {
+          Alert.alert(
+            state.language === 'zh-TW' ? '今日額度已用完' : 'Daily Limit Reached',
+            state.language === 'zh-TW' ? '請明天再來抽卡！' : 'Please come back tomorrow!'
+          );
+          return;
+        }
+
+        if (errorCode === 'EXCEEDS_REMAINING_QUOTA') {
+          const remaining = (response as any).remainingQuota || 0;
+          Alert.alert(
+            state.language === 'zh-TW' ? '額度不足' : 'Quota Exceeded',
+            state.language === 'zh-TW' ? `今日剩餘 ${remaining} 張` : `Today's remaining quota: ${remaining}`
           );
           return;
         }

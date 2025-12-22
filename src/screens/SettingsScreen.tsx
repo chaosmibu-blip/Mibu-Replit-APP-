@@ -54,8 +54,41 @@ export function SettingsScreen() {
   const handleDeleteAccount = () => {
     Alert.alert(
       isZh ? '刪除帳號' : 'Delete Account',
-      isZh ? '如需刪除帳號，請聯繫客服：support@mibu.app' : 'To delete your account, please contact support: support@mibu.app',
-      [{ text: isZh ? '確定' : 'OK' }]
+      isZh ? '確定要刪除您的帳號嗎？此操作無法復原。' : 'Are you sure you want to delete your account? This action cannot be undone.',
+      [
+        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        {
+          text: isZh ? '刪除' : 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('@mibu_token');
+              if (token) {
+                const response = await apiService.deleteAccount(token);
+                if (response.success) {
+                  await AsyncStorage.multiRemove(['@mibu_token', 'token']);
+                  setUser(null);
+                  router.replace('/');
+                } else {
+                  let errorMsg = response.message || response.error;
+                  if (response.code === 'MERCHANT_ACCOUNT_EXISTS') {
+                    errorMsg = isZh ? '請先解除商家帳號' : 'Please deactivate merchant account first';
+                  }
+                  Alert.alert(
+                    isZh ? '無法刪除' : 'Cannot Delete',
+                    errorMsg || (isZh ? '刪除失敗，請稍後再試' : 'Delete failed, please try again')
+                  );
+                }
+              }
+            } catch {
+              Alert.alert(
+                isZh ? '錯誤' : 'Error',
+                isZh ? '刪除失敗，請稍後再試' : 'Delete failed, please try again'
+              );
+            }
+          },
+        },
+      ]
     );
   };
 
