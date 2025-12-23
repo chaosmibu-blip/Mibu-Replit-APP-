@@ -102,13 +102,8 @@ export function GachaScreen() {
     }
   };
 
-  const getLocalizedName = (item: Country | Region | { nameZh?: string; nameEn?: string; nameJa?: string; nameKo?: string; name?: string }): string => {
-    switch (state.language) {
-      case 'ja': return (item as any).nameJa || (item as any).nameZh || (item as any).nameEn || (item as any).name || '';
-      case 'ko': return (item as any).nameKo || (item as any).nameZh || (item as any).nameEn || (item as any).name || '';
-      case 'en': return (item as any).nameEn || (item as any).name || '';
-      default: return (item as any).nameZh || (item as any).nameEn || (item as any).name || '';
-    }
+  const getLocalizedName = (item: Country | Region | { name?: string }): string => {
+    return (item as any).name || '';
   };
 
   const getLocalizedPoolItemName = (name: any): string => {
@@ -169,7 +164,7 @@ export function GachaScreen() {
     setPrizePoolData(null);
     
     try {
-      const city = selectedRegion.nameZh || selectedRegion.nameEn || '';
+      const city = selectedRegion.name || '';
       const token = await AsyncStorage.getItem('@mibu_token');
       
       const [poolResult, couponResult, prizePoolResult] = await Promise.allSettled([
@@ -215,7 +210,7 @@ export function GachaScreen() {
       console.log('[Gacha] API Request:', {
         endpoint: '/api/gacha/itinerary/v3',
         regionId: selectedRegionId,
-        regionName: selectedRegion?.name || selectedRegion?.nameZh,
+        regionName: selectedRegion?.name,
         itemCount: pullCount,
         hasToken: !!token
       });
@@ -294,34 +289,26 @@ export function GachaScreen() {
       const couponsWon = response.couponsWon || response.coupons_won || [];
 
       const items: GachaItem[] = itineraryItems.map((item: any, index: number) => {
-        const hasMerchantCoupon = item.isCoupon || item.is_coupon || (item.merchantPromo?.isPromoActive && item.couponData);
+        const hasMerchantCoupon = item.isCoupon || item.couponWon || (item.merchantPromo?.isPromoActive && item.couponWon);
+        const place = item.place || item;
         
         return {
           id: Date.now() + index,
-          place_name: item.placeName || item.place_name || item.verifiedName || `${item.district || response.anchorDistrict || ''} ${item.subCategory || ''}`,
-          description: item.description || `${item.city || ''} ${item.district || ''}`,
-          ai_description: item.description || '',
-          category: item.category || '',
-          suggested_time: item.suggestedTime || item.timeSlot || '',
-          duration: item.duration || '1h',
-          search_query: '',
-          color_hex: item.colorHex || '#6366f1',
+          placeName: place.placeName || item.placeName || `${item.district || response.anchorDistrict || ''} ${item.subCategory || ''}`,
+          description: place.description || item.description || `${item.city || ''} ${item.district || ''}`,
+          category: place.category || item.category || '',
+          subcategory: place.subcategory || item.subcategory || null,
+          address: place.address || item.address || null,
+          rating: place.rating || item.rating || null,
+          locationLat: place.locationLat || item.locationLat || null,
+          locationLng: place.locationLng || item.locationLng || null,
+          googlePlaceId: place.googlePlaceId || item.googlePlaceId || null,
           country: item.country || response.country || '',
           city: item.city || response.meta?.city || response.city || '',
-          cityDisplay: item.city || response.meta?.city || response.city || '',
           district: item.district || response.meta?.district || response.anchorDistrict || response.targetDistrict || '',
-          districtDisplay: item.district || response.meta?.district || response.anchorDistrict || response.targetDistrict || '',
           collectedAt: new Date().toISOString(),
-          is_coupon: hasMerchantCoupon,
-          coupon_data: item.couponData || item.coupon_data || null,
-          place_id: item.placeId || null,
-          verified_name: item.verifiedName || item.placeName || null,
-          verified_address: item.verifiedAddress || null,
-          google_rating: item.googleRating || null,
-          google_types: [],
-          primary_type: null,
-          location: item.location || null,
-          is_location_verified: item.isLocationVerified || false,
+          isCoupon: hasMerchantCoupon,
+          couponData: item.couponWon || item.couponData || null,
           merchant: item.merchantPromo ? {
             id: item.merchantPromo?.merchantId || '',
             name: item.merchantPromo?.promoTitle || '',
@@ -329,7 +316,6 @@ export function GachaScreen() {
             badge: item.merchantPromo?.badge,
             discount: item.merchantPromo?.discount,
           } : undefined,
-          coupon: item.couponData || null,
           rarity: item.rarity || 'N',
         };
       });

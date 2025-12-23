@@ -809,8 +809,8 @@ class ApiService {
     });
   }
 
-  async getSosLink(token: string): Promise<{ link: string }> {
-    return this.request<{ link: string }>('/api/user/sos-link', {
+  async getSosLink(token: string): Promise<{ sosLink: string; sosKey: string }> {
+    return this.request<{ sosLink: string; sosKey: string }>('/api/user/sos-link', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -846,7 +846,7 @@ class ApiService {
   // ============================================
   // 位置 API
   // ============================================
-  async updateLocation(token: string, params: { latitude: number; longitude: number }): Promise<{ success: boolean }> {
+  async updateLocation(token: string, params: { lat: number; lng: number }): Promise<{ success: boolean }> {
     return this.request<{ success: boolean }>('/api/location/update', {
       method: 'POST',
       headers: {

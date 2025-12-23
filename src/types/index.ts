@@ -117,35 +117,14 @@ export interface MerchantApplyResponse {
 }
 
 export interface MerchantAnalytics {
-  success: boolean;
-  merchant?: MerchantMe;
-  analytics: {
-    totalItineraryCards: number;
-    totalCoupons: number;
-    activeCoupons: number;
-    couponRedemptions: number;
-    dailyCollectionCount: number;
-    totalCollectionUsers: number;
-    collectionClickCount: number;
-    couponUsageCount: number;
-    couponUsageRate: number;
-    prizePoolViews: number;
+  itineraryCardCount: number;
+  couponStats: {
+    total: number;
+    active: number;
+    redeemed: number;
   };
-  stats?: {
-    totalCoupons: number;
-    activeCoupons: number;
-    redeemedCoupons: number;
-    totalRedemptions: number;
-    monthlyRedemptions: number;
-    viewCount: number;
-  };
-  placeLinks?: {
-    id: number;
-    placeName: string;
-    district?: string;
-    city?: string;
-    isVerified: boolean;
-  }[];
+  impressions: number;
+  collectionClickCount: number;
 }
 
 export interface MerchantCoupon {
@@ -317,37 +296,22 @@ export interface GachaPullResponse {
 
 export interface GachaItem {
   id: number;
-  place_name: LocalizedContent;
-  description: LocalizedContent;
-  ai_description?: LocalizedContent;
-  category: Category;
-  subcategory?: LocalizedContent;
-  suggested_time: string;
-  duration: string;
-  search_query: string;
-  color_hex: string;
+  placeName: string;
+  category: string;
+  subcategory: string | null;
+  description: string | null;
+  address: string | null;
+  rating: number | null;
+  locationLat: number | null;
+  locationLng: number | null;
+  googlePlaceId?: string | null;
   city?: string;
-  cityDisplay?: string;
   country?: string;
   district?: string;
-  districtDisplay?: string;
   collectedAt?: string;
-  operating_status?: string;
-  is_coupon: boolean;
-  coupon_data: CouponData | null;
-  store_promo?: LocalizedContent;
-  is_promo_active?: boolean;
-  merchant_id?: string;
+  isCoupon?: boolean;
+  couponData?: CouponData | null;
   merchant?: MerchantInfo;
-  remaining_coupons?: number;
-  place_id?: string | null;
-  verified_name?: string | null;
-  verified_address?: string | null;
-  google_rating?: number | null;
-  google_types?: string[];
-  primary_type?: string | null;
-  location?: { lat: number; lng: number } | null;
-  is_location_verified?: boolean;
   imageUrl?: string;
   rarity?: 'N' | 'R' | 'SR' | 'SSR' | 'SP';
 }
@@ -408,31 +372,24 @@ export interface GachaResponse {
 
 export interface Country {
   id: number;
+  name: string;
   code: string;
-  nameEn: string;
-  nameZh: string;
-  nameJa: string | null;
-  nameKo: string | null;
 }
 
 export interface Region {
   id: number;
+  name: string;
   countryId: number;
-  name?: string;
-  nameEn: string;
-  nameZh: string;
-  nameJa: string | null;
-  nameKo: string | null;
 }
 
 export type ItineraryPace = 'relaxed' | 'moderate' | 'packed';
 export type TimeSlot = 'breakfast' | 'morning' | 'lunch' | 'afternoon' | 'dinner' | 'evening';
 
 export interface ItineraryCoupon {
-  id: string;
+  id: number;
   title: string;
   code: string;
-  terms: string;
+  terms: string | null;
 }
 
 export interface ItineraryPlace {
@@ -587,21 +544,19 @@ export type CouponTier = 'SP' | 'SSR' | 'SR' | 'S' | 'R';
 
 export interface InventoryItem {
   id: number;
-  userId: string;
-  itemType: InventoryItemType;
-  title: string;
+  type: 'coupon' | 'item';
+  name: string;
   description: string | null;
-  merchantId: number | null;
-  merchantName?: string;
+  rarity: CouponTier;
   isRead: boolean;
   isRedeemed: boolean;
   expiresAt: string | null;
-  createdAt: string;
-  slotIndex: number;
-  tier: CouponTier;
-  status: InventoryItemStatus;
-  isExpired: boolean;
-  isDeleted: boolean;
+  obtainedAt: string;
+  couponData?: {
+    code: string;
+    merchantName: string;
+    terms: string;
+  };
 }
 
 export interface InventoryResponse {
@@ -625,9 +580,8 @@ export interface RarityConfig {
 
 export interface RedeemResponse {
   success: boolean;
-  message: string;
+  redemptionCode: string;
   expiresAt: string;
-  redemptionId: number;
 }
 
 // Collection with Promo

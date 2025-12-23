@@ -60,12 +60,10 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
     return '';
   };
 
-  const placeName = getLocalizedContent(item.place_name) || getLocalizedContent(item.verified_name) || '';
-  const description = getLocalizedContent(item.ai_description) || getLocalizedContent(item.description) || '';
+  const placeName = item.placeName || '';
+  const description = item.description || '';
 
   const getDurationText = () => {
-    if (item.duration) return item.duration;
-    if (item.suggested_time) return item.suggested_time;
     const category = (item.category || '').toString().toLowerCase();
     if (category.includes('food') || category.includes('美食') || category === 'f') {
       return '0.5-1h';
@@ -90,9 +88,9 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
   const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.N;
   const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.N;
 
-  const hasCoupon = item.coupon_data;
-  const couponText = item.coupon_data?.title ? getLocalizedContent(item.coupon_data.title) : '';
-  const couponCode = item.coupon_data?.code || '';
+  const hasCoupon = item.couponData;
+  const couponText = item.couponData?.title || '';
+  const couponCode = item.couponData?.code || '';
 
   return (
     <View

@@ -14,21 +14,11 @@ import { getCategoryLabel } from '../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../constants/Colors';
 
 const getPlaceName = (item: GachaItem): string => {
-  const name = item.place_name;
-  if (typeof name === 'string') return name;
-  if (typeof name === 'object') {
-    return (name as any)['en'] || (name as any)['zh-TW'] || '';
-  }
-  return '';
+  return item.placeName || '';
 };
 
 const getDescription = (item: GachaItem): string => {
-  const desc = item.ai_description || item.description;
-  if (typeof desc === 'string') return desc;
-  if (typeof desc === 'object') {
-    return (desc as any)['en'] || (desc as any)['zh-TW'] || '';
-  }
-  return '';
+  return item.description || '';
 };
 
 const formatDate = (dateStr: string | undefined): string => {

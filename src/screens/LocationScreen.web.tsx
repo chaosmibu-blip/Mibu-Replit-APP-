@@ -58,7 +58,7 @@ export function LocationScreen() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ latitude, longitude, isSharingEnabled: sharing }),
+        body: JSON.stringify({ lat: latitude, lng: longitude }),
       });
       
       if (response.ok) {
