@@ -716,12 +716,10 @@ export default function LoginScreen() {
         });
 
         if (data.token && data.user) {
-          await AsyncStorage.setItem(AUTH_TOKEN_KEY, data.token);
-          
           const userRole = data.user.role as UserRole || 'traveler';
           const finalActiveRole = data.user.activeRole as UserRole || userRole;
           
-          setUser({
+          await setUser({
             id: data.user.id,
             name: data.user.name || credential.fullName?.givenName || 'User',
             email: data.user.email || credential.email || null,
@@ -734,7 +732,7 @@ export default function LoginScreen() {
             accessibleRoles: data.user.accessibleRoles || [],
             provider: 'apple',
             providerId: credential.user,
-          });
+          }, data.token);
           
           navigateAfterLogin(userRole, data.user.isApproved, data.user.isSuperAdmin, selectedPortal);
         } else {
