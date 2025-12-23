@@ -53,6 +53,7 @@ const productionConfig = {
     supportsTablet: true,
     bundleIdentifier: 'com.chaos.mibu',
     buildNumber: '1',
+    usesAppleSignIn: true,
     infoPlist: {
       NSLocationWhenInUseUsageDescription: '我們需要您的位置來提供附近的旅遊景點推薦',
       NSLocationAlwaysAndWhenInUseUsageDescription: '我們需要您的位置來提供即時旅遊導航服務',

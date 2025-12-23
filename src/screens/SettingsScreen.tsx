@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -217,12 +217,52 @@ export function SettingsScreen() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
+          {isZh ? '法律與支援' : 'Legal & Support'}
+        </Text>
+        <View style={styles.legalCard}>
+          <TouchableOpacity 
+            style={styles.legalItem}
+            onPress={() => Linking.openURL('https://mibu-pages--s8869420.replit.app/privacy')}
+          >
+            <Ionicons name="shield-checkmark-outline" size={20} color={MibuBrand.copper} />
+            <Text style={styles.legalText}>
+              {isZh ? '隱私權政策' : 'Privacy Policy'}
+            </Text>
+            <Ionicons name="open-outline" size={16} color="#94a3b8" />
+          </TouchableOpacity>
+          <View style={styles.legalDivider} />
+          <TouchableOpacity 
+            style={styles.legalItem}
+            onPress={() => Linking.openURL('https://mibu-pages--s8869420.replit.app/terms')}
+          >
+            <Ionicons name="document-text-outline" size={20} color={MibuBrand.copper} />
+            <Text style={styles.legalText}>
+              {isZh ? '使用條款' : 'Terms of Service'}
+            </Text>
+            <Ionicons name="open-outline" size={16} color="#94a3b8" />
+          </TouchableOpacity>
+          <View style={styles.legalDivider} />
+          <TouchableOpacity 
+            style={styles.legalItem}
+            onPress={() => Linking.openURL('https://mibu-pages--s8869420.replit.app/support')}
+          >
+            <Ionicons name="help-circle-outline" size={20} color={MibuBrand.copper} />
+            <Text style={styles.legalText}>
+              {isZh ? '技術支援' : 'Support'}
+            </Text>
+            <Ionicons name="open-outline" size={16} color="#94a3b8" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>
           {isZh ? '關於' : 'About'}
         </Text>
         <View style={styles.aboutCard}>
           <Text style={styles.appName}>Mibu 旅行扭蛋</Text>
           <Text style={styles.version}>Version 1.0.0</Text>
-          <Text style={styles.copyright}>© 2025 Mibu Team</Text>
+          <Text style={styles.copyright}>© 2025 查爾斯有限公司</Text>
         </View>
       </View>
 
@@ -458,6 +498,30 @@ const styles = StyleSheet.create({
   copyright: {
     fontSize: 12,
     color: MibuBrand.tan,
+  },
+  legalCard: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
+    overflow: 'hidden',
+  },
+  legalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  legalText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+    color: MibuBrand.brownDark,
+  },
+  legalDivider: {
+    height: 1,
+    backgroundColor: MibuBrand.tanLight,
+    marginHorizontal: 16,
   },
   adminCard: {
     flexDirection: 'row',
