@@ -43,9 +43,10 @@ class ApiService {
 
   async generateItinerary(params: {
     regionId?: number;
-    city?: string;
+    countryId?: number;
     itemCount?: number;
-    pace?: 'relaxed' | 'moderate' | 'intensive';
+    pace?: 'relaxed' | 'moderate' | 'packed';
+    language?: string;
   }, token?: string): Promise<ItineraryGenerateResponse> {
     const url = `${this.baseUrl}/api/gacha/itinerary/v3`;
     const headers: Record<string, string> = {
@@ -639,15 +640,15 @@ class ApiService {
   }
 
   // Notifications API
-  async getNotifications(token: string): Promise<{ notifications: NotificationStatus }> {
-    return this.request<{ notifications: NotificationStatus }>('/api/notifications', {
+  async getNotifications(token: string): Promise<UnreadCounts> {
+    return this.request<UnreadCounts>('/api/notifications', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     });
   }
 
-  async markNotificationSeen(token: string, type: 'itembox' | 'collection'): Promise<{ success: boolean }> {
+  async markNotificationSeen(token: string, type: 'itembox' | 'collection' | 'announcement'): Promise<{ success: boolean }> {
     return this.request<{ success: boolean }>(`/api/notifications/${type}/seen`, {
       method: 'POST',
       headers: {
@@ -808,6 +809,14 @@ class ApiService {
     });
   }
 
+  async getSosLink(token: string): Promise<{ link: string }> {
+    return this.request<{ link: string }>('/api/user/sos-link', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
   // ============================================
   // 公告 API
   // ============================================
@@ -824,10 +833,31 @@ class ApiService {
   }
 
   // ============================================
-  // 未讀計數 API
+  // 未讀計數 API (使用 /api/notifications)
   // ============================================
   async getUnreadCounts(token: string): Promise<UnreadCounts> {
-    return this.request<UnreadCounts>('/api/user/unread-counts', {
+    return this.request<UnreadCounts>('/api/notifications', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  // ============================================
+  // 位置 API
+  // ============================================
+  async updateLocation(token: string, params: { latitude: number; longitude: number }): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/api/location/update', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+  }
+
+  async getMyLocation(token: string): Promise<{ location: { latitude: number; longitude: number } | null }> {
+    return this.request<{ location: { latitude: number; longitude: number } | null }>('/api/location/me', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

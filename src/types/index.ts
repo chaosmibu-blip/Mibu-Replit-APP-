@@ -836,8 +836,12 @@ export interface PrizePoolResponse {
 // 未讀計數
 // ============================================
 export interface UnreadCounts {
-  collection: number;
-  itembox: number;
+  unread: {
+    collection: number;
+    itembox: number;
+    announcement: number;
+  };
+  total: number;
 }
 
 // ============================================

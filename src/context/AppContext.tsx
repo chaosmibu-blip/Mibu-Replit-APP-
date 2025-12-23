@@ -213,8 +213,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
       if (!token) return;
       
-      const data = await apiService.getInventory(token);
-      const unreadCount = (data.items || []).filter((item: any) => !item.isRead).length;
+      const data = await apiService.getUnreadCounts(token);
+      const unreadCount = data.unread?.itembox || 0;
       setState(prev => ({ ...prev, unreadItemCount: unreadCount }));
     } catch (error) {
       console.error('Failed to refresh unread count:', error);

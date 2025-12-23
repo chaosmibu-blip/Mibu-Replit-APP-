@@ -87,7 +87,7 @@ interface ItineraryV3Request {
   regionId?: number;
   city?: string;
   itemCount?: number;
-  pace?: 'relaxed' | 'moderate' | 'intensive';
+  pace?: 'relaxed' | 'moderate' | 'packed';
 }
 
 interface ItineraryGenerateResponse {
