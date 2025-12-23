@@ -1,0 +1,917 @@
+盤點完成！以下是完整的 API Schema 交接文件：
+
+📋 Complete API Schema for Frontend
+Base URL: https://gacha-travel--s8869420.replit.app
+認證方式: Authorization: Bearer <token> (標記 ✅ 的端點需要)
+日期: 2024-12-23
+總計: 96 個 API 端點
+
+1. 認證 Authentication (9 endpoints)
+[
+  {
+    "method": "POST",
+    "endpoint": "/api/auth/register",
+    "auth": false,
+    "description": "旅客註冊",
+    "request": {
+      "email": "string (required)",
+      "password": "string (min 8 chars, required)",
+      "firstName": "string (optional)",
+      "lastName": "string (optional)"
+    },
+    "response": {
+      "success": "boolean",
+      "token": "string",
+      "user": { "id": "string", "email": "string", "role": "traveler" }
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/auth/register/merchant",
+    "auth": false,
+    "description": "商家註冊 (需審核)",
+    "request": {
+      "email": "string (required)",
+      "password": "string (min 6 chars, required)",
+      "businessName": "string (required)",
+      "contactName": "string (required)",
+      "taxId": "string (optional)",
+      "businessCategory": "string (required)",
+      "address": "string (required)",
+      "otherContact": "string (optional)"
+    },
+    "response": {
+      "success": true,
+      "message": "已收到您的申請，立馬為您處理",
+      "user": { "id": "string", "email": "string", "role": "merchant", "isApproved": false }
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/auth/register/specialist",
+    "auth": false,
+    "description": "專員註冊 (需審核)",
+    "request": {
+      "email": "string (required)",
+      "password": "string (min 6 chars, required)",
+      "name": "string (required)",
+      "otherContact": "string (optional)",
+      "serviceRegion": "string (optional)"
+    },
+    "response": {
+      "success": true,
+      "message": "已收到您的申請，立馬為您處理",
+      "user": { "id": "string", "email": "string", "role": "specialist", "isApproved": false }
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/auth/login",
+    "auth": false,
+    "description": "Email 登入",
+    "request": {
+      "email": "string (required)",
+      "password": "string (required)"
+    },
+    "response": {
+      "token": "string (JWT, 7天有效)",
+      "user": { "id": "string", "email": "string", "firstName": "string|null", "lastName": "string|null", "role": "string" }
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/auth/apple",
+    "auth": false,
+    "description": "Apple Sign In",
+    "request": {
+      "identityToken": "string (required) - Apple JWT",
+      "user": "string (required) - Apple User ID",
+      "portal": "string|null (optional) - 'traveler'|'merchant'|'specialist'|'admin'",
+      "targetPortal": "string|null (optional) - same as portal",
+      "email": "string|null (optional) - Apple 只在首次提供",
+      "fullName": {
+        "givenName": "string|null (optional)",
+        "familyName": "string|null (optional)"
+      }
+    },
+    "response": {
+      "success": true,
+      "token": "string (JWT, 7天有效)",
+      "user": {
+        "id": "string (格式: apple_{appleUserId})",
+        "email": "string",
+        "name": "string",
+        "role": "string",
+        "isApproved": "boolean",
+        "isSuperAdmin": "boolean"
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/auth/user",
+    "auth": true,
+    "description": "取得當前用戶資訊",
+    "request": null,
+    "response": {
+      "id": "string",
+      "email": "string",
+      "firstName": "string|null",
+      "lastName": "string|null",
+      "role": "'traveler'|'merchant'|'specialist'|'admin'",
+      "profileImageUrl": "string|null",
+      "activeRole": "string",
+      "accessibleRoles": "string[]"
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/auth/switch-role",
+    "auth": true,
+    "description": "切換角色",
+    "request": {
+      "targetRole": "'traveler'|'merchant'|'specialist'|'admin'"
+    },
+    "response": {
+      "success": true,
+      "activeRole": "string",
+      "token": "string (新 JWT)"
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/auth/privileges",
+    "auth": true,
+    "description": "取得用戶權限",
+    "request": null,
+    "response": {
+      "role": "string",
+      "isApproved": "boolean",
+      "isSuperAdmin": "boolean",
+      "accessibleRoles": "string[]"
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/auth/logout",
+    "auth": true,
+    "description": "登出",
+    "request": null,
+    "response": { "success": true }
+  }
+]
+2. 用戶 User (6 endpoints)
+[
+  {
+    "method": "GET",
+    "endpoint": "/api/profile",
+    "auth": true,
+    "description": "取得個人資料",
+    "request": null,
+    "response": {
+      "id": "string",
+      "email": "string",
+      "firstName": "string|null",
+      "lastName": "string|null",
+      "gender": "'male'|'female'|'other'|null",
+      "birthDate": "string|null (ISO date)",
+      "phone": "string|null",
+      "dietaryRestrictions": "string[]|null",
+      "medicalHistory": "string[]|null",
+      "emergencyContactName": "string|null",
+      "emergencyContactPhone": "string|null",
+      "emergencyContactRelation": "string|null",
+      "preferredLanguage": "'zh-TW'|'en'|'ja'|'ko'"
+    }
+  },
+  {
+    "method": "PATCH",
+    "endpoint": "/api/profile",
+    "auth": true,
+    "description": "更新個人資料",
+    "request": {
+      "firstName": "string (optional)",
+      "lastName": "string (optional)",
+      "gender": "'male'|'female'|'other' (optional)",
+      "birthDate": "string ISO date (optional)",
+      "phone": "string (optional)",
+      "dietaryRestrictions": "string[] (optional)",
+      "medicalHistory": "string[] (optional)",
+      "emergencyContactName": "string (optional)",
+      "emergencyContactPhone": "string (optional)",
+      "emergencyContactRelation": "string (optional)",
+      "preferredLanguage": "'zh-TW'|'en'|'ja'|'ko' (optional)"
+    },
+    "response": { "success": true, "profile": "{...}" }
+  },
+  {
+    "method": "DELETE",
+    "endpoint": "/api/user/account",
+    "auth": true,
+    "description": "刪除帳號",
+    "request": null,
+    "response": { "success": true, "message": "帳號已成功刪除" }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/user/sos-link",
+    "auth": true,
+    "description": "取得 SOS 連結",
+    "request": null,
+    "response": {
+      "sosLink": "string (完整 URL)",
+      "sosKey": "string (64 字元密鑰)"
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/user/sos-key/regenerate",
+    "auth": true,
+    "description": "重新產生 SOS Key",
+    "request": null,
+    "response": {
+      "success": true,
+      "sosKey": "string (新的 64 字元密鑰)",
+      "sosLink": "string (新的完整 URL)"
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/location/update",
+    "auth": true,
+    "description": "更新用戶位置",
+    "request": {
+      "lat": "number (required)",
+      "lng": "number (required)"
+    },
+    "response": { "success": true }
+  }
+]
+3. 扭蛋 Gacha (9 endpoints)
+[
+  {
+    "method": "POST",
+    "endpoint": "/api/gacha/itinerary/v3",
+    "auth": "optional (登入用戶會追蹤每日次數)",
+    "description": "⭐ 生成 AI 行程 (主要 API)",
+    "request": {
+      "regionId": "number (優先使用)",
+      "countryId": "number (若無 regionId)",
+      "itemCount": "number 1-15 (預設 7)",
+      "pace": "'relaxed'|'moderate'|'packed' (optional)",
+      "language": "string (optional)"
+    },
+    "response": {
+      "success": true,
+      "itinerary": [
+        {
+          "timeSlot": "'breakfast'|'morning'|'lunch'|'afternoon'|'dinner'|'evening'",
+          "place": {
+            "id": "number",
+            "placeName": "string",
+            "category": "string",
+            "subcategory": "string|null",
+            "description": "string|null",
+            "address": "string|null",
+            "rating": "number|null",
+            "locationLat": "number|null",
+            "locationLng": "number|null",
+            "googlePlaceId": "string|null"
+          },
+          "couponWon": {
+            "id": "number",
+            "title": "string",
+            "code": "string",
+            "terms": "string|null"
+          }
+        }
+      ],
+      "couponsWon": [
+        {
+          "couponId": "number",
+          "placeId": "number",
+          "placeName": "string",
+          "title": "string",
+          "code": "string",
+          "terms": "string|null"
+        }
+      ],
+      "meta": {
+        "city": "string",
+        "district": "string|null",
+        "dailyLimit": "number (36)",
+        "dailyPullCount": "number",
+        "remainingQuota": "number",
+        "sortingMethod": "'coordinate'|'ai_reordered'",
+        "categoryDistribution": "Record<string, number>"
+      },
+      "themeIntro": "string (AI 生成的一句話行程介紹)"
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/generate-itinerary",
+    "auth": false,
+    "description": "生成行程 (訪客模式)",
+    "request": {
+      "regionId": "number (optional)",
+      "countryId": "number (optional)",
+      "level": "number 1-10 (required)",
+      "language": "'zh-TW'|'ja'|'ko'|'en' (required)",
+      "collectedNames": "string[] (optional)"
+    },
+    "response": {
+      "data": {
+        "items": [
+          {
+            "name": "string",
+            "nameEn": "string",
+            "category": "string",
+            "subCategory": "string",
+            "rarity": "'SP'|'SSR'|'SR'|'S'|'R'",
+            "description": "string",
+            "address": "string",
+            "lat": "number",
+            "lng": "number",
+            "rating": "number",
+            "coupon": { "id": "number", "title": "string", "code": "string", "discount": "string" }
+          }
+        ],
+        "totalItems": "number",
+        "targetDistrict": "string",
+        "city": "string",
+        "country": "string",
+        "districtId": "number",
+        "generatedAt": "string ISO timestamp"
+      }
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/gacha/pull/v3",
+    "auth": true,
+    "description": "抽卡 v3",
+    "request": {
+      "regionId": "number (required)",
+      "count": "number 1-15 (optional, default 7)"
+    },
+    "response": {
+      "success": true,
+      "places": ["... (same as itinerary/v3)"]
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/gacha/pool",
+    "auth": false,
+    "description": "獎池預覽",
+    "query": {
+      "regionId": "number (optional)",
+      "city": "string (optional)"
+    },
+    "response": {
+      "success": true,
+      "pool": {
+        "city": "string",
+        "jackpots": [{ "id": "number", "placeName": "string", "category": "string", "rating": "string|null" }],
+        "totalInPool": "number",
+        "jackpotCount": "number"
+      }
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/gacha/pool/:city",
+    "auth": false,
+    "description": "城市獎池"
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/gacha/pool/:city/:district",
+    "auth": false,
+    "description": "區域獎池"
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/gacha/prize-pool",
+    "auth": false,
+    "description": "獎池詳細資訊"
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/gacha/itinerary",
+    "auth": false,
+    "description": "生成行程 (舊版)"
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/gacha/pull",
+    "auth": false,
+    "description": "抽卡 (舊版)"
+  }
+]
+4. 收藏 Collection (4 endpoints)
+[
+  {
+    "method": "GET",
+    "endpoint": "/api/collections",
+    "auth": true,
+    "description": "取得收藏列表",
+    "response": {
+      "collections": [
+        {
+          "id": "number",
+          "placeName": "string",
+          "country": "string",
+          "city": "string",
+          "district": "string|null",
+          "category": "string|null",
+          "subcategory": "string|null",
+          "description": "string|null",
+          "address": "string|null",
+          "rating": "string|null",
+          "locationLat": "string|null",
+          "locationLng": "string|null",
+          "collectedAt": "string ISO timestamp"
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/collection/with-promo",
+    "auth": true,
+    "description": "取得收藏 (含優惠狀態)",
+    "response": {
+      "collections": [
+        {
+          "...same as above...",
+          "isCoupon": "boolean",
+          "couponData": "object|null",
+          "hasPromo": "boolean",
+          "isNew": "boolean"
+        }
+      ],
+      "total": "number",
+      "hasPromoItems": "boolean"
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/collections",
+    "auth": true,
+    "description": "新增收藏",
+    "request": {
+      "placeName": "string (required)",
+      "country": "string (required)",
+      "city": "string (required)",
+      "district": "string (optional)",
+      "category": "string (optional)",
+      "subcategory": "string (optional)",
+      "description": "string (optional)",
+      "address": "string (optional)",
+      "rating": "string (optional)",
+      "locationLat": "string (optional)",
+      "locationLng": "string (optional)"
+    },
+    "response": { "success": true, "collection": "{...}" }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/collection/auto-save",
+    "auth": true,
+    "description": "自動儲存收藏",
+    "request": "same as POST /api/collections",
+    "response": { "success": true, "isNew": "boolean", "collection": "{...}" }
+  }
+]
+5. 道具箱 Inventory (6 endpoints)
+[
+  {
+    "method": "GET",
+    "endpoint": "/api/inventory",
+    "auth": true,
+    "description": "取得道具箱",
+    "response": {
+      "items": [
+        {
+          "id": "number",
+          "type": "'coupon'|'item'",
+          "name": "string",
+          "description": "string|null",
+          "rarity": "'SP'|'SSR'|'SR'|'S'|'R'",
+          "isRead": "boolean",
+          "isRedeemed": "boolean",
+          "expiresAt": "string|null",
+          "obtainedAt": "string",
+          "couponData": {
+            "code": "string",
+            "merchantName": "string",
+            "terms": "string"
+          }
+        }
+      ],
+      "slotCount": "number",
+      "maxSlots": 30
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/inventory/:id",
+    "auth": true,
+    "description": "取得單一道具"
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/inventory/:id/read",
+    "auth": true,
+    "description": "標記道具已讀",
+    "response": { "success": true }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/inventory/:id/redeem",
+    "auth": true,
+    "description": "兌換優惠券",
+    "response": {
+      "success": true,
+      "redemptionCode": "string",
+      "expiresAt": "string"
+    }
+  },
+  {
+    "method": "DELETE",
+    "endpoint": "/api/inventory/:id",
+    "auth": true,
+    "description": "刪除道具",
+    "response": { "success": true }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/inventory/config",
+    "auth": false,
+    "description": "道具箱設定",
+    "response": { "maxSlots": 30 }
+  }
+]
+6. 通知 Notifications (2 endpoints)
+[
+  {
+    "method": "GET",
+    "endpoint": "/api/notifications",
+    "auth": true,
+    "description": "取得未讀數量",
+    "response": {
+      "unread": {
+        "collection": "number",
+        "itembox": "number",
+        "announcement": "number"
+      },
+      "total": "number"
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/notifications/:type/seen",
+    "auth": true,
+    "description": "標記通知已讀",
+    "params": { "type": "'collection'|'itembox'|'announcement'" },
+    "response": { "success": true }
+  }
+]
+7. 地理資訊 Locations (4 endpoints)
+[
+  {
+    "method": "GET",
+    "endpoint": "/api/locations/countries",
+    "auth": false,
+    "description": "國家列表",
+    "response": {
+      "countries": [{ "id": "number", "name": "string", "code": "string" }]
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/locations/regions/:countryId",
+    "auth": false,
+    "description": "縣市列表",
+    "response": {
+      "regions": [{ "id": "number", "name": "string", "countryId": "number" }]
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/locations/districts/:regionId",
+    "auth": false,
+    "description": "鄉鎮區列表",
+    "response": {
+      "districts": [{ "id": "number", "name": "string", "regionId": "number" }]
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/locations/districts/country/:countryId",
+    "auth": false,
+    "description": "國家全部區域"
+  }
+]
+8. 分類 Categories (2 endpoints)
+[
+  {
+    "method": "GET",
+    "endpoint": "/api/categories",
+    "auth": false,
+    "description": "分類列表 (八大類)",
+    "response": {
+      "categories": [
+        { "id": "number", "code": "string", "nameZh": "string", "nameEn": "string", "colorHex": "string" }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/categories/:categoryId/subcategories",
+    "auth": false,
+    "description": "子分類列表",
+    "response": {
+      "subcategories": [
+        { "id": "number", "code": "string", "nameZh": "string", "nameEn": "string" }
+      ]
+    }
+  }
+]
+9. SOS 安全中心 (7 endpoints)
+[
+  {
+    "method": "GET",
+    "endpoint": "/api/sos/eligibility",
+    "auth": true,
+    "description": "檢查 SOS 資格",
+    "response": { "eligible": "boolean", "reason": "string (if not eligible)" }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/sos/alert",
+    "auth": true,
+    "description": "發送 SOS 警報",
+    "request": {
+      "lat": "number (optional)",
+      "lng": "number (optional)",
+      "message": "string (optional)"
+    },
+    "response": { "success": true, "alertId": "number" }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/sos/alerts",
+    "auth": true,
+    "description": "警報列表"
+  },
+  {
+    "method": "PATCH",
+    "endpoint": "/api/sos/alerts/:id/cancel",
+    "auth": true,
+    "description": "取消警報"
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/sos/trigger",
+    "auth": false,
+    "description": "Webhook 觸發 SOS (外部使用)",
+    "query": { "key": "string (SOS 密鑰)" },
+    "request": { "lat": "number (optional)", "lon": "number (optional)" }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/sos/deactivate",
+    "auth": true,
+    "description": "關閉 SOS 模式"
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/location/me",
+    "auth": true,
+    "description": "取得我的位置"
+  }
+]
+10. 商家 Merchant (14 endpoints)
+[
+  {
+    "method": "GET",
+    "endpoint": "/api/merchant",
+    "auth": true,
+    "description": "取得商家資訊",
+    "response": {
+      "merchant": {
+        "id": "number",
+        "userId": "string",
+        "businessName": "string",
+        "status": "'pending'|'approved'|'rejected'",
+        "merchantLevel": "'free'|'pro'|'premium'",
+        "creditBalance": "number"
+      }
+    }
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/merchant/apply",
+    "auth": true,
+    "description": "申請商家"
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/merchant/analytics",
+    "auth": true,
+    "description": "商家分析",
+    "response": {
+      "itineraryCardCount": "number",
+      "couponStats": { "total": "number", "active": "number", "redeemed": "number" },
+      "impressions": "number",
+      "collectionClickCount": "number"
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/merchant/coupons",
+    "auth": true,
+    "description": "商家優惠券列表"
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/merchant/coupons",
+    "auth": true,
+    "description": "建立優惠券"
+  },
+  {
+    "method": "PUT",
+    "endpoint": "/api/merchant/coupons/:id",
+    "auth": true,
+    "description": "更新優惠券"
+  },
+  {
+    "method": "DELETE",
+    "endpoint": "/api/merchant/coupons/:id",
+    "auth": true,
+    "description": "刪除優惠券"
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/merchant/redemption-code",
+    "auth": true,
+    "description": "取得核銷碼"
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/merchant/subscription/plans",
+    "auth": false,
+    "description": "訂閱方案列表"
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/merchant/subscription/upgrade",
+    "auth": true,
+    "description": "升級訂閱"
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/merchant/subscription/confirm",
+    "auth": true,
+    "description": "確認訂閱"
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/merchant/subscription",
+    "auth": true,
+    "description": "取得訂閱狀態"
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/merchant/places/:linkId/upgrade",
+    "auth": true,
+    "description": "行程卡升級"
+  },
+  {
+    "method": "POST",
+    "endpoint": "/api/merchant/places/:linkId/upgrade/confirm",
+    "auth": true,
+    "description": "確認行程卡升級"
+  }
+]
+11. 公告 & 廣告 (2 endpoints)
+[
+  {
+    "method": "GET",
+    "endpoint": "/api/announcements",
+    "auth": false,
+    "description": "公告列表",
+    "query": { "type": "'announcement'|'flash_event'|'holiday_event' (optional)" },
+    "response": {
+      "announcements": [
+        {
+          "id": "number",
+          "type": "string",
+          "title": "string",
+          "content": "string",
+          "imageUrl": "string|null",
+          "linkUrl": "string|null",
+          "priority": "number",
+          "startDate": "string|null",
+          "endDate": "string|null"
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/ads/placements",
+    "auth": false,
+    "description": "廣告設定",
+    "query": { "platform": "'ios'|'android'|'all' (optional)" },
+    "response": {
+      "placements": [
+        { "placementKey": "string", "adUnitId": "string", "frequency": "number", "isActive": "boolean" }
+      ]
+    }
+  }
+]
+12. 系統 System (4 endpoints)
+[
+  {
+    "method": "GET",
+    "endpoint": "/api/health",
+    "auth": false,
+    "description": "健康檢查",
+    "response": { "status": "ok" }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/config/mapbox",
+    "auth": false,
+    "description": "Mapbox 設定",
+    "response": { "accessToken": "string" }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/rarity-config",
+    "auth": false,
+    "description": "稀有度設定 (公開)",
+    "response": {
+      "configs": [{ "rarity": "string", "dropRate": "number", "colorHex": "string" }]
+    }
+  },
+  {
+    "method": "GET",
+    "endpoint": "/api/place/promo",
+    "auth": false,
+    "description": "地點優惠資訊",
+    "query": { "placeName": "string", "district": "string", "city": "string" }
+  }
+]
+13. 管理後台 Admin (25+ endpoints)
+[
+  { "method": "GET", "endpoint": "/api/admin/users", "auth": true, "description": "用戶列表" },
+  { "method": "GET", "endpoint": "/api/admin/users/pending", "auth": true, "description": "待審核用戶" },
+  { "method": "PATCH", "endpoint": "/api/admin/users/:id/approve", "auth": true, "description": "審核用戶" },
+  { "method": "GET", "endpoint": "/api/admin/announcements", "auth": true, "description": "公告管理" },
+  { "method": "POST", "endpoint": "/api/admin/announcements", "auth": true, "description": "新增公告" },
+  { "method": "PATCH", "endpoint": "/api/admin/announcements/:id", "auth": true, "description": "更新公告" },
+  { "method": "DELETE", "endpoint": "/api/admin/announcements/:id", "auth": true, "description": "刪除公告" },
+  { "method": "GET", "endpoint": "/api/admin/ads", "auth": true, "description": "廣告管理" },
+  { "method": "POST", "endpoint": "/api/admin/ads", "auth": true, "description": "新增廣告" },
+  { "method": "PATCH", "endpoint": "/api/admin/ads/:id", "auth": true, "description": "更新廣告" },
+  { "method": "DELETE", "endpoint": "/api/admin/ads/:id", "auth": true, "description": "刪除廣告" },
+  { "method": "GET", "endpoint": "/api/admin/rarity-config", "auth": true, "description": "稀有度設定" },
+  { "method": "POST", "endpoint": "/api/admin/rarity-config", "auth": true, "description": "新增稀有度" },
+  { "method": "DELETE", "endpoint": "/api/admin/rarity-config/:id", "auth": true, "description": "刪除稀有度" },
+  { "method": "GET", "endpoint": "/api/admin/global-exclusions", "auth": true, "description": "全域排除" },
+  { "method": "POST", "endpoint": "/api/admin/global-exclusions", "auth": true, "description": "新增排除" },
+  { "method": "DELETE", "endpoint": "/api/admin/global-exclusions/:id", "auth": true, "description": "刪除排除" },
+  { "method": "GET", "endpoint": "/api/admin/place-drafts", "auth": true, "description": "草稿列表" },
+  { "method": "POST", "endpoint": "/api/admin/place-drafts", "auth": true, "description": "新增草稿" },
+  { "method": "PATCH", "endpoint": "/api/admin/place-drafts/:id", "auth": true, "description": "更新草稿" },
+  { "method": "DELETE", "endpoint": "/api/admin/place-drafts/:id", "auth": true, "description": "刪除草稿" },
+  { "method": "POST", "endpoint": "/api/admin/place-drafts/:id/publish", "auth": true, "description": "發布草稿" },
+  { "method": "POST", "endpoint": "/api/admin/place-drafts/batch-publish", "auth": true, "description": "批次發布" },
+  { "method": "POST", "endpoint": "/api/admin/place-cache/batch-review", "auth": true, "description": "批次審核" },
+  { "method": "GET", "endpoint": "/api/admin/place-cache/review-stats", "auth": true, "description": "審核統計" },
+  { "method": "GET", "endpoint": "/api/admin/applications/pending", "auth": true, "description": "待審核申請" },
+  { "method": "PATCH", "endpoint": "/api/admin/applications/:id/review", "auth": true, "description": "審核申請" }
+]
+統一錯誤格式
+{
+  "errorCode": "string (E1001, E2001, etc.)",
+  "message": "string (錯誤訊息)"
+}
+錯誤代碼對照表
+代碼	說明
+E1001	AUTH_REQUIRED - 請先登入
+E1002	AUTH_TOKEN_EXPIRED - 登入已過期
+E1003	AUTH_TOKEN_INVALID - 無效的登入憑證
+E1004	INVALID_CREDENTIALS - 電子郵件或密碼錯誤
+E1005	EMAIL_ALREADY_EXISTS - 此電子郵件已被註冊
+E1006	PENDING_APPROVAL - 帳號審核中
+E2001	GACHA_NO_CREDITS - 扭蛋次數不足
+E3001	MISSING_LOCATION_ID - 請提供 regionId
+E3005	NO_PLACES_AVAILABLE - 該區域暫無景點
+E5001	VALIDATION_ERROR - 輸入資料格式錯誤
+E9001	SERVER_ERROR - 伺服器錯誤

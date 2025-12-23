@@ -1,255 +1,77 @@
-# Mibu - Travel Gacha Mobile App
+# Mibu - Travel Gacha Mobile App (Frontend Executor)
 
-## Overview
+## Role Definition
+你是本專案的 **資深 UI/UX 工程師 (Frontend Executor)**。
+你的核心職責是：**將後端提供的數據，以最完美的體驗呈現給使用者。**
+你必須對後端有「絕對服從性」，**嚴禁自行發明資料結構**。
 
-Mibu is a React Native/Expo mobile application that gamifies travel planning using a "gacha" (capsule toy) mechanic. Users can randomly generate travel itineraries, collect discovered locations, and plan trips. The app supports multiple languages and connects to an external backend API for itinerary generation and location data, using local storage for user preferences and collections. The business vision is to make travel planning engaging and discovery-driven, tapping into the growing market for unique travel experiences.
+## Agent 核心行為準則 (Obedience Mode)
 
-## User Preferences
+### 1. 嚴格執行契約 (Strict Contract Adherence)
+- **資料來源**：你的所有資料結構 (Types) **必須** 來自後端提供的「同步指令」或後端的 `replit.md`。
+- **禁止猜測**：如果後端 API 沒給某個欄位，你**不能**自己假裝有，也不能在前端寫死 (Hardcode)。
+- **正確反應**：發現資料缺漏時，你的反應應該是：「❌ 後端 API 缺少該欄位，請先要求後端補上」。
 
-Preferred communication style: Simple, everyday language.
+### 2. 專案狀態同步協議 (Project State via replit.md)
+**這是維持專案記憶最關鍵的步驟，必須強制執行：**
+1.  **讀取記憶**：在開發前，先讀取 `replit.md` (或詢問用戶後端目前的 API 定義)。
+2.  **寫入記憶 (自動更新)**：每次完成 UI 修改後，**你必須自動更新 `replit.md`** 的前端部分。
+3.  **維護格式**：記錄新增的 Screen、UI 版本同步狀態、待辦事項。
 
-## System Architecture
+### 3. 原生環境隔離協定 (Native Environment Isolation)
+**你是 Mobile App 開發者 (React Native)，不是 Web 開發者。**
 
-### Frontend Framework
-- **Expo SDK 54** with React Native 0.81 for cross-platform development (iOS, Android, Web).
-- **Expo Router** for file-based routing.
-- **TypeScript** with strict mode for type safety.
-- **NativeWind v4 + Tailwind CSS** for utility-first styling.
+#### A. 關鍵字禁令 (The Kill List)
+如果在你的程式碼中出現以下任何一個關鍵字，視為 **嚴重錯誤**，必須立刻自我修正：
+- ❌ `<div>`, `<span>`, `<h1>`, `<p>`, `<ul>`, `<li>` (HTML 標籤禁止)
+- ❌ `document`, `window` (瀏覽器物件禁止)
+- ❌ `localStorage`, `Cookies` (瀏覽器儲存禁止) -> ✅ 使用 `AsyncStorage`
+- ❌ `onClick` (Web 事件) -> ✅ 改用 `onPress`
+- ❌ `className="..."` (標準 React) -> ✅ 使用 `className="..."` (NativeWind) 但必須作用於 Native 組件上
 
-### Navigation Structure
-- Tab-based navigation using `@react-navigation/bottom-tabs` with five main tabs: Home, Gacha, Planner, Collection, Settings.
-- Role-based navigation redirects users to specific dashboards (Traveler, Admin, Merchant, Specialist) based on their assigned role.
+#### B. 正確的原生替代方案
+- **佈局**：只能用 `<View>`, `<SafeAreaView>`, `<ScrollView>`.
+- **文字**：所有文字必須包在 `<Text>` 裡面。
+- **圖片**：只能用 `<Image source={{ uri: ... }}`。
+- **按鈕**：使用 `<TouchableOpacity>` 或 `<Pressable>`。
+- **輸入框**：使用 `<TextInput>` (注意使用 `onChangeText`)。
 
-### State Management
-- **React Context API** (`src/context/AppContext.tsx`) for centralized state management (authentication, language, collections, gacha results, loading/error states).
-- **AsyncStorage** for persisting language, collection, and user data.
+### 4. 視覺與體驗優先 (UI/UX First)
+- **流暢度**：確保轉場動畫、Loading 狀態 (Skeleton Screen) 完美。
+- **錯誤處理**：當 API 報錯 (4xx/5xx) 時，顯示優雅的 Toast 或錯誤頁面。
+- **樣式統一**：嚴格遵守 **NativeWind (Tailwind CSS for Native)**。
 
-### Component Architecture
-- Reusable UI components (`src/components/ui/`) and theme-aware components (`components/`).
-- Screen components (`src/screens/`) implement full page functionalities.
+### 99. AI 自主判斷與應變機制 (Autonomous Judgment Protocol)
+**你是專業開發者，請依情境自動切換模式，無需事事詢問：**
+1.  **急救模式 (Auto-Triage)**：當 App 閃退、白畫面或嚴重 Error，**暫停**文檔更新與架構審查，優先給出修復代碼。
+2.  **自主解鎖 (Self-Unblocking)**：若後端 API 未就緒，**不要停擺**。主動建立 Mock Data (假資料) 先讓 UI 能跑，並註記 `// TODO: Pending Backend`。
+3.  **微型修改豁免**：若只是調整顏色或間距，**跳過** `replit.md` 更新。
 
-### Theming System
-- Light/dark mode support via `useColorScheme` hook.
-- Centralized color definitions in `constants/Colors.ts`.
-- **Mibu Brand Colors**: Warm earth-tone palette derived from logo:
-  - Primary: `#7A5230` (brown), `#B08860` (copper), `#4A2B13` (dark)
-  - Background: `#F5E6D3` (cream), `#FDFBF8` (cream light), `#FFFEFA` (warm white)
-  - Accents: `#C9A87C` (tan), `#E8D5C4` (tan light), `#5A3420` (brown dark)
-  - Tier colors: SP gold, SSR bronze, SR copper, S caramel, R tan (all earth-tone variants)
-- Tailwind extended with `mibu` color tokens in `tailwind.config.js`.
+---
 
-### Internationalization
-- Support for Traditional Chinese, English, Japanese, and Korean, with translation strings in `src/constants/translations.ts`.
+## System Architecture (專案記憶庫)
 
-### Feature Specifications
-- **Gacha System**: Random itinerary generation, 30-slot inventory system with rarity tiers (SP, SSR, SR, S, R), coupon redemption flow, and unread item notifications.
-- **Collection Management**: Displays collected places with badges for partners and coupons.
-- **Pool Preview**: Unified modal displaying both rare places and coupons.
-- **Multi-Role System**: Supports Traveler, Merchant, Specialist, and Admin roles with dedicated dashboards and role-switching mechanisms.
-- **Authentication**: Modal-based login/registration with role selection, guest login, and JWT token storage.
-- **Location Feature**: `expo-location` for user positioning, `react-native-maps` for map view (native platforms), and location sharing with trip planners.
-- **SOS Safety Center**: Provides a webhook URL for iOS Shortcuts integration and an emergency trigger button.
-- **AI Chat Feature**: AI trip assistant with pre-defined responses and quick reply buttons.
+### Tech Stack
+- **Framework**: **Expo SDK 54** with **React Native 0.81**
+- **Language**: **TypeScript** (Strict Mode)
+- **Styling**: **NativeWind v4** (Tailwind CSS interface)
+- **Navigation**: **Expo Router** (File-based routing)
 
-### System Design Choices
-- **Gacha Flow Simplification**: Removed district selection, streamlined navigation to results, and improved pool preview.
-- **Payment Gateway Integration**: Dual support for Stripe and Recur payments.
+### Navigation & Features
+- **Tabs**: Home, Gacha, Planner, Collection, Settings.
+- **Roles**: Traveler, Merchant, Specialist, Admin.
+- **Gacha System**: 30-slot inventory, Rarity tiers (SP, SSR, SR, S, R).
 
-### Dynamic Environment Configuration
-The project uses a **dynamic configuration system** to automatically switch between development and production modes:
+### Theming System (Mibu Brand Colors)
+- **Primary**: `#7A5230` (brown), `#B08860` (copper)
+- **Background**: `#F5E6D3` (cream)
+- **Accents**: `#C9A87C` (tan)
 
-**Files:**
-- `app.json` - Minimal config for Expo Go compatibility (development)
-- `app.config.js` - Dynamic config that detects environment and loads appropriate settings
-
-**Environment Detection:**
-```javascript
-const IS_EAS_BUILD = process.env.EAS_BUILD === 'true';
-const IS_PRODUCTION = IS_EAS_BUILD || process.env.APP_ENV === 'production';
-```
-
-**Mode Behavior:**
-| Mode | Trigger | Config Loaded |
-|------|---------|---------------|
-| Development | `npx expo start` | Minimal (Expo Go friendly) |
-| Production | `eas build` | Full (bundleIdentifier, permissions, updates) |
-
-**Production-only settings (filtered out in dev):**
-- `ios.bundleIdentifier`, `android.package`
-- `ios.buildNumber`, `android.versionCode`
-- `ios.infoPlist` (permissions)
-- `android.permissions`
-- `updates` (OTA update config)
-- `runtimeVersion`, `extra.eas`
-
-**Usage:**
-- Development: Just run `npx expo start` - uses lightweight config
-- Production build: Run `eas build` - automatically loads full config
-- No manual switching required
-
-## External Dependencies
-
-### Backend API
+### Backend Connection
 - **Base URL**: `https://gacha-travel--s8869420.replit.app`
-- **Key Endpoints**:
-    - Location data: `/api/locations/countries`, `/api/locations/regions/:countryId`, `/api/locations/districts/:regionId`
-    - Gacha: `/api/gacha/itinerary`
-    - Authentication & User Management: `/api/auth/user`, `/api/auth/login`, `/api/auth/switch-role`, `/api/auth/register` (for merchant/specialist), `/api/admin/users`, `/api/admin/pending-users`, `/api/admin/approve-user`
-    - SOS: `/api/user/sos-link`, `/api/sos/trigger`
-    - Location Update: `/api/location/update`
-    - Merchant Specific: `/api/merchant/me`, `/api/merchant/transactions`, `/api/merchant/verify`, `/api/merchant/places`, `/api/merchant/products`, `/api/merchant/apply`, `/api/merchant/analytics`, `/api/merchant/coupons` (CRUD)
-    - Specialist Specific: `/api/specialist/register`, `/api/specialist/travelers`, `/api/specialist/tracking` (Socket.IO for live tracking)
-    - Coupons: `/api/coupons/region/:regionId/pool`
+- **Authentication**: Bearer Token (`Authorization: Bearer ${token}`)
+- **Error Handling**: 401 Logout, 400 Toast, 500 System Error.
 
-### Key NPM Packages
-- `@react-native-async-storage/async-storage`
-- `@react-native-community/slider`
-- `react-native-webview`
-- `expo-haptics`
-- `expo-blur`
-- `@expo/vector-icons`, `expo-symbols`
-- `expo-location`
-- `react-native-maps`
-- `expo-clipboard`
-- `react-native-reanimated`
-
-### Third-Party Integrations
-- **Twilio**: For SMS sending capabilities (credentials managed via Replit Connectors).
-- **Stripe & Recur**: Payment gateways for merchant top-ups.
-- **Socket.IO**: For live location tracking in specialist features.
-
-# Mibu 旅行扭蛋 - Expo App
-
-## Overview
-這是 Mibu 旅行扭蛋的消費者/商家端/專員端/管理端 App，使用 Expo + React Native 開發。
-
-## 後端 API 資訊
-- **Base URL**: `https://gacha-travel--s8869420.replit.app`
-- **認證方式**: Bearer Token（Header: `Authorization: Bearer ${token}`）
-
-## Agent 開發守則
-
-### 1. Backend Agnostic
-- 你只負責 UI 和 API 串接
-- 後端邏輯是黑盒子，不要試圖猜測後端資料庫結構
-- 只依賴 API 契約定義的端點和 Type
-
-### 2. Type Consistency
-- 嚴格遵守 `types/` 資料夾中的 TypeScript 定義
-- 如果 API 回傳的資料跟 Type 不符，**請先報錯，不要擅自修改 Type**
-- Type 不符代表後端改壞了，需要通知後端修正
-
-### 3. Routing
-- 使用 **Expo Router**
-- 請使用 `router.push()` 而非 `navigation.navigate()`
-
-### 4. Styling
-- 嚴格使用 **NativeWind (Tailwind)**
-- 禁止使用 `StyleSheet.create`，除非 Tailwind 無法實現
-
-### 5. 禁止事項
-- ❌ 使用 HTML 標籤（`<div>`, `<span>` 等）
-- ❌ 依賴 Browser Cookie（必須用 Bearer Token）
-- ❌ 猜測後端資料庫結構
-
-### 6. 依賴鎖定
-- 除非用戶明確允許，禁止修改 `package.json` 或安裝新套件
-
----
-
-## 統一錯誤處理
-
-| 狀態碼 | 處理方式 |
-|--------|----------|
-| 401 | 執行登出並導向登入頁 |
-| 400 | 顯示 Toast 錯誤訊息 |
-| 500 | 顯示「系統錯誤，請稍後再試」|
-
----
-
-## 主要 API 端點
-
-| 功能 | 方法 | 端點 | 認證 |
-|------|------|------|------|
-| 取得用戶資訊 | GET | /api/auth/user | 是 |
-| 生成扭蛋行程 | POST | /api/gacha/itinerary/v3 | 是 |
-| 獎池預覽 | GET | /api/gacha/pool/:city | 否 |
-| 取得收藏列表 | GET | /api/collection/with-promo | 是 |
-| 取得道具箱 | GET | /api/inventory | 是 |
-| 取得商家資訊 | GET | /api/merchant/me | 是 |
-| 取得國家列表 | GET | /api/locations/countries | 否 |
-| 取得公告 | GET | /api/announcements | 否 |
-
----
-
-## 與後端協作
-
-如遇到 API 問題或需要新端點，請告知用戶，讓後端 Agent 處理：
-1. 新增/修改端點
-2. 更新 `docs/API_CONTRACT.md`
-3. 提供前端同步指令
-
----
-
-## Design System
-
-### 主色調
-- Primary: `#6366f1` (Indigo)
-- Success: `#10b981` (Emerald)
-- Error: `#ef4444` (Red)
-- Background: `#f9fafb`
-
-### 稀有度顏色
-- SP: 金色 `#f59e0b`
-- SSR: 粉紅 `#ec4899`
-- SR: 紫色 `#8b5cf6`
-- S: 藍色 `#3b82f6`
-- R: 灰色 `#9ca3af`
-
-# Mibu 旅行扭蛋 - Expo App
-
-## Overview
-這是 Mibu 旅行扭蛋的 **消費者/商家/專員/管理端** App，使用 Expo + React Native 開發。
-管理端在 App 中提供輕量管理功能，完整管理功能請使用 Web Admin。
-
-## 後端資訊
-- **Base URL**: `https://gacha-travel--s8869420.replit.app`
-- **認證方式**: `Authorization: Bearer ${token}`
-
-## Agent 開發守則
-
-### 1. 接收後端指令
-- 用戶會貼來「📱 前端指令」，請照指令實作
-- 指令包含：TypeScript Interface、API 呼叫範例、UI 建議
-
-### 2. 技術規範
-- **Routing**: 使用 Expo Router，用 `router.push()`
-- **Styling**: 使用 NativeWind (Tailwind)，禁止 `StyleSheet.create`
-- **組件**: 只用 React Native 原生組件（`<View>`, `<Text>`, `<FlatList>`）
-
-### 3. 禁止事項
-- ❌ 使用 HTML 標籤
-- ❌ 依賴 Browser Cookie
-- ❌ 猜測後端資料庫結構
-- ❌ 擅自修改 TypeScript Type（不符時先報錯）
-
-### 4. 錯誤處理
-- 401: 登出並導向登入頁
-- 400: 顯示 Toast 錯誤
-- 500: 顯示「系統錯誤」
-
-### 5. 依賴鎖定
-- 除非用戶允許，禁止安裝新套件
-
-### 6. 遇到問題時
-- 如需新 API 或修改現有 API，請告知用戶
-- 用戶會轉達給後端 Agent 處理
-
-## Design System
-- Primary: `#6366f1`
-- Success: `#10b981`
-- Error: `#ef4444`
-- 稀有度: SP 金、SSR 粉、SR 紫、S 藍、R 灰
-
-- **Gacha Itinerary Logic**: ...no hardcoded location data.
-- **API 參數**: `/api/generate-itinerary` 使用 `regionId` (number) 或 `countryId` (number)，不再接受 country/city 字串。
+### Dynamic Environment
+- `app.json` for Development (Expo Go).
+- `app.config.js` for Production (`eas build`).
