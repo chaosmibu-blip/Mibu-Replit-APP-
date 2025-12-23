@@ -102,8 +102,12 @@ export function GachaScreen() {
     }
   };
 
-  const getLocalizedName = (item: Country | Region | { name?: string }): string => {
-    return (item as any).name || '';
+  const getLocalizedName = (item: Country | Region): string => {
+    const lang = state.language;
+    if (lang === 'zh-TW') return item.nameZh || item.nameEn || '';
+    if (lang === 'ja') return item.nameJa || item.nameEn || '';
+    if (lang === 'ko') return item.nameKo || item.nameEn || '';
+    return item.nameEn || '';
   };
 
   const getLocalizedPoolItemName = (name: any): string => {
@@ -164,7 +168,7 @@ export function GachaScreen() {
     setPrizePoolData(null);
     
     try {
-      const city = selectedRegion.name || '';
+      const city = selectedRegion.nameZh || selectedRegion.nameEn || '';
       const token = await AsyncStorage.getItem('@mibu_token');
       
       const [poolResult, couponResult, prizePoolResult] = await Promise.allSettled([
@@ -210,7 +214,7 @@ export function GachaScreen() {
       console.log('[Gacha] API Request:', {
         endpoint: '/api/gacha/itinerary/v3',
         regionId: selectedRegionId,
-        regionName: selectedRegion?.name,
+        regionName: selectedRegion?.nameZh || selectedRegion?.nameEn,
         itemCount: pullCount,
         hasToken: !!token
       });
@@ -286,7 +290,7 @@ export function GachaScreen() {
         return;
       }
 
-      const couponsWon = response.couponsWon || response.coupons_won || [];
+      const couponsWon = response.couponsWon || [];
 
       const items: GachaItem[] = itineraryItems.map((item: any, index: number) => {
         const hasMerchantCoupon = item.isCoupon || item.couponWon || (item.merchantPromo?.isPromoActive && item.couponWon);

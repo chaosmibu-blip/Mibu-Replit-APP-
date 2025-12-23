@@ -89,7 +89,7 @@ All data structures have been updated to use camelCase field naming convention t
 - **MerchantAnalytics**: Simplified to 4 fields: `itineraryCardCount`, `couponStats{total,active,redeemed}`, `impressions`, `collectionClickCount`
 - **ItineraryPlace**: `googleRating`, `verifiedAddress`
 - **ItineraryCard**: `placeName`, `hasMerchant`, `merchantPromo`, `isCoupon`, `couponData`
-- **Country/Region**: Simplified to single `name` field
+- **Country/Region**: Multi-language structure with `nameEn`, `nameZh`, `nameJa`, `nameKo`, `code`, `isActive`
 
 #### Updated Screens
 - **GachaScreen**: Updated API response mapping to camelCase

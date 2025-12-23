@@ -377,14 +377,31 @@ export interface GachaResponse {
 
 export interface Country {
   id: number;
-  name: string;
   code: string;
+  nameEn: string;
+  nameZh: string;
+  nameJa: string;
+  nameKo: string;
+  isActive: boolean;
 }
 
 export interface Region {
   id: number;
-  name: string;
   countryId: number;
+  code: string;
+  nameEn: string;
+  nameZh: string;
+  nameJa: string;
+  nameKo: string;
+  isActive: boolean;
+}
+
+export interface CountriesResponse {
+  countries: Country[];
+}
+
+export interface RegionsResponse {
+  regions: Region[];
 }
 
 export type ItineraryPace = 'relaxed' | 'moderate' | 'packed';
