@@ -31,14 +31,22 @@ const baseConfig = {
   experiments: {
     typedRoutes: true,
   },
+  extra: {
+    eas: {
+      projectId: 'f1c74b9b-747d-450c-8c99-22a7729b4a31',
+    },
+  },
 };
 
 const developmentConfig = {
   ...baseConfig,
   ios: {
     supportsTablet: true,
+    bundleIdentifier: 'com.chaos.mibu',
+    usesAppleSignIn: true,
   },
   android: {
+    package: 'com.chaos.mibu',
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#F5E6D3',
