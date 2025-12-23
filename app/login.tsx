@@ -652,30 +652,53 @@ export default function LoginScreen() {
 
       if (credential.identityToken) {
         const apiUrl = `${API_BASE_URL}/api/auth/apple`;
+        const requestBody = {
+          identityToken: credential.identityToken,
+          user: credential.user,
+          portal: selectedPortal,
+          email: credential.email,
+          fullName: credential.fullName ? {
+            givenName: credential.fullName.givenName,
+            familyName: credential.fullName.familyName,
+          } : undefined,
+        };
+        
         console.log('[Apple Auth] Sending request to:', apiUrl);
-        console.log('[Apple Auth] Portal:', selectedPortal);
+        console.log('[Apple Auth] Request body keys:', Object.keys(requestBody));
+        console.log('[Apple Auth] Request body:', {
+          identityTokenLength: requestBody.identityToken?.length,
+          user: requestBody.user,
+          portal: requestBody.portal,
+          email: requestBody.email,
+          fullName: requestBody.fullName,
+        });
         
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            identityToken: credential.identityToken,
-            fullName: credential.fullName,
-            email: credential.email,
-            user: credential.user,
-            portal: selectedPortal,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         console.log('[Apple Auth] Response status:', response.status);
-        const data = await response.json();
+        const responseText = await response.text();
+        console.log('[Apple Auth] Response raw:', responseText);
+        
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          console.error('[Apple Auth] Failed to parse response as JSON');
+          data = { error: responseText };
+        }
+        
         console.log('[Apple Auth] Response data:', {
           success: data.success,
           hasToken: !!data.token,
           hasUser: !!data.user,
           error: data.error,
+          message: data.message,
         });
 
         if (data.token && data.user) {
