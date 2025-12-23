@@ -75,3 +75,28 @@
 ### Dynamic Environment
 - `app.json` for Development (Expo Go).
 - `app.config.js` for Production (`eas build`).
+
+---
+
+## Recent Changes (2025-12-23)
+
+### API Field Name Migration (snake_case → camelCase)
+All data structures have been updated to use camelCase field naming convention to align with backend API specifications.
+
+#### Updated Types
+- **GachaItem**: `placeName`, `isCoupon`, `couponData`, `locationLat`, `locationLng`, `cityDisplay`, `districtDisplay`, `location`
+- **GachaMeta**: `lockedDistrict`, `userLevel`, `couponsWon`, `themeIntro`, `sortingMethod`
+- **MerchantAnalytics**: Simplified to 4 fields: `itineraryCardCount`, `couponStats{total,active,redeemed}`, `impressions`, `collectionClickCount`
+- **ItineraryPlace**: `googleRating`, `verifiedAddress`
+- **ItineraryCard**: `placeName`, `hasMerchant`, `merchantPromo`, `isCoupon`, `couponData`
+- **Country/Region**: Simplified to single `name` field
+
+#### Updated Screens
+- **GachaScreen**: Updated API response mapping to camelCase
+- **ItemsScreen**: Updated field references
+- **CollectionScreen**: Updated field references and Google Maps navigation
+- **MerchantAnalyticsScreen**: Simplified UI to match new analytics structure
+
+#### API Fixes
+- Location update API now uses `lat/lng` instead of `latitude/longitude`
+- SOS Link response now returns `sosLink` and `sosKey` fields
