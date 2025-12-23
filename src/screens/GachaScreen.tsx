@@ -224,7 +224,17 @@ export function GachaScreen() {
         itemCount: pullCount,
       }, token || undefined);
 
-      if (response.errorCode || response.error || (response as any).code) {
+      console.log('[Gacha] API Response:', {
+        success: response.success,
+        hasItinerary: !!(response.itinerary),
+        itineraryLength: response.itinerary?.length || 0,
+        errorCode: response.errorCode,
+        error: response.error,
+        targetDistrict: response.targetDistrict,
+        city: response.city
+      });
+
+      if (!response.success && (response.errorCode || response.error || (response as any).code)) {
         setShowLoadingAd(false);
         const errorCode = response.errorCode || (response as any).code;
         
