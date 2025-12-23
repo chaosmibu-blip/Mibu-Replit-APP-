@@ -7,6 +7,10 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "node": "20.11.0",
+      "env": {
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      },
       "ios": {
         "simulator": false,
         "image": "macos-sonoma-14.6-xcode-16.1"
@@ -17,6 +21,10 @@
     },
     "preview": {
       "distribution": "internal",
+      "node": "20.11.0",
+      "env": {
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      },
       "ios": {
         "image": "macos-sonoma-14.6-xcode-16.1"
       },
@@ -25,8 +33,13 @@
       }
     },
     "production": {
+      "node": "20.11.0",
+      "env": {
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      },
       "ios": {
-        "image": "macos-sonoma-14.6-xcode-16.1"
+        "image": "macos-sonoma-14.6-xcode-16.1",
+        "cocoapods": "1.15.2"
       },
       "android": {
         "buildType": "app-bundle"
