@@ -633,6 +633,7 @@ export default function LoginScreen() {
   const handleAppleLogin = async () => {
     try {
       setLoading(true);
+      console.log('[Apple Auth] Starting Apple Sign In...');
       
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -641,8 +642,20 @@ export default function LoginScreen() {
         ],
       });
 
+      console.log('[Apple Auth] Credential received:', {
+        hasIdentityToken: !!credential.identityToken,
+        identityTokenPreview: credential.identityToken?.substring(0, 50) + '...',
+        user: credential.user,
+        email: credential.email,
+        fullName: credential.fullName,
+      });
+
       if (credential.identityToken) {
-        const response = await fetch(`${API_BASE_URL}/api/auth/apple`, {
+        const apiUrl = `${API_BASE_URL}/api/auth/apple`;
+        console.log('[Apple Auth] Sending request to:', apiUrl);
+        console.log('[Apple Auth] Portal:', selectedPortal);
+        
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -656,7 +669,14 @@ export default function LoginScreen() {
           }),
         });
 
+        console.log('[Apple Auth] Response status:', response.status);
         const data = await response.json();
+        console.log('[Apple Auth] Response data:', {
+          success: data.success,
+          hasToken: !!data.token,
+          hasUser: !!data.user,
+          error: data.error,
+        });
 
         if (data.token && data.user) {
           await AsyncStorage.setItem(AUTH_TOKEN_KEY, data.token);
@@ -689,9 +709,14 @@ export default function LoginScreen() {
       }
     } catch (error: any) {
       if (error.code === 'ERR_REQUEST_CANCELED') {
-        console.log('Apple Sign In was canceled');
+        console.log('[Apple Auth] User canceled Apple Sign In');
       } else {
-        console.error('Apple Sign In error:', error);
+        console.error('[Apple Auth] Error:', {
+          code: error.code,
+          message: error.message,
+          name: error.name,
+          stack: error.stack?.substring(0, 200),
+        });
         Alert.alert(
           state.language === 'zh-TW' ? '登入錯誤' : 'Login Error',
           state.language === 'zh-TW' ? '無法完成 Apple 登入' : 'Could not complete Apple Sign In'
