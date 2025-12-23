@@ -895,6 +895,58 @@ export default function LoginScreen() {
                 />
               )}
 
+              <View style={styles.dividerContainer}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>{state.language === 'zh-TW' ? '或使用 Email' : 'or use Email'}</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              <TextInput
+                style={styles.emailInput}
+                placeholder={state.language === 'zh-TW' ? 'Email' : 'Email'}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholderTextColor={MibuBrand.copper}
+              />
+              <TextInput
+                style={styles.emailInput}
+                placeholder={state.language === 'zh-TW' ? '密碼' : 'Password'}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                placeholderTextColor={MibuBrand.copper}
+              />
+              <TouchableOpacity 
+                style={[styles.emailLoginButton, { borderColor: currentPortal.color }]} 
+                onPress={handleEmailLogin}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={currentPortal.color} />
+                ) : (
+                  <>
+                    <Ionicons name="log-in-outline" size={20} color={currentPortal.color} />
+                    <Text style={[styles.emailLoginButtonText, { color: currentPortal.color }]}>
+                      {state.language === 'zh-TW' ? '登入' : 'Login'}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.registerLink}
+                onPress={() => router.push('/register')}
+              >
+                <Text style={styles.registerLinkText}>
+                  {state.language === 'zh-TW' ? '還沒有帳號？' : "Don't have an account? "}
+                  <Text style={styles.registerLinkHighlight}>
+                    {state.language === 'zh-TW' ? '立即註冊' : 'Register now'}
+                  </Text>
+                </Text>
+              </TouchableOpacity>
+
               {currentPortal.guestAllowed && (
                 <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
                   <Text style={styles.guestButtonText}>{texts.guest}</Text>
@@ -1127,6 +1179,48 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: MibuBrand.tanLight,
+  },
+  dividerText: {
+    paddingHorizontal: 16,
+    fontSize: 14,
+    color: MibuBrand.copper,
+  },
+  emailLoginButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: MibuBrand.warmWhite,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 20,
+    borderWidth: 2,
+  },
+  emailLoginButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  registerLink: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  registerLinkText: {
+    fontSize: 15,
+    color: MibuBrand.copper,
+  },
+  registerLinkHighlight: {
+    fontWeight: '700',
+    color: MibuBrand.brown,
   },
   note: {
     fontSize: 14,
