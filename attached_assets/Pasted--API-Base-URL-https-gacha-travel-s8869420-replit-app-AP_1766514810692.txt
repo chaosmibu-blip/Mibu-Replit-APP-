@@ -1,0 +1,157 @@
+完整 API 端點清單
+Base URL: https://gacha-travel--s8869420.replit.app
+
+認證方式
+所有需要認證的 API 必須在 Header 加上：
+
+Authorization: Bearer <token>
+Content-Type: application/json
+🔐 認證 (Auth)
+端點	方法	認證	說明
+/api/auth/apple	POST	❌	Apple 登入
+/api/auth/login	POST	❌	Email 登入
+/api/auth/register	POST	❌	旅客註冊
+/api/auth/register/merchant	POST	❌	商家註冊
+/api/auth/register/specialist	POST	❌	專員註冊
+/api/auth/user	GET	✅	取得當前用戶
+/api/auth/logout	POST	✅	登出
+/api/user/account	DELETE	✅	刪除帳號
+POST /api/auth/apple (Apple 登入)
+// Request
+{
+  identityToken: string;  // 必填
+  user: string;           // 必填
+  portal?: "traveler" | null;
+  email?: string | null;
+  fullName?: { givenName?: string | null; familyName?: string | null } | null;
+}
+// Response (成功)
+{
+  success: true,
+  token: string,          // JWT (7天有效)
+  user: {
+    id: string,
+    email: string,
+    name: string,
+    role: string,
+    isApproved: boolean,
+    isSuperAdmin: boolean
+  }
+}
+GET /api/auth/user (取得當前用戶)
+// Response
+{
+  id: string,
+  email: string,
+  firstName: string | null,
+  lastName: string | null,
+  role: "traveler" | "merchant" | "specialist" | "admin",
+  profileImageUrl: string | null,
+  activeRole: string,
+  accessibleRoles: string[]
+}
+🎰 扭蛋 (Gacha)
+端點	方法	認證	說明
+/api/gacha/itinerary/v3	POST	⚪ 選填	生成行程 (主要 API)
+/api/generate-itinerary	POST	❌	生成行程 (訪客模式)
+/api/gacha/pool	GET	❌	取得獎池預覽
+POST /api/gacha/itinerary/v3 (生成行程)
+// Request
+{
+  regionId?: number;      // 縣市 ID (優先使用)
+  countryId?: number;     // 國家 ID
+  itemCount?: number;     // 景點數量 1-15 (預設 7)
+  pace?: "relaxed" | "moderate" | "packed";
+  language?: string;
+}
+// Response
+{
+  success: boolean,
+  itinerary: Array<{
+    timeSlot: string,
+    place: {
+      id: number,
+      placeName: string,
+      category: string,
+      subcategory: string | null,
+      description: string | null,
+      address: string | null,
+      rating: number | null,
+      locationLat: number | null,
+      locationLng: number | null
+    },
+    couponWon?: { id, title, code, terms } | null
+  }>,
+  meta: {
+    city: string,
+    district: string | null,
+    dailyLimit: number,
+    dailyPullCount: number,
+    remainingQuota: number
+  },
+  themeIntro?: string
+}
+📦 收藏 (Collection)
+端點	方法	認證	說明
+/api/collections	GET	✅	取得收藏列表
+/api/collection/with-promo	GET	✅	取得收藏 (含優惠狀態)
+/api/collection/auto-save	POST	✅	自動儲存收藏
+🎁 道具箱 (Inventory)
+端點	方法	認證	說明
+/api/inventory	GET	✅	取得道具箱
+/api/inventory/:id	GET	✅	取得單一道具
+/api/inventory/:id/read	POST	✅	標記已讀
+/api/inventory/:id/redeem	POST	✅	兌換優惠券
+/api/inventory/:id	DELETE	✅	刪除道具
+🔔 通知 (Notifications)
+端點	方法	認證	說明
+/api/notifications	GET	✅	取得未讀數量
+/api/notifications/:type/seen	POST	✅	標記已讀
+GET /api/notifications
+// Response
+{
+  unread: {
+    collection: number,
+    itembox: number,
+    announcement: number
+  },
+  total: number
+}
+📍 地理資訊 (Locations)
+端點	方法	認證	說明
+/api/locations/countries	GET	❌	取得國家列表
+/api/locations/regions/:countryId	GET	❌	取得縣市列表
+/api/locations/districts/:regionId	GET	❌	取得鄉鎮區列表
+📢 公告 (Announcements)
+端點	方法	認證	說明
+/api/announcements	GET	❌	取得公告列表
+🆘 SOS 安全中心
+端點	方法	認證	說明
+/api/sos/eligibility	GET	✅	檢查 SOS 資格
+/api/sos/alert	POST	✅	發送 SOS 警報
+/api/sos/alerts	GET	✅	取得警報列表
+/api/sos/trigger	POST	❌	Webhook 觸發 SOS
+/api/user/sos-link	GET	✅	取得 SOS 連結
+📱 廣告 (Ads)
+端點	方法	認證	說明
+/api/ads/placements	GET	❌	取得廣告設定
+👤 個人資料 (Profile)
+端點	方法	認證	說明
+/api/profile	GET	✅	取得個人資料
+/api/profile	PATCH	✅	更新個人資料
+/api/location/update	POST	✅	更新位置
+/api/location/me	GET	✅	取得我的位置
+統一錯誤格式
+{
+  errorCode: string;  // 如 "E1001"
+  message: string;    // 錯誤訊息
+}
+常見錯誤碼
+代碼	說明
+E1001	請先登入
+E1002	登入已過期
+E1003	無效的登入憑證
+E1004	電子郵件或密碼錯誤
+E5001	輸入資料格式錯誤
+E9001	伺服器錯誤
+完整文件請查看：docs/API_CONTRACT.md
