@@ -306,8 +306,11 @@ export interface GachaItem {
   locationLng: number | null;
   googlePlaceId?: string | null;
   city?: string;
+  cityDisplay?: string;
   country?: string;
   district?: string;
+  districtDisplay?: string;
+  location?: { lat: number; lng: number } | null;
   collectedAt?: string;
   isCoupon?: boolean;
   couponData?: CouponData | null;
@@ -320,9 +323,11 @@ export interface GachaMeta {
   date: string;
   country: string;
   city: string;
-  locked_district: LocalizedContent;
-  user_level: number;
-  coupons_won?: number;
+  lockedDistrict: string;
+  userLevel: number;
+  couponsWon?: number;
+  themeIntro?: string;
+  sortingMethod?: string;
 }
 
 export interface CouponWon {
@@ -358,7 +363,7 @@ export interface ItineraryGenerateResponse {
   city?: string;
   country?: string;
   districtId?: number;
-  coupons_won?: CouponWon[];
+  legacyCouponsWon?: CouponWon[];
   error?: string;
   errorCode?: string;
   message?: string;
@@ -399,9 +404,9 @@ export interface ItineraryPlace {
   subcategory?: string;
   description?: LocalizedContent;
   imageUrl?: string;
-  google_rating?: number;
+  googleRating?: number;
   location?: { lat: number; lng: number };
-  verified_address?: string;
+  verifiedAddress?: string;
 }
 
 export interface ItineraryItem {
@@ -732,16 +737,16 @@ export interface ItineraryCardCouponData {
 
 export interface ItineraryCard {
   id: number;
-  place_name: LocalizedContent;
+  placeName: LocalizedContent;
   description: LocalizedContent;
   category: Category;
   district?: string;
   city?: string;
   country?: string;
-  has_merchant: boolean;
-  merchant_promo?: ItineraryCardMerchantPromo;
-  is_coupon?: boolean;
-  coupon_data?: ItineraryCardCouponData;
+  hasMerchant: boolean;
+  merchantPromo?: ItineraryCardMerchantPromo;
+  isCoupon?: boolean;
+  couponData?: ItineraryCardCouponData;
 }
 
 // ============================================

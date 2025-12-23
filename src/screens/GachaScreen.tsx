@@ -291,6 +291,10 @@ export function GachaScreen() {
       const items: GachaItem[] = itineraryItems.map((item: any, index: number) => {
         const hasMerchantCoupon = item.isCoupon || item.couponWon || (item.merchantPromo?.isPromoActive && item.couponWon);
         const place = item.place || item;
+        const lat = place.locationLat || item.locationLat || null;
+        const lng = place.locationLng || item.locationLng || null;
+        const cityVal = item.city || response.meta?.city || response.city || '';
+        const districtVal = item.district || response.meta?.district || response.anchorDistrict || response.targetDistrict || '';
         
         return {
           id: Date.now() + index,
@@ -300,12 +304,15 @@ export function GachaScreen() {
           subcategory: place.subcategory || item.subcategory || null,
           address: place.address || item.address || null,
           rating: place.rating || item.rating || null,
-          locationLat: place.locationLat || item.locationLat || null,
-          locationLng: place.locationLng || item.locationLng || null,
+          locationLat: lat,
+          locationLng: lng,
+          location: lat && lng ? { lat, lng } : null,
           googlePlaceId: place.googlePlaceId || item.googlePlaceId || null,
           country: item.country || response.country || '',
-          city: item.city || response.meta?.city || response.city || '',
-          district: item.district || response.meta?.district || response.anchorDistrict || response.targetDistrict || '',
+          city: cityVal,
+          cityDisplay: cityVal,
+          district: districtVal,
+          districtDisplay: districtVal,
           collectedAt: new Date().toISOString(),
           isCoupon: hasMerchantCoupon,
           couponData: item.couponWon || item.couponData || null,
@@ -328,9 +335,9 @@ export function GachaScreen() {
           date: new Date().toISOString().split('T')[0],
           country: response.country || '',
           city: response.meta?.city || response.city || '',
-          locked_district: response.meta?.district || response.anchorDistrict || response.targetDistrict || '',
-          user_level: pullCount,
-          coupons_won: couponsWon.length,
+          lockedDistrict: response.meta?.district || response.anchorDistrict || response.targetDistrict || '',
+          userLevel: pullCount,
+          couponsWon: couponsWon.length,
           themeIntro: response.themeIntro,
           sortingMethod: response.meta?.sortingMethod || response.sortingMethod,
         },

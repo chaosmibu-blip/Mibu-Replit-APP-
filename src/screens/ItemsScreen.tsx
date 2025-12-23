@@ -304,7 +304,7 @@ export function ItemsScreen() {
   };
 
   const cityName = getLocalizedString(meta?.city) || '';
-  const districtName = getLocalizedString(meta?.locked_district) || '';
+  const districtName = getLocalizedString(meta?.lockedDistrict) || '';
 
   const themeIntro = (meta as any)?.themeIntro;
 

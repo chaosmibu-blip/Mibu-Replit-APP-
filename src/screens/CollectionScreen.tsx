@@ -289,8 +289,8 @@ export function CollectionScreen() {
                                 const description = getDescription(item);
                                 const date = formatDate(item.collectedAt);
 
-                                const hasPromo = item.is_promo_active || item.merchant;
-                                const hasCoupon = item.is_coupon && item.coupon_data;
+                                const hasPromo = item.merchant;
+                                const hasCoupon = item.isCoupon && item.couponData;
                                 
                                 const isMerchantPro = item.merchant?.isPro && item.merchant?.brandColor;
                                 const merchantScheme = isMerchantPro 
