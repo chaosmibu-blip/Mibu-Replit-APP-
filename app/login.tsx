@@ -663,15 +663,11 @@ export default function LoginScreen() {
           } : undefined,
         };
         
+        const bodyString = JSON.stringify(requestBody);
         console.log('[Apple Auth] Sending request to:', apiUrl);
         console.log('[Apple Auth] Request body keys:', Object.keys(requestBody));
-        console.log('[Apple Auth] Request body:', {
-          identityTokenLength: requestBody.identityToken?.length,
-          user: requestBody.user,
-          portal: requestBody.portal,
-          email: requestBody.email,
-          fullName: requestBody.fullName,
-        });
+        console.log('[Apple Auth] Full JSON body:', bodyString.substring(0, 200) + '...');
+        console.log('[Apple Auth] Body starts with identityToken?:', bodyString.startsWith('{"identityToken":'));
         
         if (!requestBody.identityToken) {
           console.error('[Apple Auth] No identityToken!');
@@ -686,7 +682,7 @@ export default function LoginScreen() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(requestBody),
+            body: bodyString,
           });
           console.log('[Apple Auth] Request completed, status:', response.status);
         } catch (fetchError: any) {
