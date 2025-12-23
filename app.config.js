@@ -51,7 +51,7 @@ const productionConfig = {
   ...baseConfig,
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.mibu.travel',
+    bundleIdentifier: 'com.chaos.mibu',
     buildNumber: '1',
     infoPlist: {
       NSLocationWhenInUseUsageDescription: '我們需要您的位置來提供附近的旅遊景點推薦',
@@ -61,7 +61,7 @@ const productionConfig = {
     },
   },
   android: {
-    package: 'com.mibu.travel',
+    package: 'com.chaos.mibu',
     versionCode: 1,
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
