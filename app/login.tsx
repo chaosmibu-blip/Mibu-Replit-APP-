@@ -673,13 +673,31 @@ export default function LoginScreen() {
           fullName: requestBody.fullName,
         });
         
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        });
+        if (!requestBody.identityToken) {
+          console.error('[Apple Auth] No identityToken!');
+          return;
+        }
+        
+        console.log('[Apple Auth] About to send request...');
+        let response;
+        try {
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+          });
+          console.log('[Apple Auth] Request completed, status:', response.status);
+        } catch (fetchError: any) {
+          console.error('[Apple Auth] FETCH ERROR:', fetchError);
+          console.error('[Apple Auth] FETCH ERROR message:', fetchError.message);
+          Alert.alert(
+            state.language === 'zh-TW' ? '網路錯誤' : 'Network Error',
+            state.language === 'zh-TW' ? '無法連接到伺服器' : 'Could not connect to server'
+          );
+          return;
+        }
 
         console.log('[Apple Auth] Response status:', response.status);
         const responseText = await response.text();
