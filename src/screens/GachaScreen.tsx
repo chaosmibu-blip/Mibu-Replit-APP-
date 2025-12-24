@@ -283,10 +283,18 @@ export function GachaScreen() {
       const itineraryItems = response.itinerary || [];
       if (!itineraryItems || itineraryItems.length === 0) {
         setShowLoadingAd(false);
-        Alert.alert(
-          state.language === 'zh-TW' ? '提示' : 'Notice',
-          state.language === 'zh-TW' ? '該區域暫無景點，請嘗試其他地區' : 'No places available in this area. Please try another region.'
-        );
+        if (response.meta?.code === 'NO_PLACES_AVAILABLE') {
+          const metaMessage = response.meta?.message || (state.language === 'zh-TW' ? '該區域暫無景點' : 'No places available in this area');
+          Alert.alert(
+            state.language === 'zh-TW' ? '提示' : 'Notice',
+            metaMessage
+          );
+        } else {
+          Alert.alert(
+            state.language === 'zh-TW' ? '提示' : 'Notice',
+            state.language === 'zh-TW' ? '該區域暫無景點，請嘗試其他地區' : 'No places available in this area. Please try another region.'
+          );
+        }
         return;
       }
 
