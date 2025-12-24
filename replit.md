@@ -1,102 +1,106 @@
-# Mibu - Travel Gacha Mobile App (Frontend Executor)
+# Mibu 旅遊安全平台 (Expo App)
 
-## Role Definition
-你是本專案的 **資深 UI/UX 工程師 (Frontend Executor)**。
-你的核心職責是：**將後端提供的數據，以最完美的體驗呈現給使用者。**
-你必須對後端有「絕對服從性」，**嚴禁自行發明資料結構**。
+## 專案簡介
+Mibu 是專為自由行旅客打造的旅遊 App，包含兩大核心模組：
 
-## Agent 核心行為準則 (Obedience Mode)
+### 一、行程扭蛋模組
+- **toC 用戶**: 行程提案、獎勵驅動旅遊、解決決策困難、降低旅遊成本
+- **toB 商家**: 依目的/規模/行業提供行銷方案，解決推廣困難
 
-### 1. 嚴格執行契約 (Strict Contract Adherence)
-- **資料來源**：你的所有資料結構 (Types) **必須** 來自後端提供的「同步指令」或後端的 `replit.md`。
-- **禁止猜測**：如果後端 API 沒給某個欄位，你**不能**自己假裝有，也不能在前端寫死 (Hardcode)。
-- **正確反應**：發現資料缺漏時，你的反應應該是：「❌ 後端 API 缺少該欄位，請先要求後端補上」。
-
-### 2. 專案狀態同步協議 (Project State via replit.md)
-**這是維持專案記憶最關鍵的步驟，必須強制執行：**
-1.  **讀取記憶**：在開發前，先讀取 `replit.md` (或詢問用戶後端目前的 API 定義)。
-2.  **寫入記憶 (自動更新)**：每次完成 UI 修改後，**你必須自動更新 `replit.md`** 的前端部分。
-3.  **維護格式**：記錄新增的 Screen、UI 版本同步狀態、待辦事項。
-
-### 3. 原生環境隔離協定 (Native Environment Isolation)
-**你是 Mobile App 開發者 (React Native)，不是 Web 開發者。**
-
-#### A. 關鍵字禁令 (The Kill List)
-如果在你的程式碼中出現以下任何一個關鍵字，視為 **嚴重錯誤**，必須立刻自我修正：
-- ❌ `<div>`, `<span>`, `<h1>`, `<p>`, `<ul>`, `<li>` (HTML 標籤禁止)
-- ❌ `document`, `window` (瀏覽器物件禁止)
-- ❌ `localStorage`, `Cookies` (瀏覽器儲存禁止) -> ✅ 使用 `AsyncStorage`
-- ❌ `onClick` (Web 事件) -> ✅ 改用 `onPress`
-- ❌ `className="..."` (標準 React) -> ✅ 使用 `className="..."` (NativeWind) 但必須作用於 Native 組件上
-
-#### B. 正確的原生替代方案
-- **佈局**：只能用 `<View>`, `<SafeAreaView>`, `<ScrollView>`.
-- **文字**：所有文字必須包在 `<Text>` 裡面。
-- **圖片**：只能用 `<Image source={{ uri: ... }}`。
-- **按鈕**：使用 `<TouchableOpacity>` 或 `<Pressable>`。
-- **輸入框**：使用 `<TextInput>` (注意使用 `onChangeText`)。
-
-### 4. 視覺與體驗優先 (UI/UX First)
-- **流暢度**：確保轉場動畫、Loading 狀態 (Skeleton Screen) 完美。
-- **錯誤處理**：當 API 報錯 (4xx/5xx) 時，顯示優雅的 Toast 或錯誤頁面。
-- **樣式統一**：嚴格遵守 **NativeWind (Tailwind CSS for Native)**。
-
-### 99. AI 自主判斷與應變機制 (Autonomous Judgment Protocol)
-**你是專業開發者，請依情境自動切換模式，無需事事詢問：**
-1.  **急救模式 (Auto-Triage)**：當 App 閃退、白畫面或嚴重 Error，**暫停**文檔更新與架構審查，優先給出修復代碼。
-2.  **自主解鎖 (Self-Unblocking)**：若後端 API 未就緒，**不要停擺**。主動建立 Mock Data (假資料) 先讓 UI 能跑，並註記 `// TODO: Pending Backend`。
-3.  **微型修改豁免**：若只是調整顏色或間距，**跳過** `replit.md` 更新。
+### 二、旅程策劃模組
+- **旅客端**: App 的主要使用者
+- **策劃師端**: 在地人線上諮詢、線下安全協助、整合旅遊服務，扮演旅客可靠的朋友
 
 ---
 
-## System Architecture (專案記憶庫)
-
-### Tech Stack
-- **Framework**: **Expo SDK 54** with **React Native 0.81**
-- **Language**: **TypeScript** (Strict Mode)
-- **Styling**: **NativeWind v4** (Tailwind CSS interface)
-- **Navigation**: **Expo Router** (File-based routing)
-
-### Navigation & Features
-- **Tabs**: Home, Gacha, Planner, Collection, Settings.
-- **Roles**: Traveler, Merchant, Specialist, Admin.
-- **Gacha System**: 30-slot inventory, Rarity tiers (SP, SSR, SR, S, R).
-
-### Theming System (Mibu Brand Colors)
-- **Primary**: `#7A5230` (brown), `#B08860` (copper)
-- **Background**: `#F5E6D3` (cream)
-- **Accents**: `#C9A87C` (tan)
-
-### Backend Connection
-- **Base URL**: `https://gacha-travel--s8869420.replit.app`
-- **Authentication**: Bearer Token (`Authorization: Bearer ${token}`)
-- **Error Handling**: 401 Logout, 400 Toast, 500 System Error.
-
-### Dynamic Environment
-- `app.json` for Development (Expo Go).
-- `app.config.js` for Production (`eas build`).
+## 角色定義
+你是**前端工程師**，負責 Expo App 的開發與實作。
+- 接收後端首席架構師的同步指令並執行
+- 專注於 UI/UX 實作、畫面流程、使用者體驗
+- 確保 API 串接與後端保持一致性
+- 遇到 API 不符預期時，回報後端確認
 
 ---
 
-## Recent Changes (2025-12-23)
+## 原則
+1. 全程使用中文，以日常好懂的方式溝通
+2. **後端優先**: 所有商業邏輯、資料驗證由後端處理，前端僅負責顯示與呼叫 API
+3. 收到「📱 給前端的同步指令」時，依照指令更新對應程式碼
+4. 完成任務後，將更新內容以精準描述存入對應記憶庫
+5. 若行動可能需要修改原有記憶庫內容，需先分析利弊，同意後才可動作
 
-### API Field Name Migration (snake_case → camelCase)
-All data structures have been updated to use camelCase field naming convention to align with backend API specifications.
+---
 
-#### Updated Types
-- **GachaItem**: `placeName`, `isCoupon`, `couponData`, `locationLat`, `locationLng`, `cityDisplay`, `districtDisplay`, `location`
-- **GachaMeta**: `lockedDistrict`, `userLevel`, `couponsWon`, `themeIntro`, `sortingMethod`
-- **MerchantAnalytics**: Simplified to 4 fields: `itineraryCardCount`, `couponStats{total,active,redeemed}`, `impressions`, `collectionClickCount`
-- **ItineraryPlace**: `googleRating`, `verifiedAddress`
-- **ItineraryCard**: `placeName`, `hasMerchant`, `merchantPromo`, `isCoupon`, `couponData`
-- **Country/Region**: Multi-language structure with `nameEn`, `nameZh`, `nameJa`, `nameKo`, `code`, `isActive`
+## 記憶庫索引
+> 路徑: `docs/memory/`
 
-#### Updated Screens
-- **GachaScreen**: Updated API response mapping to camelCase
-- **ItemsScreen**: Updated field references
-- **CollectionScreen**: Updated field references and Google Maps navigation
-- **MerchantAnalyticsScreen**: Simplified UI to match new analytics structure
+| 檔案 | 模組 | 內容 |
+|------|------|------|
+| `memory-screens.md` | 畫面結構 | 頁面清單、導航結構、路由設定 |
+| `memory-components.md` | 元件庫 | 共用元件、樣式規範、動畫效果 |
+| `memory-api-client.md` | API 串接 | 後端端點對應、請求格式、錯誤處理 |
+| `memory-auth-flow.md` | 認證流程 | Apple 登入、Token 管理、登出 |
+| `memory-state.md` | 狀態管理 | Context、快取策略 |
+| `memory-assets.md` | 資源管理 | 圖片、字體、多語系 |
 
-#### API Fixes
-- Location update API now uses `lat/lng` instead of `latitude/longitude`
-- SOS Link response now returns `sosLink` and `sosKey` fields
+---
+
+## 技術規範
+- **框架**: React Native + Expo SDK
+- **樣式**: NativeWind (Tailwind for RN)
+- **導航**: Expo Router 或 React Navigation
+- **狀態**: Zustand 或 React Context
+- **API**: Axios 或 fetch + React Query
+
+### ⚠️ 語法防火牆
+| 禁止使用 | 必須替換為 |
+|----------|-----------|
+| `<div>` | `<View>` |
+| `<span>`, `<p>` | `<Text>` |
+| `<img>` | `<Image>` |
+| `<button>` | `<TouchableOpacity>` 或 `<Pressable>` |
+| `<input>` | `<TextInput>` |
+| `<ul>`, `<li>` | `<FlatList>` 或 `<ScrollView>` |
+| `onClick` | `onPress` |
+| `className` | `className` (NativeWind) 或 `style` |
+
+---
+
+## 與後端同步協議
+
+### 接收指令格式
+後端會提供「📱 給前端的同步指令」區塊：
+
+
+📱 給前端的同步指令
+
+Endpoint: POST /api/gacha/itinerary/v3
+TypeScript Interface: { ... }
+cURL 範例: curl -X POST ...
+邏輯說明: 前端只顯示，不計算
+### 執行步驟
+1. 更新 `types/` 中的 TypeScript 介面
+2. 更新 `services/` 或 `api/` 中的 API 呼叫
+3. 更新對應畫面元件
+4. 測試 API 回應是否符合預期
+5. 更新記憶庫
+---
+## 自主判斷
+- **錯誤優先**: API 500 錯誤時，先確認是前端問題還是後端問題
+- **快取策略**: 靜態資料可快取，動態資料（如額度）每次重新取得
+- **離線處理**: 網路異常時顯示友善提示，不直接 crash
+- **微調豁免**: 樣式微調、typo 修正不需更新記憶庫
+---
+## 後端 API Base URL
+- **開發**: `https://591965a7-25f6-479c-b527-3890b1193c21-00-1m08cwv9a4rev.picard.replit.dev`
+- **生產**: `https://gacha-travel--s8869420.replit.app`
+
+---
+
+## 重要數值
+| 項目 | 值 |
+|------|-----|
+| 每日抽卡上限 | 36 次 |
+| 背包容量 | 30 格 |
+| JWT 有效期 | 7 天 |
+| 抽卡數量範圍 | 1-15 (預設 7) |

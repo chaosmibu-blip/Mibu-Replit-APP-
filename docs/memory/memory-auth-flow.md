@@ -3,8 +3,8 @@
 ## 支援的登入方式
 
 1. **Apple Sign In** (iOS 優先)
-2. **Google Sign In**
-3. **Email/Password** 註冊與登入
+2. ~~Google Sign In~~ (暫未實作)
+3. ~~Email/Password~~ (暫未實作)
 
 ---
 
@@ -18,11 +18,11 @@
 取得 Apple Identity Token
     ↓
 POST /api/auth/apple
-├── Body: { identityToken, user?, fullName? }
+├── Body: { identityToken }
     ↓
-後端驗證 Token，返回 JWT
+後端驗證 Token，返回 JWT + User
     ↓
-儲存 JWT Token 到 AsyncStorage
+儲存 JWT Token 到 SecureStore
     ↓
 更新 AppContext 使用者狀態
     ↓
@@ -32,76 +32,109 @@ POST /api/auth/apple
 ### 程式碼範例
 ```typescript
 import * as AppleAuthentication from 'expo-apple-authentication';
+import * as SecureStore from 'expo-secure-store';
 
 const handleAppleLogin = async () => {
+  // 1. 使用 expo-apple-authentication 取得 identityToken
   const credential = await AppleAuthentication.signInAsync({
     requestedScopes: [
-      AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
       AppleAuthentication.AppleAuthenticationScope.EMAIL,
+      AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
     ],
   });
   
-  const response = await apiService.appleAuth({
-    identityToken: credential.identityToken,
-    user: credential.user,
-    fullName: credential.fullName,
+  // 2. 發送給後端換取 JWT
+  const response = await fetch(`${API_BASE_URL}/api/auth/apple`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identityToken: credential.identityToken })
   });
   
-  await AsyncStorage.setItem('@mibu_token', response.token);
-  setUser(response.user, response.token);
+  const { token, user } = await response.json();
+  
+  // 3. 儲存 Token (SecureStore)
+  await SecureStore.setItemAsync('jwt_token', token);
+  
+  // 4. 更新 Context 狀態
+  setUser(user, token);
 };
-```
-
----
-
-## Google 登入流程
-
-```
-使用者點擊「使用 Google 登入」
-    ↓
-呼叫 expo-auth-session (Google OAuth)
-    ↓
-取得 Google Access Token
-    ↓
-POST /api/auth/google
-├── Body: { accessToken }
-    ↓
-後端驗證 Token，返回 JWT
-    ↓
-儲存 JWT Token 到 AsyncStorage
-    ↓
-更新 AppContext 使用者狀態
-    ↓
-跳轉到首頁
 ```
 
 ---
 
 ## JWT Token 管理
 
-### 儲存位置
+### JWT 結構
 ```typescript
-const STORAGE_KEYS = {
-  TOKEN: '@mibu_token',
-  USER: '@mibu_user',
-};
+interface JWTPayload {
+  userId: string;
+  email: string;
+  role: 'user' | 'merchant' | 'specialist' | 'admin';
+  iat: number;
+  exp: number;  // 7 天後過期
+}
 ```
 
-### Token 存取
+### 儲存方式 (推薦使用 SecureStore)
 ```typescript
+import * as SecureStore from 'expo-secure-store';
+
 // 儲存 Token
-await AsyncStorage.setItem('@mibu_token', token);
+await SecureStore.setItemAsync('jwt_token', token);
 
 // 讀取 Token
-const token = await AsyncStorage.getItem('@mibu_token');
+const token = await SecureStore.getItemAsync('jwt_token');
 
 // 清除 Token
-await AsyncStorage.removeItem('@mibu_token');
+await SecureStore.deleteItemAsync('jwt_token');
 ```
 
-### Token 刷新策略
-- 目前未實作自動刷新
-- Token 過期時 (401 回應) 清除並跳轉登入頁
+### JWT 使用方式
+```typescript
+// 所有 API 請求都需帶入 Authorization Header
+const token = await SecureStore.getItemAsync('jwt_token');
+const response = await fetch(`${API_BASE_URL}/api/xxx`, {
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+// Token 過期 (401) 時，導向重新登入
+if (response.status === 401) {
+  await SecureStore.deleteItemAsync('jwt_token');
+  navigation.navigate('Login');
+}
+```
+
+---
+
+## Token 過期處理
+
+### 自動檢測 401
+```typescript
+const apiRequest = async (endpoint: string, options?: RequestInit) => {
+  const token = await SecureStore.getItemAsync('jwt_token');
+  
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...options?.headers,
+    },
+  });
+  
+  if (response.status === 401) {
+    // Token 過期，清除並跳轉登入
+    await SecureStore.deleteItemAsync('jwt_token');
+    router.replace('/login');
+    throw new Error('Token expired');
+  }
+  
+  return response.json();
+};
+```
 
 ---
 
@@ -109,22 +142,23 @@ await AsyncStorage.removeItem('@mibu_token');
 
 ```typescript
 const handleLogout = async () => {
-  // 1. 呼叫後端登出 API (選用)
+  // 1. 呼叫後端登出 API
   try {
-    const token = await AsyncStorage.getItem('@mibu_token');
+    const token = await SecureStore.getItemAsync('jwt_token');
     if (token) {
-      await apiService.logout(token);
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
     }
   } catch (error) {
     console.error('Logout API failed:', error);
   }
   
   // 2. 清除本地儲存
-  await AsyncStorage.multiRemove([
-    '@mibu_token',
-    '@mibu_user',
-    '@mibu_collection',
-  ]);
+  await SecureStore.deleteItemAsync('jwt_token');
   
   // 3. 重置 Context 狀態
   setUser(null);
@@ -136,30 +170,26 @@ const handleLogout = async () => {
 
 ---
 
-## 角色切換
+## 角色權限
 
 ### 支援角色
 | 角色 | 代碼 | 權限 |
 |------|------|------|
-| 旅行者 | `traveler` | 扭蛋、收藏、行程 |
+| 旅行者 | `user` | 扭蛋、收藏、行程 |
 | 商家 | `merchant` | 商家管理、優惠券 |
 | 專家 | `specialist` | 專家儀表板 |
 | 管理員 | `admin` | 全部權限 |
 
-### 切換流程
+### 角色檢查
 ```typescript
-const switchRole = async (role: UserRole) => {
-  const token = await AsyncStorage.getItem('@mibu_token');
-  const response = await apiService.switchRole(token, role);
-  
-  // 更新使用者狀態
-  setUser({ ...user, activeRole: response.activeRole });
-};
+const isAdmin = user?.role === 'admin';
+const isMerchant = user?.role === 'merchant';
+const isSpecialist = user?.role === 'specialist';
 ```
 
 ---
 
 ## 待補充
+- [ ] Google 登入實作
 - [ ] Token 自動刷新機制
 - [ ] 生物辨識登入
-- [ ] 記住登入狀態
