@@ -1,23 +1,26 @@
 # Memory: Components (元件庫)
 
+> 最後更新: 2025-12-25
+
 ## 共用元件清單
 
-### UI 基礎元件
+### UI 基礎元件 (src/components/ui/)
 | 元件 | 檔案路徑 | 用途 |
 |------|----------|------|
 | `Button` | `src/components/ui/Button.tsx` | 通用按鈕 |
 | `Select` | `src/components/ui/Select.tsx` | 下拉選單 |
-| `Input` | `src/components/ui/Input.tsx` | 輸入框 |
 | `Card` | `src/components/ui/Card.tsx` | 卡片容器 |
-| `Modal` | `src/components/ui/Modal.tsx` | 彈出視窗 |
+| `SegmentedControl` | `src/components/ui/SegmentedControl.tsx` | 分段控制器 |
 
-### 業務元件
+### 業務元件 (src/components/)
 | 元件 | 檔案路徑 | 用途 |
 |------|----------|------|
-| `GachaCard` | `src/components/GachaCard.tsx` | 扭蛋卡片 |
 | `LoadingAdScreen` | `src/components/LoadingAdScreen.tsx` | 載入廣告畫面 |
-| `PlaceCard` | `src/components/PlaceCard.tsx` | 地點卡片 |
-| `CouponBadge` | `src/components/CouponBadge.tsx` | 優惠券徽章 |
+| `ModuleNav` | `src/components/ModuleNav.tsx` | 模組導航 |
+| `RoleSwitcher` | `src/components/RoleSwitcher.tsx` | 角色切換器 |
+| `TierBadge` | `src/components/TierBadge.tsx` | 等級徽章 |
+| `TagInput` | `src/components/TagInput.tsx` | 標籤輸入 |
+| `MerchantRegistrationForm` | `src/components/MerchantRegistrationForm.tsx` | 商家註冊表單 |
 
 ---
 
@@ -114,5 +117,4 @@ withSpring(scale.value = 1, { damping: 10 });
 
 ## 待補充
 - [ ] 完整元件 Props 文檔
-- [ ] Storybook 整合
 - [ ] 無障礙 (A11y) 設定

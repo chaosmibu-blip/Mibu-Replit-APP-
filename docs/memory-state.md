@@ -1,8 +1,10 @@
 # Memory: State Management (狀態管理)
 
+> 最後更新: 2025-12-25
+
 ## 狀態管理方案
 
-**使用 React Context + useReducer**
+**使用 React Context + useState**
 - 檔案位置: `src/context/AppContext.tsx`
 - 全域狀態透過 `useApp()` Hook 存取
 
@@ -18,6 +20,13 @@ interface AppState {
   
   // 語言設定
   language: Language;  // 'zh-TW' | 'en' | 'ja' | 'ko'
+  
+  // 地區選擇 (扭蛋用)
+  country: string;
+  city: string;
+  countryId: number | null;
+  regionId: number | null;
+  level: string;  // 抽卡等級
   
   // 扭蛋相關
   collection: GachaItem[];
@@ -50,6 +59,7 @@ interface User {
 
 | 方法 | 用途 |
 |------|------|
+| `updateState(updates)` | 通用狀態更新 |
 | `setUser(user, token?)` | 設定使用者狀態 |
 | `setLanguage(lang)` | 切換語言 |
 | `addToCollection(items)` | 新增收藏 |
@@ -58,6 +68,8 @@ interface User {
 | `setError(message)` | 設定錯誤訊息 |
 | `switchRole(role)` | 切換使用者角色 |
 | `getToken()` | 取得 JWT Token |
+| `refreshUnreadCount()` | 刷新未讀物品數 |
+| `setUnreadCount(count)` | 設定未讀物品數 |
 
 ---
 
