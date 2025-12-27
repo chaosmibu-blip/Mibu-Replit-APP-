@@ -955,58 +955,6 @@ export default function LoginScreen() {
                 />
               )}
 
-              <View style={styles.dividerContainer}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>{state.language === 'zh-TW' ? '或使用 Email' : 'or use Email'}</Text>
-                <View style={styles.dividerLine} />
-              </View>
-
-              <TextInput
-                style={styles.emailInput}
-                placeholder={state.language === 'zh-TW' ? 'Email' : 'Email'}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                placeholderTextColor={MibuBrand.copper}
-              />
-              <TextInput
-                style={styles.emailInput}
-                placeholder={state.language === 'zh-TW' ? '密碼' : 'Password'}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                placeholderTextColor={MibuBrand.copper}
-              />
-              <TouchableOpacity 
-                style={[styles.emailLoginButton, { borderColor: currentPortal.color }]} 
-                onPress={handleEmailLogin}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color={currentPortal.color} />
-                ) : (
-                  <>
-                    <Ionicons name="log-in-outline" size={20} color={currentPortal.color} />
-                    <Text style={[styles.emailLoginButtonText, { color: currentPortal.color }]}>
-                      {state.language === 'zh-TW' ? '登入' : 'Login'}
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.registerLink}
-                onPress={() => router.push('/register')}
-              >
-                <Text style={styles.registerLinkText}>
-                  {state.language === 'zh-TW' ? '還沒有帳號？' : "Don't have an account? "}
-                  <Text style={styles.registerLinkHighlight}>
-                    {state.language === 'zh-TW' ? '立即註冊' : 'Register now'}
-                  </Text>
-                </Text>
-              </TouchableOpacity>
-
               {currentPortal.guestAllowed && (
                 <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
                   <Text style={styles.guestButtonText}>{texts.guest}</Text>
