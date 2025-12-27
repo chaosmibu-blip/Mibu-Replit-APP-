@@ -1,6 +1,6 @@
 # Memory: Screens (畫面結構)
 
-> 最後更新: 2025-12-25
+> 最後更新: 2025-12-27
 
 ## 頁面清單
 
@@ -118,6 +118,39 @@ router.push({ pathname: '/gacha/items', params: { itemId: '123' } });
 // 接收參數
 const { itemId } = useLocalSearchParams();
 ```
+
+---
+
+---
+
+## 首頁公告串接 (2025-12-27)
+
+### 功能說明
+首頁動態顯示從後端 API 取得的公告，取代原本寫死的假資料。
+
+### API 端點
+```
+GET /api/announcements
+```
+
+### 公告類型
+| 類型 | 區塊樣式 | 說明 |
+|------|----------|------|
+| `announcement` | 淺色卡片 | 一般公告 |
+| `flash_event` | 深色卡片 (棕色) | 快閃活動 |
+| `holiday_event` | 深色卡片 (紅色) | 節慶活動 |
+
+### 顯示邏輯
+- 依類型分類顯示在不同區塊
+- 若該類型無公告則隱藏區塊
+- 若完全無公告則顯示「目前沒有公告」提示
+- 公告有連結 (`linkUrl`) 時可點擊開啟
+
+### 後端過濾（前端無需處理）
+- `isActive = true`
+- `startDate <= now`
+- `endDate IS NULL OR endDate >= now`
+- 按 `priority DESC, createdAt DESC` 排序
 
 ---
 
