@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mibu.travel",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Mibu 需要您的位置，以便在扭蛋時自動鎖定您所在的縣市，並為您導航至景點。"
+      }
     },
     "android": {
       "adaptiveIcon": {

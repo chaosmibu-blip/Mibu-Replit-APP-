@@ -68,6 +68,10 @@ export function GachaScreen() {
   const [showLoadingAd, setShowLoadingAd] = useState(false);
   const [isApiComplete, setIsApiComplete] = useState(false);
   const pendingResultRef = useRef<any>(null);
+  
+  const [rarityModalVisible, setRarityModalVisible] = useState(false);
+  const [rarityConfig, setRarityConfig] = useState<{ rarity: string; probability: number }[]>([]);
+  const [loadingRarity, setLoadingRarity] = useState(false);
 
   useEffect(() => {
     loadCountries();
@@ -152,6 +156,36 @@ export function GachaScreen() {
       await AsyncStorage.setItem(DAILY_LIMIT_KEY, JSON.stringify({ date: today, count }));
     } catch (error) {
       console.error('Failed to increment daily count:', error);
+    }
+  };
+
+  const handleViewRarity = async () => {
+    setRarityModalVisible(true);
+    setLoadingRarity(true);
+    try {
+      const result = await apiService.getRarityConfig();
+      if (result.config) {
+        const config = result.config;
+        const probArray = [
+          { rarity: 'R', probability: config.rRate },
+          { rarity: 'S', probability: config.sRate },
+          { rarity: 'SR', probability: config.srRate },
+          { rarity: 'SSR', probability: config.ssrRate },
+          { rarity: 'SP', probability: config.spRate },
+        ].sort((a, b) => b.probability - a.probability);
+        setRarityConfig(probArray);
+      }
+    } catch (error) {
+      console.error('Failed to load rarity config:', error);
+      setRarityConfig([
+        { rarity: 'R', probability: 32 },
+        { rarity: 'S', probability: 23 },
+        { rarity: 'SR', probability: 15 },
+        { rarity: 'SSR', probability: 8 },
+        { rarity: 'SP', probability: 2 },
+      ]);
+    } finally {
+      setLoadingRarity(false);
     }
   };
 
@@ -590,6 +624,27 @@ export function GachaScreen() {
           disabled={!canSubmit || showLoadingAd}
           style={{ marginTop: 8 }}
         />
+
+        <TouchableOpacity
+          onPress={handleViewRarity}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: 16,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            backgroundColor: '#f8fafc',
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: '#e2e8f0',
+          }}
+        >
+          <Ionicons name="information-circle-outline" size={18} color="#6366f1" />
+          <Text style={{ fontSize: 14, color: '#6366f1', marginLeft: 6, fontWeight: '600' }}>
+            {state.language === 'zh-TW' ? '機率說明' : 'Probability Info'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <Modal
@@ -788,6 +843,117 @@ export function GachaScreen() {
                   </View>
                 )}
               </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={rarityModalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setRarityModalVisible(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: 20,
+              padding: 24,
+              width: '100%',
+              maxWidth: 320,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 20,
+              }}
+            >
+              <Text style={{ fontSize: 18, fontWeight: '800', color: '#1e293b' }}>
+                {state.language === 'zh-TW' ? '優惠券機率說明' : 'Coupon Probability'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setRarityModalVisible(false)}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  backgroundColor: '#f1f5f9',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="close" size={18} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+
+            {loadingRarity ? (
+              <ActivityIndicator size="small" color="#6366f1" />
+            ) : (
+              <View>
+                <Text style={{ fontSize: 13, color: '#64748b', marginBottom: 16, lineHeight: 20 }}>
+                  {state.language === 'zh-TW' 
+                    ? '抽取優惠券時，各稀有度的出現機率如下：'
+                    : 'When drawing coupons, the probability for each rarity is:'}
+                </Text>
+                
+                {rarityConfig.map((item) => (
+                  <View
+                    key={item.rarity}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      paddingVertical: 10,
+                      borderBottomWidth: 1,
+                      borderBottomColor: '#f1f5f9',
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View
+                        style={{
+                          backgroundColor: RARITY_BG_COLORS[item.rarity] || '#f1f5f9',
+                          paddingHorizontal: 10,
+                          paddingVertical: 4,
+                          borderRadius: 8,
+                          minWidth: 44,
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            fontWeight: '800',
+                            color: RARITY_COLORS[item.rarity] || '#64748b',
+                          }}
+                        >
+                          {item.rarity}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: '#1e293b' }}>
+                      {item.probability}%
+                    </Text>
+                  </View>
+                ))}
+
+                <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 16, textAlign: 'center' }}>
+                  {state.language === 'zh-TW' 
+                    ? '※ 機率僅供參考，實際結果可能有所不同'
+                    : '※ Probabilities are for reference only'}
+                </Text>
+              </View>
             )}
           </View>
         </View>
