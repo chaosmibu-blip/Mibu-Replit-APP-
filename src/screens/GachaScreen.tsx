@@ -625,6 +625,7 @@ export function GachaScreen() {
           style={{ marginTop: 8 }}
         />
 
+{/* TODO: 商家端開放後取消註解顯示機率說明按鈕
         <TouchableOpacity
           onPress={handleViewRarity}
           style={{
@@ -645,6 +646,7 @@ export function GachaScreen() {
             {state.language === 'zh-TW' ? '機率說明' : 'Probability Info'}
           </Text>
         </TouchableOpacity>
+        */}
       </View>
 
       <Modal
@@ -848,6 +850,7 @@ export function GachaScreen() {
         </View>
       </Modal>
 
+{/* TODO: 商家端開放後取消註解顯示機率說明 Modal
       <Modal
         visible={rarityModalVisible}
         animationType="fade"
@@ -958,6 +961,7 @@ export function GachaScreen() {
           </View>
         </View>
       </Modal>
+      */}
 
       <LoadingAdScreen
         visible={showLoadingAd}
