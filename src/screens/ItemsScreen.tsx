@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { useApp } from '../context/AppContext';
 import { GachaItem } from '../types';
 import { getCategoryLabel, getCategoryColor } from '../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../constants/Colors';
+import { InfoToast } from '../components/InfoToast';
 
 const RARITY_COLORS: Record<string, string> = {
   SP: MibuBrand.tierSP,
@@ -244,6 +245,19 @@ export function ItemsScreen() {
   const items = state.result?.inventory || [];
   const meta = state.result?.meta;
 
+  const [showShortfallToast, setShowShortfallToast] = useState(false);
+  const [shortfallMessage, setShortfallMessage] = useState('');
+
+  useEffect(() => {
+    if (meta?.isShortfall && meta?.shortfallMessage) {
+      const timer = setTimeout(() => {
+        setShortfallMessage(meta.shortfallMessage || '');
+        setShowShortfallToast(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [meta?.isShortfall, meta?.shortfallMessage]);
+
   const handleBackToGacha = () => {
     router.back();
   };
@@ -398,6 +412,13 @@ export function ItemsScreen() {
           <Ionicons name="refresh" size={18} color={MibuBrand.warmWhite} />
         </TouchableOpacity>
       </View>
+
+      <InfoToast
+        visible={showShortfallToast}
+        message={shortfallMessage}
+        duration={4000}
+        onHide={() => setShowShortfallToast(false)}
+      />
     </View>
   );
 }

@@ -118,6 +118,9 @@
     totalPlaces: number;
     dailyPullCount: number;
     remainingQuota: number;
+    requestedCount: number;      // 用戶請求張數（如 12）
+    isShortfall: boolean;        // true = 景點不足
+    shortfallMessage: string;    // "內湖區目前只有 8 個景點，我們正在努力擴充中！"
   };
 }
 

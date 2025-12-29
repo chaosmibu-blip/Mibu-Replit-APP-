@@ -386,6 +386,12 @@ export function GachaScreen() {
           couponsWon: couponsWon.length,
           themeIntro: response.themeIntro,
           sortingMethod: response.meta?.sortingMethod || response.sortingMethod,
+          requestedCount: response.meta?.requestedCount,
+          totalPlaces: response.meta?.totalPlaces,
+          isShortfall: response.meta?.isShortfall,
+          shortfallMessage: response.meta?.shortfallMessage,
+          dailyPullCount: response.meta?.dailyPullCount,
+          remainingQuota: response.meta?.remainingQuota,
         },
         couponsWon,
       };

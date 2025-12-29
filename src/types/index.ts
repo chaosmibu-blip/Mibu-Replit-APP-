@@ -328,6 +328,12 @@ export interface GachaMeta {
   couponsWon?: number;
   themeIntro?: string;
   sortingMethod?: string;
+  requestedCount?: number;
+  totalPlaces?: number;
+  isShortfall?: boolean;
+  shortfallMessage?: string;
+  dailyPullCount?: number;
+  remainingQuota?: number;
 }
 
 export interface CouponWon {
@@ -345,6 +351,12 @@ export interface ItineraryV3Meta {
   sortingMethod?: 'coordinate' | 'ai_reordered';
   aiReorderResult?: 'reordered' | 'no_change' | 'no_numbers' | 'error';
   categoryDistribution?: Record<string, number>;
+  requestedCount?: number;
+  totalPlaces?: number;
+  isShortfall?: boolean;
+  shortfallMessage?: string;
+  dailyPullCount?: number;
+  remainingQuota?: number;
 }
 
 export interface ItineraryGenerateResponse {
