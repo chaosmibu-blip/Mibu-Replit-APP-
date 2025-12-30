@@ -5,8 +5,10 @@ export enum Category {
   Entertainment = 'Entertainment',
   Scenery = 'Scenery',
   Shopping = 'Shopping',
-  Activity = 'Activity'
 }
+
+export const MIBU_CATEGORIES = ['美食', '住宿', '景點', '購物', '娛樂設施', '生態文化教育', '遊程體驗'] as const;
+export type MibuCategory = typeof MIBU_CATEGORIES[number];
 
 export type Language = 'zh-TW' | 'en' | 'ja' | 'ko';
 export type LocalizedContent = string | { [key in Language]?: string };

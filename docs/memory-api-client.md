@@ -9,6 +9,39 @@
 
 ---
 
+## 景點類別定義（七大類）
+
+> ⚠️ 2025-12-30 更新：「活動」類別已移除
+
+```typescript
+export const MIBU_CATEGORIES = ['美食', '住宿', '景點', '購物', '娛樂設施', '生態文化教育', '遊程體驗'] as const;
+export type MibuCategory = typeof MIBU_CATEGORIES[number];
+```
+
+| 中文 | 英文 | 日文 | 韓文 |
+|------|------|------|------|
+| 美食 | Food | グルメ | 맛집 |
+| 住宿 | Stay | 宿泊 | 숙박 |
+| 景點 | Scenery | 観光 | 관광 |
+| 購物 | Shopping | ショッピング | 쇼핑 |
+| 娛樂設施 | Entertainment | エンタメ | 엔터테인먼트 |
+| 生態文化教育 | Eco-Culture | エコ文化 | 에코문화 |
+| 遊程體驗 | Experience | 体験 | 체험 |
+
+---
+
+## 廢棄 API（請勿使用）
+
+| 廢棄 API | 替代 API | 原因 |
+|----------|----------|------|
+| POST /api/generate-itinerary | POST /api/gacha/itinerary/v3 | Legacy 端點 |
+| POST /api/gacha/itinerary | POST /api/gacha/itinerary/v3 | V1 舊版 |
+| POST /api/gacha/pull | POST /api/gacha/pull/v3 | V1 舊版 |
+| POST /api/gacha/pull/v2 | POST /api/gacha/pull/v3 | V2 舊版 |
+| GET /api/gacha/pool/:city/:district | GET /api/gacha/pool | 過於細分 |
+
+---
+
 ## 重要數值
 
 | 項目 | 值 |
