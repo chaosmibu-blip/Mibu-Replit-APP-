@@ -1,0 +1,108 @@
+給前端（Expo App）的同步更新指令
+請將以下內容複製貼給前端開發：
+
+🔴 重大變更：類別定義更新（2025-12-30）
+舊版（八大類）：
+
+type Category = '美食' | '住宿' | '景點' | '購物' | '娛樂設施' | '生態文化教育' | '遊程體驗' | '活動';
+新版（七大類）：
+
+// 「活動」類別已移除，相關景點已重新分配到其他類別
+type MibuCategory = '美食' | '住宿' | '景點' | '購物' | '娛樂設施' | '生態文化教育' | '遊程體驗';
+影響範圍：
+
+所有 API 回應中的 category 欄位都改用七大類
+前端如有 活動 的 UI 顯示邏輯，需移除或改為 fallback
+⚠️ 應廢棄的 API（請勿使用）
+廢棄 API	替代 API	原因
+POST /api/generate-itinerary	POST /api/gacha/itinerary/v3	Legacy 端點，回應格式不一致
+POST /api/gacha/itinerary	POST /api/gacha/itinerary/v3	V1 舊版，無每日額度控制
+POST /api/gacha/pull	POST /api/gacha/pull/v3	V1 舊版
+POST /api/gacha/pull/v2	POST /api/gacha/pull/v3	V2 舊版
+GET /api/gacha/pool/:city/:district	GET /api/gacha/pool	過於細分，改用 regionId
+✅ 扭蛋模組 - 應使用的 API（V3）
+1. POST /api/gacha/itinerary/v3 ⭐ 主要端點
+// Request
+{
+  regionId?: number;      // 縣市 ID（優先）
+  countryId?: number;     // 國家 ID（若未提供 regionId）
+  city?: string;          // 城市名稱（Legacy）
+  district?: string;      // 區域名稱（可選）
+  itemCount?: number;     // 1-15（預設 7）
+  pace?: 'relaxed' | 'moderate' | 'packed';
+  language?: string;
+}
+// Response
+{
+  success: boolean;
+  itinerary: Array<{
+    timeSlot: 'breakfast' | 'morning' | 'lunch' | 'afternoon' | 'dinner' | 'evening';
+    place: {
+      id: number;
+      placeName: string;
+      category: MibuCategory;  // ⚠️ 七大類
+      subcategory: string | null;
+      description: string | null;
+      address: string | null;
+      rating: number | null;
+      locationLat: number | null;
+      locationLng: number | null;
+      googlePlaceId: string | null;
+    };
+    couponWon?: {
+      id: number;
+      title: string;
+      code: string;
+      terms: string | null;
+    } | null;
+  }>;
+  couponsWon: Array<{...}>;
+  meta: {
+    city: string;
+    district: string | null;
+    dailyLimit: number;        // 36
+    dailyPullCount: number;    // 今日已抽
+    remainingQuota: number;    // 剩餘額度
+    categoryDistribution?: Record<MibuCategory, number>;
+    sortingMethod?: 'coordinate' | 'ai_reordered';
+    aiReorderResult?: 'reordered' | 'no_change' | 'no_numbers' | 'error';
+  };
+  themeIntro?: string;
+}
+2. POST /api/gacha/pull/v3 單一抽卡
+需要登入（Bearer Token）
+
+3. GET /api/gacha/pool 獎池預覽
+// Query: ?regionId=1 或 ?city=台北市
+{
+  success: boolean;
+  pool: {
+    city: string;
+    jackpots: Array<{
+      id: number;
+      placeName: string;
+      category: MibuCategory;
+      subCategory: string;
+      rating: string | null;
+    }>;
+    totalInPool: number;
+    jackpotCount: number;
+  };
+}
+4. GET /api/gacha/prize-pool 高稀有度優惠券獎池
+📝 前端 Action Items
+更新 TypeScript 類型定義
+// types/category.ts
+export const MIBU_CATEGORIES = ['美食', '住宿', '景點', '購物', '娛樂設施', '生態文化教育', '遊程體驗'] as const;
+export type MibuCategory = typeof MIBU_CATEGORIES[number];
+移除對廢棄 API 的調用
+搜尋 /api/generate-itinerary → 改用 /api/gacha/itinerary/v3
+搜尋 /api/gacha/pull (不含 v3) → 改用 /api/gacha/pull/v3
+搜尋 /api/gacha/itinerary (不含 v3) → 改用 /api/gacha/itinerary/v3
+移除「活動」類別相關 UI
+如有 category === '活動' 的判斷，改為 fallback 處理
+如有「活動」的篩選選項，請移除
+確認每日額度顯示
+meta.dailyLimit = 36（每日上限）
+meta.dailyPullCount = 今日已抽張數
+meta.remainingQuota = 剩餘可抽張數
