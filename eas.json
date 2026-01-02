@@ -35,7 +35,8 @@
     "production": {
       "node": "20.11.0",
       "env": {
-        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
+        "EXPO_PUBLIC_API_URL": "https://gacha-travel--s8869420.replit.app"
       },
       "ios": {
         "image": "macos-sonoma-14.6-xcode-16.1",

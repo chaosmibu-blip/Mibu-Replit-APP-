@@ -19,6 +19,20 @@
 
 **用戶偏好**：預設連接開發環境，只有明確指示要打包 App 時才切換到生產環境。
 
+### EAS Build 環境配置（2025-01-02 更新）
+
+`eas.json` 中的 production profile 已配置正式環境 API：
+
+```json
+"production": {
+  "env": {
+    "EXPO_PUBLIC_API_URL": "https://gacha-travel--s8869420.replit.app"
+  }
+}
+```
+
+**打包指令**：`eas build --platform ios --profile production`
+
 ---
 
 ## 景點類別定義（七大類）
