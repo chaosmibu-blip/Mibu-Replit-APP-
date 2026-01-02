@@ -9,8 +9,8 @@ assets/
 │   ├── logo.png           # App Logo
 │   ├── splash.png         # 啟動畫面 (Mibu logo + 貓咪，2025-01-02 更新)
 │   ├── splash-icon.png    # 舊版啟動圖示 (已停用)
-│   ├── icon.png           # App 圖示
-│   ├── adaptive-icon.png  # Android 自適應圖示
+│   ├── icon.png           # App 圖示 (貓咪+Mibu logo，2025-01-02 更新)
+│   ├── adaptive-icon.png  # Android 自適應圖示 (同 icon.png)
 │   └── favicon.png        # Web Favicon
 ├── fonts/                  # 自定義字體
 └── animations/             # Lottie 動畫
