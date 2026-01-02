@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.mibu.travel",
+      "buildNumber": "2",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Mibu 需要您的位置，以便在扭蛋時自動鎖定您所在的縣市，並為您導航至景點。",
         "ITSAppUsesNonExemptEncryption": false
