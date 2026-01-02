@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, Dimensions, Image, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, Modal, Dimensions, SafeAreaView } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,8 +9,6 @@ import Animated, {
   withDelay,
   Easing,
 } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
-import { MibuBrand } from '../../constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const AD_WIDTH = SCREEN_WIDTH - 48;
@@ -129,47 +127,6 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
   return (
     <Modal visible={visible} animationType="fade" transparent={false}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            backgroundColor: '#FFFFFF',
-            borderBottomWidth: 1,
-            borderBottomColor: '#E8E8E8',
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <TouchableOpacity style={{ padding: 4 }}>
-              <Ionicons name="chevron-back" size={24} color="#666666" />
-            </TouchableOpacity>
-            <Image
-              source={require('../../assets/images/icon.png')}
-              style={{ width: 36, height: 36 }}
-              resizeMode="contain"
-            />
-            <Text style={{ fontSize: 18, fontWeight: '700', color: '#333333' }}>MIBU</Text>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-            <Ionicons name="globe-outline" size={22} color="#666666" />
-            <View
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                backgroundColor: '#E0E0E0',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 12, fontWeight: '600', color: '#666666' }}>MI</Text>
-            </View>
-            <Ionicons name="log-out-outline" size={22} color="#666666" />
-          </View>
-        </View>
-
         <View
           style={{
             flex: 1,
