@@ -7,6 +7,18 @@
 - **認證方式**: Bearer Token (`Authorization: Bearer ${token}`)
 - **Content-Type**: `application/json`
 
+### 環境切換注意事項（2025-01-02 更新）
+
+| 開發方式 | 環境變數來源 | 說明 |
+|----------|-------------|------|
+| **Expo Go** | 即時讀取 | 每次啟動都會讀取最新的 `EXPO_PUBLIC_API_URL` |
+| **Development Build** | 編譯時固定 | 環境變數在 `eas build` 時就被打包，之後不會改變 |
+| **Production Build** | 編譯時固定 | 同上 |
+
+**重要**：如果 Development Build 連接到錯誤的環境，需要重新執行 `eas build` 重新編譯。
+
+**用戶偏好**：預設連接開發環境，只有明確指示要打包 App 時才切換到生產環境。
+
 ---
 
 ## 景點類別定義（七大類）
