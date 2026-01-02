@@ -1,6 +1,25 @@
 # Memory: Screens (畫面結構)
 
-> 最後更新: 2025-12-27
+> 最後更新: 2025-01-02
+
+## 開發環境設定
+
+### Expo 啟動模式
+| 模式 | 說明 | 使用情境 |
+|------|------|----------|
+| **Expo Go** | 使用通用的 Expo Go app 載入 | 一般開發測試 |
+| **Development Build** | 需預編譯的自定義原生 app | 使用原生模組時 |
+
+**Workflow 指令**：
+```bash
+npx expo start --web --port 5000 --tunnel --go
+```
+
+- `--go`：強制使用 Expo Go 模式（避免 Development Build 模式導致空白畫面）
+- `--tunnel`：透過 ngrok 建立公網連線
+- `--port 5000`：Replit 要求的 Web 端口
+
+**注意**：若安裝了 `expo-dev-client`，不加 `--go` 參數會預設使用 Development Build 模式，導致 Expo Go app 連線異常（畫面空白）。
 
 ## 頁面清單
 
