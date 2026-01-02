@@ -174,6 +174,7 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
           </Text>
         </View>
 
+        {/* TODO: 廣告功能開放後恢復此區塊
         <View
           style={{
             paddingHorizontal: 24,
@@ -214,6 +215,7 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
             </Text>
           </View>
         </View>
+        */}
       </SafeAreaView>
     </Modal>
   );

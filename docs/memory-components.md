@@ -15,7 +15,7 @@
 ### 業務元件 (src/components/)
 | 元件 | 檔案路徑 | 用途 |
 |------|----------|------|
-| `LoadingAdScreen` | `src/components/LoadingAdScreen.tsx` | 載入廣告畫面 (無 header，2025-01-02 更新) |
+| `LoadingAdScreen` | `src/components/LoadingAdScreen.tsx` | 載入畫面 (無 header，無廣告區塊，2025-01-02 更新) |
 | `ModuleNav` | `src/components/ModuleNav.tsx` | 模組導航 |
 | `RoleSwitcher` | `src/components/RoleSwitcher.tsx` | 角色切換器 |
 | `TierBadge` | `src/components/TierBadge.tsx` | 等級徽章 |
