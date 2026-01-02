@@ -7,13 +7,20 @@
 assets/
 ├── images/
 │   ├── logo.png           # App Logo
-│   ├── splash.png         # 啟動畫面
+│   ├── splash.png         # 啟動畫面 (Mibu logo + 貓咪，2025-01-02 更新)
+│   ├── splash-icon.png    # 舊版啟動圖示 (已停用)
 │   ├── icon.png           # App 圖示
 │   ├── adaptive-icon.png  # Android 自適應圖示
 │   └── favicon.png        # Web Favicon
 ├── fonts/                  # 自定義字體
 └── animations/             # Lottie 動畫
 ```
+
+### Splash Screen 設定
+- **圖片**: `./assets/images/splash.png`
+- **模式**: `cover` (填滿整個螢幕)
+- **背景色**: `#F5E6D3` (米色)
+- **設定位置**: `app.json` → `plugins` → `expo-splash-screen`
 
 ### 使用方式
 ```typescript
