@@ -398,6 +398,17 @@ export function GachaScreen() {
 
       setIsApiComplete(true);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const isUserAbort = errorMessage.includes('Network request failed') || 
+                          errorMessage.includes('AbortError') ||
+                          errorMessage.includes('cancelled');
+      
+      if (isUserAbort) {
+        console.log('Request cancelled (user left app)');
+        setShowLoadingAd(false);
+        return;
+      }
+      
       console.error('Gacha failed:', error);
       setShowLoadingAd(false);
       Alert.alert(

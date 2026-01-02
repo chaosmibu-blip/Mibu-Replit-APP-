@@ -42,6 +42,38 @@ export type MibuCategory = typeof MIBU_CATEGORIES[number];
 
 ---
 
+## 錯誤處理策略（2025-01-02 更新）
+
+### 靜默處理的錯誤類型
+當用戶在 API 請求進行中離開 App，會觸發以下錯誤，應靜默處理不顯示彈窗：
+
+| 錯誤訊息 | 原因 |
+|----------|------|
+| `Network request failed` | 網路請求被中斷 |
+| `AbortError` | 請求被主動取消 |
+| `cancelled` | 請求被取消 |
+
+### 實作範例
+```typescript
+catch (error) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const isUserAbort = errorMessage.includes('Network request failed') || 
+                      errorMessage.includes('AbortError') ||
+                      errorMessage.includes('cancelled');
+  
+  if (isUserAbort) {
+    console.log('Request cancelled (user left app)');
+    setShowLoadingAd(false);
+    return;
+  }
+  
+  // 其他錯誤才顯示彈窗
+  Alert.alert(...);
+}
+```
+
+---
+
 ## 廢棄 API（請勿使用）
 
 | 廢棄 API | 替代 API | 原因 |
