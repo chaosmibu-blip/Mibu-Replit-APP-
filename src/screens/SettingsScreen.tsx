@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { Language } from '../types';
 import { AuthScreen } from './AuthScreen';
@@ -17,7 +16,7 @@ const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
 ];
 
 export function SettingsScreen() {
-  const { state, t, setLanguage, setUser } = useApp();
+  const { state, t, setLanguage, setUser, getToken } = useApp();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const router = useRouter();
@@ -36,13 +35,12 @@ export function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await AsyncStorage.getItem('@mibu_token');
+              const token = await getToken();
               if (token) {
                 await apiService.logout(token).catch(() => {});
               }
             } catch {}
             
-            await AsyncStorage.multiRemove(['@mibu_token', 'token']);
             setUser(null);
             router.replace('/login');
           },
@@ -62,11 +60,10 @@ export function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await AsyncStorage.getItem('@mibu_token');
+              const token = await getToken();
               if (token) {
                 const response = await apiService.deleteAccount(token);
                 if (response.success) {
-                  await AsyncStorage.multiRemove(['@mibu_token', 'token']);
                   setUser(null);
                   router.replace('/');
                 } else {

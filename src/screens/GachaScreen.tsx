@@ -50,7 +50,7 @@ const RARITY_BG_COLORS: Record<string, string> = {
 
 export function GachaScreen() {
   const router = useRouter();
-  const { state, t, addToCollection, setResult } = useApp();
+  const { state, t, addToCollection, setResult, getToken, setUser } = useApp();
   const [countries, setCountries] = useState<Country[]>([]);
   const [regions, setRegions] = useState<Region[]>([]);
   const [selectedCountryId, setSelectedCountryId] = useState<number | null>(null);
@@ -203,7 +203,7 @@ export function GachaScreen() {
     
     try {
       const city = selectedRegion.nameZh || selectedRegion.nameEn || '';
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await getToken();
       
       const [poolResult, couponResult, prizePoolResult] = await Promise.allSettled([
         apiService.getGachaPool(city),
@@ -243,7 +243,7 @@ export function GachaScreen() {
     pendingResultRef.current = null;
 
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await getToken();
       const selectedRegion = regions.find(r => r.id === selectedRegionId);
       const response = await apiService.generateItinerary({
         regionId: selectedRegionId,
@@ -255,7 +255,7 @@ export function GachaScreen() {
         const errorCode = response.errorCode || (response as any).code;
         
         if (errorCode === ErrorCode.AUTH_REQUIRED || errorCode === ErrorCode.AUTH_TOKEN_EXPIRED) {
-          await AsyncStorage.removeItem('@mibu_token');
+          setUser(null);
           Alert.alert(
             state.language === 'zh-TW' ? '登入已過期' : 'Session Expired',
             state.language === 'zh-TW' ? '請重新登入' : 'Please login again'

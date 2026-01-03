@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../types';
@@ -22,7 +21,7 @@ import { TierBadge } from '../components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../constants/tierStyles';
 
 export function MerchantCouponsScreen() {
-  const { state } = useApp();
+  const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
@@ -77,7 +76,7 @@ export function MerchantCouponsScreen() {
   const loadCoupons = async () => {
     try {
       setLoading(true);
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await getToken();
       if (!token) return;
 
       const response = await apiService.getMerchantCoupons(token);
@@ -123,7 +122,7 @@ export function MerchantCouponsScreen() {
 
     setSaving(true);
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await getToken();
       if (!token) return;
 
       const parsedQuantity = parseInt(formData.quantity, 10);
@@ -189,7 +188,7 @@ export function MerchantCouponsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await AsyncStorage.getItem('@mibu_token');
+              const token = await getToken();
               if (!token) return;
 
               await apiService.deleteMerchantCoupon(token, couponId);
@@ -205,7 +204,7 @@ export function MerchantCouponsScreen() {
 
   const toggleActive = async (coupon: MerchantCoupon) => {
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await getToken();
       if (!token) return;
 
       await apiService.updateMerchantCoupon(token, coupon.id, { isActive: !coupon.isActive });

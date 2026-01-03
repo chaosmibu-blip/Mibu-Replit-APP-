@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { TagInput } from '../components/TagInput';
@@ -23,7 +22,7 @@ const RELATION_OPTIONS = [
 ];
 
 export function ProfileScreen() {
-  const { state } = useApp();
+  const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
@@ -50,7 +49,7 @@ export function ProfileScreen() {
 
   const loadProfile = async () => {
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await getToken();
       if (!token) {
         router.back();
         return;
@@ -82,7 +81,7 @@ export function ProfileScreen() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await getToken();
       if (!token) return;
 
       await apiService.updateProfile(token, {

@@ -12,7 +12,6 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { MerchantApplyParams } from '../types';
@@ -32,7 +31,7 @@ const BUSINESS_CATEGORIES = [
 ];
 
 export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegistrationFormProps) {
-  const { state } = useApp();
+  const { state, getToken } = useApp();
   const isZh = state.language === 'zh-TW';
 
   const [loading, setLoading] = useState(false);
@@ -75,7 +74,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
 
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await getToken();
       if (!token) return;
 
       await apiService.applyMerchant(token, formData);

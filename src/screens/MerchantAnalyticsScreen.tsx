@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { MibuBrand } from '../../constants/Colors';
@@ -27,7 +26,7 @@ interface AnalyticsData {
 }
 
 export function MerchantAnalyticsScreen() {
-  const { state } = useApp();
+  const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
@@ -56,7 +55,7 @@ export function MerchantAnalyticsScreen() {
 
   const loadAnalytics = async () => {
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await getToken();
       if (!token) return;
 
       const response = await apiService.getMerchantAnalytics(token);

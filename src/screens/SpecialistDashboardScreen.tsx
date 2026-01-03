@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { SpecialistInfo, ServiceRelation } from '../types';
@@ -41,8 +40,6 @@ export function SpecialistDashboardScreen() {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('@mibu_token');
-    await AsyncStorage.removeItem('@mibu_user');
     setUser(null);
     router.replace('/login');
   };
