@@ -1,8 +1,33 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 import { AppState, Language, User, GachaItem, GachaResponse, UserRole } from '../types';
 import { TRANSLATIONS, DEFAULT_LEVEL } from '../constants/translations';
 import { apiService } from '../services/api';
+
+const saveToken = async (token: string): Promise<void> => {
+  if (Platform.OS === 'web') {
+    await AsyncStorage.setItem('@mibu_token', token);
+  } else {
+    await SecureStore.setItemAsync('mibu_token', token);
+  }
+};
+
+const loadToken = async (): Promise<string | null> => {
+  if (Platform.OS === 'web') {
+    return await AsyncStorage.getItem('@mibu_token');
+  }
+  return await SecureStore.getItemAsync('mibu_token');
+};
+
+const removeToken = async (): Promise<void> => {
+  if (Platform.OS === 'web') {
+    await AsyncStorage.removeItem('@mibu_token');
+  } else {
+    await SecureStore.deleteItemAsync('mibu_token');
+  }
+};
 
 interface AppContextType {
   state: AppState;
@@ -103,17 +128,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (user) {
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       if (token) {
-        await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, token);
+        await saveToken(token);
       }
     } else {
       await AsyncStorage.removeItem(STORAGE_KEYS.USER);
-      await AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
+      await removeToken();
     }
   }, []);
 
   const getToken = useCallback(async (): Promise<string | null> => {
     try {
-      return await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      return await loadToken();
     } catch {
       return null;
     }
