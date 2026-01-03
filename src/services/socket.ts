@@ -30,11 +30,11 @@ export function initSocket(token: string): Socket {
   });
 
   socket.on('connect', () => {
-    console.log('Socket connected');
+    if (__DEV__) console.log('Socket connected');
   });
 
   socket.on('disconnect', () => {
-    console.log('Socket disconnected');
+    if (__DEV__) console.log('Socket disconnected');
   });
 
   socket.on('connect_error', (error) => {

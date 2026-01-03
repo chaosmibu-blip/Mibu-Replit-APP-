@@ -245,27 +245,10 @@ export function GachaScreen() {
     try {
       const token = await AsyncStorage.getItem('@mibu_token');
       const selectedRegion = regions.find(r => r.id === selectedRegionId);
-      console.log('[Gacha] API Request:', {
-        endpoint: '/api/gacha/itinerary/v3',
-        regionId: selectedRegionId,
-        regionName: selectedRegion?.nameZh || selectedRegion?.nameEn,
-        itemCount: pullCount,
-        hasToken: !!token
-      });
       const response = await apiService.generateItinerary({
         regionId: selectedRegionId,
         itemCount: pullCount,
       }, token || undefined);
-
-      console.log('[Gacha] API Response:', {
-        success: response.success,
-        hasItinerary: !!(response.itinerary),
-        itineraryLength: response.itinerary?.length || 0,
-        errorCode: response.errorCode,
-        error: response.error,
-        targetDistrict: response.targetDistrict,
-        city: response.city
-      });
 
       if (!response.success && (response.errorCode || response.error || (response as any).code)) {
         setShowLoadingAd(false);
@@ -404,7 +387,6 @@ export function GachaScreen() {
                           errorMessage.includes('cancelled');
       
       if (isUserAbort) {
-        console.log('Request cancelled (user left app)');
         setShowLoadingAd(false);
         return;
       }
