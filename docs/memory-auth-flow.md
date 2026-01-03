@@ -75,18 +75,49 @@ interface JWTPayload {
 }
 ```
 
-### 儲存方式 (推薦使用 SecureStore)
+### 儲存方式（跨平台安全儲存）
+
+> ⚠️ **2025-01-03 更新**：Token 儲存已統一使用 `AppContext` 的 `loadToken()` / `saveToken()` / `removeToken()` 函數
+
+| 平台 | 儲存方式 | Key |
+|------|----------|-----|
+| iOS / Android | `expo-secure-store`（加密） | `mibu_token` |
+| Web | `AsyncStorage` | `@mibu_token` |
+
 ```typescript
-import * as SecureStore from 'expo-secure-store';
+// AppContext.tsx 中的跨平台實作
+const saveToken = async (token: string): Promise<void> => {
+  if (Platform.OS === 'web') {
+    await AsyncStorage.setItem('@mibu_token', token);
+  } else {
+    await SecureStore.setItemAsync('mibu_token', token);
+  }
+};
 
-// 儲存 Token
-await SecureStore.setItemAsync('jwt_token', token);
+const loadToken = async (): Promise<string | null> => {
+  if (Platform.OS === 'web') {
+    return await AsyncStorage.getItem('@mibu_token');
+  }
+  return await SecureStore.getItemAsync('mibu_token');
+};
 
-// 讀取 Token
-const token = await SecureStore.getItemAsync('jwt_token');
+const removeToken = async (): Promise<void> => {
+  if (Platform.OS === 'web') {
+    await AsyncStorage.removeItem('@mibu_token');
+  } else {
+    await SecureStore.deleteItemAsync('mibu_token');
+  }
+};
+```
 
-// 清除 Token
-await SecureStore.deleteItemAsync('jwt_token');
+### 在畫面中取得 Token
+```typescript
+// ✅ 正確方式：使用 useApp() 的 getToken
+const { getToken } = useApp();
+const token = await getToken();
+
+// ❌ 錯誤方式：直接使用 AsyncStorage
+const token = await AsyncStorage.getItem('@mibu_token');
 ```
 
 ### JWT 使用方式

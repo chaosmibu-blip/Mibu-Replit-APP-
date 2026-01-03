@@ -171,7 +171,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const switchRole = useCallback(async (role: UserRole): Promise<boolean> => {
     try {
-      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      const token = await loadToken();
       if (!token) return false;
 
       const response = await apiService.switchRole(token, role);
@@ -235,7 +235,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const refreshUnreadCount = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      const token = await loadToken();
       if (!token) return;
       
       const data = await apiService.getUnreadCounts(token);
