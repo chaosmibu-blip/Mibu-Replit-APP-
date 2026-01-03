@@ -42,7 +42,7 @@ export function SettingsScreen() {
               }
             } catch {}
             
-            await AsyncStorage.multiRemove(['@mibu_token', 'token']);
+            await AsyncStorage.multiRemove(['@mibu_token']);
             setUser(null);
             router.replace('/login');
           },
@@ -66,7 +66,7 @@ export function SettingsScreen() {
               if (token) {
                 const response = await apiService.deleteAccount(token);
                 if (response.success) {
-                  await AsyncStorage.multiRemove(['@mibu_token', 'token']);
+                  await AsyncStorage.multiRemove(['@mibu_token']);
                   setUser(null);
                   router.replace('/');
                 } else {

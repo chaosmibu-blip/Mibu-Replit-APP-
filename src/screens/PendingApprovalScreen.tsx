@@ -28,7 +28,7 @@ export function PendingApprovalScreen() {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('@mibu_token');
     setUser(null);
     router.replace('/login');
   };
