@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { TagInput } from '../components/TagInput';
@@ -50,7 +50,7 @@ export function ProfileScreen() {
 
   const loadProfile = async () => {
     try {
-      const token = await SecureStore.getItemAsync('@mibu_token');
+      const token = await AsyncStorage.getItem('@mibu_token');
       if (!token) {
         router.back();
         return;
@@ -82,7 +82,7 @@ export function ProfileScreen() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const token = await SecureStore.getItemAsync('@mibu_token');
+      const token = await AsyncStorage.getItem('@mibu_token');
       if (!token) return;
 
       await apiService.updateProfile(token, {

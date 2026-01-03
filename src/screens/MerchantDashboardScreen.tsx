@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { MerchantDailyCode, MerchantCredits } from '../types';
@@ -45,7 +45,8 @@ export function MerchantDashboardScreen() {
   };
 
   const handleLogout = async () => {
-    await SecureStore.deleteItemAsync('@mibu_token');
+    await AsyncStorage.removeItem('@mibu_token');
+    await AsyncStorage.removeItem('@mibu_user');
     setUser(null);
     router.replace('/login');
   };

@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Lin
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
 import { useApp } from '../context/AppContext';
 import { Language } from '../types';
 import { AuthScreen } from './AuthScreen';
@@ -37,13 +36,13 @@ export function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await SecureStore.getItemAsync('@mibu_token');
+              const token = await AsyncStorage.getItem('@mibu_token');
               if (token) {
                 await apiService.logout(token).catch(() => {});
               }
             } catch {}
             
-            await SecureStore.deleteItemAsync('@mibu_token');
+            await AsyncStorage.multiRemove(['@mibu_token', 'token']);
             setUser(null);
             router.replace('/login');
           },
@@ -63,11 +62,11 @@ export function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await SecureStore.getItemAsync('@mibu_token');
+              const token = await AsyncStorage.getItem('@mibu_token');
               if (token) {
                 const response = await apiService.deleteAccount(token);
                 if (response.success) {
-                  await SecureStore.deleteItemAsync('@mibu_token');
+                  await AsyncStorage.multiRemove(['@mibu_token', 'token']);
                   setUser(null);
                   router.replace('/');
                 } else {
