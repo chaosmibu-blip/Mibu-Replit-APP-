@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { InventoryItem, CouponTier } from '../types';
@@ -213,7 +213,7 @@ export function ItemBoxScreen() {
 
   const loadInventory = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await SecureStore.getItemAsync('@mibu_token');
       if (!token) {
         setLoading(false);
         return;
@@ -261,7 +261,7 @@ export function ItemBoxScreen() {
   const handleItemPress = async (item: InventoryItem) => {
     if (!item.isRead && item.status === 'active') {
       try {
-        const token = await AsyncStorage.getItem('@mibu_token');
+        const token = await SecureStore.getItemAsync('@mibu_token');
         if (token) {
           await apiService.markInventoryItemRead(token, item.id);
           setItems(prev => {
@@ -305,7 +305,7 @@ export function ItemBoxScreen() {
 
     setRedeeming(true);
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await SecureStore.getItemAsync('@mibu_token');
       if (!token) return;
 
       const response = await apiService.redeemInventoryItem(token, selectedItem.id, redemptionCode.trim());
@@ -348,7 +348,7 @@ export function ItemBoxScreen() {
 
     setDeleting(true);
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await SecureStore.getItemAsync('@mibu_token');
       if (!token) return;
 
       const response = await apiService.deleteInventoryItem(token, selectedItem.id);

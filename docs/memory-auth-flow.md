@@ -189,6 +189,32 @@ const isSpecialist = user?.role === 'specialist';
 
 ---
 
+## 資安更新紀錄
+
+### 2025-01-03：Token 儲存安全性修復
+- **修復內容**：將所有 JWT Token 儲存從 `AsyncStorage` 改為 `SecureStore`
+- **原因**：`AsyncStorage` 在 iOS 上是明文儲存，有安全風險
+- **影響範圍**：AppContext.tsx、所有 Screen 檔案
+- **統一 Token Key**：`@mibu_token`
+
+#### 修改前（不安全）
+```typescript
+import AsyncStorage from '@react-native-async-storage/async-storage';
+await AsyncStorage.setItem('@mibu_token', token);
+await AsyncStorage.getItem('@mibu_token');
+await AsyncStorage.removeItem('@mibu_token');
+```
+
+#### 修改後（安全）
+```typescript
+import * as SecureStore from 'expo-secure-store';
+await SecureStore.setItemAsync('@mibu_token', token);
+await SecureStore.getItemAsync('@mibu_token');
+await SecureStore.deleteItemAsync('@mibu_token');
+```
+
+---
+
 ## 待補充
 - [ ] Google 登入實作
 - [ ] Token 自動刷新機制

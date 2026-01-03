@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { MerchantApplyParams } from '../types';
@@ -75,7 +75,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
 
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await SecureStore.getItemAsync('@mibu_token');
       if (!token) return;
 
       await apiService.applyMerchant(token, formData);

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as Location from 'expo-location';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL } from '../constants/translations';
@@ -46,7 +46,7 @@ export function SOSScreen() {
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchData = useCallback(async () => {
-    const userToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+    const userToken = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
     if (!userToken) {
       setLoading(false);
       return;
@@ -144,7 +144,7 @@ export function SOSScreen() {
   const triggerSOS = async () => {
     setSending(true);
     try {
-      const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
       if (!token) return;
 
       let locationData: { location?: string; locationAddress?: string } = {};
@@ -219,7 +219,7 @@ export function SOSScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+              const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
               if (!token) return;
 
               await apiService.cancelSosAlert(token, alertId);

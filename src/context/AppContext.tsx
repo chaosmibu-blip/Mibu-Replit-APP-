@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { AppState, Language, User, GachaItem, GachaResponse, UserRole } from '../types';
 import { TRANSLATIONS, DEFAULT_LEVEL } from '../constants/translations';
 import { apiService } from '../services/api';
@@ -103,17 +104,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (user) {
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       if (token) {
-        await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, token);
+        await SecureStore.setItemAsync(STORAGE_KEYS.TOKEN, token);
       }
     } else {
       await AsyncStorage.removeItem(STORAGE_KEYS.USER);
-      await AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
+      await SecureStore.deleteItemAsync(STORAGE_KEYS.TOKEN);
     }
   }, []);
 
   const getToken = useCallback(async (): Promise<string | null> => {
     try {
-      return await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      return await SecureStore.getItemAsync(STORAGE_KEYS.TOKEN);
     } catch {
       return null;
     }
@@ -146,7 +147,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const switchRole = useCallback(async (role: UserRole): Promise<boolean> => {
     try {
-      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      const token = await SecureStore.getItemAsync(STORAGE_KEYS.TOKEN);
       if (!token) return false;
 
       const response = await apiService.switchRole(token, role);
@@ -210,7 +211,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const refreshUnreadCount = useCallback(async () => {
     try {
-      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      const token = await SecureStore.getItemAsync(STORAGE_KEYS.TOKEN);
       if (!token) return;
       
       const data = await apiService.getUnreadCounts(token);

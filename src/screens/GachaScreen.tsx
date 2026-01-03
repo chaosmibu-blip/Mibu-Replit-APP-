@@ -22,6 +22,7 @@ import { apiService } from '../services/api';
 import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse } from '../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { MibuBrand } from '../../constants/Colors';
 import { ErrorCode, ApiError } from '../shared/errors';
 
@@ -203,7 +204,7 @@ export function GachaScreen() {
     
     try {
       const city = selectedRegion.nameZh || selectedRegion.nameEn || '';
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await SecureStore.getItemAsync('@mibu_token');
       
       const [poolResult, couponResult, prizePoolResult] = await Promise.allSettled([
         apiService.getGachaPool(city),
@@ -243,7 +244,7 @@ export function GachaScreen() {
     pendingResultRef.current = null;
 
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await SecureStore.getItemAsync('@mibu_token');
       const selectedRegion = regions.find(r => r.id === selectedRegionId);
       console.log('[Gacha] API Request:', {
         endpoint: '/api/gacha/itinerary/v3',
@@ -272,7 +273,7 @@ export function GachaScreen() {
         const errorCode = response.errorCode || (response as any).code;
         
         if (errorCode === ErrorCode.AUTH_REQUIRED || errorCode === ErrorCode.AUTH_TOKEN_EXPIRED) {
-          await AsyncStorage.removeItem('@mibu_token');
+          await SecureStore.deleteItemAsync('@mibu_token');
           Alert.alert(
             state.language === 'zh-TW' ? '登入已過期' : 'Session Expired',
             state.language === 'zh-TW' ? '請重新登入' : 'Please login again'

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { useApp } from '../context/AppContext';
 
 export function PendingApprovalScreen() {
@@ -28,7 +28,7 @@ export function PendingApprovalScreen() {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('@mibu_token');
+    await SecureStore.deleteItemAsync('@mibu_token');
     setUser(null);
     router.replace('/login');
   };

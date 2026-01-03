@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { useApp } from '../context/AppContext';
 import { apiService } from '../services/api';
 import { AdminUser, PlaceDraft, GlobalExclusion } from '../types';
@@ -60,8 +60,7 @@ export function AdminDashboardScreen() {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('@mibu_token');
-    await AsyncStorage.removeItem('@mibu_user');
+    await SecureStore.deleteItemAsync('@mibu_token');
     setUser(null);
     router.replace('/login');
   };
