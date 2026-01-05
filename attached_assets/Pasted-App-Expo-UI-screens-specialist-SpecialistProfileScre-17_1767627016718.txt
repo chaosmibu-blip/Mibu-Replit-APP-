@@ -1,0 +1,100 @@
+App 前端（Expo）— 旅程策劃模組
+旅客購買策劃師服務
+
+UI 頁面結構
+screens/
+├── specialist/
+│   ├── SpecialistProfileScreen.tsx    // 策劃師個人頁（含服務列表）
+│   ├── ServiceDetailScreen.tsx        // 服務詳情頁
+│   ├── ServiceCheckoutScreen.tsx      // 付款確認頁
+│   ├── ServiceSuccessScreen.tsx       // 付款成功頁
+│   └── MyOrdersScreen.tsx             // 我的訂單列表
+1. 策劃師服務列表 UI
+// SpecialistProfileScreen.tsx
+<View className="flex-1 bg-white">
+  {/* 策劃師頭像與資訊 */}
+  <View className="p-4 items-center">
+    <Image source={{ uri: specialist.avatarUrl }} className="w-24 h-24 rounded-full" />
+    <Text className="text-xl font-bold mt-2">{specialist.name}</Text>
+    <Text className="text-gray-500">{specialist.title}</Text>
+    <View className="flex-row mt-2">
+      <StarRating rating={specialist.rating} />
+      <Text className="ml-2 text-gray-600">({specialist.reviewCount})</Text>
+    </View>
+  </View>
+  {/* 服務列表 */}
+  <Text className="px-4 text-lg font-semibold">提供服務</Text>
+  <FlatList
+    data={specialist.services}
+    renderItem={({ item }) => (
+      <Pressable 
+        className="mx-4 my-2 p-4 bg-gray-50 rounded-xl"
+        onPress={() => navigation.navigate('ServiceDetail', { serviceId: item.id })}
+      >
+        <Text className="font-semibold">{item.name}</Text>
+        <Text className="text-gray-600 text-sm mt-1">{item.description}</Text>
+        <View className="flex-row justify-between mt-2">
+          <Text className="text-primary font-bold">NT${item.price}</Text>
+          <Text className="text-gray-400">{item.duration}分鐘</Text>
+        </View>
+      </Pressable>
+    )}
+  />
+</View>
+2. 服務購買確認頁 UI
+// ServiceCheckoutScreen.tsx
+<View className="flex-1 bg-white p-4">
+  {/* 服務摘要 */}
+  <View className="bg-gray-50 rounded-xl p-4">
+    <Text className="text-lg font-bold">{service.name}</Text>
+    <Text className="text-gray-600 mt-1">{specialist.name}</Text>
+    <View className="border-t border-gray-200 mt-4 pt-4">
+      <View className="flex-row justify-between">
+        <Text>服務費用</Text>
+        <Text className="font-semibold">NT${service.price}</Text>
+      </View>
+    </View>
+  </View>
+  {/* 付款按鈕 */}
+  <Pressable 
+    className="mt-6 bg-primary py-4 rounded-xl items-center"
+    onPress={handlePurchase}
+    disabled={loading}
+  >
+    <Text className="text-white font-bold text-lg">
+      {loading ? '處理中...' : '確認付款'}
+    </Text>
+  </Pressable>
+</View>
+3. 我的訂單列表 UI
+// MyOrdersScreen.tsx
+<FlatList
+  data={orders}
+  renderItem={({ item }) => (
+    <View className="mx-4 my-2 p-4 bg-white rounded-xl shadow-sm">
+      <View className="flex-row justify-between">
+        <Text className="font-semibold">{item.serviceName}</Text>
+        <StatusBadge status={item.status} />
+      </View>
+      <Text className="text-gray-500 text-sm mt-1">{item.specialistName}</Text>
+      <View className="flex-row justify-between mt-2">
+        <Text className="text-gray-400">{formatDate(item.createdAt)}</Text>
+        <Text className="font-bold text-primary">NT${item.amount}</Text>
+      </View>
+    </View>
+  )}
+/>
+// StatusBadge 組件
+const StatusBadge = ({ status }) => {
+  const styles = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    paid: 'bg-green-100 text-green-800',
+    completed: 'bg-blue-100 text-blue-800',
+    cancelled: 'bg-gray-100 text-gray-800',
+  };
+  return (
+    <View className={`px-2 py-1 rounded-full ${styles[status]}`}>
+      <Text className="text-xs">{statusLabels[status]}</Text>
+    </View>
+  );
+};
