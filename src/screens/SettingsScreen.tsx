@@ -230,7 +230,7 @@ export function SettingsScreen() {
           <View style={styles.legalDivider} />
           <TouchableOpacity 
             style={styles.legalItem}
-            onPress={() => Linking.openURL('https://mibu-pages--s8869420.replit.app/terms')}
+            onPress={() => Linking.openURL('https://mibu-travel.com/terms')}
           >
             <Ionicons name="document-text-outline" size={20} color={MibuBrand.copper} />
             <Text style={styles.legalText}>
@@ -241,7 +241,7 @@ export function SettingsScreen() {
           <View style={styles.legalDivider} />
           <TouchableOpacity 
             style={styles.legalItem}
-            onPress={() => Linking.openURL('https://mibu-pages--s8869420.replit.app/support')}
+            onPress={() => Linking.openURL('https://mibu-travel.com/support')}
           >
             <Ionicons name="help-circle-outline" size={20} color={MibuBrand.copper} />
             <Text style={styles.legalText}>
