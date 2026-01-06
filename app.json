@@ -7,11 +7,11 @@
     "icon": "./assets/images/icon.png",
     "scheme": "mibu",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mibu.travel",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Mibu 需要您的位置，以便在扭蛋時自動鎖定您所在的縣市，並為您導航至景點。",
         "ITSAppUsesNonExemptEncryption": false
