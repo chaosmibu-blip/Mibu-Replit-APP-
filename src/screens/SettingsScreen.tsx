@@ -219,7 +219,7 @@ export function SettingsScreen() {
         <View style={styles.legalCard}>
           <TouchableOpacity 
             style={styles.legalItem}
-            onPress={() => Linking.openURL('https://mibu-pages--s8869420.replit.app/privacy')}
+            onPress={() => Linking.openURL('https://mibu-travel.com/privacy')}
           >
             <Ionicons name="shield-checkmark-outline" size={20} color={MibuBrand.copper} />
             <Text style={styles.legalText}>
