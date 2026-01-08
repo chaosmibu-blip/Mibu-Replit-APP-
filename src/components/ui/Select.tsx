@@ -55,32 +55,38 @@ export function Select({ options, value, onChange, placeholder, label, loading }
               </TouchableOpacity>
             </View>
 
-            <FlatList
-              data={options}
-              keyExtractor={(item) => String(item.value)}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.option,
-                    item.value === value && styles.selectedOption,
-                  ]}
-                  onPress={() => handleSelect(item.value)}
-                >
-                  <Text
+            {options.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>載入中...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={options}
+                keyExtractor={(item) => String(item.value)}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
                     style={[
-                      styles.optionText,
-                      item.value === value && styles.selectedOptionText,
+                      styles.option,
+                      item.value === value && styles.selectedOption,
                     ]}
+                    onPress={() => handleSelect(item.value)}
                   >
-                    {item.label}
-                  </Text>
-                  {item.value === value && (
-                    <Ionicons name="checkmark" size={20} color="#6366f1" />
-                  )}
-                </TouchableOpacity>
-              )}
-              style={styles.optionsList}
-            />
+                    <Text
+                      style={[
+                        styles.optionText,
+                        item.value === value && styles.selectedOptionText,
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                    {item.value === value && (
+                      <Ionicons name="checkmark" size={20} color="#6366f1" />
+                    )}
+                  </TouchableOpacity>
+                )}
+                style={styles.optionsList}
+              />
+            )}
           </View>
         </TouchableOpacity>
       </Modal>
@@ -163,5 +169,14 @@ const styles = StyleSheet.create({
   selectedOptionText: {
     color: '#6366f1',
     fontWeight: '600',
+  },
+  emptyState: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#94a3b8',
   },
 });
