@@ -24,8 +24,8 @@ import { MibuBrand } from '../constants/Colors';
 
 const AUTH_TOKEN_KEY = '@mibu_token';
 
-// OAuth 登入 URL - 使用開發環境
-const OAUTH_BASE_URL = 'https://591965a7-25f6-479c-b527-3890b1193c21-00-1m08cwv9a4rev.picard.replit.dev';
+// OAuth 登入 URL - 使用環境變數設定的 API URL（正式或開發環境）
+const OAUTH_BASE_URL = API_BASE_URL;
 
 type PortalType = 'traveler' | 'merchant' | 'specialist' | 'admin';
 
