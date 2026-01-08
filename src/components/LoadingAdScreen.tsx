@@ -279,7 +279,7 @@ export function LoadingAdScreen({ visible, onComplete, onCancel, isApiComplete, 
                   textAlign: 'center',
                 }}
               >
-                取消
+                {language === 'zh-TW' ? '取消' : language === 'ja' ? 'キャンセル' : language === 'ko' ? '취소' : 'Cancel'}
               </Text>
             </TouchableOpacity>
           )}

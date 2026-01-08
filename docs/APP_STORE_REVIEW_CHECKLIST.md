@@ -105,6 +105,46 @@
 
 ---
 
+## 自我審查結果（2026-01-08）
+
+### 發現的問題與修復狀態
+
+| 問題類型 | 描述 | 狀態 | 修復說明 |
+|---------|------|------|---------|
+| 多語系 | 載入畫面「取消」按鈕只顯示中文 | ✅ 已修復 | 新增英/日/韓語支援 |
+| API 超時 | API 呼叫無 timeout 機制 | ⚠️ 待觀察 | AI 生成本身需 1-2 分鐘，已在 UI 中告知用戶 |
+| 錯誤處理 | API 錯誤有處理但可優化 | ✅ 正常 | handleGacha 已處理各種錯誤碼 |
+| 取消功能 | 載入畫面取消按鈕 | ✅ 正常 | onCancel 已正確傳遞並處理 |
+| 安全區域 | SafeAreaView 使用 | ✅ 正常 | LoadingAdScreen 已使用 SafeAreaView |
+| OAuth 登入 | Google/Apple 登入流程 | ✅ 正常 | 使用環境變數統一 URL |
+| 訪客登入 | 無需帳號即可使用 | ✅ 正常 | handleGuestLogin 正常運作 |
+
+### 關鍵流程檢查
+
+#### 1. 登入流程 ✅
+- [x] 訪客登入可用
+- [x] Apple 登入 OAuth 流程完整
+- [x] 錯誤碼處理（NO_MERCHANT_DATA、NO_SPECIALIST_DATA 等）
+- [x] Token 儲存與讀取正常
+
+#### 2. 扭蛋流程 ✅
+- [x] 國家選擇器正常載入
+- [x] 地區選擇器正常載入
+- [x] 抽取張數滑桿正常
+- [x] 載入畫面顯示預估時間（1-2 分鐘）
+- [x] 載入提示每 3 秒輪播
+- [x] 取消按鈕可用且多語系
+- [x] 錯誤處理完整（DAILY_LIMIT_EXCEEDED、EXCEEDS_REMAINING_QUOTA 等）
+- [x] 結果頁正常顯示
+
+#### 3. UI/UX 檢查 ✅
+- [x] 使用 React Native 原生元件（View, Text, TouchableOpacity）
+- [x] 多語系支援（zh-TW, en, ja, ko）
+- [x] SafeAreaView 正確使用
+- [x] Modal 使用正確
+
+---
+
 ## 常見拒絕原因與對策
 
 ### Guideline 2.1 - Performance - App Completeness
