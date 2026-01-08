@@ -242,7 +242,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const unreadCount = data.unread?.itembox || 0;
       setState(prev => ({ ...prev, unreadItemCount: unreadCount }));
     } catch (error) {
-      console.error('Failed to refresh unread count:', error);
+      // 靜默處理錯誤，此功能非核心功能
     }
   }, []);
 
