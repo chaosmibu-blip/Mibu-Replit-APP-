@@ -86,7 +86,7 @@ class ApiService {
         method: 'POST',
         headers,
         body: JSON.stringify(params),
-      }, 45000);
+      }, 210000);
       
       const data = await response.json();
       return data;

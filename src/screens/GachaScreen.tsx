@@ -444,6 +444,12 @@ export function GachaScreen() {
     );
   }, [state.language]);
 
+  const handleLoadingCancel = useCallback(() => {
+    setShowLoadingAd(false);
+    setIsApiComplete(false);
+    pendingResultRef.current = null;
+  }, []);
+
   const countryOptions = countries.map(c => ({
     label: getLocalizedName(c),
     value: c.id,
@@ -992,7 +998,9 @@ export function GachaScreen() {
         visible={showLoadingAd}
         onComplete={handleLoadingComplete}
         onTimeout={handleLoadingTimeout}
+        onCancel={handleLoadingCancel}
         isApiComplete={isApiComplete}
+        language={state.language}
         translations={{
           generatingItinerary: t.generatingItinerary || '正在生成行程...',
           sponsorAd: t.sponsorAd || '贊助商廣告 (模擬)',
