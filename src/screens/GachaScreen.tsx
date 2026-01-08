@@ -386,17 +386,31 @@ export function GachaScreen() {
                           errorMessage.includes('AbortError') ||
                           errorMessage.includes('cancelled');
       
+      const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('Timeout');
+      
+      setShowLoadingAd(false);
+      setIsApiComplete(false);
+      pendingResultRef.current = null;
+      
       if (isUserAbort) {
-        setShowLoadingAd(false);
         return;
       }
       
       console.error('Gacha failed:', error);
-      setShowLoadingAd(false);
-      Alert.alert(
-        state.language === 'zh-TW' ? '錯誤' : 'Error',
-        state.language === 'zh-TW' ? '生成行程失敗，請稍後再試' : 'Failed to generate itinerary. Please try again.'
-      );
+      
+      if (isTimeout) {
+        Alert.alert(
+          state.language === 'zh-TW' ? '請求超時' : 'Request Timeout',
+          state.language === 'zh-TW' 
+            ? '伺服器回應時間過長，請稍後再試'
+            : 'Server took too long to respond. Please try again later.'
+        );
+      } else {
+        Alert.alert(
+          state.language === 'zh-TW' ? '錯誤' : 'Error',
+          state.language === 'zh-TW' ? '生成行程失敗，請稍後再試' : 'Failed to generate itinerary. Please try again.'
+        );
+      }
     }
   };
 
@@ -417,6 +431,18 @@ export function GachaScreen() {
       router.push('/(tabs)/gacha/items');
     }
   }, [addToCollection, setResult, router]);
+
+  const handleLoadingTimeout = useCallback(() => {
+    setShowLoadingAd(false);
+    setIsApiComplete(false);
+    pendingResultRef.current = null;
+    Alert.alert(
+      state.language === 'zh-TW' ? '請求超時' : 'Request Timeout',
+      state.language === 'zh-TW' 
+        ? '伺服器回應時間過長，請檢查網路連線後再試一次'
+        : 'Server took too long to respond. Please check your connection and try again.'
+    );
+  }, [state.language]);
 
   const countryOptions = countries.map(c => ({
     label: getLocalizedName(c),
@@ -965,6 +991,7 @@ export function GachaScreen() {
       <LoadingAdScreen
         visible={showLoadingAd}
         onComplete={handleLoadingComplete}
+        onTimeout={handleLoadingTimeout}
         isApiComplete={isApiComplete}
         translations={{
           generatingItinerary: t.generatingItinerary || '正在生成行程...',

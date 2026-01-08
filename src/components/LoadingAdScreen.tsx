@@ -17,6 +17,7 @@ const AD_HEIGHT = 120;
 interface LoadingAdScreenProps {
   visible: boolean;
   onComplete: () => void;
+  onTimeout?: () => void;
   isApiComplete: boolean;
   translations: {
     generatingItinerary: string;
@@ -27,6 +28,7 @@ interface LoadingAdScreenProps {
 }
 
 const FORCED_WAIT_SECONDS = 5;
+const MAX_WAIT_SECONDS = 60;
 
 const PawPrint = ({ delay, x, y }: { delay: number; x: number; y: number }) => {
   const opacity = useSharedValue(0.3);
@@ -88,14 +90,16 @@ const PawPrint = ({ delay, x, y }: { delay: number; x: number; y: number }) => {
   );
 };
 
-export function LoadingAdScreen({ visible, onComplete, isApiComplete, translations }: LoadingAdScreenProps) {
+export function LoadingAdScreen({ visible, onComplete, onTimeout, isApiComplete, translations }: LoadingAdScreenProps) {
   const [countdown, setCountdown] = useState(FORCED_WAIT_SECONDS);
   const [isTimerComplete, setIsTimerComplete] = useState(false);
+  const [totalElapsed, setTotalElapsed] = useState(0);
 
   useEffect(() => {
     if (visible) {
       setCountdown(FORCED_WAIT_SECONDS);
       setIsTimerComplete(false);
+      setTotalElapsed(0);
     }
   }, [visible]);
 
@@ -105,16 +109,24 @@ export function LoadingAdScreen({ visible, onComplete, isApiComplete, translatio
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          clearInterval(timer);
           setIsTimerComplete(true);
           return 0;
         }
         return prev - 1;
       });
+      
+      setTotalElapsed((prev) => {
+        const newTotal = prev + 1;
+        if (newTotal >= MAX_WAIT_SECONDS && !isApiComplete) {
+          clearInterval(timer);
+          onTimeout?.();
+        }
+        return newTotal;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [visible]);
+  }, [visible, isApiComplete, onTimeout]);
 
   useEffect(() => {
     if (isTimerComplete && isApiComplete) {

@@ -4,23 +4,47 @@ import { Platform } from 'react-native';
 
 class ApiService {
   private baseUrl = API_BASE_URL;
+  private defaultTimeout = 30000;
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...options.headers,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
+  private async fetchWithTimeout(url: string, options: RequestInit = {}, timeout: number = this.defaultTimeout): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      return response;
+    } finally {
+      clearTimeout(timeoutId);
     }
+  }
 
-    return response.json();
+  private async request<T>(endpoint: string, options: RequestInit = {}, timeout?: number): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    
+    try {
+      const response = await this.fetchWithTimeout(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...options.headers,
+        },
+      }, timeout);
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout: Server took too long to respond');
+      }
+      throw error;
+    }
   }
 
   async getCountries(): Promise<Country[]> {
@@ -56,14 +80,22 @@ class ApiService {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(params),
-    });
     
-    const data = await response.json();
-    return data;
+    try {
+      const response = await this.fetchWithTimeout(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(params),
+      }, 45000);
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout: Server took too long to respond');
+      }
+      throw error;
+    }
   }
 
   async getCurrentUser(): Promise<User | null> {
