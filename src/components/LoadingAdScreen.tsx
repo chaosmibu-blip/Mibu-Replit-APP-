@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Modal, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, Modal, Dimensions, SafeAreaView } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -17,8 +17,6 @@ const AD_HEIGHT = 120;
 interface LoadingAdScreenProps {
   visible: boolean;
   onComplete: () => void;
-  onTimeout?: () => void;
-  onCancel?: () => void;
   isApiComplete: boolean;
   translations: {
     generatingItinerary: string;
@@ -26,12 +24,9 @@ interface LoadingAdScreenProps {
     pleaseWait: string;
     almostReady: string;
   };
-  language?: string;
 }
 
 const FORCED_WAIT_SECONDS = 5;
-const MAX_WAIT_SECONDS = 180;
-const SHOW_CANCEL_AFTER_SECONDS = 15;
 
 const PawPrint = ({ delay, x, y }: { delay: number; x: number; y: number }) => {
   const opacity = useSharedValue(0.3);
@@ -93,47 +88,14 @@ const PawPrint = ({ delay, x, y }: { delay: number; x: number; y: number }) => {
   );
 };
 
-export function LoadingAdScreen({ visible, onComplete, onTimeout, onCancel, isApiComplete, translations, language = 'zh-TW' }: LoadingAdScreenProps) {
+export function LoadingAdScreen({ visible, onComplete, isApiComplete, translations }: LoadingAdScreenProps) {
   const [countdown, setCountdown] = useState(FORCED_WAIT_SECONDS);
   const [isTimerComplete, setIsTimerComplete] = useState(false);
-  const [totalElapsed, setTotalElapsed] = useState(0);
-
-  const isZh = language === 'zh-TW';
-
-  const getStageMessage = () => {
-    if (isApiComplete) {
-      return isZh ? '即將完成！' : 'Almost ready!';
-    }
-    if (totalElapsed < 15) {
-      return isZh ? '正在準備您的請求...' : 'Preparing your request...';
-    }
-    if (totalElapsed < 60) {
-      return isZh ? 'AI 正在驗證行程中...' : 'AI is validating itinerary...';
-    }
-    if (totalElapsed < 120) {
-      return isZh ? '正在優化您的行程安排...' : 'Optimizing your itinerary...';
-    }
-    return isZh ? '最後確認中，請稍候...' : 'Final confirmation, please wait...';
-  };
-
-  const getExpectedTimeMessage = () => {
-    if (isApiComplete) return '';
-    return isZh 
-      ? 'AI 驗證行程需時 1-3 分鐘，感謝您的耐心等待'
-      : 'AI validation takes 1-3 minutes. Thank you for your patience.';
-  };
-
-  const formatElapsed = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
-  };
 
   useEffect(() => {
     if (visible) {
       setCountdown(FORCED_WAIT_SECONDS);
       setIsTimerComplete(false);
-      setTotalElapsed(0);
     }
   }, [visible]);
 
@@ -143,24 +105,16 @@ export function LoadingAdScreen({ visible, onComplete, onTimeout, onCancel, isAp
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
+          clearInterval(timer);
           setIsTimerComplete(true);
           return 0;
         }
         return prev - 1;
       });
-      
-      setTotalElapsed((prev) => {
-        const newTotal = prev + 1;
-        if (newTotal >= MAX_WAIT_SECONDS && !isApiComplete) {
-          clearInterval(timer);
-          onTimeout?.();
-        }
-        return newTotal;
-      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [visible, isApiComplete, onTimeout]);
+  }, [visible]);
 
   useEffect(() => {
     if (isTimerComplete && isApiComplete) {
@@ -168,7 +122,7 @@ export function LoadingAdScreen({ visible, onComplete, onTimeout, onCancel, isAp
     }
   }, [isTimerComplete, isApiComplete, onComplete]);
 
-  const showCancelButton = totalElapsed >= SHOW_CANCEL_AFTER_SECONDS && !isApiComplete;
+  const statusText = isApiComplete ? translations.almostReady : translations.pleaseWait;
 
   return (
     <Modal visible={visible} animationType="fade" transparent={false}>
@@ -210,71 +164,14 @@ export function LoadingAdScreen({ visible, onComplete, onTimeout, onCancel, isAp
 
           <Text
             style={{
-              fontSize: 16,
-              color: '#555555',
+              fontSize: 15,
+              color: '#888888',
               textAlign: 'center',
-              marginBottom: 8,
-              fontWeight: '600',
+              marginBottom: 20,
             }}
           >
-            {getStageMessage()}
+            {statusText}
           </Text>
-
-          <Text
-            style={{
-              fontSize: 13,
-              color: '#999999',
-              textAlign: 'center',
-              marginBottom: 16,
-            }}
-          >
-            {getExpectedTimeMessage()}
-          </Text>
-
-          {!isApiComplete && (
-            <View
-              style={{
-                backgroundColor: '#E8E8E8',
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                borderRadius: 20,
-                marginBottom: 20,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: '#666666',
-                  fontWeight: '500',
-                }}
-              >
-                {isZh ? '已等待' : 'Elapsed'}: {formatElapsed(totalElapsed)}
-              </Text>
-            </View>
-          )}
-
-          {showCancelButton && (
-            <TouchableOpacity
-              onPress={onCancel}
-              style={{
-                marginTop: 10,
-                paddingHorizontal: 24,
-                paddingVertical: 12,
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: '#CCCCCC',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: '#666666',
-                }}
-              >
-                {isZh ? '取消' : 'Cancel'}
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
 
         {/* TODO: 廣告功能開放後恢復此區塊
