@@ -24,8 +24,8 @@ import { MibuBrand } from '../constants/Colors';
 
 const AUTH_TOKEN_KEY = '@mibu_token';
 
-// OAuth 登入 URL - 使用正式環境
-const OAUTH_BASE_URL = 'https://gacha-travel--s8869420.replit.app';
+// OAuth 登入 URL - 使用開發環境
+const OAUTH_BASE_URL = 'https://591965a7-25f6-479c-b527-3890b1193c21-00-1m08cwv9a4rev.picard.replit.dev';
 
 type PortalType = 'traveler' | 'merchant' | 'specialist' | 'admin';
 
