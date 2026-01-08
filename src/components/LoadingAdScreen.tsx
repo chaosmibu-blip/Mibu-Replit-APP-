@@ -62,10 +62,10 @@ const LOADING_TIPS: Record<string, string[]> = {
 };
 
 const ESTIMATED_TIME_TEXT: Record<string, string> = {
-  'zh-TW': '預計需要 15-30 秒',
-  'en': 'This may take 15-30 seconds',
-  'ja': '約15〜30秒かかります',
-  'ko': '약 15-30초 소요됩니다',
+  'zh-TW': '預計需要 1-2 分鐘，請耐心等候',
+  'en': 'This may take 1-2 minutes, please wait',
+  'ja': '約1〜2分かかります、お待ちください',
+  'ko': '약 1-2분 소요됩니다, 잠시만 기다려주세요',
 };
 
 const PawPrint = ({ delay, x, y }: { delay: number; x: number; y: number }) => {
