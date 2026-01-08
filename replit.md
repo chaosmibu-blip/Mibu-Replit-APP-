@@ -42,6 +42,7 @@ Mibu 是專為自由行旅客打造的旅遊 App，包含兩大核心模組：
 | `memory-auth-flow.md` | 認證流程 | Apple 登入、Token 管理、登出 |
 | `memory-state.md` | 狀態管理 | Context、快取策略 |
 | `memory-assets.md` | 資源管理 | 圖片、字體、多語系 |
+| `APP_STORE_REVIEW_CHECKLIST.md` | App Store 審查 | 審查清單、備註範本、歷史記錄 |
 
 ---
 
