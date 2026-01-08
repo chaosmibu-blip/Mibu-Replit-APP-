@@ -967,7 +967,12 @@ export function GachaScreen() {
       <LoadingAdScreen
         visible={showLoadingAd}
         onComplete={handleLoadingComplete}
+        onCancel={() => {
+          setShowLoadingAd(false);
+          setIsApiComplete(false);
+        }}
         isApiComplete={isApiComplete}
+        language={state.language}
         translations={{
           generatingItinerary: t.generatingItinerary || '正在生成行程...',
           sponsorAd: t.sponsorAd || '贊助商廣告 (模擬)',
