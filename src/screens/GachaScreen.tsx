@@ -85,10 +85,12 @@ export function GachaScreen() {
 
   const loadCountries = async () => {
     try {
+      console.log('🌍 Loading countries...');
       const data = await apiService.getCountries();
+      console.log('🌍 Countries loaded:', JSON.stringify(data));
       setCountries(data);
     } catch (error) {
-      console.error('Failed to load countries:', error);
+      console.error('🌍 Failed to load countries:', error);
     } finally {
       setLoadingCountries(false);
     }
