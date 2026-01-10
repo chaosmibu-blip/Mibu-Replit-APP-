@@ -1,6 +1,6 @@
 # Memory: Screens (畫面結構)
 
-> 最後更新: 2025-01-02
+> 最後更新: 2026-01-11
 
 ## 開發環境設定
 
@@ -104,20 +104,64 @@ app/
 
 ## Screen 對應表 (src/screens/)
 
+共 33 個 Screen 元件。
+
+### 通用頁面
 | Screen 元件 | 對應路由 | 說明 |
 |-------------|----------|------|
 | `HomeScreen.tsx` | `/` | 首頁 |
-| `GachaScreen.tsx` | `/gacha` | 扭蛋頁面 |
-| `ItemsScreen.tsx` | `/gacha/items` | 扭蛋結果 |
-| `CollectionScreen.tsx` | `/collection` | 收藏庫 |
-| `PlannerScreen.tsx` | `/planner` | 行程規劃 |
-| `SettingsScreen.tsx` | `/settings` | 設定 |
-| `ProfileScreen.tsx` | `/profile` | 個人資料 |
-| `SOSScreen.tsx` | `/sos` | SOS 求助 |
 | `AuthScreen.tsx` | `/login` | 登入 |
+| `ProfileScreen.tsx` | `/profile` | 個人資料 |
+| `SettingsScreen.tsx` | `/settings` | 設定 |
+| `PendingApprovalScreen.tsx` | `/pending-approval` | 等待審核 |
+
+### 扭蛋模組 (Gacha)
+| Screen 元件 | 對應路由 | 說明 |
+|-------------|----------|------|
+| `GachaScreen.tsx` | `/gacha` | 扭蛋頁面 |
+| `GachaModuleScreen.tsx` | - | 扭蛋模組入口 |
+| `ItemsScreen.tsx` | `/gacha/items` | 扭蛋結果 |
+| `ItemBoxScreen.tsx` | - | 物品盒 |
+| `CollectionScreen.tsx` | `/collection` | 收藏庫/圖鑑 |
+
+### 行程規劃模組 (Planner)
+| Screen 元件 | 對應路由 | 說明 |
+|-------------|----------|------|
+| `PlannerScreen.tsx` | `/planner` | 行程規劃 |
+| `ItineraryScreen.tsx` | - | 行程結果 |
+| `LocationScreen.tsx` | - | 定位頁面 |
+| `LocationScreen.web.tsx` | - | 定位頁面 (Web 版) |
+| `ChatScreen.tsx` | - | 聊天頁面 |
+| `SOSScreen.tsx` | `/sos` | SOS 緊急求助 |
+
+### 商家模組 (Merchant)
+| Screen 元件 | 對應路由 | 說明 |
+|-------------|----------|------|
 | `MerchantDashboardScreen.tsx` | `/merchant-dashboard` | 商家儀表板 |
+| `MerchantProfileScreen.tsx` | `/merchant/profile` | 商家資料 |
+| `MerchantPlacesScreen.tsx` | `/merchant/places` | 商家地點管理 |
+| `MerchantProductsScreen.tsx` | `/merchant/products` | 商家商品管理 |
+| `MerchantCouponsScreen.tsx` | `/merchant/coupons` | 商家優惠券管理 |
+| `MerchantTransactionsScreen.tsx` | `/merchant/transactions` | 商家交易記錄 |
+| `MerchantAnalyticsScreen.tsx` | `/merchant/analytics` | 商家數據分析 |
+| `MerchantVerifyScreen.tsx` | `/merchant/verify` | 商家驗證 |
+
+### 專家模組 (Specialist)
+| Screen 元件 | 對應路由 | 說明 |
+|-------------|----------|------|
 | `SpecialistDashboardScreen.tsx` | `/specialist-dashboard` | 專家儀表板 |
+| `SpecialistProfileScreen.tsx` | `/specialist/profile` | 專家資料 |
+| `SpecialistTravelersScreen.tsx` | `/specialist/travelers` | 專家旅客管理 |
+| `SpecialistTrackingScreen.tsx` | `/specialist/tracking` | 旅客追蹤 |
+| `SpecialistHistoryScreen.tsx` | `/specialist/history` | 服務歷史 |
+
+### 管理員模組 (Admin)
+| Screen 元件 | 對應路由 | 說明 |
+|-------------|----------|------|
 | `AdminDashboardScreen.tsx` | `/admin-dashboard` | 管理後台 |
+| `AdminAnnouncementsScreen.tsx` | `/admin-announcements` | 公告管理 |
+| `AdminExclusionsScreen.tsx` | `/admin-exclusions` | 排除管理 |
+| `AnnouncementManageScreen.tsx` | `/announcement-manage` | 公告編輯
 
 ---
 

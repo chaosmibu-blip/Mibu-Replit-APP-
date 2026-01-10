@@ -1,17 +1,22 @@
 # Memory: Assets (資源管理)
 
+> 最後更新: 2026-01-11
+
 ## 圖片資源
 
 ### 目錄結構
 ```
 assets/
 ├── images/
-│   ├── logo.png           # App Logo
-│   ├── splash.png         # 啟動畫面 (Mibu logo + 貓咪，2025-01-02 更新)
-│   ├── splash-icon.png    # 舊版啟動圖示 (已停用)
-│   ├── icon.png           # App 圖示 (貓咪+Mibu logo，2025-01-02 更新)
-│   ├── adaptive-icon.png  # Android 自適應圖示 (同 icon.png)
-│   └── favicon.png        # Web Favicon
+│   ├── icon.png           # App 圖示
+│   ├── adaptive-icon.png  # Android 自適應圖示
+│   ├── splash.png         # 啟動畫面
+│   ├── splash-icon.png    # 啟動圖示
+│   ├── favicon.png        # Web Favicon
+│   ├── partial-react-logo.png   # Expo 預設圖片 (可刪除)
+│   ├── react-logo.png           # Expo 預設圖片 (可刪除)
+│   ├── react-logo@2x.png        # Expo 預設圖片 (可刪除)
+│   └── react-logo@3x.png        # Expo 預設圖片 (可刪除)
 ├── fonts/                  # 自定義字體
 └── animations/             # Lottie 動畫
 ```

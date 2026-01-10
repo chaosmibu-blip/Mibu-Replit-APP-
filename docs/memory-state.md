@@ -1,6 +1,6 @@
 # Memory: State Management (狀態管理)
 
-> 最後更新: 2025-12-25
+> 最後更新: 2026-01-11
 
 ## 狀態管理方案
 
@@ -44,12 +44,22 @@ interface AppState {
 ```typescript
 interface User {
   id: string;
-  email: string;
   name?: string;
-  avatar?: string;
-  roles: UserRole[];
-  activeRole: UserRole;
-  createdAt: string;
+  email: string | null;
+  username?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  avatar?: string | null;
+  profileImageUrl?: string | null;
+  role?: UserRole;           // 原始角色
+  activeRole?: UserRole;     // 當前啟用角色
+  isApproved?: boolean;
+  isSuperAdmin?: boolean;
+  accessibleRoles?: string[];
+  provider?: string | null;  // 登入提供者 (apple, google)
+  providerId?: string | null;
+  isMerchant?: boolean;
+  token?: string;
 }
 ```
 
@@ -112,7 +122,6 @@ const STORAGE_KEYS = {
   COLLECTION: '@mibu_collection',
   USER: '@mibu_user',
   TOKEN: '@mibu_token',
-  DAILY_LIMIT: '@mibu_daily_gacha',
 };
 ```
 

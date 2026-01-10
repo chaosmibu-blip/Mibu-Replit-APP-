@@ -1,6 +1,6 @@
 # Memory: Components (元件庫)
 
-> 最後更新: 2025-12-25
+> 最後更新: 2026-01-11
 
 ## 共用元件清單
 
@@ -15,12 +15,13 @@
 ### 業務元件 (src/components/)
 | 元件 | 檔案路徑 | 用途 |
 |------|----------|------|
-| `LoadingAdScreen` | `src/components/LoadingAdScreen.tsx` | 載入畫面 (無 header，無廣告區塊，2025-01-02 更新) |
+| `InfoToast` | `src/components/InfoToast.tsx` | 資訊提示 Toast |
+| `LoadingAdScreen` | `src/components/LoadingAdScreen.tsx` | 載入畫面 (無 header，無廣告區塊) |
+| `MerchantRegistrationForm` | `src/components/MerchantRegistrationForm.tsx` | 商家註冊表單 |
 | `ModuleNav` | `src/components/ModuleNav.tsx` | 模組導航 |
 | `RoleSwitcher` | `src/components/RoleSwitcher.tsx` | 角色切換器 |
-| `TierBadge` | `src/components/TierBadge.tsx` | 等級徽章 |
 | `TagInput` | `src/components/TagInput.tsx` | 標籤輸入 |
-| `MerchantRegistrationForm` | `src/components/MerchantRegistrationForm.tsx` | 商家註冊表單 |
+| `TierBadge` | `src/components/TierBadge.tsx` | 等級徽章 |
 
 ---
 
