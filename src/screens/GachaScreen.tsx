@@ -234,6 +234,20 @@ export function GachaScreen() {
   const handleGacha = async () => {
     if (!selectedCountryId || !selectedRegionId) return;
 
+    // 檢查是否有 Token（訪客登入沒有 Token）
+    const token = await getToken();
+    if (!token) {
+      Alert.alert(
+        state.language === 'zh-TW' ? '請先登入' : 'Login Required',
+        state.language === 'zh-TW' ? '使用扭蛋功能需要登入帳號' : 'Please login to use the gacha feature',
+        [
+          { text: state.language === 'zh-TW' ? '取消' : 'Cancel', style: 'cancel' },
+          { text: state.language === 'zh-TW' ? '前往登入' : 'Login', onPress: () => router.push('/login') }
+        ]
+      );
+      return;
+    }
+
     const canPull = await checkDailyLimit();
     if (!canPull) {
       Alert.alert(t.dailyLimitReached, t.dailyLimitReachedDesc);
@@ -245,18 +259,24 @@ export function GachaScreen() {
     pendingResultRef.current = null;
 
     try {
-      const token = await getToken();
       const selectedRegion = regions.find(r => r.id === selectedRegionId);
       const response = await apiService.generateItinerary({
         regionId: selectedRegionId,
         itemCount: pullCount,
-      }, token || undefined);
+      }, token);
 
-      if (!response.success && (response.errorCode || response.error || (response as any).code)) {
+      // 修正：加上 response.message 檢查，處理後端返回 { "message": "Unauthorized" } 的情況
+      if (!response.success && (response.errorCode || response.error || (response as any).code || response.message)) {
         setShowLoadingAd(false);
         const errorCode = response.errorCode || (response as any).code;
         
-        if (errorCode === ErrorCode.AUTH_REQUIRED || errorCode === ErrorCode.AUTH_TOKEN_EXPIRED) {
+        // 處理認證錯誤（errorCode 或 message）
+        const authErrorMessages = ['Unauthorized', 'Invalid token', 'jwt expired', 'jwt malformed'];
+        const isAuthError = errorCode === ErrorCode.AUTH_REQUIRED ||
+                           errorCode === ErrorCode.AUTH_TOKEN_EXPIRED ||
+                           authErrorMessages.some(msg => response.message?.includes(msg));
+
+        if (isAuthError) {
           setUser(null);
           Alert.alert(
             state.language === 'zh-TW' ? '登入已過期' : 'Session Expired',
