@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 溝通風格
+
+- 用口語化的繁體中文，像朋友聊天一樣
+- 專有名詞要順便說明白話意思
+- 修改前先說「我想做什麼」和「為什麼」
+- 不要太硬邦邦、太正式
+
 ## Project Overview
 
 Mibu is a travel safety platform built with React Native + Expo, featuring two core modules:
