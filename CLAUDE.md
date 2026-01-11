@@ -125,3 +125,35 @@ Documentation in `docs/`:
 3. **Error handling**: Silently handle `Network request failed`, `AbortError`, `cancelled` (user left app)
 4. **After completion**: Update relevant memory bank in `docs/`
 5. **Minor adjustments**: Style tweaks and typo fixes don't require memory bank updates
+
+## Build & Submit
+
+```bash
+# Development
+npx expo start --web --port 5000
+
+# Build iOS (Production)
+eas build --platform ios --profile production
+
+# Submit to App Store
+eas submit --platform ios
+```
+
+## Important Notes
+
+| Item | Description |
+|------|-------------|
+| **iPhone only** | iPad runs in 2x mode - Apple will test on iPad |
+| **AI Gacha timing** | Takes 1-2 minutes - UI must clearly inform user of wait time |
+| **Dark mode** | Tab Bar forced to use light background |
+| **Token management** | iOS uses SecureStore, Web uses AsyncStorage |
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Blank screen | Check if API responds, verify Token validity |
+| Tab Bar text unreadable | Check tint settings in `TabBarBackground.ios.tsx` |
+| Login state lost | Check if `loadStoredData` correctly calls API |
+
+For more details, see the `docs/` folder.
