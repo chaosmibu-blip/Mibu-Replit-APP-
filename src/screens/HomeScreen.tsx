@@ -31,9 +31,28 @@ export function HomeScreen() {
     }
   };
 
-  const generalAnnouncements = announcements.filter(a => a.type === 'announcement');
-  const flashEvents = announcements.filter(a => a.type === 'flash_event');
-  const holidayEvents = announcements.filter(a => a.type === 'holiday_event');
+  const isAnnouncementVisible = (a: Announcement): boolean => {
+    if (!a.isActive) return false;
+    
+    const now = new Date();
+    
+    if (a.startDate) {
+      const start = new Date(a.startDate);
+      if (now < start) return false;
+    }
+    
+    if (a.endDate) {
+      const end = new Date(a.endDate);
+      if (now > end) return false;
+    }
+    
+    return true;
+  };
+
+  const activeAnnouncements = announcements.filter(isAnnouncementVisible);
+  const generalAnnouncements = activeAnnouncements.filter(a => a.type === 'announcement');
+  const flashEvents = activeAnnouncements.filter(a => a.type === 'flash_event');
+  const holidayEvents = activeAnnouncements.filter(a => a.type === 'holiday_event');
 
   const handleAnnouncementPress = (announcement: Announcement) => {
     if (announcement.linkUrl) {
