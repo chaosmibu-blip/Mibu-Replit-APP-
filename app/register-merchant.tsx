@@ -155,7 +155,7 @@ export default function RegisterMerchantScreen() {
           <TextInput
             style={styles.input}
             value={formData.email}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, email: text }))}
             placeholder="example@email.com"
             keyboardType="email-address"
             autoCapitalize="none"
@@ -167,7 +167,7 @@ export default function RegisterMerchantScreen() {
           <TextInput
             style={styles.input}
             value={formData.password}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, password: text }))}
             placeholder="******"
             secureTextEntry
           />
@@ -178,7 +178,7 @@ export default function RegisterMerchantScreen() {
           <TextInput
             style={styles.input}
             value={formData.confirmPassword}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, confirmPassword: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, confirmPassword: text }))}
             placeholder="******"
             secureTextEntry
           />
@@ -189,7 +189,7 @@ export default function RegisterMerchantScreen() {
           <TextInput
             style={styles.input}
             value={formData.businessName}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, businessName: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, businessName: text }))}
             placeholder={isZh ? '請輸入商家名稱' : 'Enter business name'}
           />
         </View>
@@ -199,7 +199,7 @@ export default function RegisterMerchantScreen() {
           <TextInput
             style={styles.input}
             value={formData.contactName}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, contactName: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, contactName: text }))}
             placeholder={isZh ? '請輸入聯絡人姓名' : 'Enter contact name'}
           />
         </View>
@@ -237,7 +237,7 @@ export default function RegisterMerchantScreen() {
           <TextInput
             style={styles.input}
             value={formData.address}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, address: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, address: text }))}
             placeholder={isZh ? '請輸入營業地址' : 'Enter business address'}
           />
         </View>
@@ -247,7 +247,7 @@ export default function RegisterMerchantScreen() {
           <TextInput
             style={styles.input}
             value={formData.taxId}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, taxId: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, taxId: text }))}
             placeholder={isZh ? '統一編號' : 'Tax ID'}
           />
         </View>
@@ -257,7 +257,7 @@ export default function RegisterMerchantScreen() {
           <TextInput
             style={styles.input}
             value={formData.otherContact}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, otherContact: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, otherContact: text }))}
             placeholder={isZh ? 'LINE ID 或電話' : 'LINE ID or Phone'}
           />
         </View>

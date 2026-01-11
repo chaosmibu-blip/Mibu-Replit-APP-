@@ -130,7 +130,7 @@ export function MerchantVerifyScreen() {
               <TextInput
                 style={[styles.input, styles.codeInput]}
                 value={code}
-                onChangeText={(text) => setCode(text.toUpperCase())}
+                onChangeText={(text: string) => setCode(text.toUpperCase())}
                 placeholder={translations.codePlaceholder}
                 placeholderTextColor="#94a3b8"
                 autoCapitalize="characters"

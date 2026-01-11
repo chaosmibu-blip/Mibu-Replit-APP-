@@ -118,7 +118,7 @@ export default function RegisterSpecialistScreen() {
           <TextInput
             style={styles.input}
             value={formData.email}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, email: text }))}
             placeholder="example@email.com"
             keyboardType="email-address"
             autoCapitalize="none"
@@ -130,7 +130,7 @@ export default function RegisterSpecialistScreen() {
           <TextInput
             style={styles.input}
             value={formData.password}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, password: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, password: text }))}
             placeholder="******"
             secureTextEntry
           />
@@ -141,7 +141,7 @@ export default function RegisterSpecialistScreen() {
           <TextInput
             style={styles.input}
             value={formData.confirmPassword}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, confirmPassword: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, confirmPassword: text }))}
             placeholder="******"
             secureTextEntry
           />
@@ -152,7 +152,7 @@ export default function RegisterSpecialistScreen() {
           <TextInput
             style={styles.input}
             value={formData.name}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, name: text }))}
             placeholder={isZh ? '請輸入您的名稱' : 'Enter your name'}
           />
         </View>
@@ -162,7 +162,7 @@ export default function RegisterSpecialistScreen() {
           <TextInput
             style={styles.input}
             value={formData.serviceRegion}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, serviceRegion: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, serviceRegion: text }))}
             placeholder={isZh ? '例如：台北、宜蘭' : 'e.g., Taipei, Yilan'}
           />
         </View>
@@ -172,7 +172,7 @@ export default function RegisterSpecialistScreen() {
           <TextInput
             style={styles.input}
             value={formData.otherContact}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, otherContact: text }))}
+            onChangeText={(text: string) => setFormData(prev => ({ ...prev, otherContact: text }))}
             placeholder={isZh ? 'LINE ID 或電話' : 'LINE ID or Phone'}
           />
         </View>
