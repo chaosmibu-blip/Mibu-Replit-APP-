@@ -265,18 +265,16 @@ export function GachaScreen() {
         itemCount: pullCount,
       }, token);
 
-      // 修正：加上 response.message 檢查，處理後端返回 { "message": "Unauthorized" } 的情況
-      if (!response.success && (response.errorCode || response.error || (response as any).code || response.message)) {
-        setShowLoadingAd(false);
-        const errorCode = response.errorCode || (response as any).code;
-        
-        // 處理認證錯誤（errorCode 或 message）
-        const authErrorMessages = ['Unauthorized', 'Invalid token', 'jwt expired', 'jwt malformed'];
-        const isAuthError = errorCode === ErrorCode.AUTH_REQUIRED ||
-                           errorCode === ErrorCode.AUTH_TOKEN_EXPIRED ||
-                           authErrorMessages.some(msg => response.message?.includes(msg));
+      // 錯誤處理：統一使用後端標準格式 { error, code }
+      const errorCode = response.errorCode || (response as any).code;
+      const errorMsg = response.error || response.message; // 相容舊格式
 
-        if (isAuthError) {
+      if (!response.success && (errorCode || errorMsg)) {
+        setShowLoadingAd(false);
+
+        // 處理認證錯誤 (UNAUTHORIZED, INVALID_TOKEN, USER_NOT_FOUND, FORBIDDEN)
+        const authErrorCodes = ['UNAUTHORIZED', 'INVALID_TOKEN', 'USER_NOT_FOUND', ErrorCode.AUTH_REQUIRED, ErrorCode.AUTH_TOKEN_EXPIRED];
+        if (authErrorCodes.includes(errorCode)) {
           setUser(null);
           Alert.alert(
             state.language === 'zh-TW' ? '登入已過期' : 'Session Expired',
@@ -285,7 +283,16 @@ export function GachaScreen() {
           router.push('/login');
           return;
         }
-        
+
+        // 處理權限不足
+        if (errorCode === 'FORBIDDEN') {
+          Alert.alert(
+            state.language === 'zh-TW' ? '權限不足' : 'Access Denied',
+            state.language === 'zh-TW' ? '您沒有權限執行此操作' : 'You do not have permission to perform this action'
+          );
+          return;
+        }
+
         if (errorCode === ErrorCode.GACHA_NO_CREDITS) {
           Alert.alert(
             state.language === 'zh-TW' ? '次數不足' : 'No Credits',
@@ -310,11 +317,11 @@ export function GachaScreen() {
           );
           return;
         }
-        
-        const errorMessage = response.message || response.error || (state.language === 'zh-TW' ? '該區域暫無景點' : 'No places available in this area');
+
+        // 其他錯誤：顯示後端回傳的訊息
         Alert.alert(
           state.language === 'zh-TW' ? '提示' : 'Notice',
-          errorMessage
+          errorMsg || (state.language === 'zh-TW' ? '發生錯誤，請稍後再試' : 'An error occurred. Please try again.')
         );
         return;
       }

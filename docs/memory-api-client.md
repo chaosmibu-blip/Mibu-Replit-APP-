@@ -375,11 +375,16 @@ interface ApiError {
 ### 常見錯誤碼
 | HTTP | Code | 說明 | 前端處理 |
 |------|------|------|----------|
-| 401 | `UNAUTHORIZED` | 未登入或 Token 過期 | 導向登入頁 |
-| 403 | `FORBIDDEN` | 無權限 | 顯示提示 |
+| 401 | `UNAUTHORIZED` | 未登入 | 清除用戶狀態，導向登入頁 |
+| 401 | `INVALID_TOKEN` | Token 無效或過期 | 清除用戶狀態，導向登入頁 |
+| 401 | `USER_NOT_FOUND` | 用戶不存在 | 清除用戶狀態，導向登入頁 |
+| 403 | `FORBIDDEN` | 無權限 | 顯示「權限不足」提示 |
 | 429 | `DAILY_LIMIT_EXCEEDED` | 每日抽卡已達上限 | 顯示明天再來 |
+| 429 | `EXCEEDS_REMAINING_QUOTA` | 超過剩餘額度 | 顯示剩餘額度 |
 | 400 | `REGION_NOT_FOUND` | 找不到區域 | 重新選擇 |
 | 200 | `NO_PLACES_AVAILABLE` | 該區域無景點 | 顯示提示 |
+
+> 更新於 2026-01-12：後端已統一認證錯誤格式為 `{ error, code }`
 
 ### 錯誤處理範例
 ```typescript
