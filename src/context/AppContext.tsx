@@ -80,10 +80,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const loadStoredData = async () => {
     try {
-      const [storedLanguage, storedCollection, storedUser] = await Promise.all([
+      const [storedLanguage, storedCollection, storedToken] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.LANGUAGE),
         AsyncStorage.getItem(STORAGE_KEYS.COLLECTION),
-        AsyncStorage.getItem(STORAGE_KEYS.USER),
+        loadToken(),
       ]);
 
       const updates: Partial<AppState> = {};
@@ -96,10 +96,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
         updates.collection = JSON.parse(storedCollection);
       }
 
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        updates.user = user;
-        updates.isAuthenticated = true;
+      // 如果有 Token，呼叫 API 取得最新用戶資料
+      if (storedToken) {
+        try {
+          const freshUser = await apiService.getUserWithToken(storedToken);
+          if (freshUser && freshUser.id) {
+            updates.user = freshUser;
+            updates.isAuthenticated = true;
+            // 更新本地快取
+            await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(freshUser));
+          } else {
+            // Token 無效，清除登入狀態
+            await removeToken();
+            await AsyncStorage.removeItem(STORAGE_KEYS.USER);
+          }
+        } catch (apiError) {
+          console.error('Token validation failed:', apiError);
+          // API 呼叫失敗（可能是網路問題或 Token 過期）
+          // 嘗試使用本地快取的用戶資料
+          const storedUser = await AsyncStorage.getItem(STORAGE_KEYS.USER);
+          if (storedUser) {
+            const user = JSON.parse(storedUser);
+            updates.user = user;
+            updates.isAuthenticated = true;
+          } else {
+            // 沒有快取，清除 Token
+            await removeToken();
+          }
+        }
       }
 
       if (Object.keys(updates).length > 0) {
