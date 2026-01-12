@@ -47,11 +47,19 @@ eas build --platform android --profile production
 
 ### File Structure
 - `app/` - Expo Router file-based routing (pages)
-- `src/screens/` - Screen components (33 screens)
-- `src/components/` - Reusable UI components
+- `src/modules/` - **模組化架構（主要開發位置）**
+  - `traveler/` - 一般用戶：扭蛋、旅程策畫 (7 screens, 2 components)
+  - `merchant/` - 商家端：金流、優惠券管理 (13 screens)
+  - `specialist/` - 專員端：地圖、聊天 (5 screens)
+  - `admin/` - 管理端：後台管理 (4 screens)
+  - `shared/` - 共用元件 (9 screens, 6 components)
+- `src/screens/` - 向後相容的重新匯出（指向 modules/）
+- `src/components/` - 向後相容的重新匯出（指向 modules/shared/）
 - `src/context/AppContext.tsx` - Global state management
-- `src/services/api.ts` - API service class (all endpoints)
-- `src/types/` - TypeScript interfaces
+- `src/services/` - API 服務（已模組化）
+  - `api.ts` - 主入口（委派給各模組服務）
+  - `authApi.ts`, `gachaApi.ts`, `merchantApi.ts`, `specialistApi.ts`, `adminApi.ts`, etc.
+- `src/types/` - TypeScript interfaces（已拆分成 12 個檔案）
 - `docs/` - Memory bank documentation (6 files)
 
 ### Navigation Structure
@@ -70,6 +78,17 @@ app/
 | Merchant | `merchant` | Dashboard, Coupons, Places |
 | Specialist | `specialist` | Traveler tracking, Services |
 | Admin | `admin` | Full access, Announcements |
+
+### Module Imports (推薦)
+```typescript
+// 從模組匯入（推薦）
+import { GachaScreen, CouponWinAnimation, gachaApi } from '@/modules/traveler';
+import { MerchantDashboardScreen, CouponFormScreen } from '@/modules/merchant';
+import { RoleSwitcher, TierBadge } from '@/modules/shared';
+
+// 舊式匯入（仍然有效，向後相容）
+import { GachaScreen } from '@/screens/GachaScreen';
+```
 
 ### State Management
 - `AppContext` provides: user state, language, token management, role switching
