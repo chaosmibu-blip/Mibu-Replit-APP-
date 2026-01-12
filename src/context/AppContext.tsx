@@ -124,6 +124,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
             await removeToken();
           }
         }
+      } else {
+        // 沒有 Token，檢查是否有訪客用戶資料
+        const storedUser = await AsyncStorage.getItem(STORAGE_KEYS.USER);
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          // 如果是訪客用戶，恢復登入狀態
+          if (user.id === 'guest' || user.provider === 'guest') {
+            updates.user = user;
+            updates.isAuthenticated = true;
+          }
+        }
       }
 
       if (Object.keys(updates).length > 0) {
