@@ -301,7 +301,7 @@ export function GachaScreen() {
           return;
         }
 
-        if (errorCode === 'DAILY_LIMIT_EXCEEDED' || errorCode === ErrorCode.GACHA_DAILY_LIMIT) {
+        if (errorCode === 'DAILY_LIMIT_EXCEEDED' || errorCode === ErrorCode.GACHA_RATE_LIMITED) {
           Alert.alert(
             state.language === 'zh-TW' ? '今日額度已用完' : 'Daily Limit Reached',
             state.language === 'zh-TW' ? '請明天再來抽卡！' : 'Please come back tomorrow!'
