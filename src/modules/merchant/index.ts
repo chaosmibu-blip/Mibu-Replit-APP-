@@ -12,5 +12,8 @@ export { default as MerchantProfileScreen } from './screens/MerchantProfileScree
 export { default as MerchantTransactionsScreen } from './screens/MerchantTransactionsScreen';
 export { default as MerchantVerifyScreen } from './screens/MerchantVerifyScreen';
 
+// Components
+export * from './components';
+
 // 相關 API
 export { merchantApi } from '../../services/merchantApi';
