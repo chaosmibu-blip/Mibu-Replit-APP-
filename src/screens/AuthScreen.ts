@@ -1,1 +1,1 @@
-export { default } from '../modules/shared/screens/AuthScreen';
+export { default, default as AuthScreen } from '../modules/shared/screens/AuthScreen';

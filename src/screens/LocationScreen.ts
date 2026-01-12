@@ -1,1 +1,1 @@
-export { default } from '../modules/shared/screens/LocationScreen';
+export { default, default as LocationScreen } from '../modules/shared/screens/LocationScreen';

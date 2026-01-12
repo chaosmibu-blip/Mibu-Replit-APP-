@@ -1,1 +1,1 @@
-export { default } from '../modules/shared/screens/PendingApprovalScreen';
+export { default, default as PendingApprovalScreen } from '../modules/shared/screens/PendingApprovalScreen';

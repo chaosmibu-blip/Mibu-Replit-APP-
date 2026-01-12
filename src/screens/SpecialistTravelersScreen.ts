@@ -1,1 +1,1 @@
-export { default } from '../modules/specialist/screens/SpecialistTravelersScreen';
+export { default, default as SpecialistTravelersScreen } from '../modules/specialist/screens/SpecialistTravelersScreen';

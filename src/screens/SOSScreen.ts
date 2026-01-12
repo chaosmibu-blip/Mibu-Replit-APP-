@@ -1,1 +1,1 @@
-export { default } from '../modules/shared/screens/SOSScreen';
+export { default, default as SOSScreen } from '../modules/shared/screens/SOSScreen';

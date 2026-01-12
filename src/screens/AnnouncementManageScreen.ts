@@ -1,1 +1,1 @@
-export { default } from '../modules/admin/screens/AnnouncementManageScreen';
+export { default, default as AnnouncementManageScreen } from '../modules/admin/screens/AnnouncementManageScreen';

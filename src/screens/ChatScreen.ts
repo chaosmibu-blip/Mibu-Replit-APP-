@@ -1,1 +1,1 @@
-export { default } from '../modules/shared/screens/ChatScreen';
+export { default, default as ChatScreen } from '../modules/shared/screens/ChatScreen';

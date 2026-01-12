@@ -1,1 +1,1 @@
-export { default } from '../modules/merchant/screens/MerchantTransactionsScreen';
+export { default, default as MerchantTransactionsScreen } from '../modules/merchant/screens/MerchantTransactionsScreen';

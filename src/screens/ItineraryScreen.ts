@@ -1,1 +1,1 @@
-export { default } from '../modules/traveler/screens/ItineraryScreen';
+export { default, default as ItineraryScreen } from '../modules/traveler/screens/ItineraryScreen';

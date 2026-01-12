@@ -1,1 +1,1 @@
-export { default } from '../modules/traveler/screens/PlannerScreen';
+export { default, default as PlannerScreen } from '../modules/traveler/screens/PlannerScreen';

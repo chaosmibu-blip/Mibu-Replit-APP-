@@ -1,1 +1,1 @@
-export { default } from '../modules/shared/screens/ProfileScreen';
+export { default, default as ProfileScreen } from '../modules/shared/screens/ProfileScreen';

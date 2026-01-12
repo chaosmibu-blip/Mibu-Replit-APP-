@@ -1,1 +1,1 @@
-export { default } from '../modules/admin/screens/AdminDashboardScreen';
+export { default, default as AdminDashboardScreen } from '../modules/admin/screens/AdminDashboardScreen';
