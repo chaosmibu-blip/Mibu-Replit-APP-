@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useApp } from '../context/AppContext';
-import { GachaItem } from '../types';
+import { GachaItem, Language, LocalizedContent, GachaMeta } from '../types';
 import { getCategoryLabel, getCategoryColor } from '../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../constants/Colors';
 import { InfoToast } from '../components/InfoToast';
@@ -37,12 +37,12 @@ const RARITY_BG_COLORS: Record<string, string> = {
 interface ItemCardProps {
   item: GachaItem;
   translations: Record<string, string>;
-  language: string;
+  language: Language;
 }
 
 function ItemCard({ item, translations, language }: ItemCardProps) {
   const categoryToken = getCategoryToken(item.category as string);
-  const categoryLabel = getCategoryLabel(item.category as string, language as any);
+  const categoryLabel = getCategoryLabel(item.category as string, language);
 
   const isMerchantPro = item.merchant?.isPro && item.merchant?.brandColor;
   const merchantScheme = isMerchantPro 
@@ -53,7 +53,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
   const titleColor = merchantScheme ? merchantScheme.accent : MibuBrand.dark;
   const merchantPromo = item.merchant?.promo;
 
-  const getLocalizedContent = (content: any): string => {
+  const getLocalizedContent = (content: LocalizedContent | string | null | undefined): string => {
     if (typeof content === 'string') return content;
     if (typeof content === 'object' && content !== null) {
       return content[language] || content['zh-TW'] || content['en'] || '';
@@ -309,7 +309,7 @@ export function ItemsScreen() {
     );
   }
 
-  const getLocalizedString = (content: any): string => {
+  const getLocalizedString = (content: LocalizedContent | string | null | undefined): string => {
     if (typeof content === 'string') return content;
     if (typeof content === 'object' && content !== null) {
       return content[state.language] || content['zh-TW'] || content['en'] || '';
@@ -320,7 +320,7 @@ export function ItemsScreen() {
   const cityName = getLocalizedString(meta?.city) || '';
   const districtName = getLocalizedString(meta?.lockedDistrict) || '';
 
-  const themeIntro = (meta as any)?.themeIntro;
+  const themeIntro = meta?.themeIntro;
 
   return (
     <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>

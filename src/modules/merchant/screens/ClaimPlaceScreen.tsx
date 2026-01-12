@@ -58,7 +58,7 @@ export default function ClaimPlaceScreen() {
       }
       const data = await apiService.searchMerchantPlaces(token, searchQuery);
       setSearchResults(data.places || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Search failed:', error);
       if (error.message === 'UNAUTHORIZED') {
         router.push('/login');

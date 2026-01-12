@@ -107,9 +107,38 @@ export interface ItineraryV3Meta {
   remainingQuota?: number;
 }
 
+export interface ItineraryItemRaw {
+  place?: Partial<GachaItem>;
+  placeName?: string;
+  description?: string;
+  category?: string;
+  subcategory?: string;
+  address?: string;
+  rating?: number;
+  locationLat?: number;
+  locationLng?: number;
+  googlePlaceId?: string;
+  city?: string;
+  district?: string;
+  country?: string;
+  rarity?: 'N' | 'R' | 'SR' | 'SSR' | 'SP';
+  isCoupon?: boolean;
+  couponWon?: CouponData;
+  couponData?: CouponData | null;
+  merchantPromo?: {
+    merchantId?: string;
+    promoTitle?: string;
+    promoDescription?: string;
+    badge?: string;
+    discount?: string;
+    isPromoActive?: boolean;
+  };
+  subCategory?: string;
+}
+
 export interface ItineraryGenerateResponse {
   success?: boolean;
-  itinerary?: any[];
+  itinerary?: ItineraryItemRaw[];
   couponsWon?: CouponWon[];
   themeIntro?: string;
   meta?: ItineraryV3Meta;
@@ -127,6 +156,8 @@ export interface ItineraryGenerateResponse {
   error?: string;
   errorCode?: string;
   message?: string;
+  code?: string;
+  remainingQuota?: number;
 }
 
 export interface GachaResponse {

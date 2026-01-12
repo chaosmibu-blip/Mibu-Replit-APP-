@@ -98,7 +98,7 @@ export function SOSScreen() {
           }
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to fetch SOS data:', error);
     } finally {
       setLoading(false);
@@ -182,7 +182,7 @@ export function SOSScreen() {
           [{ text: 'OK', onPress: fetchData }]
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (sosKey) {
         const triggerUrl = `${API_BASE_URL}/api/sos/trigger?key=${sosKey}`;
         try {

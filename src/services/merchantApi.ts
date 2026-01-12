@@ -47,7 +47,7 @@ class MerchantApiService extends ApiBase {
     });
   }
 
-  async verifyMerchantCode(token: string, merchantId: number, code: string): Promise<{ valid: boolean; merchant?: any; error?: string }> {
+  async verifyMerchantCode(token: string, merchantId: number, code: string): Promise<{ valid: boolean; merchant?: MerchantMe; error?: string }> {
     return this.request('/api/merchant/verify', {
       method: 'POST',
       headers: this.authHeaders(token),
