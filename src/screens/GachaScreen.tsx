@@ -23,7 +23,7 @@ import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoo
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MibuBrand } from '../../constants/Colors';
-import { ErrorCode, ApiError } from '../shared/errors';
+import { ErrorCode, isAuthError } from '../shared/errors';
 
 const UNLIMITED_EMAILS = ['s8869420@gmail.com'];
 
@@ -272,9 +272,9 @@ export function GachaScreen() {
       if (!response.success && (errorCode || errorMsg)) {
         setShowLoadingAd(false);
 
-        // 處理認證錯誤 (UNAUTHORIZED, INVALID_TOKEN, USER_NOT_FOUND, FORBIDDEN)
-        const authErrorCodes = ['UNAUTHORIZED', 'INVALID_TOKEN', 'USER_NOT_FOUND', ErrorCode.AUTH_REQUIRED, ErrorCode.AUTH_TOKEN_EXPIRED];
-        if (authErrorCodes.includes(errorCode)) {
+        // 處理認證錯誤：使用 isAuthError helper 或檢查舊格式字串
+        const legacyAuthErrors = ['UNAUTHORIZED', 'INVALID_TOKEN', 'USER_NOT_FOUND'];
+        if (isAuthError(errorCode) || legacyAuthErrors.includes(errorCode)) {
           setUser(null);
           Alert.alert(
             state.language === 'zh-TW' ? '登入已過期' : 'Session Expired',
@@ -301,7 +301,7 @@ export function GachaScreen() {
           return;
         }
 
-        if (errorCode === 'DAILY_LIMIT_EXCEEDED') {
+        if (errorCode === 'DAILY_LIMIT_EXCEEDED' || errorCode === ErrorCode.GACHA_DAILY_LIMIT) {
           Alert.alert(
             state.language === 'zh-TW' ? '今日額度已用完' : 'Daily Limit Reached',
             state.language === 'zh-TW' ? '請明天再來抽卡！' : 'Please come back tomorrow!'
