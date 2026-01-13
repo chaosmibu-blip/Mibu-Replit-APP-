@@ -11,8 +11,8 @@ import {
 import * as Location from 'expo-location';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
-import { API_BASE_URL } from '../constants/translations';
-import { useApp } from '../context/AppContext';
+import { API_BASE_URL } from '../../../constants/translations';
+import { useApp } from '../../../context/AppContext';
 
 const THROTTLE_INTERVAL = 10000;
 const MIN_DISTANCE_METERS = 10;

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../../../context/AppContext';
 import { Card } from '../components/ui/Card';
-import { MibuBrand } from '../../constants/Colors';
-import { Announcement } from '../types';
-import { apiService } from '../services/api';
+import { MibuBrand } from '../../../../constants/Colors';
+import { Announcement } from '../../../types';
+import { apiService } from '../../../services/api';
 
 export function HomeScreen() {
   const { t, state } = useApp();

@@ -10,11 +10,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { useApp } from '../context/AppContext';
-import { GachaItem, Language, LocalizedContent, GachaMeta } from '../types';
-import { getCategoryLabel, getCategoryColor } from '../constants/translations';
-import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../constants/Colors';
-import { InfoToast } from '../components/InfoToast';
+import { useApp } from '../../../context/AppContext';
+import { GachaItem, Language, LocalizedContent, GachaMeta } from '../../../types';
+import { getCategoryLabel, getCategoryColor } from '../../../constants/translations';
+import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
+import { InfoToast } from '../../shared/components/InfoToast';
 
 const RARITY_COLORS: Record<string, string> = {
   SP: MibuBrand.tierSP,
@@ -334,7 +334,7 @@ export function ItemsScreen() {
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
           <Image
-            source={require('../../assets/images/icon.png')}
+            source={require('../../../../assets/images/icon.png')}
             style={{ width: 28, height: 28, marginRight: 6 }}
             resizeMode="contain"
           />

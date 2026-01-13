@@ -9,9 +9,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { MerchantMe } from '../types';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { MerchantMe } from '../../../types';
 
 export function MerchantProfileScreen() {
   const { state, getToken } = useApp();

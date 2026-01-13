@@ -13,10 +13,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { Announcement, AnnouncementType } from '../types';
-import { MibuBrand } from '../../constants/Colors';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { Announcement, AnnouncementType } from '../../../types';
+import { MibuBrand } from '../../../../constants/Colors';
 
 type EditMode = 'create' | 'edit' | null;
 

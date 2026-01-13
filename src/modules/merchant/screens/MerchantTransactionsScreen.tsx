@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { MerchantTransaction } from '../types';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { MerchantTransaction } from '../../../types';
 
 export function MerchantTransactionsScreen() {
   const { state, getToken } = useApp();

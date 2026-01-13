@@ -15,10 +15,10 @@ import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { API_BASE_URL } from '../constants/translations';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { SosAlert, SosAlertStatus } from '../types';
+import { API_BASE_URL } from '../../../constants/translations';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { SosAlert, SosAlertStatus } from '../../../types';
 
 const AUTH_TOKEN_KEY = '@mibu_token';
 

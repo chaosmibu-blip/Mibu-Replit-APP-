@@ -12,9 +12,9 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { UserRole } from '../types';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { UserRole } from '../../../types';
 
 interface AuthScreenProps {
   visible: boolean;

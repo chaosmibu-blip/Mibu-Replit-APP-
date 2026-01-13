@@ -14,11 +14,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../types';
-import { TierBadge } from '../components/TierBadge';
-import { TIER_ORDER, getTierStyle } from '../constants/tierStyles';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../../../types';
+import { TierBadge } from '../../shared/components/TierBadge';
+import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
 
 export function MerchantCouponsScreen() {
   const { state, getToken } = useApp();

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { InventoryItem, CouponTier } from '../types';
-import { MibuBrand } from '../../constants/Colors';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { InventoryItem, CouponTier } from '../../../types';
+import { MibuBrand } from '../../../../constants/Colors';
 
 const MAX_SLOTS = 30;
 const GRID_COLS = 6;
