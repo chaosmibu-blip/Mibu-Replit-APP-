@@ -45,11 +45,11 @@ class InventoryApiService extends ApiBase {
     });
   }
 
-  async redeemInventoryItem(token: string, itemId: number, redemptionCode: string): Promise<RedeemResponse> {
+  async redeemInventoryItem(token: string, itemId: number, dailyCode: string): Promise<RedeemResponse> {
     return this.request<RedeemResponse>(`/api/inventory/${itemId}/redeem`, {
       method: 'POST',
       headers: this.authHeaders(token),
-      body: JSON.stringify({ redemptionCode }),
+      body: JSON.stringify({ dailyCode }),
     });
   }
 
@@ -60,6 +60,12 @@ class InventoryApiService extends ApiBase {
     isFull: boolean;
   }> {
     return this.request('/api/inventory/capacity', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  async getExpiringItems(token: string, days: number = 7): Promise<{ items: InventoryItem[] }> {
+    return this.request<{ items: InventoryItem[] }>(`/api/inventory/expiring?days=${days}`, {
       headers: this.authHeaders(token),
     });
   }

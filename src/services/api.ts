@@ -76,6 +76,7 @@ class ApiService {
   saveToCollection = collectionApi.saveToCollection.bind(collectionApi);
   getCollectionWithPromo = collectionApi.getCollectionWithPromo.bind(collectionApi);
   autoSaveToCollection = collectionApi.autoSaveToCollection.bind(collectionApi);
+  getCollectionUnreadCount = collectionApi.getUnreadCount.bind(collectionApi);
 
   // ========== Merchant ==========
   getMerchantMe = merchantApi.getMerchantMe.bind(merchantApi);

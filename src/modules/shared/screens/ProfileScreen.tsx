@@ -2,10 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender } from '../../../types';
+
+// Token 儲存 helper（與 AppContext 保持一致）
+const saveToken = async (token: string): Promise<void> => {
+  if (Platform.OS === 'web') {
+    await AsyncStorage.setItem('@mibu_token', token);
+  } else {
+    await SecureStore.setItemAsync('mibu_token', token);
+  }
+};
 
 const GENDER_OPTIONS: { value: Gender; labelZh: string; labelEn: string }[] = [
   { value: 'male', labelZh: '男', labelEn: 'Male' },
@@ -84,7 +95,7 @@ export function ProfileScreen() {
       const token = await getToken();
       if (!token) return;
 
-      await apiService.updateProfile(token, {
+      const response = await apiService.updateProfile(token, {
         firstName: firstName || undefined,
         lastName: lastName || undefined,
         gender: gender || undefined,
@@ -96,6 +107,11 @@ export function ProfileScreen() {
         emergencyContactPhone: emergencyContactPhone || undefined,
         emergencyContactRelation: emergencyContactRelation || undefined,
       });
+
+      // 如果後端返回新 token，更新儲存的 token
+      if (response && response.token) {
+        await saveToken(response.token);
+      }
 
       Alert.alert(
         isZh ? '成功' : 'Success',
