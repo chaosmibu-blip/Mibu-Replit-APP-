@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../../../context/AppContext';
 
 export function PendingApprovalScreen() {
   const { state, setUser } = useApp();

@@ -8,10 +8,10 @@ import {
   Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../context/AppContext';
-import { GachaItem, Language } from '../types';
-import { getCategoryLabel } from '../constants/translations';
-import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../constants/Colors';
+import { useApp } from '../../../context/AppContext';
+import { GachaItem, Language } from '../../../types';
+import { getCategoryLabel } from '../../../constants/translations';
+import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
 
 const getPlaceName = (item: GachaItem): string => {
   return item.placeName || '';

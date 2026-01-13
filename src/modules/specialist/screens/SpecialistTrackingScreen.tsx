@@ -10,8 +10,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { io, Socket } from 'socket.io-client';
-import { useApp } from '../context/AppContext';
-import { API_BASE_URL } from '../constants/translations';
+import { useApp } from '../../../context/AppContext';
+import { API_BASE_URL } from '../../../constants/translations';
 
 interface TravelerLocation {
   travelerId: string;

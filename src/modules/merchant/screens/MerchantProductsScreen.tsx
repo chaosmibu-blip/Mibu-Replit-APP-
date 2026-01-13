@@ -14,9 +14,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { MerchantProduct } from '../types';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { MerchantProduct } from '../../../types';
 
 export function MerchantProductsScreen() {
   const { state, getToken } = useApp();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Language } from '../types';
+import { Language } from '../../../types';
 
 export type GachaSubView = 'gacha' | 'collection' | 'itembox';
 

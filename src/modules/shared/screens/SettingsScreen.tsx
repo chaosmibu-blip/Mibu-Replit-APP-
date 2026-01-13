@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { Language } from '../types';
+import { useApp } from '../../../context/AppContext';
+import { Language } from '../../../types';
 import { AuthScreen } from './AuthScreen';
-import { apiService } from '../services/api';
-import { MibuBrand } from '../../constants/Colors';
+import { apiService } from '../../../services/api';
+import { MibuBrand } from '../../../../constants/Colors';
 
 const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
   { code: 'zh-TW', label: '繁體中文', flag: '🇹🇼' },

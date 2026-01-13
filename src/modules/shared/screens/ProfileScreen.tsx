@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
 import { TagInput } from '../components/TagInput';
-import { UserProfile, Gender } from '../types';
+import { UserProfile, Gender } from '../../../types';
 
 const GENDER_OPTIONS: { value: Gender; labelZh: string; labelEn: string }[] = [
   { value: 'male', labelZh: '男', labelEn: 'Male' },

@@ -14,16 +14,16 @@ import {
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { Button } from '../components/ui/Button';
-import { Select } from '../components/ui/Select';
-import { LoadingAdScreen } from '../components/LoadingAdScreen';
-import { apiService } from '../services/api';
-import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse, ItineraryItemRaw, LocalizedContent, GachaMeta, CouponWon } from '../types';
-import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../constants/translations';
+import { useApp } from '../../../context/AppContext';
+import { Button } from '../../shared/components/ui/Button';
+import { Select } from '../../shared/components/ui/Select';
+import { LoadingAdScreen } from '../../shared/components/LoadingAdScreen';
+import { apiService } from '../../../services/api';
+import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse, ItineraryItemRaw, LocalizedContent, GachaMeta, CouponWon } from '../../../types';
+import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../../../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MibuBrand } from '../../constants/Colors';
-import { ErrorCode, isAuthError } from '../shared/errors';
+import { MibuBrand } from '../../../../constants/Colors';
+import { ErrorCode, isAuthError } from '../../../shared/errors';
 
 const UNLIMITED_EMAILS = ['s8869420@gmail.com'];
 

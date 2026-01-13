@@ -10,11 +10,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { SpecialistInfo, ServiceRelation } from '../types';
-import { RoleSwitcher } from '../components/RoleSwitcher';
-import { MibuBrand } from '../../constants/Colors';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { SpecialistInfo, ServiceRelation } from '../../../types';
+import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
+import { MibuBrand } from '../../../../constants/Colors';
 
 export function SpecialistDashboardScreen() {
   const { state, getToken, setUser } = useApp();

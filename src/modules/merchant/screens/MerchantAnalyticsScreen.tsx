@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { MibuBrand } from '../../constants/Colors';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { MibuBrand } from '../../../../constants/Colors';
 
 interface AnalyticsData {
   itineraryCardCount: number;

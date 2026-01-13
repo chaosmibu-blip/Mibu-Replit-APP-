@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { MerchantCouponTier } from '../types';
-import { getTierStyle } from '../constants/tierStyles';
+import { MerchantCouponTier } from '../../../types';
+import { getTierStyle } from '../../../constants/tierStyles';
 
 interface TierBadgeProps {
   tier: MerchantCouponTier;

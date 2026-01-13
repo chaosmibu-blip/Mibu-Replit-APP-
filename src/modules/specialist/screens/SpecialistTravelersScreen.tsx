@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../context/AppContext';
-import { apiService } from '../services/api';
-import { ServiceRelation } from '../types';
+import { useApp } from '../../../context/AppContext';
+import { apiService } from '../../../services/api';
+import { ServiceRelation } from '../../../types';
 
 interface TravelerData {
   serviceRelation: ServiceRelation;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, SafeAreaView } from 'react-native';
-import { useApp } from '../context/AppContext';
-import { GachaTopNav, GachaSubView } from '../components/ModuleNav';
+import { useApp } from '../../../context/AppContext';
+import { GachaTopNav, GachaSubView } from '../../shared/components/ModuleNav';
 import { GachaScreen } from './GachaScreen';
 import { CollectionScreen } from './CollectionScreen';
 import { ItemBoxScreen } from './ItemBoxScreen';
