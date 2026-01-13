@@ -11,6 +11,9 @@ export { default as CollectionScreen } from './screens/CollectionScreen';
 export { default as ItineraryScreen } from './screens/ItineraryScreen';
 export { default as PlannerScreen } from './screens/PlannerScreen';
 
+// Components
+export { CouponWinAnimation, CouponPreviewCard } from './components';
+
 // 相關 API（從 services 重新匯出方便使用）
 export { gachaApi } from '../../services/gachaApi';
 export { inventoryApi } from '../../services/inventoryApi';

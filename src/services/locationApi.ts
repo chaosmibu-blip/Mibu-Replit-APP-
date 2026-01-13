@@ -26,7 +26,7 @@ class LocationApiService extends ApiBase {
       nameKo?: string
     }[]
   }> {
-    const data = await this.request<{ districts: any[]; count?: number }>(`/api/locations/districts/${regionId}`);
+    const data = await this.request<{ districts: { id: number; name: string; nameZh?: string; nameEn?: string; nameJa?: string; nameKo?: string }[]; count?: number }>(`/api/locations/districts/${regionId}`);
     return {
       count: data.districts?.length || data.count || 0,
       districts: data.districts || []

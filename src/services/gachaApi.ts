@@ -82,7 +82,7 @@ class GachaApiService extends ApiBase {
     placeName?: string;
     district?: string;
     city?: string;
-  }): Promise<{ promo: any | null }> {
+  }): Promise<{ promo: { title?: string; description?: string; discount?: string; validUntil?: string } | null }> {
     const queryParams = new URLSearchParams();
     if (params.placeId) queryParams.append('placeId', params.placeId);
     if (params.placeName) queryParams.append('placeName', params.placeName);

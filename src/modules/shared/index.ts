@@ -12,6 +12,9 @@ export { default as SOSScreen } from './screens/SOSScreen';
 export { default as LocationScreen } from './screens/LocationScreen';
 export { default as PendingApprovalScreen } from './screens/PendingApprovalScreen';
 
+// Components
+export * from './components';
+
 // 相關 API
 export { authApi } from '../../services/authApi';
 export { locationApi } from '../../services/locationApi';

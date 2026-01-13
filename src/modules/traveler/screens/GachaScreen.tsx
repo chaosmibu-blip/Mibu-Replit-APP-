@@ -19,7 +19,7 @@ import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
 import { LoadingAdScreen } from '../components/LoadingAdScreen';
 import { apiService } from '../services/api';
-import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse } from '../types';
+import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse, ItineraryItemRaw, LocalizedContent, GachaMeta, CouponWon } from '../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MibuBrand } from '../../constants/Colors';
@@ -67,15 +67,35 @@ export function GachaScreen() {
   
   const [showLoadingAd, setShowLoadingAd] = useState(false);
   const [isApiComplete, setIsApiComplete] = useState(false);
-  const pendingResultRef = useRef<any>(null);
+  const pendingResultRef = useRef<{ items: GachaItem[]; meta: GachaMeta; couponsWon: CouponWon[] } | null>(null);
   
   const [rarityModalVisible, setRarityModalVisible] = useState(false);
   const [rarityConfig, setRarityConfig] = useState<{ rarity: string; probability: number }[]>([]);
   const [loadingRarity, setLoadingRarity] = useState(false);
 
+  // 道具箱容量檢查
+  const [inventorySlotCount, setInventorySlotCount] = useState(0);
+  const [inventoryMaxSlots, setInventoryMaxSlots] = useState(30);
+  const isInventoryFull = inventorySlotCount >= inventoryMaxSlots;
+  const inventoryRemaining = inventoryMaxSlots - inventorySlotCount;
+
   useEffect(() => {
     loadCountries();
+    checkInventoryCapacity();
   }, []);
+
+  const checkInventoryCapacity = async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const data = await apiService.getInventory(token);
+      const activeItems = (data.items || []).filter((i: { isDeleted?: boolean; status?: string }) => !i.isDeleted && i.status !== 'deleted');
+      setInventorySlotCount(activeItems.length);
+      setInventoryMaxSlots(data.maxSlots || 30);
+    } catch (error) {
+      console.error('Failed to check inventory capacity:', error);
+    }
+  };
 
   useEffect(() => {
     if (selectedCountryId) {
@@ -116,7 +136,7 @@ export function GachaScreen() {
     return item.nameEn || '';
   };
 
-  const getLocalizedPoolItemName = (name: any): string => {
+  const getLocalizedPoolItemName = (name: LocalizedContent | string): string => {
     if (typeof name === 'string') return name;
     if (typeof name === 'object' && name !== null) {
       return name[state.language] || name['zh-TW'] || name['en'] || '';
@@ -217,7 +237,7 @@ export function GachaScreen() {
         setPoolData(poolResult.value);
       }
       if (couponResult.status === 'fulfilled') {
-        const couponData = couponResult.value as any;
+        const couponData = couponResult.value as RegionPoolCoupon[] | { coupons: RegionPoolCoupon[] };
         setCouponPoolData(Array.isArray(couponData) ? couponData : (couponData?.coupons || []));
       }
       if (prizePoolResult.status === 'fulfilled') {
@@ -266,7 +286,7 @@ export function GachaScreen() {
       }, token);
 
       // 錯誤處理：統一使用後端標準格式 { error, code }
-      const errorCode = response.errorCode || (response as any).code;
+      const errorCode = response.errorCode || response.code;
       const errorMsg = response.error || response.message; // 相容舊格式
 
       if (!response.success && (errorCode || errorMsg)) {
@@ -310,7 +330,7 @@ export function GachaScreen() {
         }
 
         if (errorCode === 'EXCEEDS_REMAINING_QUOTA') {
-          const remaining = (response as any).remainingQuota || 0;
+          const remaining = response.remainingQuota || 0;
           Alert.alert(
             state.language === 'zh-TW' ? '額度不足' : 'Quota Exceeded',
             state.language === 'zh-TW' ? `今日剩餘 ${remaining} 張` : `Today's remaining quota: ${remaining}`
@@ -346,7 +366,7 @@ export function GachaScreen() {
 
       const couponsWon = response.couponsWon || [];
 
-      const items: GachaItem[] = itineraryItems.map((item: any, index: number) => {
+      const items: GachaItem[] = itineraryItems.map((item: ItineraryItemRaw, index: number) => {
         const hasMerchantCoupon = item.isCoupon || item.couponWon || (item.merchantPromo?.isPromoActive && item.couponWon);
         const place = item.place || item;
         const lat = place.locationLat || item.locationLat || null;
@@ -457,7 +477,7 @@ export function GachaScreen() {
     value: r.id,
   }));
 
-  const canSubmit = selectedCountryId && selectedRegionId;
+  const canSubmit = selectedCountryId && selectedRegionId && !isInventoryFull;
 
   const renderPoolItem = ({ item }: { item: GachaPoolItem }) => {
     const rarity = item.rarity || 'N';
@@ -646,8 +666,64 @@ export function GachaScreen() {
           </View>
         )}
 
+        {/* 道具箱容量警告 */}
+        {isInventoryFull && (
+          <View style={{
+            backgroundColor: '#fef2f2',
+            borderRadius: 12,
+            padding: 14,
+            marginTop: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: '#fecaca',
+          }}>
+            <Ionicons name="warning" size={20} color="#dc2626" />
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={{ fontSize: 14, fontWeight: '700', color: '#dc2626' }}>
+                {state.language === 'zh-TW' ? '道具箱已滿' : 'Item Box Full'}
+              </Text>
+              <Text style={{ fontSize: 12, color: '#991b1b', marginTop: 2 }}>
+                {state.language === 'zh-TW' ? '請先清理道具箱再抽卡' : 'Please clear some items before drawing'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => router.push('/(tabs)/collection/itembox')}
+              style={{
+                backgroundColor: '#dc2626',
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 8,
+              }}
+            >
+              <Text style={{ fontSize: 12, fontWeight: '700', color: '#ffffff' }}>
+                {state.language === 'zh-TW' ? '前往' : 'Go'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {!isInventoryFull && inventoryRemaining <= 5 && inventoryRemaining > 0 && (
+          <View style={{
+            backgroundColor: '#fef3c7',
+            borderRadius: 12,
+            padding: 12,
+            marginTop: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+            <Ionicons name="alert-circle" size={18} color="#d97706" />
+            <Text style={{ fontSize: 13, color: '#92400e', marginLeft: 8, flex: 1 }}>
+              {state.language === 'zh-TW'
+                ? `道具箱剩餘 ${inventoryRemaining} 格`
+                : `${inventoryRemaining} slots remaining in item box`}
+            </Text>
+          </View>
+        )}
+
         <Button
-          title={t.startGacha}
+          title={isInventoryFull
+            ? (state.language === 'zh-TW' ? '道具箱已滿' : 'Item Box Full')
+            : t.startGacha}
           onPress={handleGacha}
           disabled={!canSubmit || showLoadingAd}
           style={{ marginTop: 8 }}

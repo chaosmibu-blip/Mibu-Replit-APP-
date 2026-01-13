@@ -27,6 +27,36 @@ const TIER_ICONS: Record<CouponTier, string> = {
   R: 'ticket',
 };
 
+// 計算剩餘時間
+const getTimeRemaining = (expiresAt: string | null | undefined): { days: number; hours: number; isUrgent: boolean; isExpired: boolean; text: string } | null => {
+  if (!expiresAt) return null;
+  const now = new Date();
+  const expiry = new Date(expiresAt);
+  const diff = expiry.getTime() - now.getTime();
+
+  if (diff <= 0) return { days: 0, hours: 0, isUrgent: true, isExpired: true, text: '' };
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+  let text = '';
+  if (days > 0) {
+    text = `${days}d`;
+  } else if (hours > 0) {
+    text = `${hours}h`;
+  } else {
+    text = '<1h';
+  }
+
+  return {
+    days,
+    hours,
+    isUrgent: days < 3,
+    isExpired: false,
+    text,
+  };
+};
+
 interface InventorySlotProps {
   item: InventoryItem | null;
   index: number;
@@ -75,6 +105,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
   const tierStyle = TIER_STYLES[item.tier] || TIER_STYLES.R;
   const isExpired = item.isExpired || Boolean(item.expiresAt && new Date(item.expiresAt) < new Date());
   const isDisabled = item.status === 'redeemed' || item.status === 'deleted' || isExpired;
+  const timeRemaining = item.expiresAt && !isExpired ? getTimeRemaining(item.expiresAt) : null;
 
   const SlotContent = (
     <View
@@ -144,6 +175,28 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
         >
           <Text style={{ fontSize: 7, color: '#ffffff', fontWeight: '700' }}>
             {language === 'zh-TW' ? '過期' : 'EXP'}
+          </Text>
+        </View>
+      )}
+
+      {/* 倒數計時 badge */}
+      {timeRemaining && !isDisabled && item.status === 'active' && (
+        <View
+          style={{
+            position: 'absolute',
+            top: -6,
+            left: -6,
+            backgroundColor: timeRemaining.isUrgent ? '#ef4444' : '#f59e0b',
+            paddingHorizontal: 4,
+            paddingVertical: 2,
+            borderRadius: 6,
+            zIndex: 10,
+            borderWidth: 1,
+            borderColor: '#ffffff',
+          }}
+        >
+          <Text style={{ fontSize: 7, color: '#ffffff', fontWeight: '800' }}>
+            {timeRemaining.text}
           </Text>
         </View>
       )}
@@ -319,7 +372,7 @@ export function ItemBoxScreen() {
           response.message || (state.language === 'zh-TW' ? '核銷碼錯誤' : 'Invalid redemption code')
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = error?.message || '';
       if (errorMessage.includes('expired') || errorMessage.includes('過期')) {
         Alert.alert(
@@ -408,13 +461,31 @@ export function ItemBoxScreen() {
           <Text style={{ fontSize: 20, fontWeight: '800', color: MibuBrand.dark }}>
             {state.language === 'zh-TW' ? '道具箱' : 'Item Box'}
           </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: MibuBrand.cream, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
-            <Ionicons name="cube" size={16} color={MibuBrand.brown} />
-            <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.brown, marginLeft: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: slotCount >= maxSlots ? '#fef2f2' : slotCount >= maxSlots * 0.8 ? '#fef3c7' : MibuBrand.cream, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
+            <Ionicons name="cube" size={16} color={slotCount >= maxSlots ? MibuBrand.error : slotCount >= maxSlots * 0.8 ? '#d97706' : MibuBrand.brown} />
+            <Text style={{ fontSize: 14, fontWeight: '700', color: slotCount >= maxSlots ? MibuBrand.error : slotCount >= maxSlots * 0.8 ? '#d97706' : MibuBrand.brown, marginLeft: 6 }}>
               {slotCount}/{maxSlots}
             </Text>
           </View>
         </View>
+
+        {/* 滿格警告 */}
+        {slotCount >= maxSlots && (
+          <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 12, marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="warning" size={18} color={MibuBrand.error} />
+            <Text style={{ fontSize: 13, color: MibuBrand.error, marginLeft: 8, flex: 1 }}>
+              {state.language === 'zh-TW' ? '道具箱已滿！請刪除或使用部分優惠券後再抽卡。' : 'Item box is full! Please delete or use some coupons before drawing.'}
+            </Text>
+          </View>
+        )}
+        {slotCount >= maxSlots * 0.8 && slotCount < maxSlots && (
+          <View style={{ backgroundColor: '#fef3c7', borderRadius: 12, padding: 12, marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="alert-circle" size={18} color="#d97706" />
+            <Text style={{ fontSize: 13, color: '#92400e', marginLeft: 8, flex: 1 }}>
+              {state.language === 'zh-TW' ? `道具箱快滿了，還剩 ${maxSlots - slotCount} 格` : `Item box almost full, ${maxSlots - slotCount} slots remaining`}
+            </Text>
+          </View>
+        )}
 
         <View style={{ flexDirection: 'row', marginTop: 12, gap: 8, flexWrap: 'wrap' }}>
           {(['SP', 'SSR', 'SR', 'S', 'R'] as CouponTier[]).map(tier => {
