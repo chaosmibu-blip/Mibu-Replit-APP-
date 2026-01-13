@@ -31,6 +31,18 @@ const formatDate = (dateStr: string | undefined): string => {
   }
 };
 
+const isRecentlyCollected = (collectedAt: string | undefined): boolean => {
+  if (!collectedAt) return false;
+  try {
+    const collected = new Date(collectedAt).getTime();
+    const now = Date.now();
+    const hours24 = 24 * 60 * 60 * 1000;
+    return now - collected < hours24;
+  } catch {
+    return false;
+  }
+};
+
 interface PlaceDetailModalProps {
   item: GachaItem;
   language: Language;
@@ -149,7 +161,7 @@ export function CollectionScreen() {
   };
 
   const groupedData = useMemo(() => {
-    const cityMap: Record<string, { displayName: string; items: GachaItem[]; byCategory: Record<string, GachaItem[]> }> = {};
+    const cityMap: Record<string, { displayName: string; items: GachaItem[]; newCount: number; byCategory: Record<string, GachaItem[]> }> = {};
 
     collection.forEach(item => {
       const city = item.city || 'Unknown';
@@ -157,9 +169,12 @@ export function CollectionScreen() {
       const category = (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other';
 
       if (!cityMap[city]) {
-        cityMap[city] = { displayName: cityDisplay, items: [], byCategory: {} };
+        cityMap[city] = { displayName: cityDisplay, items: [], newCount: 0, byCategory: {} };
       }
       cityMap[city].items.push(item);
+      if (isRecentlyCollected(item.collectedAt)) {
+        cityMap[city].newCount++;
+      }
 
       if (!cityMap[city].byCategory[category]) {
         cityMap[city].byCategory[category] = [];
@@ -209,10 +224,32 @@ export function CollectionScreen() {
                 onPress={() => toggleRegion(regionKey)}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <View style={{ width: 40, height: 40, backgroundColor: MibuBrand.brown, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '900' }}>
-                      {data.displayName.charAt(0)}
-                    </Text>
+                  <View style={{ position: 'relative' }}>
+                    <View style={{ width: 40, height: 40, backgroundColor: MibuBrand.brown, borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '900' }}>
+                        {data.displayName.charAt(0)}
+                      </Text>
+                    </View>
+                    {data.newCount > 0 && (
+                      <View style={{
+                        position: 'absolute',
+                        top: -4,
+                        right: -4,
+                        backgroundColor: '#ef4444',
+                        borderRadius: 10,
+                        minWidth: 18,
+                        height: 18,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        paddingHorizontal: 4,
+                        borderWidth: 2,
+                        borderColor: MibuBrand.warmWhite,
+                      }}>
+                        <Text style={{ color: '#ffffff', fontSize: 10, fontWeight: '700' }}>
+                          {data.newCount > 9 ? '9+' : data.newCount}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                   <View>
                     <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark }}>{data.displayName}</Text>
@@ -288,6 +325,7 @@ export function CollectionScreen() {
                                 const placeName = getPlaceName(item);
                                 const description = getDescription(item);
                                 const date = formatDate(item.collectedAt);
+                                const isNew = isRecentlyCollected(item.collectedAt);
 
                                 const hasPromo = item.merchant;
                                 const hasCoupon = item.isCoupon && item.couponData;
@@ -317,7 +355,21 @@ export function CollectionScreen() {
                                     <View style={{ width: 4, backgroundColor: stripeColor }} />
                                     <View style={{ flex: 1, padding: 16 }}>
                                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                                        <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>{date}</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                          <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>{date}</Text>
+                                          {isNew && (
+                                            <View style={{
+                                              backgroundColor: '#ef4444',
+                                              paddingHorizontal: 6,
+                                              paddingVertical: 2,
+                                              borderRadius: 6,
+                                            }}>
+                                              <Text style={{ fontSize: 10, fontWeight: '700', color: '#ffffff' }}>
+                                                NEW
+                                              </Text>
+                                            </View>
+                                          )}
+                                        </View>
                                         <View style={{ flexDirection: 'row', gap: 6 }}>
                                           {hasPromo && (
                                             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: MibuBrand.copper, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6, gap: 3 }}>
