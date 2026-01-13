@@ -10,6 +10,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
+import { collectionApi } from '../../../services/collectionApi';
 import { GachaItem, Language } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
@@ -129,14 +130,14 @@ function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
 }
 
 export function CollectionScreen() {
-  const { state, t } = useApp();
+  const { state, t, getToken } = useApp();
   const { collection, language } = state;
   const [openRegions, setOpenRegions] = useState<Set<string>>(new Set());
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const [selectedItem, setSelectedItem] = useState<GachaItem | null>(null);
   const [lastViewedTimestamp, setLastViewedTimestamp] = useState<number>(0);
 
-  // 載入上次查看時間，並在短暫延遲後更新
+  // 載入上次查看時間，並在短暫延遲後更新 + 呼叫後端 mark-read API
   useEffect(() => {
     const loadAndUpdateTimestamp = async () => {
       try {
@@ -149,13 +150,21 @@ export function CollectionScreen() {
           const now = Date.now();
           await AsyncStorage.setItem(LAST_VIEWED_KEY, now.toString());
           setLastViewedTimestamp(now);
+
+          // 呼叫後端 API 標記已讀
+          const token = await getToken();
+          if (token) {
+            collectionApi.markCollectionRead(token).catch(() => {
+              // 靜默處理錯誤
+            });
+          }
         }, 2000);
       } catch {
         // 靜默處理錯誤
       }
     };
     loadAndUpdateTimestamp();
-  }, []);
+  }, [getToken]);
 
   const toggleRegion = (region: string) => {
     setOpenRegions(prev => {

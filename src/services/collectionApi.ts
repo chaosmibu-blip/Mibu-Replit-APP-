@@ -38,7 +38,14 @@ class CollectionApiService extends ApiBase {
   }
 
   async getUnreadCount(token: string): Promise<{ count: number }> {
-    return this.request<{ count: number }>('/api/collection/unread-count', {
+    return this.request<{ count: number }>('/api/collections/unread-count', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  async markCollectionRead(token: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/api/collections/mark-read', {
+      method: 'POST',
       headers: this.authHeaders(token),
     });
   }

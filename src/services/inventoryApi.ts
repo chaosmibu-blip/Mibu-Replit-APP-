@@ -63,6 +63,12 @@ class InventoryApiService extends ApiBase {
       headers: this.authHeaders(token),
     });
   }
+
+  async getExpiringItems(token: string, days: number = 7): Promise<{ items: InventoryItem[] }> {
+    return this.request<{ items: InventoryItem[] }>(`/api/inventory/expiring?days=${days}`, {
+      headers: this.authHeaders(token),
+    });
+  }
 }
 
 export const inventoryApi = new InventoryApiService();
