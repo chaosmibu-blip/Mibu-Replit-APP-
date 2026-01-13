@@ -52,6 +52,17 @@ class InventoryApiService extends ApiBase {
       body: JSON.stringify({ redemptionCode }),
     });
   }
+
+  async getInventoryCapacity(token: string): Promise<{
+    used: number;
+    max: number;
+    available: number;
+    isFull: boolean;
+  }> {
+    return this.request('/api/inventory/capacity', {
+      headers: this.authHeaders(token),
+    });
+  }
 }
 
 export const inventoryApi = new InventoryApiService();
