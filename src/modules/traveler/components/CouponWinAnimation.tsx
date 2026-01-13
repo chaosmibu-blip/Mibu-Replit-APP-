@@ -6,7 +6,7 @@
  * SR: 藍色光暈
  * S/R: 簡單彈出動畫
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,11 @@ import {
   Dimensions,
   Modal,
   TouchableOpacity,
+  Platform,
+  Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { CouponTier } from '../../../types';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -104,6 +107,43 @@ export default function CouponWinAnimation({
   const config = TIER_CONFIG[tier];
   const isZh = language === 'zh-TW';
   const isHighTier = tier === 'SP' || tier === 'SSR' || tier === 'SR';
+  const isShareableTier = tier === 'SP' || tier === 'SSR';
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
+
+  const handleShare = async () => {
+    const shareText = isZh
+      ? `🎰 我在 Mibu 扭蛋抽到了【${tier}】優惠券！\n🎁 ${couponName}\n📍 ${placeName}\n\n快來一起玩 ➜ https://mibu.app`
+      : `🎰 I got a【${tier}】coupon from Mibu Gacha!\n🎁 ${couponName}\n📍 ${placeName}\n\nCome play ➜ https://mibu.app`;
+
+    try {
+      if (Platform.OS === 'web') {
+        // Web: Try Web Share API first, fallback to clipboard
+        if (typeof navigator !== 'undefined' && navigator.share) {
+          await navigator.share({
+            title: isZh ? 'Mibu 扭蛋中獎！' : 'Mibu Gacha Win!',
+            text: shareText,
+          });
+        } else {
+          await Clipboard.setStringAsync(shareText);
+          setShareStatus('copied');
+          setTimeout(() => setShareStatus('idle'), 2000);
+        }
+      } else {
+        // Native: Use React Native Share
+        await Share.share({
+          message: shareText,
+          title: isZh ? 'Mibu 扭蛋中獎！' : 'Mibu Gacha Win!',
+        });
+      }
+    } catch (error: unknown) {
+      // User cancelled or share failed, fallback to clipboard
+      if (error instanceof Error && error.name !== 'AbortError') {
+        await Clipboard.setStringAsync(shareText);
+        setShareStatus('copied');
+        setTimeout(() => setShareStatus('idle'), 2000);
+      }
+    }
+  };
 
   useEffect(() => {
     if (visible) {
@@ -276,12 +316,40 @@ export default function CouponWinAnimation({
             {isZh ? '🎉 恭喜獲得優惠券！' : '🎉 Congratulations!'}
           </Text>
 
-          {/* Close button */}
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={[styles.closeButtonText, { color: config.textColor }]}>
-              {isZh ? '領取' : 'Collect'}
-            </Text>
-          </TouchableOpacity>
+          {/* Button row */}
+          <View style={styles.buttonRow}>
+            {/* Share button for SSR+ */}
+            {isShareableTier && (
+              <TouchableOpacity
+                style={[styles.shareButton, { borderColor: config.glowColor }]}
+                onPress={handleShare}
+              >
+                <Ionicons
+                  name={shareStatus === 'copied' ? 'checkmark' : 'share-social'}
+                  size={18}
+                  color={config.textColor}
+                />
+                <Text style={[styles.shareButtonText, { color: config.textColor }]}>
+                  {shareStatus === 'copied'
+                    ? (isZh ? '已複製' : 'Copied')
+                    : (isZh ? '分享' : 'Share')}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Close/Collect button */}
+            <TouchableOpacity
+              style={[
+                styles.closeButton,
+                isShareableTier && styles.closeButtonNarrow,
+              ]}
+              onPress={onClose}
+            >
+              <Text style={[styles.closeButtonText, { color: config.textColor }]}>
+                {isZh ? '領取' : 'Collect'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       </View>
     </Modal>
@@ -363,6 +431,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 24,
   },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'transparent',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 25,
+    borderWidth: 2,
+  },
+  shareButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
   closeButton: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 40,
@@ -373,6 +461,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  closeButtonNarrow: {
+    paddingHorizontal: 28,
   },
   closeButtonText: {
     fontSize: 16,
