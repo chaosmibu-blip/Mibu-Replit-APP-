@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,14 @@ import {
   Linking,
   Modal,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
 import { GachaItem, Language } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
+
+const LAST_VIEWED_KEY = '@mibu_lastViewedCollection';
 
 const getPlaceName = (item: GachaItem): string => {
   return item.placeName || '';
@@ -31,13 +34,12 @@ const formatDate = (dateStr: string | undefined): string => {
   }
 };
 
-const isRecentlyCollected = (collectedAt: string | undefined): boolean => {
-  if (!collectedAt) return false;
+// 檢查是否為新收藏（在上次查看之後才收藏的）
+const isNewSinceLastView = (collectedAt: string | undefined, lastViewedTimestamp: number): boolean => {
+  if (!collectedAt || lastViewedTimestamp === 0) return false;
   try {
     const collected = new Date(collectedAt).getTime();
-    const now = Date.now();
-    const hours24 = 24 * 60 * 60 * 1000;
-    return now - collected < hours24;
+    return collected > lastViewedTimestamp;
   } catch {
     return false;
   }
@@ -132,6 +134,28 @@ export function CollectionScreen() {
   const [openRegions, setOpenRegions] = useState<Set<string>>(new Set());
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const [selectedItem, setSelectedItem] = useState<GachaItem | null>(null);
+  const [lastViewedTimestamp, setLastViewedTimestamp] = useState<number>(0);
+
+  // 載入上次查看時間，並在短暫延遲後更新
+  useEffect(() => {
+    const loadAndUpdateTimestamp = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(LAST_VIEWED_KEY);
+        const timestamp = stored ? parseInt(stored, 10) : 0;
+        setLastViewedTimestamp(timestamp);
+
+        // 短暫延遲後更新時間戳（讓用戶先看到 NEW 標籤）
+        setTimeout(async () => {
+          const now = Date.now();
+          await AsyncStorage.setItem(LAST_VIEWED_KEY, now.toString());
+          setLastViewedTimestamp(now);
+        }, 2000);
+      } catch {
+        // 靜默處理錯誤
+      }
+    };
+    loadAndUpdateTimestamp();
+  }, []);
 
   const toggleRegion = (region: string) => {
     setOpenRegions(prev => {
@@ -172,7 +196,7 @@ export function CollectionScreen() {
         cityMap[city] = { displayName: cityDisplay, items: [], newCount: 0, byCategory: {} };
       }
       cityMap[city].items.push(item);
-      if (isRecentlyCollected(item.collectedAt)) {
+      if (isNewSinceLastView(item.collectedAt, lastViewedTimestamp)) {
         cityMap[city].newCount++;
       }
 
@@ -183,7 +207,7 @@ export function CollectionScreen() {
     });
 
     return cityMap;
-  }, [collection]);
+  }, [collection, lastViewedTimestamp]);
 
   if (collection.length === 0) {
     return (
@@ -325,7 +349,7 @@ export function CollectionScreen() {
                                 const placeName = getPlaceName(item);
                                 const description = getDescription(item);
                                 const date = formatDate(item.collectedAt);
-                                const isNew = isRecentlyCollected(item.collectedAt);
+                                const isNew = isNewSinceLastView(item.collectedAt, lastViewedTimestamp);
 
                                 const hasPromo = item.merchant;
                                 const hasCoupon = item.isCoupon && item.couponData;
