@@ -18,6 +18,7 @@ import { useApp } from '../../../context/AppContext';
 import { Button } from '../../shared/components/ui/Button';
 import { Select } from '../../shared/components/ui/Select';
 import { LoadingAdScreen } from '../../shared/components/LoadingAdScreen';
+import { TutorialOverlay, GACHA_TUTORIAL_STEPS } from '../../shared/components/TutorialOverlay';
 import { apiService } from '../../../services/api';
 import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse, ItineraryItemRaw, LocalizedContent, GachaMeta, CouponWon } from '../../../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../../../constants/translations';
@@ -1082,6 +1083,13 @@ export function GachaScreen() {
           pleaseWait: t.pleaseWait || '請稍候',
           almostReady: t.almostReady || '即將完成',
         }}
+      />
+
+      {/* 新手教學 */}
+      <TutorialOverlay
+        storageKey="gacha_tutorial"
+        steps={GACHA_TUTORIAL_STEPS}
+        language={state.language}
       />
     </ScrollView>
   );

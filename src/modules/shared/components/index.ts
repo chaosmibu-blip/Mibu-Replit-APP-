@@ -7,6 +7,7 @@ export { default as TierBadge } from './TierBadge';
 export { default as InfoToast } from './InfoToast';
 export { default as LoadingAdScreen } from './LoadingAdScreen';
 export { default as TagInput } from './TagInput';
+export { TutorialOverlay, GACHA_TUTORIAL_STEPS, useTutorial, resetTutorial } from './TutorialOverlay';
 
 // UI Components
 export { default as Button } from './ui/Button';
