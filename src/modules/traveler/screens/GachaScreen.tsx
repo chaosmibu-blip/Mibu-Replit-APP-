@@ -89,10 +89,19 @@ export function GachaScreen() {
     try {
       const token = await getToken();
       if (!token) return;
-      const data = await apiService.getInventory(token);
-      const activeItems = (data.items || []).filter((i: { isDeleted?: boolean; status?: string }) => !i.isDeleted && i.status !== 'deleted');
-      setInventorySlotCount(activeItems.length);
-      setInventoryMaxSlots(data.maxSlots || 30);
+
+      // 使用新的 capacity API（如果可用），否則 fallback 到舊方式
+      try {
+        const capacity = await apiService.getInventoryCapacity(token);
+        setInventorySlotCount(capacity.used);
+        setInventoryMaxSlots(capacity.max);
+      } catch {
+        // Fallback: 使用 getInventory API
+        const data = await apiService.getInventory(token);
+        const activeItems = (data.items || []).filter((i: { isDeleted?: boolean; status?: string }) => !i.isDeleted && i.status !== 'deleted');
+        setInventorySlotCount(activeItems.length);
+        setInventoryMaxSlots(data.maxSlots || 30);
+      }
     } catch (error) {
       console.error('Failed to check inventory capacity:', error);
     }

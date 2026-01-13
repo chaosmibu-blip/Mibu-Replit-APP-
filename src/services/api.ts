@@ -70,6 +70,7 @@ class ApiService {
   markInventoryItemRead = inventoryApi.markInventoryItemRead.bind(inventoryApi);
   deleteInventoryItem = inventoryApi.deleteInventoryItem.bind(inventoryApi);
   redeemInventoryItem = inventoryApi.redeemInventoryItem.bind(inventoryApi);
+  getInventoryCapacity = inventoryApi.getInventoryCapacity.bind(inventoryApi);
 
   // ========== Collection ==========
   saveToCollection = collectionApi.saveToCollection.bind(collectionApi);
