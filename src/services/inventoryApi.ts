@@ -45,11 +45,11 @@ class InventoryApiService extends ApiBase {
     });
   }
 
-  async redeemInventoryItem(token: string, itemId: number, redemptionCode: string): Promise<RedeemResponse> {
+  async redeemInventoryItem(token: string, itemId: number, dailyCode: string): Promise<RedeemResponse> {
     return this.request<RedeemResponse>(`/api/inventory/${itemId}/redeem`, {
       method: 'POST',
       headers: this.authHeaders(token),
-      body: JSON.stringify({ redemptionCode }),
+      body: JSON.stringify({ dailyCode }),
     });
   }
 

@@ -36,6 +36,12 @@ class CollectionApiService extends ApiBase {
       body: JSON.stringify(params),
     });
   }
+
+  async getUnreadCount(token: string): Promise<{ count: number }> {
+    return this.request<{ count: number }>('/api/collection/unread-count', {
+      headers: this.authHeaders(token),
+    });
+  }
 }
 
 export const collectionApi = new CollectionApiService();
