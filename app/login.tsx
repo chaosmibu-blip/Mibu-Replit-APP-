@@ -651,8 +651,9 @@ export default function LoginScreen() {
       });
 
       if (credential.identityToken) {
-        const apiUrl = `${API_BASE_URL}/api/auth/apple`;
+        const apiUrl = `${API_BASE_URL}/api/auth/mobile`;
         const requestBody = {
+          provider: 'apple',
           identityToken: credential.identityToken,
           user: credential.user,
           portal: selectedPortal,
