@@ -2,21 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender } from '../../../types';
-
-// Token 儲存 helper（與 AppContext 保持一致）
-const saveToken = async (token: string): Promise<void> => {
-  if (Platform.OS === 'web') {
-    await AsyncStorage.setItem('@mibu_token', token);
-  } else {
-    await SecureStore.setItemAsync('mibu_token', token);
-  }
-};
 
 const GENDER_OPTIONS: { value: Gender; labelZh: string; labelEn: string }[] = [
   { value: 'male', labelZh: '男', labelEn: 'Male' },
@@ -108,9 +97,20 @@ export function ProfileScreen() {
         emergencyContactRelation: emergencyContactRelation || undefined,
       });
 
-      // 如果後端返回新 token，更新儲存的 token
-      if (response && response.token) {
-        await saveToken(response.token);
+      // 用回傳的新資料更新本地狀態
+      if (response && response.profile) {
+        const data = response.profile;
+        setProfile(data);
+        setFirstName(data.firstName || '');
+        setLastName(data.lastName || '');
+        setGender(data.gender);
+        setBirthDate(data.birthDate || '');
+        setPhone(data.phone || '');
+        setDietaryRestrictions(data.dietaryRestrictions || []);
+        setMedicalHistory(data.medicalHistory || []);
+        setEmergencyContactName(data.emergencyContactName || '');
+        setEmergencyContactPhone(data.emergencyContactPhone || '');
+        setEmergencyContactRelation(data.emergencyContactRelation || '');
       }
 
       Alert.alert(
