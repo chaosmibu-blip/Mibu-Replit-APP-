@@ -81,7 +81,46 @@ export interface MerchantApplyResponse {
   message: string;
 }
 
+export interface MerchantAnalyticsOverview {
+  totalExposures: number;
+  totalCollectors: number;
+  couponIssued: number;
+  couponRedeemed: number;
+  redemptionRate: number;
+}
+
+export interface MerchantAnalyticsTrend {
+  date: string;
+  exposures: number;
+}
+
+export interface MerchantAnalyticsTopCoupon {
+  couponId: number;
+  title: string;
+  issued: number;
+  redeemed: number;
+  redemptionRate: number;
+}
+
+export interface MerchantAnalyticsPlaceBreakdown {
+  placeId: number;
+  placeName: string;
+  collectionCount: number;
+}
+
+export type AnalyticsPeriod = '7d' | '30d' | '90d' | 'all';
+
 export interface MerchantAnalytics {
+  overview: MerchantAnalyticsOverview;
+  trend: MerchantAnalyticsTrend[];
+  topCoupons: MerchantAnalyticsTopCoupon[];
+  placeBreakdown: MerchantAnalyticsPlaceBreakdown[];
+  period: string;
+  generatedAt: string;
+}
+
+// 舊版相容（如果有地方還在用）
+export interface MerchantAnalyticsLegacy {
   itineraryCardCount: number;
   couponStats: {
     total: number;
@@ -144,7 +183,46 @@ export interface MerchantTransaction {
   createdAt: string;
 }
 
+export interface MerchantPlaceOpeningHours {
+  weekdayText?: string[];
+  periods?: any[];
+}
+
+export type MerchantPlaceStatus = 'pending' | 'approved' | 'rejected';
+export type MerchantPlaceCardLevel = 'free' | 'pro' | 'premium';
+
 export interface MerchantPlace {
+  id: number;
+  merchantId: number;
+  officialPlaceId: number | null;
+  placeName: string;
+  district: string;
+  city: string;
+  country: string;
+  description: string | null;
+  googleMapUrl: string | null;
+  openingHours: MerchantPlaceOpeningHours | null;
+  status: MerchantPlaceStatus;
+  cardLevel: MerchantPlaceCardLevel;
+  promoTitle: string | null;
+  promoDescription: string | null;
+  inventoryImageUrl: string | null;
+  isPromoActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateMerchantPlaceParams {
+  description?: string;
+  googleMapUrl?: string;
+  openingHours?: MerchantPlaceOpeningHours;
+  promoTitle?: string;
+  promoDescription?: string;
+  isPromoActive?: boolean;
+}
+
+// 舊版相容
+export interface MerchantPlaceLegacy {
   id: number;
   linkId: string;
   merchantId: number;

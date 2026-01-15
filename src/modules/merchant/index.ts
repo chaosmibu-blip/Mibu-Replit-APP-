@@ -16,6 +16,7 @@ export { default as MerchantVerifyScreen } from './screens/MerchantVerifyScreen'
 export { default as ClaimPlaceScreen } from './screens/ClaimPlaceScreen';
 export { default as NewPlaceScreen } from './screens/NewPlaceScreen';
 export { default as PlaceListScreen } from './screens/PlaceListScreen';
+export { PlaceEditScreen } from './screens/PlaceEditScreen';
 
 // New Coupon Management Screens
 export { default as CouponListScreen } from './screens/CouponListScreen';
