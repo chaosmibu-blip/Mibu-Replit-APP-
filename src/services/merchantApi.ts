@@ -17,7 +17,9 @@ import {
   MerchantCouponsResponse,
   CreateMerchantCouponParams,
   UpdateMerchantCouponParams,
-  MerchantRedemptionCode
+  UpdateMerchantPlaceParams,
+  MerchantRedemptionCode,
+  AnalyticsPeriod
 } from '../types';
 
 class MerchantApiService extends ApiBase {
@@ -56,8 +58,20 @@ class MerchantApiService extends ApiBase {
   }
 
   // === 數據分析 ===
-  async getMerchantAnalytics(token: string): Promise<MerchantAnalytics> {
-    return this.request('/api/merchant/analytics', {
+  async getMerchantAnalytics(
+    token: string,
+    options?: { period?: AnalyticsPeriod; placeId?: number }
+  ): Promise<MerchantAnalytics> {
+    const params = new URLSearchParams();
+    if (options?.period) params.append('period', options.period);
+    if (options?.placeId) params.append('placeId', options.placeId.toString());
+
+    const queryString = params.toString();
+    const url = queryString
+      ? `/api/merchant/analytics?${queryString}`
+      : '/api/merchant/analytics';
+
+    return this.request(url, {
       headers: this.authHeaders(token),
     });
   }
@@ -183,8 +197,12 @@ class MerchantApiService extends ApiBase {
     });
   }
 
-  async updateMerchantPlace(token: string, linkId: string, params: Partial<MerchantPlace>): Promise<{ place: MerchantPlace }> {
-    return this.request(`/api/merchant/places/${linkId}`, {
+  async updateMerchantPlace(
+    token: string,
+    placeId: number,
+    params: UpdateMerchantPlaceParams
+  ): Promise<{ place: MerchantPlace }> {
+    return this.request(`/api/merchant/places/${placeId}`, {
       method: 'PUT',
       headers: this.authHeaders(token),
       body: JSON.stringify(params),

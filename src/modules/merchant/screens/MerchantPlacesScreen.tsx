@@ -30,6 +30,17 @@ export function MerchantPlacesScreen() {
 
   const isZh = state.language === 'zh-TW';
 
+  const getStatusConfig = (status?: string) => {
+    switch (status) {
+      case 'approved':
+        return { bg: '#dcfce7', color: '#16a34a', text: isZh ? '已核准' : 'Approved' };
+      case 'rejected':
+        return { bg: '#fee2e2', color: '#dc2626', text: isZh ? '已拒絕' : 'Rejected' };
+      default:
+        return { bg: '#fef3c7', color: '#d97706', text: isZh ? '待審核' : 'Pending' };
+    }
+  };
+
   const translations = {
     title: isZh ? '店家管理' : 'Place Management',
     myPlaces: isZh ? '我的店家' : 'My Places',
@@ -41,6 +52,9 @@ export function MerchantPlacesScreen() {
     claimed: isZh ? '已認領' : 'Claimed',
     verified: isZh ? '已驗證' : 'Verified',
     pending: isZh ? '待驗證' : 'Pending',
+    approved: isZh ? '已核准' : 'Approved',
+    rejected: isZh ? '已拒絕' : 'Rejected',
+    edit: isZh ? '編輯' : 'Edit',
     noResults: isZh ? '找不到符合的店家' : 'No matching places found',
     loading: isZh ? '載入中...' : 'Loading...',
     cancel: isZh ? '取消' : 'Cancel',
@@ -158,30 +172,35 @@ export function MerchantPlacesScreen() {
             </View>
           ) : (
             <View style={styles.placesList}>
-              {places.map(place => (
-                <View key={place.id} style={styles.placeCard}>
-                  <View style={styles.placeIcon}>
-                    <Ionicons name="storefront" size={24} color="#6366f1" />
-                  </View>
-                  <View style={styles.placeInfo}>
-                    <Text style={styles.placeName}>{place.placeName}</Text>
-                    <Text style={styles.placeLocation}>
-                      {place.district ? `${place.district}, ` : ''}{place.city || ''}
-                    </Text>
-                  </View>
-                  <View style={[
-                    styles.statusBadge,
-                    place.isVerified ? styles.verifiedBadge : styles.pendingBadge
-                  ]}>
-                    <Text style={[
-                      styles.statusText,
-                      place.isVerified ? styles.verifiedText : styles.pendingText
-                    ]}>
-                      {place.isVerified ? translations.verified : translations.pending}
-                    </Text>
-                  </View>
-                </View>
-              ))}
+              {places.map(place => {
+                const statusConfig = getStatusConfig(place.status);
+                return (
+                  <TouchableOpacity
+                    key={place.id}
+                    style={styles.placeCard}
+                    onPress={() => router.push(`/merchant/place/${place.id}`)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.placeIcon}>
+                      <Ionicons name="storefront" size={24} color="#6366f1" />
+                    </View>
+                    <View style={styles.placeInfo}>
+                      <Text style={styles.placeName}>{place.placeName}</Text>
+                      <Text style={styles.placeLocation}>
+                        {place.district ? `${place.district}, ` : ''}{place.city || ''}
+                      </Text>
+                    </View>
+                    <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
+                      <Text style={[styles.statusText, { color: statusConfig.color }]}>
+                        {statusConfig.text}
+                      </Text>
+                    </View>
+                    <View style={styles.editIcon}>
+                      <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
         </>
@@ -396,6 +415,9 @@ const styles = StyleSheet.create({
   },
   pendingText: {
     color: '#d97706',
+  },
+  editIcon: {
+    marginLeft: 8,
   },
   searchSection: {
     marginBottom: 20,
