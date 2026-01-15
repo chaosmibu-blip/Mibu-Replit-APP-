@@ -3,6 +3,10 @@
  */
 import { Language, UserRole } from './common';
 
+export interface UserPrivileges {
+  hasUnlimitedGeneration: boolean;
+}
+
 export interface User {
   id: string;
   name?: string;
@@ -21,6 +25,7 @@ export interface User {
   providerId?: string | null;
   isMerchant?: boolean;
   token?: string;
+  privileges?: UserPrivileges;
 }
 
 export interface AuthResponse {

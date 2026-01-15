@@ -87,6 +87,23 @@ class AuthApiService extends ApiBase {
     });
     return response.json();
   }
+
+  /**
+   * 統一的 Mobile 登入 API（取代舊的 /api/auth/apple 和 /api/auth/google）
+   */
+  async mobileAuth(params: {
+    provider: 'apple' | 'google';
+    identityToken: string;
+    user?: string;
+    portal?: string;
+    email?: string | null;
+    fullName?: { givenName?: string | null; familyName?: string | null };
+  }): Promise<AuthResponse> {
+    return this.request<AuthResponse>('/api/auth/mobile', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
 }
 
 export const authApi = new AuthApiService();
