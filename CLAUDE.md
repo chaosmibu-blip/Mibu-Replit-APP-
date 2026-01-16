@@ -15,6 +15,16 @@ Mibu is a travel safety platform built with React Native + Expo, featuring two c
 1. **Gacha Module** - Gamified travel itinerary discovery with coupon rewards
 2. **Trip Planner Module** - Connect travelers with local specialists for guidance
 
+## 三端協作
+
+> - 後端 GitHub: https://github.com/chaosmibu-blip/MIBU_REPLIT
+> - APP GitHub: https://github.com/chaosmibu-blip/Mibu-Replit-APP-
+> - 官網 GitHub: https://github.com/chaosmibu-blip/Mibu-Pages
+> - 協作規範：後端 `docs/COLLABORATION.md`
+> - 同步機制：
+>   - 讀取：後端 `docs/sync-app.md`
+>   - 回報：本專案 `docs/sync-backend.md`
+
 ## Role Definition
 
 You are a **frontend engineer** responsible for the Expo App implementation:
