@@ -59,8 +59,9 @@ eas build --platform android --profile production
 - `src/services/` - API 服務（已模組化）
   - `api.ts` - 主入口（委派給各模組服務）
   - `authApi.ts`, `gachaApi.ts`, `merchantApi.ts`, `specialistApi.ts`, `adminApi.ts`, etc.
-- `src/types/` - TypeScript interfaces（已拆分成 12 個檔案）
-- `docs/` - Memory bank documentation (6 files)
+- `src/types/` - TypeScript interfaces（已拆分成 15 個檔案）
+  - `errors.ts` - 錯誤碼定義（E1xxx-E9xxx）
+- `docs/` - Memory bank documentation (7 files)
 
 ### Navigation Structure
 ```
@@ -122,17 +123,46 @@ import { GachaScreen } from '@/screens/GachaScreen';
 | JWT expiry | 7 days |
 | Gacha count range | 1-15 (default 7) |
 
+## Error Codes (錯誤碼)
+
+API 錯誤碼定義在 `src/types/errors.ts`：
+
+| 範圍 | 類別 | 範例 |
+|------|------|------|
+| E1xxx | 認證 | `TOKEN_EXPIRED`, `UNAUTHORIZED` |
+| E2xxx | 扭蛋 | `DAILY_LIMIT_EXCEEDED` |
+| E3xxx | 地點 | `PLACE_NOT_FOUND` |
+| E4xxx | 商家 | `COUPON_EXPIRED`, `INVALID_REDEMPTION_CODE` |
+| E5xxx | 驗證 | `INVALID_INPUT`, `MISSING_REQUIRED_FIELD` |
+| E6xxx | 資源 | `INVENTORY_NOT_FOUND` |
+| E7xxx | 支付 | `PAYMENT_FAILED` |
+| E9xxx | 伺服器 | `RATE_LIMIT_EXCEEDED` |
+
+使用方式：
+```typescript
+import { isApiError, getErrorMessage } from '@/types/errors';
+
+if (isApiError(response)) {
+  const msg = getErrorMessage(response.code, 'zh-TW');
+  // 顯示給用戶
+}
+```
+
 ## API Quick Reference
 
 ### Core Endpoints
+- `POST /api/auth/mobile` - 統一 OAuth 登入（Apple/Google）
 - `POST /api/gacha/itinerary/v3` - Pull gacha (requires auth)
 - `GET /api/gacha/quota` - Check remaining daily quota
 - `GET /api/inventory` - Get user's item box
-- `POST /api/auth/apple` - Apple Sign-In
+- `GET /api/collections` - Get user's collection
+- `POST /api/inventory/:id/redeem` - Redeem coupon (需要商家每日核銷碼)
 
 ### Deprecated (Do Not Use)
 - `/api/generate-itinerary` → use `/api/gacha/itinerary/v3`
 - `/api/gacha/pull/v2` → use `/api/gacha/itinerary/v3`
+- `/api/auth/apple` → use `/api/auth/mobile` with `provider: 'apple'`
+- `/api/collection/*` → use `/api/collections/*` (注意 s)
 
 ## Memory Banks
 
@@ -143,6 +173,15 @@ Documentation in `docs/`:
 - `memory-auth-flow.md` - Apple Sign-In, token management
 - `memory-state.md` - Context, caching
 - `memory-assets.md` - Images, fonts, i18n
+- `architecture-audit-report.md` - 前後端架構審計報告
+
+## Backend Contract Reference
+
+後端 API 合約文件在 [MIBU_REPLIT](https://github.com/chaosmibu-blip/MIBU_REPLIT) repo：
+- `docs/contracts/COMMON.md` - 通用定義（錯誤碼、認證、分頁）
+- `docs/contracts/APP.md` - App 專用 API 規格
+
+**重要**：修改 API 服務時，先檢查後端合約確認 endpoint 是否存在。
 
 ## Workflow Notes
 
