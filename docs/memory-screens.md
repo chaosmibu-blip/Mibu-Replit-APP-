@@ -1,5 +1,8 @@
 # Memory: Screens (畫面結構)
 
+> **跨端對應**
+> - 後端：`docs/memory-travel-gacha.md`（扭蛋畫面）、`docs/memory-merchant.md`（商家畫面）
+
 > 最後更新: 2026-01-11
 
 ## 開發環境設定

@@ -1,5 +1,8 @@
 # Memory: Auth Flow (認證流程)
 
+> **跨端對應**
+> - 後端：`docs/memory-auth.md`
+
 ## 支援的登入方式
 
 1. **Apple Sign In** (iOS 優先)

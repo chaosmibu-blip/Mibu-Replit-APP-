@@ -1,5 +1,8 @@
 # Memory: API Client (API 串接)
 
+> **跨端對應**
+> - 後端：`docs/contracts/APP.md`
+
 ## 後端基本資訊
 
 - **開發環境**: `https://591965a7-25f6-479c-b527-3890b1193c21-00-1m08cwv9a4rev.picard.replit.dev`
