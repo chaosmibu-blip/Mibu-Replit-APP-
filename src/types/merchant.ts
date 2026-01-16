@@ -143,6 +143,10 @@ export interface MerchantCoupon {
   validFrom: string | null;
   validUntil: string | null;
   isActive: boolean;
+  /** 背包顯示用圖片 */
+  inventoryImageUrl: string | null;
+  /** 卡片背景圖片 */
+  backgroundImageUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -156,6 +160,8 @@ export interface CreateMerchantCouponParams {
   validFrom?: string;
   validUntil?: string;
   isActive?: boolean;
+  inventoryImageUrl?: string;
+  backgroundImageUrl?: string;
 }
 
 export interface UpdateMerchantCouponParams {
@@ -167,6 +173,8 @@ export interface UpdateMerchantCouponParams {
   validFrom?: string;
   validUntil?: string;
   isActive?: boolean;
+  inventoryImageUrl?: string;
+  backgroundImageUrl?: string;
 }
 
 export interface MerchantCouponsResponse {

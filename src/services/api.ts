@@ -67,16 +67,18 @@ class ApiService {
   getInventoryItem = inventoryApi.getInventoryItem.bind(inventoryApi);
   getInventoryConfig = inventoryApi.getInventoryConfig.bind(inventoryApi);
   getRarityConfig = inventoryApi.getRarityConfig.bind(inventoryApi);
-  markInventoryItemRead = inventoryApi.markInventoryItemRead.bind(inventoryApi);
   deleteInventoryItem = inventoryApi.deleteInventoryItem.bind(inventoryApi);
   redeemInventoryItem = inventoryApi.redeemInventoryItem.bind(inventoryApi);
-  getInventoryCapacity = inventoryApi.getInventoryCapacity.bind(inventoryApi);
+  getInventoryCount = inventoryApi.getInventoryCount.bind(inventoryApi);
 
   // ========== Collection ==========
+  getCollections = collectionApi.getCollections.bind(collectionApi);
   saveToCollection = collectionApi.saveToCollection.bind(collectionApi);
-  getCollectionWithPromo = collectionApi.getCollectionWithPromo.bind(collectionApi);
-  autoSaveToCollection = collectionApi.autoSaveToCollection.bind(collectionApi);
+  deleteCollection = collectionApi.deleteCollection.bind(collectionApi);
   getCollectionUnreadCount = collectionApi.getUnreadCount.bind(collectionApi);
+  markCollectionRead = collectionApi.markCollectionRead.bind(collectionApi);
+  getPlacePromoFromCollection = collectionApi.getPlacePromo.bind(collectionApi);
+  getCollectionStats = collectionApi.getCollectionStats.bind(collectionApi);
 
   // ========== Merchant ==========
   getMerchantMe = merchantApi.getMerchantMe.bind(merchantApi);
@@ -106,9 +108,8 @@ class ApiService {
   getSpecialistMe = specialistApi.getSpecialistMe.bind(specialistApi);
   registerSpecialist = specialistApi.registerSpecialist.bind(specialistApi);
   toggleSpecialistOnline = specialistApi.toggleSpecialistOnline.bind(specialistApi);
-  updateSpecialistAvailability = specialistApi.updateSpecialistAvailability.bind(specialistApi);
-  getSpecialistTravelers = specialistApi.getSpecialistTravelers.bind(specialistApi);
   getSpecialistServices = specialistApi.getSpecialistServices.bind(specialistApi);
+  updateSpecialistProfile = specialistApi.updateSpecialistProfile.bind(specialistApi);
 
   // ========== Admin ==========
   getAdminUsers = adminApi.getAdminUsers.bind(adminApi);
