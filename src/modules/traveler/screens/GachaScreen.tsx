@@ -290,16 +290,27 @@ export function GachaScreen() {
 
     try {
       const selectedRegion = regions.find(r => r.id === selectedRegionId);
+      console.log('🎰 [GachaScreen] Starting gacha pull:', { regionId: selectedRegionId, pullCount });
+
       const response = await apiService.generateItinerary({
         regionId: selectedRegionId,
         itemCount: pullCount,
       }, token);
+
+      console.log('🎰 [GachaScreen] API response received:', {
+        success: response.success,
+        hasItinerary: !!response.itinerary,
+        itineraryLength: response.itinerary?.length || 0,
+        errorCode: response.errorCode || response.code,
+        errorMsg: response.error || response.message,
+      });
 
       // 錯誤處理：統一使用後端標準格式 { error, code }
       const errorCode = response.errorCode || response.code;
       const errorMsg = response.error || response.message; // 相容舊格式
 
       if (!response.success && (errorCode || errorMsg)) {
+        console.warn('🎰 [GachaScreen] API returned error:', { errorCode, errorMsg });
         setShowLoadingAd(false);
 
         // 處理認證錯誤：使用 isAuthError helper 或檢查舊格式字串

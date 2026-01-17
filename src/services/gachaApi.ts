@@ -27,13 +27,56 @@ class GachaApiService extends ApiBase {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
+
+    console.log('🎰 [Gacha] Calling API:', url);
+    console.log('🎰 [Gacha] Params:', JSON.stringify(params));
+
     const response = await fetch(url, {
       method: 'POST',
       headers,
       body: JSON.stringify(params),
     });
 
+    console.log('🎰 [Gacha] Response status:', response.status);
+
+    // 處理 HTTP 錯誤狀態碼
+    if (!response.ok) {
+      console.error('🎰 [Gacha] HTTP Error:', response.status, response.statusText);
+
+      // 嘗試解析錯誤回應
+      try {
+        const errorData = await response.json();
+        console.error('🎰 [Gacha] Error response:', JSON.stringify(errorData));
+        return {
+          success: false,
+          error: errorData.error || errorData.message || `HTTP ${response.status}`,
+          code: errorData.code || 'HTTP_ERROR',
+          itinerary: [],
+        } as ItineraryGenerateResponse;
+      } catch {
+        // 如果無法解析 JSON（例如 HTML 錯誤頁面）
+        // 根據 HTTP 狀態碼給出更友善的錯誤訊息
+        let errorMessage = `伺服器錯誤 (${response.status})`;
+        if (response.status === 503) {
+          errorMessage = '伺服器正在啟動中，請稍後再試';
+        } else if (response.status === 502) {
+          errorMessage = '無法連線到伺服器，請稍後再試';
+        } else if (response.status === 504) {
+          errorMessage = '伺服器回應超時，請稍後再試';
+        } else if (response.status >= 500) {
+          errorMessage = '伺服器忙碌中，請稍後再試';
+        }
+        return {
+          success: false,
+          error: errorMessage,
+          code: 'HTTP_ERROR',
+          itinerary: [],
+        } as ItineraryGenerateResponse;
+      }
+    }
+
     const data = await response.json();
+    console.log('🎰 [Gacha] Response success:', data.success, 'items:', data.itinerary?.length || 0);
     return data;
   }
 
