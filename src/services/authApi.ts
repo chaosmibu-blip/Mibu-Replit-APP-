@@ -104,6 +104,68 @@ class AuthApiService extends ApiBase {
       body: JSON.stringify(params),
     });
   }
+
+  // ========== 帳號綁定 (Phase 6) ==========
+
+  /**
+   * 綁定新身份（Apple/Google）
+   * POST /api/auth/bind
+   */
+  async bindIdentity(
+    token: string,
+    params: {
+      provider: 'apple' | 'google';
+      identityToken: string;
+    }
+  ): Promise<{ success: boolean; message: string; identity: LinkedIdentity }> {
+    return this.request<{ success: boolean; message: string; identity: LinkedIdentity }>(
+      '/api/auth/bind',
+      {
+        method: 'POST',
+        headers: this.authHeaders(token),
+        body: JSON.stringify(params),
+      }
+    );
+  }
+
+  /**
+   * 取得綁定身份列表
+   * GET /api/auth/identities
+   */
+  async getIdentities(token: string): Promise<{ identities: LinkedIdentity[]; primary: string }> {
+    return this.request<{ identities: LinkedIdentity[]; primary: string }>('/api/auth/identities', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 解除綁定
+   * DELETE /api/auth/identities/:id
+   */
+  async unlinkIdentity(
+    token: string,
+    identityId: string
+  ): Promise<{ success: boolean; message: string }> {
+    const url = `${this.baseUrl}/api/auth/identities/${identityId}`;
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  }
+}
+
+/** 綁定身份資料 */
+export interface LinkedIdentity {
+  id: string;
+  provider: 'apple' | 'google';
+  providerId: string;
+  email: string | null;
+  isPrimary: boolean;
+  linkedAt: string; // ISO 8601
 }
 
 export const authApi = new AuthApiService();

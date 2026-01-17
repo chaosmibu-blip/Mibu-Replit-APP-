@@ -14,6 +14,10 @@ import { merchantApi } from './merchantApi';
 import { specialistApi } from './specialistApi';
 import { adminApi } from './adminApi';
 import { commonApi } from './commonApi';
+import { economyApi } from './economyApi';
+import { crowdfundingApi } from './crowdfundingApi';
+import { referralApi } from './referralApi';
+import { contributionApi } from './contributionApi';
 
 // Re-export 所有模組化的 API
 export { authApi } from './authApi';
@@ -26,6 +30,12 @@ export { specialistApi } from './specialistApi';
 export { adminApi } from './adminApi';
 export { commonApi } from './commonApi';
 export { ApiBase, API_BASE } from './base';
+
+// Phase 5-6 新增 API
+export { economyApi } from './economyApi';
+export { crowdfundingApi } from './crowdfundingApi';
+export { referralApi } from './referralApi';
+export { contributionApi } from './contributionApi';
 
 /**
  * 統一 API Service（向後兼容）
@@ -141,6 +151,48 @@ class ApiService {
   getSosAlerts = commonApi.getSosAlerts.bind(commonApi);
   cancelSosAlert = commonApi.cancelSosAlert.bind(commonApi);
   getSosLink = commonApi.getSosLink.bind(commonApi);
+
+  // ========== Economy (Phase 5) ==========
+  getLevelInfo = economyApi.getLevelInfo.bind(economyApi);
+  getExperienceHistory = economyApi.getExperienceHistory.bind(economyApi);
+  getAchievements = economyApi.getAchievements.bind(economyApi);
+  claimAchievement = economyApi.claimAchievement.bind(economyApi);
+  applySpecialist = economyApi.applySpecialist.bind(economyApi);
+
+  // ========== Crowdfunding (Phase 5) ==========
+  getCampaigns = crowdfundingApi.getCampaigns.bind(crowdfundingApi);
+  getCampaignDetail = crowdfundingApi.getCampaignDetail.bind(crowdfundingApi);
+  contribute = crowdfundingApi.contribute.bind(crowdfundingApi);
+  getMyContributions = crowdfundingApi.getMyContributions.bind(crowdfundingApi);
+
+  // ========== Referral (Phase 5) ==========
+  getMyReferralCode = referralApi.getMyCode.bind(referralApi);
+  generateReferralCode = referralApi.generateCode.bind(referralApi);
+  validateReferralCode = referralApi.validateCode.bind(referralApi);
+  applyReferralCode = referralApi.applyCode.bind(referralApi);
+  getMyReferrals = referralApi.getMyReferrals.bind(referralApi);
+  recommendMerchant = referralApi.recommendMerchant.bind(referralApi);
+  getReferralBalance = referralApi.getBalance.bind(referralApi);
+  getReferralTransactions = referralApi.getTransactions.bind(referralApi);
+  withdrawReferral = referralApi.withdraw.bind(referralApi);
+
+  // ========== Contribution (Phase 6) ==========
+  reportClosed = contributionApi.reportClosed.bind(contributionApi);
+  getMyReports = contributionApi.getMyReports.bind(contributionApi);
+  suggestPlace = contributionApi.suggestPlace.bind(contributionApi);
+  getMySuggestions = contributionApi.getMySuggestions.bind(contributionApi);
+  getBlacklist = contributionApi.getBlacklist.bind(contributionApi);
+  addToBlacklist = contributionApi.addToBlacklist.bind(contributionApi);
+  removeFromBlacklist = contributionApi.removeFromBlacklist.bind(contributionApi);
+  getPendingVotes = contributionApi.getPendingVotes.bind(contributionApi);
+  votePlace = contributionApi.votePlace.bind(contributionApi);
+  getPendingSuggestions = contributionApi.getPendingSuggestions.bind(contributionApi);
+  voteSuggestion = contributionApi.voteSuggestion.bind(contributionApi);
+
+  // ========== Auth - Identity Binding (Phase 6) ==========
+  bindIdentity = authApi.bindIdentity.bind(authApi);
+  getIdentities = authApi.getIdentities.bind(authApi);
+  unlinkIdentity = authApi.unlinkIdentity.bind(authApi);
 }
 
 export const apiService = new ApiService();
