@@ -45,6 +45,10 @@ npx expo start --web --port 5000 --tunnel --go
 | `/profile` | `app/profile.tsx` | 個人資料 |
 | `/economy` | `app/economy.tsx` | 等級與成就 |
 | `/account` | `app/account.tsx` | 帳號綁定 |
+| `/crowdfunding` | `app/crowdfunding.tsx` | 募資活動列表 |
+| `/crowdfunding/:id` | `app/crowdfunding/[id].tsx` | 募資活動詳情 |
+| `/referral` | `app/referral.tsx` | 推薦好友 |
+| `/contribution` | `app/contribution.tsx` | 社群貢獻 |
 | `/sos` | `app/sos.tsx` | SOS 緊急求助 |
 | `/pending-approval` | `app/pending-approval.tsx` | 等待審核 |
 
@@ -109,7 +113,7 @@ app/
 
 ## Screen 對應表 (src/screens/)
 
-共 35 個 Screen 元件。
+共 39 個 Screen 元件。
 
 ### 通用頁面
 | Screen 元件 | 對應路由 | 說明 |
@@ -130,6 +134,14 @@ app/
 | `ItemBoxScreen.tsx` | - | 物品盒 |
 | `CollectionScreen.tsx` | `/collection` | 收藏庫/圖鑑 |
 | `EconomyScreen.tsx` | `/economy` | 等級、經驗、成就 |
+
+### 社群功能模組 (Phase 2-4)
+| Screen 元件 | 對應路由 | 說明 |
+|-------------|----------|------|
+| `CrowdfundingScreen.tsx` | `/crowdfunding` | 募資活動列表 |
+| `CrowdfundingDetailScreen.tsx` | `/crowdfunding/:id` | 募資活動詳情 |
+| `ReferralScreen.tsx` | `/referral` | 推薦好友、推薦碼 |
+| `ContributionScreen.tsx` | `/contribution` | 回報、建議、投票 |
 
 ### 行程規劃模組 (Planner)
 | Screen 元件 | 對應路由 | 說明 |
