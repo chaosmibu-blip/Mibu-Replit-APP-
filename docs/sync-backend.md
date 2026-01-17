@@ -6,6 +6,48 @@
 
 ## 最新回報
 
+### 2026-01-17 #005
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md (Phase 1 + Phase 5) |
+| 收到時間 | 2026-01-17 |
+| 完成時間 | 2026-01-17 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+- [x] 建立 `src/modules/traveler/screens/EconomyScreen.tsx` - 經濟系統畫面
+  - 用戶等級和 XP 進度條 (via `GET /api/user/level`)
+  - 成就徽章 grid (via `GET /api/user/achievements`)
+  - 領取獎勵功能 (via `POST /api/user/achievements/:id/claim`)
+  - 近期經驗歷史顯示
+  - 類別篩選 (collector, investor, promoter, business, specialist)
+  - 等級徽章樣式 (bronze, silver, gold, platinum)
+- [x] 建立 `src/modules/shared/screens/AccountScreen.tsx` - 帳號綁定畫面
+  - 顯示已連結帳號 (Apple/Google)
+  - OAuth 綁定按鈕 (Apple Sign In 已實作)
+  - 解除綁定功能
+  - 主要帳號標示
+- [x] 建立路由 `app/economy.tsx` 和 `app/account.tsx`
+- [x] 更新 `src/modules/traveler/index.ts` 匯出 EconomyScreen
+- [x] 更新 `src/modules/shared/index.ts` 匯出 AccountScreen
+- [x] 更新 `SettingsScreen.tsx` 加入新畫面入口
+
+### 使用的 API
+| Endpoint | 功能 |
+|----------|------|
+| `GET /api/user/level` | 取得等級資訊 |
+| `GET /api/user/achievements` | 取得成就列表 |
+| `POST /api/user/achievements/:id/claim` | 領取成就獎勵 |
+| `GET /api/auth/identities` | 取得綁定身份列表 |
+| `POST /api/auth/bind` | 綁定新身份 |
+| `DELETE /api/auth/identities/:id` | 解除綁定 |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-17 #004
 
 | 項目 | 內容 |

@@ -3,7 +3,7 @@
 > **跨端對應**
 > - 後端：`docs/memory-travel-gacha.md`（扭蛋畫面）、`docs/memory-merchant.md`（商家畫面）
 
-> 最後更新: 2026-01-11
+> 最後更新: 2026-01-17
 
 ## 開發環境設定
 
@@ -43,6 +43,8 @@ npx expo start --web --port 5000 --tunnel --go
 | `/register` | `app/register.tsx` | 註冊頁面 |
 | `/register-success` | `app/register-success.tsx` | 註冊成功 |
 | `/profile` | `app/profile.tsx` | 個人資料 |
+| `/economy` | `app/economy.tsx` | 等級與成就 |
+| `/account` | `app/account.tsx` | 帳號綁定 |
 | `/sos` | `app/sos.tsx` | SOS 緊急求助 |
 | `/pending-approval` | `app/pending-approval.tsx` | 等待審核 |
 
@@ -107,7 +109,7 @@ app/
 
 ## Screen 對應表 (src/screens/)
 
-共 33 個 Screen 元件。
+共 35 個 Screen 元件。
 
 ### 通用頁面
 | Screen 元件 | 對應路由 | 說明 |
@@ -116,9 +118,10 @@ app/
 | `AuthScreen.tsx` | `/login` | 登入 |
 | `ProfileScreen.tsx` | `/profile` | 個人資料 |
 | `SettingsScreen.tsx` | `/settings` | 設定 |
+| `AccountScreen.tsx` | `/account` | 帳號綁定（Apple/Google） |
 | `PendingApprovalScreen.tsx` | `/pending-approval` | 等待審核 |
 
-### 扭蛋模組 (Gacha)
+### 扭蛋模組 (Gacha) / 經濟系統
 | Screen 元件 | 對應路由 | 說明 |
 |-------------|----------|------|
 | `GachaScreen.tsx` | `/gacha` | 扭蛋頁面 |
@@ -126,6 +129,7 @@ app/
 | `ItemsScreen.tsx` | `/gacha/items` | 扭蛋結果 |
 | `ItemBoxScreen.tsx` | - | 物品盒 |
 | `CollectionScreen.tsx` | `/collection` | 收藏庫/圖鑑 |
+| `EconomyScreen.tsx` | `/economy` | 等級、經驗、成就 |
 
 ### 行程規劃模組 (Planner)
 | Screen 元件 | 對應路由 | 說明 |

@@ -115,8 +115,8 @@ export function SettingsScreen() {
             <Text style={styles.sectionTitle}>
               {isZh ? '個人資料' : 'Profile'}
             </Text>
-            <TouchableOpacity 
-              style={styles.menuCard} 
+            <TouchableOpacity
+              style={styles.menuCard}
               onPress={() => router.push('/profile' as any)}
             >
               <View style={styles.menuIconContainer}>
@@ -128,6 +128,42 @@ export function SettingsScreen() {
                 </Text>
                 <Text style={styles.menuSubtitle}>
                   {isZh ? '編輯個人資料' : 'Edit profile'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.menuCard, { marginTop: 12 }]}
+              onPress={() => router.push('/economy' as any)}
+            >
+              <View style={[styles.menuIconContainer, { backgroundColor: '#FFF3D4' }]}>
+                <Ionicons name="trophy-outline" size={24} color="#D4A24C" />
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuTitle}>
+                  {isZh ? '等級與成就' : 'Level & Achievements'}
+                </Text>
+                <Text style={styles.menuSubtitle}>
+                  {isZh ? '查看經驗值和成就徽章' : 'View XP and badges'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.menuCard, { marginTop: 12 }]}
+              onPress={() => router.push('/account' as any)}
+            >
+              <View style={[styles.menuIconContainer, { backgroundColor: '#EEF2FF' }]}>
+                <Ionicons name="link-outline" size={24} color="#6366f1" />
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuTitle}>
+                  {isZh ? '帳號綁定' : 'Linked Accounts'}
+                </Text>
+                <Text style={styles.menuSubtitle}>
+                  {isZh ? '管理 Apple/Google 登入方式' : 'Manage Apple/Google login'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#94a3b8" />

@@ -10,6 +10,7 @@ export { default as ItemsScreen } from './screens/ItemsScreen';
 export { default as CollectionScreen } from './screens/CollectionScreen';
 export { default as ItineraryScreen } from './screens/ItineraryScreen';
 export { default as PlannerScreen } from './screens/PlannerScreen';
+export { EconomyScreen } from './screens/EconomyScreen';
 
 // Components
 export { CouponWinAnimation, CouponPreviewCard } from './components';

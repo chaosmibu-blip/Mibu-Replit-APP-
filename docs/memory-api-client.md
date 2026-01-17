@@ -128,9 +128,12 @@ catch (error) {
 ### 認證 API
 | 方法 | 端點 | 說明 | 需認證 |
 |------|------|------|--------|
-| POST | `/api/auth/apple` | Apple 登入 | ❌ |
+| POST | `/api/auth/mobile` | 統一 OAuth 登入 (Apple/Google) | ❌ |
 | GET | `/api/auth/user` | 取得當前用戶 | ✅ |
 | POST | `/api/auth/logout` | 登出 | ✅ |
+| GET | `/api/auth/identities` | 取得綁定身份列表 | ✅ |
+| POST | `/api/auth/bind` | 綁定新身份 | ✅ |
+| DELETE | `/api/auth/identities/:id` | 解除綁定 | ✅ |
 
 ### 扭蛋 (Gacha) ⭐ 核心功能
 | 方法 | 端點 | 說明 | 需認證 |
@@ -164,6 +167,14 @@ catch (error) {
 | 方法 | 端點 | 說明 | 需認證 |
 |------|------|------|--------|
 | GET | `/api/coupons/my` | 我的優惠券 | ✅ |
+
+### 經濟系統 (Economy) - Phase 5
+| 方法 | 端點 | 說明 | 需認證 |
+|------|------|------|--------|
+| GET | `/api/user/level` | 取得等級資訊 | ✅ |
+| GET | `/api/user/experience/history` | 經驗值歷史記錄 | ✅ |
+| GET | `/api/user/achievements` | 成就列表 | ✅ |
+| POST | `/api/user/achievements/:id/claim` | 領取成就獎勵 | ✅ |
 
 ### 設定 / 機率
 | 方法 | 端點 | 說明 | 需認證 |
