@@ -11,6 +11,7 @@ export { default as ChatScreen } from './screens/ChatScreen';
 export { default as SOSScreen } from './screens/SOSScreen';
 export { default as LocationScreen } from './screens/LocationScreen';
 export { default as PendingApprovalScreen } from './screens/PendingApprovalScreen';
+export { AccountScreen } from './screens/AccountScreen';
 
 // Components
 export * from './components';

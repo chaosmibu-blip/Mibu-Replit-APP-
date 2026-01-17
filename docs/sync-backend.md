@@ -6,6 +6,103 @@
 
 ## 最新回報
 
+### 2026-01-17 #006
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md (Phase 2-4) |
+| 收到時間 | 2026-01-17 |
+| 完成時間 | 2026-01-17 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+- [x] Phase 2: 建立 `CrowdfundingScreen.tsx` - 眾籌活動列表
+  - 活動列表 (active/upcoming/completed)
+  - 進度條、贊助者數量、截止日期
+  - 我的贊助記錄
+- [x] Phase 2: 建立 `CrowdfundingDetailScreen.tsx` - 眾籌詳情
+  - 活動詳情、獎勵階層選擇
+  - 更新動態、贊助按鈕
+- [x] Phase 3: 建立 `ReferralScreen.tsx` - 推薦系統
+  - 推薦碼生成/複製/分享
+  - 輸入推薦碼套用
+  - 推薦好友列表
+  - 餘額查看、交易記錄
+- [x] Phase 4: 建立 `ContributionScreen.tsx` - 用戶貢獻
+  - 回報歇業/搬遷
+  - 建議新景點
+  - 社群投票 (排除/保留景點, 審核建議景點)
+- [x] 建立路由: `crowdfunding.tsx`, `crowdfunding/[id].tsx`, `referral.tsx`, `contribution.tsx`
+- [x] 更新 `SettingsScreen.tsx` 加入社群功能區塊
+
+### 使用的 API
+| Endpoint | 功能 |
+|----------|------|
+| `GET /api/crowdfund/campaigns` | 取得募資活動列表 |
+| `GET /api/crowdfund/campaigns/:id` | 取得活動詳情 |
+| `POST /api/crowdfund/contribute` | 參與募資 |
+| `GET /api/crowdfund/my-contributions` | 個人募資記錄 |
+| `GET /api/referral/my-code` | 取得推薦碼 |
+| `POST /api/referral/generate-code` | 生成推薦碼 |
+| `GET /api/referral/validate/:code` | 驗證推薦碼 |
+| `POST /api/referral/apply` | 套用推薦碼 |
+| `GET /api/referral/my-referrals` | 推薦人列表 |
+| `GET /api/referral/balance` | 餘額查詢 |
+| `GET /api/referral/transactions` | 交易記錄 |
+| `GET /api/contribution/my-reports` | 我的回報 |
+| `GET /api/contribution/my-suggestions` | 我的建議 |
+| `GET /api/contribution/pending-votes` | 待投票景點 |
+| `GET /api/contribution/pending-suggestions` | 待審核建議 |
+| `POST /api/contribution/vote/:placeId` | 投票排除/保留 |
+| `POST /api/contribution/vote-suggestion/:id` | 建議投票 |
+
+### 異常回報
+（無）
+
+---
+
+### 2026-01-17 #005
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md (Phase 1 + Phase 5) |
+| 收到時間 | 2026-01-17 |
+| 完成時間 | 2026-01-17 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+- [x] 建立 `src/modules/traveler/screens/EconomyScreen.tsx` - 經濟系統畫面
+  - 用戶等級和 XP 進度條 (via `GET /api/user/level`)
+  - 成就徽章 grid (via `GET /api/user/achievements`)
+  - 領取獎勵功能 (via `POST /api/user/achievements/:id/claim`)
+  - 近期經驗歷史顯示
+  - 類別篩選 (collector, investor, promoter, business, specialist)
+  - 等級徽章樣式 (bronze, silver, gold, platinum)
+- [x] 建立 `src/modules/shared/screens/AccountScreen.tsx` - 帳號綁定畫面
+  - 顯示已連結帳號 (Apple/Google)
+  - OAuth 綁定按鈕 (Apple Sign In 已實作)
+  - 解除綁定功能
+  - 主要帳號標示
+- [x] 建立路由 `app/economy.tsx` 和 `app/account.tsx`
+- [x] 更新 `src/modules/traveler/index.ts` 匯出 EconomyScreen
+- [x] 更新 `src/modules/shared/index.ts` 匯出 AccountScreen
+- [x] 更新 `SettingsScreen.tsx` 加入新畫面入口
+
+### 使用的 API
+| Endpoint | 功能 |
+|----------|------|
+| `GET /api/user/level` | 取得等級資訊 |
+| `GET /api/user/achievements` | 取得成就列表 |
+| `POST /api/user/achievements/:id/claim` | 領取成就獎勵 |
+| `GET /api/auth/identities` | 取得綁定身份列表 |
+| `POST /api/auth/bind` | 綁定新身份 |
+| `DELETE /api/auth/identities/:id` | 解除綁定 |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-17 #004
 
 | 項目 | 內容 |

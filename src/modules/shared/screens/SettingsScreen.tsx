@@ -115,8 +115,8 @@ export function SettingsScreen() {
             <Text style={styles.sectionTitle}>
               {isZh ? '個人資料' : 'Profile'}
             </Text>
-            <TouchableOpacity 
-              style={styles.menuCard} 
+            <TouchableOpacity
+              style={styles.menuCard}
               onPress={() => router.push('/profile' as any)}
             >
               <View style={styles.menuIconContainer}>
@@ -128,6 +128,101 @@ export function SettingsScreen() {
                 </Text>
                 <Text style={styles.menuSubtitle}>
                   {isZh ? '編輯個人資料' : 'Edit profile'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.menuCard, { marginTop: 12 }]}
+              onPress={() => router.push('/economy' as any)}
+            >
+              <View style={[styles.menuIconContainer, { backgroundColor: '#FFF3D4' }]}>
+                <Ionicons name="trophy-outline" size={24} color="#D4A24C" />
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuTitle}>
+                  {isZh ? '等級與成就' : 'Level & Achievements'}
+                </Text>
+                <Text style={styles.menuSubtitle}>
+                  {isZh ? '查看經驗值和成就徽章' : 'View XP and badges'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.menuCard, { marginTop: 12 }]}
+              onPress={() => router.push('/account' as any)}
+            >
+              <View style={[styles.menuIconContainer, { backgroundColor: '#EEF2FF' }]}>
+                <Ionicons name="link-outline" size={24} color="#6366f1" />
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuTitle}>
+                  {isZh ? '帳號綁定' : 'Linked Accounts'}
+                </Text>
+                <Text style={styles.menuSubtitle}>
+                  {isZh ? '管理 Apple/Google 登入方式' : 'Manage Apple/Google login'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
+              {isZh ? '社群功能' : 'Community'}
+            </Text>
+            <TouchableOpacity
+              style={styles.menuCard}
+              onPress={() => router.push('/referral' as any)}
+            >
+              <View style={[styles.menuIconContainer, { backgroundColor: '#ECFDF5' }]}>
+                <Ionicons name="gift-outline" size={24} color="#059669" />
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuTitle}>
+                  {isZh ? '推薦好友' : 'Refer Friends'}
+                </Text>
+                <Text style={styles.menuSubtitle}>
+                  {isZh ? '分享推薦碼獲得獎勵' : 'Share your code and earn rewards'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.menuCard, { marginTop: 12 }]}
+              onPress={() => router.push('/crowdfunding' as any)}
+            >
+              <View style={[styles.menuIconContainer, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="rocket-outline" size={24} color="#D97706" />
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuTitle}>
+                  {isZh ? '募資活動' : 'Crowdfunding'}
+                </Text>
+                <Text style={styles.menuSubtitle}>
+                  {isZh ? '支持新功能開發' : 'Support new features'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.menuCard, { marginTop: 12 }]}
+              onPress={() => router.push('/contribution' as any)}
+            >
+              <View style={[styles.menuIconContainer, { backgroundColor: '#F0FDF4' }]}>
+                <Ionicons name="hand-left-outline" size={24} color="#16a34a" />
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuTitle}>
+                  {isZh ? '社群貢獻' : 'Contributions'}
+                </Text>
+                <Text style={styles.menuSubtitle}>
+                  {isZh ? '回報、建議景點、投票' : 'Report, suggest, vote'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
