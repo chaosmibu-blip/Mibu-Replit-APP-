@@ -66,11 +66,13 @@ eas build --platform android --profile production
 - `src/screens/` - 向後相容的重新匯出（指向 modules/）
 - `src/components/` - 向後相容的重新匯出（指向 modules/shared/）
 - `src/context/AppContext.tsx` - Global state management
-- `src/services/` - API 服務（已模組化）
+- `src/services/` - API 服務（已模組化，共 16 個檔案）
   - `api.ts` - 主入口（委派給各模組服務）
-  - `authApi.ts`, `gachaApi.ts`, `merchantApi.ts`, `specialistApi.ts`, `adminApi.ts`, etc.
-- `src/types/` - TypeScript interfaces（已拆分成 15 個檔案）
+  - `authApi.ts`, `gachaApi.ts`, `merchantApi.ts`, `specialistApi.ts`, `adminApi.ts`
+  - `economyApi.ts`, `crowdfundingApi.ts`, `referralApi.ts`, `contributionApi.ts` (Phase 5-6)
+- `src/types/` - TypeScript interfaces（已拆分成 19 個檔案）
   - `errors.ts` - 錯誤碼定義（E1xxx-E9xxx）
+  - `economy.ts`, `crowdfunding.ts`, `referral.ts`, `contribution.ts` (Phase 5-6)
 - `docs/` - Memory bank documentation (7 files)
 
 ### Navigation Structure
@@ -189,7 +191,11 @@ Documentation in `docs/`:
 
 後端 API 合約文件在 [MIBU_REPLIT](https://github.com/chaosmibu-blip/MIBU_REPLIT) repo：
 - `docs/contracts/COMMON.md` - 通用定義（錯誤碼、認證、分頁）
-- `docs/contracts/APP.md` - App 專用 API 規格
+- `docs/contracts/APP.md` - App 專用 API 規格 **(v1.2.0)**
+
+後端資料規模（參考用）：
+- 資料表/列舉：82 張
+- 記憶庫文件：22 個
 
 **重要**：修改 API 服務時，先檢查後端合約確認 endpoint 是否存在。
 
