@@ -207,9 +207,12 @@ export function EconomyScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isZh ? '成就與任務' : 'Achievements & Tasks'}
-        </Text>
+        <View style={styles.headerCenter}>
+          <Ionicons name="ribbon" size={24} color={MibuBrand.brownDark} />
+          <Text style={styles.headerTitle}>
+            {isZh ? '成就與任務' : 'Achievements & Tasks'}
+          </Text>
+        </View>
         <View style={styles.headerPlaceholder} />
       </View>
 
@@ -227,26 +230,43 @@ export function EconomyScreen() {
       >
         {/* User Level Card */}
         <View style={styles.levelCard}>
+          {/* 裝飾元素 */}
+          <View style={styles.levelCardDecor}>
+            <Ionicons name="sparkles" size={16} color={MibuBrand.tanLight} />
+          </View>
+          <View style={[styles.levelCardDecor, styles.levelCardDecorRight]}>
+            <Ionicons name="star" size={14} color={MibuBrand.tanLight} />
+          </View>
+
           <View style={styles.levelTop}>
             <View style={styles.avatarContainer}>
-              <View style={styles.avatar}>
-                <Ionicons name="person" size={32} color={MibuBrand.tan} />
+              <View style={styles.avatarRing}>
+                <View style={styles.avatar}>
+                  <Ionicons name="person" size={32} color={MibuBrand.copper} />
+                </View>
               </View>
               <View style={styles.levelBadge}>
+                <Ionicons name="shield" size={10} color="#fff" style={{ marginRight: 2 }} />
                 <Text style={styles.levelBadgeText}>Lv.{levelInfo?.level || 1}</Text>
               </View>
             </View>
 
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{state.user?.firstName || (isZh ? '旅行萌新' : 'Traveler')}</Text>
-              <Text style={styles.userTier}>
-                {isZh ? `第 ${currentTier} 階段` : `Tier ${currentTier}`}
-              </Text>
+              <View style={styles.tierBadge}>
+                <Ionicons name="layers" size={12} color={MibuBrand.brown} />
+                <Text style={styles.userTier}>
+                  {isZh ? `第 ${currentTier} 階段` : `Tier ${currentTier}`}
+                </Text>
+              </View>
             </View>
 
             <View style={styles.totalXpBox}>
-              <Text style={styles.totalXpLabel}>{isZh ? '總經驗值' : 'Total XP'}</Text>
-              <Text style={styles.totalXpValue}>{levelInfo?.totalExp?.toLocaleString() || 0} XP</Text>
+              <View style={styles.xpIconRow}>
+                <Ionicons name="flash" size={14} color={MibuBrand.warning} />
+                <Text style={styles.totalXpLabel}>{isZh ? '總經驗' : 'Total XP'}</Text>
+              </View>
+              <Text style={styles.totalXpValue}>{levelInfo?.totalExp?.toLocaleString() || 0}</Text>
             </View>
           </View>
 
@@ -255,18 +275,20 @@ export function EconomyScreen() {
               <View style={styles.progressBarBg}>
                 <View style={[styles.progressBarFill, { width: `${Math.min(expProgress, 100)}%` }]} />
               </View>
+              <View style={styles.progressPercentBadge}>
+                <Text style={styles.progressPercentText}>{Math.round(expProgress)}%</Text>
+              </View>
             </View>
             <View style={styles.progressLabels}>
               <Text style={styles.progressCurrent}>
                 {levelInfo?.currentExp || 0} / {levelInfo?.nextLevelExp || 0} XP
               </Text>
-              <Text style={styles.progressNext}>
-                Lv.{levelInfo?.level || 1} → Lv.{(levelInfo?.level || 1) + 1}
-              </Text>
+              <View style={styles.progressNextBadge}>
+                <Text style={styles.progressNext}>
+                  Lv.{levelInfo?.level || 1} → Lv.{(levelInfo?.level || 1) + 1}
+                </Text>
+              </View>
             </View>
-            <Text style={styles.progressHint}>
-              {isZh ? `還需 ${xpToNextLevel} XP 升到 Lv.${(levelInfo?.level || 1) + 1}` : `${xpToNextLevel} XP to Lv.${(levelInfo?.level || 1) + 1}`}
-            </Text>
           </View>
         </View>
 
@@ -346,6 +368,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
@@ -369,6 +396,19 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
     marginBottom: 16,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  levelCardDecor: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    opacity: 0.5,
+  },
+  levelCardDecorRight: {
+    left: 'auto',
+    right: 12,
+    top: 16,
   },
   levelTop: {
     flexDirection: 'row',
@@ -378,10 +418,16 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: 'relative',
   },
+  avatarRing: {
+    padding: 3,
+    borderRadius: 36,
+    borderWidth: 2,
+    borderColor: MibuBrand.highlight,
+  },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     backgroundColor: MibuBrand.cream,
     justifyContent: 'center',
     alignItems: 'center',
@@ -390,10 +436,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -4,
     left: -4,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: MibuBrand.brown,
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: 10,
+    shadowColor: MibuBrand.brown,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
   },
   levelBadgeText: {
     fontSize: 11,
@@ -402,63 +455,101 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: 14,
   },
   userName: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     color: MibuBrand.brownDark,
+    marginBottom: 4,
+  },
+  tierBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: MibuBrand.highlight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
   },
   userTier: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-    marginTop: 2,
+    fontSize: 12,
+    fontWeight: '600',
+    color: MibuBrand.brown,
   },
   totalXpBox: {
     alignItems: 'flex-end',
+    backgroundColor: MibuBrand.creamLight,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  xpIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 2,
   },
   totalXpLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: MibuBrand.copper,
   },
   totalXpValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
     color: MibuBrand.brownDark,
   },
   levelProgress: {},
   progressBarContainer: {
     marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   progressBarBg: {
-    height: 10,
+    flex: 1,
+    height: 12,
     backgroundColor: MibuBrand.tanLight,
-    borderRadius: 5,
+    borderRadius: 6,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
     backgroundColor: MibuBrand.brown,
-    borderRadius: 5,
+    borderRadius: 6,
+  },
+  progressPercentBadge: {
+    backgroundColor: MibuBrand.brown,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  progressPercentText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#fff',
   },
   progressLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    alignItems: 'center',
   },
   progressCurrent: {
     fontSize: 13,
     color: MibuBrand.copper,
+    fontWeight: '500',
+  },
+  progressNextBadge: {
+    backgroundColor: MibuBrand.creamLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   progressNext: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-  },
-  progressHint: {
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: '600',
     color: MibuBrand.brown,
-    textAlign: 'center',
-    marginTop: 4,
   },
 
   // Stats Row

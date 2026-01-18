@@ -45,6 +45,23 @@ const REWARD_TIERS: RewardTier[] = [
   { count: 10, reward: 'NT$ 100 現金回饋', icon: 'cash', color: '#DC2626' },
 ];
 
+// 排行榜用戶資料
+interface LeaderboardUser {
+  rank: number;
+  name: string;
+  inviteCount: number;
+  isCurrentUser?: boolean;
+}
+
+// 模擬本週排行榜資料（未來可接 API）
+const MOCK_LEADERBOARD: LeaderboardUser[] = [
+  { rank: 1, name: '旅遊達人小明', inviteCount: 23 },
+  { rank: 2, name: 'Adventure王', inviteCount: 18 },
+  { rank: 3, name: '背包客阿花', inviteCount: 15 },
+  { rank: 4, name: '環遊世界小美', inviteCount: 12 },
+  { rank: 5, name: '探險家Jason', inviteCount: 9 },
+];
+
 export function ReferralScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
@@ -274,6 +291,77 @@ export function ReferralScreen() {
               {balance?.totalEarned || 0}
             </Text>
             <Text style={styles.statLabel}>{isZh ? '累計 XP' : 'Total XP'}</Text>
+          </View>
+        </View>
+
+        {/* Weekly Leaderboard */}
+        <View style={styles.section}>
+          <View style={styles.leaderboardHeader}>
+            <Ionicons name="trophy" size={20} color={MibuBrand.brown} />
+            <Text style={styles.sectionTitle}>
+              {isZh ? '本週邀請排行榜' : 'Weekly Invite Leaders'}
+            </Text>
+          </View>
+          <View style={styles.leaderboardCard}>
+            {MOCK_LEADERBOARD.map((user, index) => {
+              // 前三名的徽章顏色
+              const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32']; // 金銀銅
+              const isTopThree = user.rank <= 3;
+
+              return (
+                <View
+                  key={user.rank}
+                  style={[
+                    styles.leaderboardItem,
+                    index < MOCK_LEADERBOARD.length - 1 && styles.leaderboardItemBorder,
+                    user.isCurrentUser && styles.leaderboardItemHighlight,
+                  ]}
+                >
+                  {/* 排名 */}
+                  <View
+                    style={[
+                      styles.rankBadge,
+                      isTopThree && { backgroundColor: rankColors[user.rank - 1] },
+                    ]}
+                  >
+                    {isTopThree ? (
+                      <Ionicons name="medal" size={16} color="#fff" />
+                    ) : (
+                      <Text style={styles.rankText}>{user.rank}</Text>
+                    )}
+                  </View>
+
+                  {/* 頭像 */}
+                  <View
+                    style={[
+                      styles.leaderboardAvatar,
+                      isTopThree && { borderColor: rankColors[user.rank - 1], borderWidth: 2 },
+                    ]}
+                  >
+                    <Text style={styles.leaderboardAvatarText}>
+                      {user.name.charAt(0)}
+                    </Text>
+                  </View>
+
+                  {/* 名稱 */}
+                  <Text
+                    style={[
+                      styles.leaderboardName,
+                      user.isCurrentUser && styles.leaderboardNameHighlight,
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {user.name}
+                  </Text>
+
+                  {/* 邀請數 */}
+                  <View style={styles.inviteCountBadge}>
+                    <Ionicons name="person-add" size={12} color={MibuBrand.brown} />
+                    <Text style={styles.inviteCountText}>{user.inviteCount}</Text>
+                  </View>
+                </View>
+              );
+            })}
           </View>
         </View>
 
@@ -573,6 +661,84 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: MibuBrand.brownDark,
     marginBottom: 12,
+  },
+  leaderboardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  leaderboardCard: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
+    overflow: 'hidden',
+  },
+  leaderboardItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  leaderboardItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: MibuBrand.tanLight,
+  },
+  leaderboardItemHighlight: {
+    backgroundColor: MibuBrand.highlight,
+  },
+  rankBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: MibuBrand.creamLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  rankText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: MibuBrand.copper,
+  },
+  leaderboardAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: MibuBrand.cream,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  leaderboardAvatarText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: MibuBrand.brown,
+  },
+  leaderboardName: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: MibuBrand.brownDark,
+  },
+  leaderboardNameHighlight: {
+    color: MibuBrand.brown,
+    fontWeight: '700',
+  },
+  inviteCountBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: MibuBrand.highlight,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  inviteCountText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: MibuBrand.brown,
   },
   codeCard: {
     backgroundColor: MibuBrand.warmWhite,
