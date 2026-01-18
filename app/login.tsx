@@ -9,7 +9,6 @@ import {
   Modal,
   Image,
   Alert,
-  TextInput,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -79,8 +78,6 @@ export default function LoginScreen() {
   const [selectedPortal, setSelectedPortal] = useState<PortalType>('traveler');
   const [showPortalMenu, setShowPortalMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
   const redirectUri = Linking.createURL('auth/callback');
   const portals = PORTAL_CONFIGS[state.language] || PORTAL_CONFIGS['zh-TW'];
@@ -581,63 +578,6 @@ export default function LoginScreen() {
     router.replace('/(tabs)');
   };
 
-  const handleEmailLogin = async () => {
-    if (!email.trim() || !password) {
-      Alert.alert(
-        state.language === 'zh-TW' ? '錯誤' : 'Error',
-        state.language === 'zh-TW' ? '請輸入 Email 和密碼' : 'Please enter email and password'
-      );
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim(),
-          password,
-          portal: selectedPortal,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success && data.token) {
-        await AsyncStorage.setItem(AUTH_TOKEN_KEY, data.token);
-        await AsyncStorage.setItem('@mibu_user', JSON.stringify(data.user));
-        await AsyncStorage.setItem('@mibu_target_portal', selectedPortal);
-
-        setUser({
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.name,
-          role: data.user.role as UserRole,
-          isApproved: data.user.isApproved,
-          isSuperAdmin: data.user.isSuperAdmin,
-          provider: 'email',
-          providerId: data.user.id,
-        });
-
-        navigateAfterLogin(data.user.role as UserRole, data.user.isApproved, data.user.isSuperAdmin, selectedPortal);
-      } else {
-        Alert.alert(
-          state.language === 'zh-TW' ? '登入失敗' : 'Login Failed',
-          data.message || (state.language === 'zh-TW' ? '帳號或密碼錯誤' : 'Invalid email or password')
-        );
-      }
-    } catch (error) {
-      console.error('Email login error:', error);
-      Alert.alert(
-        state.language === 'zh-TW' ? '錯誤' : 'Error',
-        state.language === 'zh-TW' ? '登入失敗，請稍後再試' : 'Login failed. Please try again.'
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleAppleLogin = async () => {
     try {
       setLoading(true);
@@ -893,83 +833,36 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>今天去哪玩?老天說了算</Text>
 
         <View style={styles.buttonContainer}>
-          {(selectedPortal === 'merchant' || selectedPortal === 'specialist') ? (
-            <>
-              <TextInput
-                style={styles.emailInput}
-                placeholder={state.language === 'zh-TW' ? 'Email' : 'Email'}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                placeholderTextColor={MibuBrand.copper}
-              />
-              <TextInput
-                style={styles.emailInput}
-                placeholder={state.language === 'zh-TW' ? '密碼' : 'Password'}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                placeholderTextColor={MibuBrand.copper}
-              />
-              <TouchableOpacity 
-                style={[styles.loginButton, { backgroundColor: currentPortal.color }]} 
-                onPress={handleEmailLogin}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#ffffff" />
-                ) : (
-                  <>
-                    <Ionicons name="log-in-outline" size={22} color="#ffffff" />
-                    <Text style={styles.loginButtonText}>{texts.login}</Text>
-                  </>
-                )}
-              </TouchableOpacity>
+          {/* 所有身份別統一使用 OAuth 登入 (Google/Apple) */}
+          <TouchableOpacity
+            style={[styles.loginButton, { backgroundColor: currentPortal.color }]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <>
+                <Ionicons name="arrow-redo" size={22} color="#ffffff" />
+                <Text style={styles.loginButtonText}>{texts.login}</Text>
+              </>
+            )}
+          </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.registerButton, { borderColor: currentPortal.color }]}
-                onPress={() => router.push(selectedPortal === 'merchant' ? '/register-merchant' : '/register-specialist')}
-              >
-                <Ionicons name="person-add-outline" size={20} color={currentPortal.color} />
-                <Text style={[styles.registerButtonText, { color: currentPortal.color }]}>
-                  {state.language === 'zh-TW' ? '申請註冊' : 'Register'}
-                </Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity 
-                style={[styles.loginButton, { backgroundColor: currentPortal.color }]} 
-                onPress={handleLogin}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#ffffff" />
-                ) : (
-                  <>
-                    <Ionicons name="arrow-redo" size={22} color="#ffffff" />
-                    <Text style={styles.loginButtonText}>{texts.login}</Text>
-                  </>
-                )}
-              </TouchableOpacity>
+          {Platform.OS === 'ios' && (
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              cornerRadius={28}
+              style={{ width: '100%', height: 52, marginTop: 12 }}
+              onPress={handleAppleLogin}
+            />
+          )}
 
-              {Platform.OS === 'ios' && (
-                <AppleAuthentication.AppleAuthenticationButton
-                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-                  buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-                  cornerRadius={28}
-                  style={{ width: '100%', height: 52, marginTop: 12 }}
-                  onPress={handleAppleLogin}
-                />
-              )}
-
-              {currentPortal.guestAllowed && (
-                <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
-                  <Text style={styles.guestButtonText}>{texts.guest}</Text>
-                </TouchableOpacity>
-              )}
-            </>
+          {currentPortal.guestAllowed && (
+            <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
+              <Text style={styles.guestButtonText}>{texts.guest}</Text>
+            </TouchableOpacity>
           )}
 
           <Text style={styles.note}>
@@ -1170,74 +1063,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     color: MibuBrand.dark,
-  },
-  registerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: MibuBrand.warmWhite,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 20,
-    borderWidth: 2,
-    marginTop: 12,
-  },
-  registerButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  emailInput: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: MibuBrand.brownDark,
-    borderWidth: 1,
-    borderColor: MibuBrand.tanLight,
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 16,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: MibuBrand.tanLight,
-  },
-  dividerText: {
-    paddingHorizontal: 16,
-    fontSize: 14,
-    color: MibuBrand.copper,
-  },
-  emailLoginButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: MibuBrand.warmWhite,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 20,
-    borderWidth: 2,
-  },
-  emailLoginButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  registerLink: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  registerLinkText: {
-    fontSize: 15,
-    color: MibuBrand.copper,
-  },
-  registerLinkHighlight: {
-    fontWeight: '700',
-    color: MibuBrand.brown,
   },
   note: {
     fontSize: 14,
