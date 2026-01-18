@@ -1,34 +1,69 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Linking, Image, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { Card } from '../components/ui/Card';
 import { MibuBrand } from '../../../../constants/Colors';
-import { Announcement } from '../../../types';
-import { apiService } from '../../../services/api';
+import { Announcement, Event } from '../../../types';
+import { apiService, eventApi } from '../../../services/api';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export function HomeScreen() {
   const { t, state } = useApp();
+  const router = useRouter();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [events, setEvents] = useState<{
+    announcements: Event[];
+    festivals: Event[];
+    limitedEvents: Event[];
+  }>({ announcements: [], festivals: [], limitedEvents: [] });
   const [loading, setLoading] = useState(true);
 
   const isZh = state.language === 'zh-TW';
 
   useEffect(() => {
-    loadAnnouncements();
+    loadData();
   }, []);
 
-  const loadAnnouncements = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getAnnouncements();
-      setAnnouncements(response.announcements || []);
+      // 同時載入舊版公告和新版活動
+      const [announcementRes, eventsRes] = await Promise.all([
+        apiService.getAnnouncements().catch(() => ({ announcements: [] })),
+        eventApi.getHomeEvents().catch(() => ({ announcements: [], festivals: [], limitedEvents: [] })),
+      ]);
+      setAnnouncements(announcementRes.announcements || []);
+      setEvents(eventsRes);
     } catch (error) {
-      console.log('Failed to load announcements:', error);
+      console.log('Failed to load home data:', error);
       setAnnouncements([]);
+      setEvents({ announcements: [], festivals: [], limitedEvents: [] });
     } finally {
       setLoading(false);
     }
+  };
+
+  const getLocalizedEventTitle = (event: Event): string => {
+    if (state.language === 'zh-TW') return event.title;
+    if (state.language === 'en' && event.titleEn) return event.titleEn;
+    if (state.language === 'ja' && event.titleJa) return event.titleJa;
+    if (state.language === 'ko' && event.titleKo) return event.titleKo;
+    return event.title;
+  };
+
+  const getLocalizedEventDesc = (event: Event): string => {
+    if (state.language === 'zh-TW') return event.description;
+    if (state.language === 'en' && event.descriptionEn) return event.descriptionEn;
+    if (state.language === 'ja' && event.descriptionJa) return event.descriptionJa;
+    if (state.language === 'ko' && event.descriptionKo) return event.descriptionKo;
+    return event.description;
+  };
+
+  const handleEventPress = (event: Event) => {
+    router.push(`/event/${event.id}`);
   };
 
   const isAnnouncementVisible = (a: Announcement): boolean => {
@@ -59,6 +94,39 @@ export function HomeScreen() {
       Linking.openURL(announcement.linkUrl).catch(() => {});
     }
   };
+
+  const renderEventCard = (event: Event, bgColor: string, textColor: string = '#ffffff') => (
+    <TouchableOpacity
+      key={event.id}
+      style={[styles.eventCard, { backgroundColor: bgColor }]}
+      onPress={() => handleEventPress(event)}
+      activeOpacity={0.8}
+    >
+      {event.imageUrl && (
+        <Image
+          source={{ uri: event.imageUrl }}
+          style={styles.eventImage}
+          resizeMode="cover"
+        />
+      )}
+      <View style={styles.eventCardContent}>
+        <Text style={[styles.eventTitle, { color: textColor }]} numberOfLines={2}>
+          {getLocalizedEventTitle(event)}
+        </Text>
+        <Text style={[styles.eventDesc, { color: textColor, opacity: 0.85 }]} numberOfLines={2}>
+          {getLocalizedEventDesc(event)}
+        </Text>
+        {event.endDate && (
+          <View style={styles.eventDateRow}>
+            <Ionicons name="time-outline" size={12} color={textColor} style={{ opacity: 0.7 }} />
+            <Text style={[styles.eventDate, { color: textColor, opacity: 0.7 }]}>
+              {isZh ? '至 ' : 'Until '}{new Date(event.endDate).toLocaleDateString()}
+            </Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
 
   const renderAnnouncementItem = (item: Announcement, isLight: boolean = true) => (
     <TouchableOpacity
@@ -139,7 +207,45 @@ export function HomeScreen() {
         </Card>
       )}
 
-      {announcements.length === 0 && (
+      {/* 新版活動系統 - 節慶活動 */}
+      {events.festivals.length > 0 && (
+        <View style={styles.eventSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="calendar" size={22} color={MibuBrand.brown} />
+            <Text style={styles.sectionTitle}>
+              {isZh ? '節慶活動' : 'Festival Events'}
+            </Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.eventScrollContent}
+          >
+            {events.festivals.map(event => renderEventCard(event, '#dc2626'))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* 新版活動系統 - 限時活動 */}
+      {events.limitedEvents.length > 0 && (
+        <View style={styles.eventSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="time" size={22} color={MibuBrand.brown} />
+            <Text style={styles.sectionTitle}>
+              {isZh ? '限時活動' : 'Limited Events'}
+            </Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.eventScrollContent}
+          >
+            {events.limitedEvents.map(event => renderEventCard(event, '#7c3aed'))}
+          </ScrollView>
+        </View>
+      )}
+
+      {announcements.length === 0 && events.festivals.length === 0 && events.limitedEvents.length === 0 && (
         <Card style={styles.emptyCard}>
           <View style={styles.emptyContent}>
             <Ionicons name="information-circle-outline" size={48} color={MibuBrand.copper} />
@@ -242,5 +348,54 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
     lineHeight: 20,
     marginLeft: 12,
+  },
+  // 活動系統樣式
+  eventSection: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+  },
+  eventScrollContent: {
+    paddingRight: 20,
+    gap: 12,
+  },
+  eventCard: {
+    width: SCREEN_WIDTH * 0.7,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  eventImage: {
+    width: '100%',
+    height: 120,
+  },
+  eventCardContent: {
+    padding: 14,
+    gap: 6,
+  },
+  eventTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  eventDesc: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  eventDateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  eventDate: {
+    fontSize: 11,
   },
 });

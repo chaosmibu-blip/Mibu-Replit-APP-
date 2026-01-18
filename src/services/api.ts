@@ -18,6 +18,7 @@ import { economyApi } from './economyApi';
 import { crowdfundingApi } from './crowdfundingApi';
 import { referralApi } from './referralApi';
 import { contributionApi } from './contributionApi';
+import { eventApi } from './eventApi';
 
 // Re-export 所有模組化的 API
 export { authApi } from './authApi';
@@ -36,6 +37,9 @@ export { economyApi } from './economyApi';
 export { crowdfundingApi } from './crowdfundingApi';
 export { referralApi } from './referralApi';
 export { contributionApi } from './contributionApi';
+
+// Phase 7 - 活動系統 (sync-app #006)
+export { eventApi } from './eventApi';
 
 /**
  * 統一 API Service（向後兼容）
@@ -193,6 +197,11 @@ class ApiService {
   bindIdentity = authApi.bindIdentity.bind(authApi);
   getIdentities = authApi.getIdentities.bind(authApi);
   unlinkIdentity = authApi.unlinkIdentity.bind(authApi);
+
+  // ========== Event (Phase 7 - sync-app #006) ==========
+  getEvents = eventApi.getEvents.bind(eventApi);
+  getEventById = eventApi.getEventById.bind(eventApi);
+  getHomeEvents = eventApi.getHomeEvents.bind(eventApi);
 }
 
 export const apiService = new ApiService();
