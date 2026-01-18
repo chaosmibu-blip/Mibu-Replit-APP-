@@ -41,18 +41,26 @@ interface PortalConfig {
 const PORTAL_CONFIGS: Record<string, PortalConfig[]> = {
   'zh-TW': [
     { type: 'traveler', label: '旅客', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '探索台灣各地精彩景點', guestAllowed: true },
+    { type: 'merchant', label: '商家', color: '#10b981', bgColor: '#d1fae5', subtitle: '管理優惠券與店家資訊', guestAllowed: false },
+    { type: 'specialist', label: '專員', color: '#a855f7', bgColor: '#f3e8ff', subtitle: '協助旅客規劃行程', guestAllowed: false },
     { type: 'admin', label: '管理端', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: '系統管理員專用入口', guestAllowed: false },
   ],
   'en': [
     { type: 'traveler', label: 'Traveler', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: 'Explore amazing destinations', guestAllowed: true },
+    { type: 'merchant', label: 'Merchant', color: '#10b981', bgColor: '#d1fae5', subtitle: 'Manage coupons and store info', guestAllowed: false },
+    { type: 'specialist', label: 'Specialist', color: '#a855f7', bgColor: '#f3e8ff', subtitle: 'Help travelers plan trips', guestAllowed: false },
     { type: 'admin', label: 'Admin', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: 'System administrator portal', guestAllowed: false },
   ],
   'ja': [
     { type: 'traveler', label: '旅行者', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '素晴らしい目的地を探索', guestAllowed: true },
+    { type: 'merchant', label: '加盟店', color: '#10b981', bgColor: '#d1fae5', subtitle: 'クーポンと店舗情報を管理', guestAllowed: false },
+    { type: 'specialist', label: '専門家', color: '#a855f7', bgColor: '#f3e8ff', subtitle: '旅行者の旅程計画をサポート', guestAllowed: false },
     { type: 'admin', label: '管理者', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: 'システム管理者ポータル', guestAllowed: false },
   ],
   'ko': [
     { type: 'traveler', label: '여행자', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '놀라운 여행지 탐험', guestAllowed: true },
+    { type: 'merchant', label: '가맹점', color: '#10b981', bgColor: '#d1fae5', subtitle: '쿠폰 및 매장 정보 관리', guestAllowed: false },
+    { type: 'specialist', label: '전문가', color: '#a855f7', bgColor: '#f3e8ff', subtitle: '여행자의 여행 계획 지원', guestAllowed: false },
     { type: 'admin', label: '관리자', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: '시스템 관리자 포털', guestAllowed: false },
   ],
 };
