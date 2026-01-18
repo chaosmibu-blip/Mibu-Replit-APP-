@@ -174,9 +174,9 @@ export function HomeScreen() {
       {/* Header with greeting */}
       <View style={styles.header}>
         <Image
-          source={require('../../../../assets/images/mibu-cat.png')}
+          source={require('../../../../assets/images/icon.png')}
           style={styles.avatarImage}
-          defaultSource={require('../../../../assets/images/mibu-cat.png')}
+          defaultSource={require('../../../../assets/images/icon.png')}
         />
         <View style={styles.greeting}>
           <Text style={styles.greetingTitle}>
