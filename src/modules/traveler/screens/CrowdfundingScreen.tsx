@@ -1,6 +1,6 @@
 /**
- * CrowdfundingScreen - 眾籌活動列表
- * 顯示募資活動、進度、參與紀錄
+ * CrowdfundingScreen - 全球探索地圖
+ * 顯示各地區解鎖狀態、募資進度
  *
  * @see 後端合約: contracts/APP.md Phase 5
  */
@@ -13,7 +13,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Image,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,16 +20,67 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { crowdfundingApi } from '../../../services/crowdfundingApi';
 import { MibuBrand } from '../../../../constants/Colors';
-import { Campaign, CampaignStatus, MyContribution } from '../../../types/crowdfunding';
+import { Campaign, MyContribution } from '../../../types/crowdfunding';
 
-const STATUS_CONFIG: Record<CampaignStatus, { label: { zh: string; en: string }; color: string; bg: string }> = {
-  upcoming: { label: { zh: '即將開始', en: 'Upcoming' }, color: '#6366f1', bg: '#EEF2FF' },
-  active: { label: { zh: '進行中', en: 'Active' }, color: '#059669', bg: '#ECFDF5' },
-  completed: { label: { zh: '已結束', en: 'Completed' }, color: '#6b7280', bg: '#F3F4F6' },
-  cancelled: { label: { zh: '已取消', en: 'Cancelled' }, color: '#dc2626', bg: '#FEF2F2' },
+// 地區狀態類型
+type RegionStatus = 'unlocked' | 'fundraising' | 'coming_soon' | 'stay_tuned';
+
+// 地區資料結構
+interface Region {
+  id: string;
+  name: { zh: string; en: string };
+  flag: string;
+  status: RegionStatus;
+  progress?: number; // 募資進度 0-100
+  campaignId?: string;
+}
+
+// 模擬地區資料（實際應從 API 取得）
+const REGIONS: Region[] = [
+  { id: 'tw', name: { zh: '台灣', en: 'Taiwan' }, flag: '🇹🇼', status: 'unlocked' },
+  { id: 'jp', name: { zh: '日本', en: 'Japan' }, flag: '🇯🇵', status: 'fundraising', progress: 68 },
+  { id: 'kr', name: { zh: '韓國', en: 'South Korea' }, flag: '🇰🇷', status: 'coming_soon' },
+  { id: 'th', name: { zh: '泰國', en: 'Thailand' }, flag: '🇹🇭', status: 'stay_tuned' },
+  { id: 'vn', name: { zh: '越南', en: 'Vietnam' }, flag: '🇻🇳', status: 'stay_tuned' },
+  { id: 'sg', name: { zh: '新加坡', en: 'Singapore' }, flag: '🇸🇬', status: 'stay_tuned' },
+  { id: 'my', name: { zh: '馬來西亞', en: 'Malaysia' }, flag: '🇲🇾', status: 'stay_tuned' },
+  { id: 'ph', name: { zh: '菲律賓', en: 'Philippines' }, flag: '🇵🇭', status: 'stay_tuned' },
+  { id: 'id', name: { zh: '印尼', en: 'Indonesia' }, flag: '🇮🇩', status: 'stay_tuned' },
+  { id: 'hk', name: { zh: '香港', en: 'Hong Kong' }, flag: '🇭🇰', status: 'stay_tuned' },
+];
+
+// 狀態配置
+const STATUS_CONFIG: Record<RegionStatus, {
+  label: { zh: string; en: string };
+  color: string;
+  bg: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}> = {
+  unlocked: {
+    label: { zh: '已解鎖', en: 'Unlocked' },
+    color: '#059669',
+    bg: '#ECFDF5',
+    icon: 'checkmark-circle',
+  },
+  fundraising: {
+    label: { zh: '募資中', en: 'Fundraising' },
+    color: '#6366f1',
+    bg: '#EEF2FF',
+    icon: 'trending-up',
+  },
+  coming_soon: {
+    label: { zh: '即將開放', en: 'Coming Soon' },
+    color: '#D97706',
+    bg: '#FEF3C7',
+    icon: 'time-outline',
+  },
+  stay_tuned: {
+    label: { zh: '敬請期待', en: 'Stay Tuned' },
+    color: '#6b7280',
+    bg: '#F3F4F6',
+    icon: 'sparkles-outline',
+  },
 };
-
-type TabType = 'active' | 'upcoming' | 'completed' | 'my';
 
 export function CrowdfundingScreen() {
   const { state, getToken } = useApp();
@@ -39,10 +89,16 @@ export function CrowdfundingScreen() {
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabType>('active');
+  const [regions, setRegions] = useState<Region[]>(REGIONS);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [myContributions, setMyContributions] = useState<MyContribution[]>([]);
-  const [totalContributed, setTotalContributed] = useState(0);
+
+  // 統計數據
+  const stats = {
+    unlocked: regions.filter(r => r.status === 'unlocked').length,
+    fundraising: regions.filter(r => r.status === 'fundraising').length,
+    coming: regions.filter(r => r.status === 'coming_soon').length,
+  };
 
   const loadData = useCallback(async () => {
     try {
@@ -52,25 +108,30 @@ export function CrowdfundingScreen() {
         return;
       }
 
-      if (activeTab === 'my') {
-        const data = await crowdfundingApi.getMyContributions(token);
-        setMyContributions(data.contributions);
-        setTotalContributed(data.totalAmount);
-      } else {
-        const status = activeTab === 'completed' ? 'completed' : activeTab;
-        const data = await crowdfundingApi.getCampaigns(token, { status });
-        setCampaigns(data.campaigns);
+      // 載入進行中的募資活動
+      const data = await crowdfundingApi.getCampaigns(token, { status: 'active' });
+      setCampaigns(data.campaigns);
+
+      // 載入我的贊助紀錄
+      try {
+        const myData = await crowdfundingApi.getMyContributions(token);
+        setMyContributions(myData.contributions);
+      } catch {
+        // 忽略錯誤
       }
+
+      // TODO: 從 API 取得地區狀態並更新 regions
+      // 目前使用靜態資料
+
     } catch (error) {
       console.error('Failed to load crowdfunding data:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [getToken, router, activeTab]);
+  }, [getToken, router]);
 
   useEffect(() => {
-    setLoading(true);
     loadData();
   }, [loadData]);
 
@@ -79,127 +140,56 @@ export function CrowdfundingScreen() {
     loadData();
   }, [loadData]);
 
-  const formatCurrency = (amount: number) => {
-    return `NT$ ${amount.toLocaleString()}`;
+  const handleRegionPress = (region: Region) => {
+    if (region.status === 'fundraising' && region.campaignId) {
+      router.push(`/crowdfunding/${region.campaignId}` as any);
+    }
+    // 其他狀態可以顯示地區資訊或提示
   };
 
-  const calculateProgress = (current: number, target: number) => {
-    return Math.min((current / target) * 100, 100);
-  };
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(isZh ? 'zh-TW' : 'en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const renderCampaignCard = (campaign: Campaign) => {
-    const progress = calculateProgress(campaign.currentAmount, campaign.targetAmount);
-    const statusConfig = STATUS_CONFIG[campaign.status];
+  const renderRegionCard = (region: Region) => {
+    const config = STATUS_CONFIG[region.status];
+    const isFundraising = region.status === 'fundraising';
 
     return (
       <TouchableOpacity
-        key={campaign.id}
-        style={styles.campaignCard}
-        onPress={() => router.push(`/crowdfunding/${campaign.id}` as any)}
-        activeOpacity={0.7}
+        key={region.id}
+        style={styles.regionCard}
+        onPress={() => handleRegionPress(region)}
+        activeOpacity={region.status === 'fundraising' ? 0.7 : 1}
       >
-        {campaign.imageUrl ? (
-          <Image source={{ uri: campaign.imageUrl }} style={styles.campaignImage} />
-        ) : (
-          <View style={[styles.campaignImage, styles.campaignImagePlaceholder]}>
-            <Ionicons name="rocket" size={32} color={MibuBrand.tan} />
-          </View>
-        )}
-
-        <View style={styles.campaignContent}>
-          <View style={styles.campaignHeader}>
-            <Text style={styles.campaignTitle} numberOfLines={2}>
-              {campaign.title}
+        <View style={styles.regionLeft}>
+          <Text style={styles.regionFlag}>{region.flag}</Text>
+          <View style={styles.regionInfo}>
+            <Text style={styles.regionName}>
+              {region.name[isZh ? 'zh' : 'en']}
             </Text>
-            <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
-              <Text style={[styles.statusText, { color: statusConfig.color }]}>
-                {statusConfig.label[isZh ? 'zh' : 'en']}
-              </Text>
-            </View>
+            {isFundraising && region.progress !== undefined && (
+              <View style={styles.progressContainer}>
+                <View style={styles.progressBarBg}>
+                  <View
+                    style={[
+                      styles.progressBarFill,
+                      { width: `${region.progress}%` }
+                    ]}
+                  />
+                </View>
+                <Text style={styles.progressText}>{region.progress}%</Text>
+              </View>
+            )}
           </View>
+        </View>
 
-          <Text style={styles.campaignDesc} numberOfLines={2}>
-            {campaign.description}
+        <View style={[styles.statusBadge, { backgroundColor: config.bg }]}>
+          <Ionicons name={config.icon} size={14} color={config.color} />
+          <Text style={[styles.statusText, { color: config.color }]}>
+            {isFundraising && region.progress !== undefined
+              ? `${config.label[isZh ? 'zh' : 'en']} ${region.progress}%`
+              : config.label[isZh ? 'zh' : 'en']
+            }
           </Text>
-
-          <View style={styles.progressSection}>
-            <View style={styles.progressBarBg}>
-              <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
-            </View>
-            <View style={styles.progressStats}>
-              <Text style={styles.progressAmount}>
-                {formatCurrency(campaign.currentAmount)}
-              </Text>
-              <Text style={styles.progressTarget}>
-                / {formatCurrency(campaign.targetAmount)}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.campaignMeta}>
-            <View style={styles.metaItem}>
-              <Ionicons name="people" size={14} color={MibuBrand.copper} />
-              <Text style={styles.metaText}>
-                {campaign.contributorCount} {isZh ? '人參與' : 'backers'}
-              </Text>
-            </View>
-            <View style={styles.metaItem}>
-              <Ionicons name="calendar" size={14} color={MibuBrand.copper} />
-              <Text style={styles.metaText}>
-                {formatDate(campaign.endDate)} {isZh ? '截止' : 'ends'}
-              </Text>
-            </View>
-          </View>
         </View>
       </TouchableOpacity>
-    );
-  };
-
-  const renderMyContribution = (contribution: MyContribution) => {
-    const statusColors = {
-      pending: { bg: '#FEF3C7', text: '#D97706' },
-      verified: { bg: '#D1FAE5', text: '#059669' },
-      failed: { bg: '#FEE2E2', text: '#DC2626' },
-    };
-    const colors = statusColors[contribution.status];
-
-    return (
-      <View key={contribution.id} style={styles.contributionCard}>
-        <View style={styles.contributionHeader}>
-          <Text style={styles.contributionTitle} numberOfLines={1}>
-            {contribution.campaignTitle}
-          </Text>
-          <View style={[styles.contributionStatus, { backgroundColor: colors.bg }]}>
-            <Text style={[styles.contributionStatusText, { color: colors.text }]}>
-              {contribution.status === 'pending' && (isZh ? '處理中' : 'Pending')}
-              {contribution.status === 'verified' && (isZh ? '已確認' : 'Verified')}
-              {contribution.status === 'failed' && (isZh ? '失敗' : 'Failed')}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.contributionDetails}>
-          <Text style={styles.contributionAmount}>
-            {formatCurrency(contribution.amount)}
-          </Text>
-          {contribution.rewardTier && (
-            <View style={styles.rewardBadge}>
-              <Ionicons name="gift" size={12} color={MibuBrand.brown} />
-              <Text style={styles.rewardText}>{contribution.rewardTier}</Text>
-            </View>
-          )}
-        </View>
-        <Text style={styles.contributionDate}>
-          {new Date(contribution.createdAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
-        </Text>
-      </View>
     );
   };
 
@@ -213,32 +203,42 @@ export function CrowdfundingScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isZh ? '募資活動' : 'Crowdfunding'}
-        </Text>
+        <View style={styles.headerCenter}>
+          <Ionicons name="globe-outline" size={24} color={MibuBrand.brownDark} />
+          <Text style={styles.headerTitle}>
+            {isZh ? '全球探索地圖' : 'Global Explorer Map'}
+          </Text>
+        </View>
         <View style={styles.headerPlaceholder} />
       </View>
 
-      {/* Tabs */}
-      <View style={styles.tabContainer}>
-        {(['active', 'upcoming', 'completed', 'my'] as TabType[]).map(tab => (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.tab, activeTab === tab && styles.tabActive]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-              {tab === 'active' && (isZh ? '進行中' : 'Active')}
-              {tab === 'upcoming' && (isZh ? '即將' : 'Soon')}
-              {tab === 'completed' && (isZh ? '已結束' : 'Ended')}
-              {tab === 'my' && (isZh ? '我的' : 'Mine')}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {/* Stats Row */}
+      <View style={styles.statsRow}>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{stats.unlocked}</Text>
+          <Text style={styles.statLabel}>
+            {isZh ? '已解鎖國家' : 'Unlocked'}
+          </Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={[styles.statValue, { color: '#6366f1' }]}>{stats.fundraising}</Text>
+          <Text style={styles.statLabel}>
+            {isZh ? '募資進行中' : 'Fundraising'}
+          </Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={[styles.statValue, { color: '#D97706' }]}>{stats.coming}</Text>
+          <Text style={styles.statLabel}>
+            {isZh ? '即將開放' : 'Coming'}
+          </Text>
+        </View>
       </View>
 
       <ScrollView
@@ -253,63 +253,98 @@ export function CrowdfundingScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {activeTab === 'my' ? (
-          <>
-            {/* My Stats */}
-            <View style={styles.statsCard}>
-              <Ionicons name="heart" size={28} color={MibuBrand.brown} />
-              <View style={styles.statsInfo}>
-                <Text style={styles.statsLabel}>
-                  {isZh ? '累計贊助' : 'Total Contributed'}
-                </Text>
-                <Text style={styles.statsAmount}>
-                  {formatCurrency(totalContributed)}
-                </Text>
-              </View>
+        {/* Section: 已解鎖 */}
+        {regions.filter(r => r.status === 'unlocked').length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="checkmark-circle" size={18} color="#059669" />
+              <Text style={styles.sectionTitle}>
+                {isZh ? '已開放地區' : 'Available Regions'}
+              </Text>
             </View>
+            {regions.filter(r => r.status === 'unlocked').map(renderRegionCard)}
+          </View>
+        )}
 
-            {myContributions.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="heart-outline" size={48} color={MibuBrand.tan} />
-                <Text style={styles.emptyText}>
-                  {isZh ? '尚未參與任何募資' : 'No contributions yet'}
-                </Text>
-                <TouchableOpacity
-                  style={styles.emptyButton}
-                  onPress={() => setActiveTab('active')}
-                >
-                  <Text style={styles.emptyButtonText}>
-                    {isZh ? '查看進行中的活動' : 'View active campaigns'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.contributionsList}>
-                {myContributions.map(renderMyContribution)}
-              </View>
-            )}
-          </>
-        ) : (
-          <>
-            {campaigns.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="rocket-outline" size={48} color={MibuBrand.tan} />
-                <Text style={styles.emptyText}>
-                  {activeTab === 'active' && (isZh ? '目前沒有進行中的活動' : 'No active campaigns')}
-                  {activeTab === 'upcoming' && (isZh ? '目前沒有即將開始的活動' : 'No upcoming campaigns')}
-                  {activeTab === 'completed' && (isZh ? '目前沒有已結束的活動' : 'No completed campaigns')}
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.campaignsList}>
-                {campaigns.map(renderCampaignCard)}
-              </View>
-            )}
-          </>
+        {/* Section: 募資中 */}
+        {regions.filter(r => r.status === 'fundraising').length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="trending-up" size={18} color="#6366f1" />
+              <Text style={styles.sectionTitle}>
+                {isZh ? '募資進行中' : 'Fundraising'}
+              </Text>
+            </View>
+            {regions.filter(r => r.status === 'fundraising').map(renderRegionCard)}
+          </View>
+        )}
+
+        {/* Section: 即將開放 */}
+        {regions.filter(r => r.status === 'coming_soon').length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="time-outline" size={18} color="#D97706" />
+              <Text style={styles.sectionTitle}>
+                {isZh ? '即將開放' : 'Coming Soon'}
+              </Text>
+            </View>
+            {regions.filter(r => r.status === 'coming_soon').map(renderRegionCard)}
+          </View>
+        )}
+
+        {/* Section: 敬請期待 */}
+        {regions.filter(r => r.status === 'stay_tuned').length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="sparkles-outline" size={18} color="#6b7280" />
+              <Text style={styles.sectionTitle}>
+                {isZh ? '敬請期待' : 'Stay Tuned'}
+              </Text>
+            </View>
+            {regions.filter(r => r.status === 'stay_tuned').map(renderRegionCard)}
+          </View>
+        )}
+
+        {/* My Contributions Section */}
+        {myContributions.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="heart" size={18} color={MibuBrand.brown} />
+              <Text style={styles.sectionTitle}>
+                {isZh ? '我的贊助紀錄' : 'My Contributions'}
+              </Text>
+            </View>
+            <View style={styles.contributionSummary}>
+              <Text style={styles.contributionLabel}>
+                {isZh ? '累計贊助' : 'Total'}
+              </Text>
+              <Text style={styles.contributionAmount}>
+                NT$ {myContributions.reduce((sum, c) => sum + c.amount, 0).toLocaleString()}
+              </Text>
+            </View>
+          </View>
         )}
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Bottom CTA */}
+      <View style={styles.bottomCta}>
+        <TouchableOpacity
+          style={styles.ctaButton}
+          onPress={() => {
+            // 導向贊助頁面或活動詳情
+            if (campaigns.length > 0) {
+              router.push(`/crowdfunding/${campaigns[0].id}` as any);
+            }
+          }}
+        >
+          <Ionicons name="heart" size={20} color="#fff" />
+          <Text style={styles.ctaText}>
+            {isZh ? '支持我們的理念' : 'Support Our Vision'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -342,6 +377,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
@@ -350,236 +390,168 @@ const styles = StyleSheet.create({
   headerPlaceholder: {
     width: 40,
   },
-  tabContainer: {
+  statsRow: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: MibuBrand.warmWhite,
-    gap: 8,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 8,
     alignItems: 'center',
-    borderRadius: 12,
-    backgroundColor: MibuBrand.creamLight,
+    justifyContent: 'center',
+    backgroundColor: MibuBrand.warmWhite,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: MibuBrand.tanLight,
   },
-  tabActive: {
-    backgroundColor: MibuBrand.brown,
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
   },
-  tabText: {
-    fontSize: 13,
-    fontWeight: '600',
+  statValue: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#059669',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
     color: MibuBrand.copper,
+    fontWeight: '500',
   },
-  tabTextActive: {
-    color: '#ffffff',
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: MibuBrand.tanLight,
+    marginHorizontal: 16,
   },
   content: {
     flex: 1,
   },
   contentContainer: {
     padding: 16,
+    paddingBottom: 100,
   },
-  statsCard: {
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
-    marginBottom: 16,
+    gap: 8,
+    marginBottom: 12,
   },
-  statsInfo: {
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+  },
+  regionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+  },
+  regionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
-  statsLabel: {
-    fontSize: 13,
-    color: MibuBrand.copper,
+  regionFlag: {
+    fontSize: 28,
+    marginRight: 12,
+  },
+  regionInfo: {
+    flex: 1,
+  },
+  regionName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: MibuBrand.brownDark,
     marginBottom: 4,
   },
-  statsAmount: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: MibuBrand.brownDark,
-  },
-  campaignsList: {
-    gap: 16,
-  },
-  campaignCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
-  },
-  campaignImage: {
-    width: '100%',
-    height: 140,
-    backgroundColor: MibuBrand.cream,
-  },
-  campaignImagePlaceholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  campaignContent: {
-    padding: 16,
-  },
-  campaignHeader: {
+  progressContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 8,
-    marginBottom: 8,
-  },
-  campaignTitle: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  campaignDesc: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-    lineHeight: 18,
-    marginBottom: 12,
-  },
-  progressSection: {
-    marginBottom: 12,
   },
   progressBarBg: {
-    height: 8,
+    flex: 1,
+    height: 6,
     backgroundColor: MibuBrand.tanLight,
-    borderRadius: 4,
+    borderRadius: 3,
     overflow: 'hidden',
-    marginBottom: 8,
+    maxWidth: 100,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: MibuBrand.brown,
-    borderRadius: 4,
+    backgroundColor: '#6366f1',
+    borderRadius: 3,
   },
-  progressStats: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  progressAmount: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
-  progressTarget: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-    marginLeft: 4,
-  },
-  campaignMeta: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  metaText: {
+  progressText: {
     fontSize: 12,
-    color: MibuBrand.copper,
-  },
-  contributionsList: {
-    gap: 12,
-  },
-  contributionCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
-  },
-  contributionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  contributionTitle: {
-    flex: 1,
-    fontSize: 15,
     fontWeight: '600',
-    color: MibuBrand.brownDark,
-    marginRight: 8,
+    color: '#6366f1',
   },
-  contributionStatus: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  contributionStatusText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  contributionDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 4,
-  },
-  contributionAmount: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: MibuBrand.brown,
-  },
-  rewardBadge: {
+  statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: MibuBrand.highlight,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 8,
   },
-  rewardText: {
+  statusText: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  contributionSummary: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+  },
+  contributionLabel: {
+    fontSize: 14,
+    color: MibuBrand.copper,
+  },
+  contributionAmount: {
+    fontSize: 20,
+    fontWeight: '700',
     color: MibuBrand.brown,
   },
-  contributionDate: {
-    fontSize: 12,
-    color: MibuBrand.tan,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: MibuBrand.tan,
-    marginTop: 12,
-    marginBottom: 16,
-  },
-  emptyButton: {
-    backgroundColor: MibuBrand.brown,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 12,
-  },
-  emptyButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
   bottomSpacer: {
-    height: 100,
+    height: 80,
+  },
+  bottomCta: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: MibuBrand.warmWhite,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    borderTopWidth: 1,
+    borderTopColor: MibuBrand.tanLight,
+  },
+  ctaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: MibuBrand.brown,
+    borderRadius: 12,
+    paddingVertical: 14,
+  },
+  ctaText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
   },
 });
