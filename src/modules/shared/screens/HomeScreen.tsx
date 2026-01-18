@@ -1,260 +1,386 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Linking, Image, Dimensions } from 'react-native';
+/**
+ * HomeScreen - 首頁
+ * 用戶問候、等級卡片、每日任務、公告、活動
+ */
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  TouchableOpacity,
+  RefreshControl,
+  Image,
+  Platform,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
-import { Card } from '../components/ui/Card';
 import { MibuBrand } from '../../../../constants/Colors';
-import { Announcement, Event } from '../../../types';
-import { apiService, eventApi } from '../../../services/api';
+import { Event } from '../../../types';
+import { eventApi } from '../../../services/api';
+import { economyApi } from '../../../services/economyApi';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+// 用戶等級資料
+interface UserLevelData {
+  level: number;
+  title: string;
+  phase: number;
+  currentXp: number;
+  nextLevelXp: number;
+  totalXp: number;
+  loginStreak: number;
+}
+
+// 每日任務資料
+interface DailyTaskSummary {
+  completed: number;
+  total: number;
+  earnedXp: number;
+}
 
 export function HomeScreen() {
-  const { t, state } = useApp();
+  const { state, getToken } = useApp();
   const router = useRouter();
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const isZh = state.language === 'zh-TW';
+
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // State
+  const [userLevel, setUserLevel] = useState<UserLevelData>({
+    level: 1,
+    title: isZh ? '旅行新手' : 'Newbie',
+    phase: 1,
+    currentXp: 0,
+    nextLevelXp: 100,
+    totalXp: 0,
+    loginStreak: 1,
+  });
+  const [dailyTask, setDailyTask] = useState<DailyTaskSummary>({
+    completed: 0,
+    total: 5,
+    earnedXp: 0,
+  });
   const [events, setEvents] = useState<{
     announcements: Event[];
     festivals: Event[];
     limitedEvents: Event[];
   }>({ announcements: [], festivals: [], limitedEvents: [] });
-  const [loading, setLoading] = useState(true);
 
-  const isZh = state.language === 'zh-TW';
+  const loadData = useCallback(async () => {
+    try {
+      const token = await getToken();
+
+      // 載入活動
+      const eventsRes = await eventApi.getHomeEvents().catch(() => ({
+        announcements: [],
+        festivals: [],
+        limitedEvents: [],
+      }));
+      setEvents(eventsRes);
+
+      // 載入用戶等級資料
+      if (token) {
+        try {
+          const levelData = await economyApi.getUserLevel(token);
+          if (levelData) {
+            setUserLevel({
+              level: levelData.level,
+              title: levelData.title,
+              phase: levelData.phase || 1,
+              currentXp: levelData.currentXp,
+              nextLevelXp: levelData.nextLevelXp,
+              totalXp: levelData.totalXp,
+              loginStreak: levelData.loginStreak || 1,
+            });
+          }
+        } catch {
+          // 忽略錯誤，使用預設值
+        }
+
+        // TODO: 載入每日任務進度
+        // 目前使用靜態資料
+        setDailyTask({
+          completed: 3,
+          total: 5,
+          earnedXp: 30,
+        });
+      }
+    } catch (error) {
+      console.log('Failed to load home data:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [getToken]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      // 同時載入舊版公告和新版活動
-      const [announcementRes, eventsRes] = await Promise.all([
-        apiService.getAnnouncements().catch(() => ({ announcements: [] })),
-        eventApi.getHomeEvents().catch(() => ({ announcements: [], festivals: [], limitedEvents: [] })),
-      ]);
-      setAnnouncements(announcementRes.announcements || []);
-      setEvents(eventsRes);
-    } catch (error) {
-      console.log('Failed to load home data:', error);
-      setAnnouncements([]);
-      setEvents({ announcements: [], festivals: [], limitedEvents: [] });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadData();
+  }, [loadData]);
 
-  const getLocalizedEventTitle = (event: Event): string => {
+  const getLocalizedTitle = (event: Event): string => {
     if (state.language === 'zh-TW') return event.title;
     if (state.language === 'en' && event.titleEn) return event.titleEn;
-    if (state.language === 'ja' && event.titleJa) return event.titleJa;
-    if (state.language === 'ko' && event.titleKo) return event.titleKo;
     return event.title;
   };
 
-  const getLocalizedEventDesc = (event: Event): string => {
+  const getLocalizedDesc = (event: Event): string => {
     if (state.language === 'zh-TW') return event.description;
     if (state.language === 'en' && event.descriptionEn) return event.descriptionEn;
-    if (state.language === 'ja' && event.descriptionJa) return event.descriptionJa;
-    if (state.language === 'ko' && event.descriptionKo) return event.descriptionKo;
     return event.description;
   };
 
-  const handleEventPress = (event: Event) => {
-    router.push(`/event/${event.id}`);
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
   };
 
-  const isAnnouncementVisible = (a: Announcement): boolean => {
-    if (!a.isActive) return false;
-    
-    const now = new Date();
-    
-    if (a.startDate) {
-      const start = new Date(a.startDate);
-      if (now < start) return false;
-    }
-    
-    if (a.endDate) {
-      const end = new Date(a.endDate);
-      if (now > end) return false;
-    }
-    
-    return true;
-  };
+  const xpProgress = userLevel.nextLevelXp > 0
+    ? (userLevel.currentXp / userLevel.nextLevelXp) * 100
+    : 0;
 
-  const activeAnnouncements = announcements.filter(isAnnouncementVisible);
-  const generalAnnouncements = activeAnnouncements.filter(a => a.type === 'announcement');
-  const flashEvents = activeAnnouncements.filter(a => a.type === 'flash_event');
-  const holidayEvents = activeAnnouncements.filter(a => a.type === 'holiday_event');
-
-  const handleAnnouncementPress = (announcement: Announcement) => {
-    if (announcement.linkUrl) {
-      Linking.openURL(announcement.linkUrl).catch(() => {});
-    }
-  };
-
-  const renderEventCard = (event: Event, bgColor: string, textColor: string = '#ffffff') => (
-    <TouchableOpacity
-      key={event.id}
-      style={[styles.eventCard, { backgroundColor: bgColor }]}
-      onPress={() => handleEventPress(event)}
-      activeOpacity={0.8}
-    >
-      {event.imageUrl && (
-        <Image
-          source={{ uri: event.imageUrl }}
-          style={styles.eventImage}
-          resizeMode="cover"
-        />
-      )}
-      <View style={styles.eventCardContent}>
-        <Text style={[styles.eventTitle, { color: textColor }]} numberOfLines={2}>
-          {getLocalizedEventTitle(event)}
-        </Text>
-        <Text style={[styles.eventDesc, { color: textColor, opacity: 0.85 }]} numberOfLines={2}>
-          {getLocalizedEventDesc(event)}
-        </Text>
-        {event.endDate && (
-          <View style={styles.eventDateRow}>
-            <Ionicons name="time-outline" size={12} color={textColor} style={{ opacity: 0.7 }} />
-            <Text style={[styles.eventDate, { color: textColor, opacity: 0.7 }]}>
-              {isZh ? '至 ' : 'Until '}{new Date(event.endDate).toLocaleDateString()}
-            </Text>
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-
-  const renderAnnouncementItem = (item: Announcement, isLight: boolean = true) => (
-    <TouchableOpacity
-      key={item.id}
-      onPress={() => handleAnnouncementPress(item)}
-      disabled={!item.linkUrl}
-      activeOpacity={item.linkUrl ? 0.7 : 1}
-    >
-      <View style={styles.announcementItem}>
-        <Text style={[
-          styles.announcementText,
-          !isLight && { color: 'rgba(255,255,255,0.95)' }
-        ]}>
-          • {item.title}
-        </Text>
-        {item.content && (
-          <Text style={[
-            styles.announcementDescription,
-            !isLight && { color: 'rgba(255,255,255,0.8)' }
-          ]}>
-            {item.content}
-          </Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+  const taskProgress = dailyTask.total > 0
+    ? (dailyTask.completed / dailyTask.total) * 100
+    : 0;
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={MibuBrand.brown}
+        />
+      }
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header with greeting */}
       <View style={styles.header}>
-        <Text style={styles.title}>Mibu</Text>
-        <Text style={styles.subtitle}>{t.appSubtitle}</Text>
+        <Image
+          source={require('../../../../assets/images/mibu-cat.png')}
+          style={styles.avatarImage}
+          defaultSource={require('../../../../assets/images/mibu-cat.png')}
+        />
+        <View style={styles.greeting}>
+          <Text style={styles.greetingTitle}>
+            {isZh ? '嗨，旅行者！' : 'Hi, Traveler!'}
+          </Text>
+          <Text style={styles.greetingSubtitle}>
+            {isZh ? '今天想去哪裡探索？' : 'Where to explore today?'}
+          </Text>
+        </View>
       </View>
 
-      {generalAnnouncements.length > 0 && (
-        <Card style={styles.announcementCard}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="megaphone" size={24} color={MibuBrand.brown} />
-            <Text style={styles.cardTitle}>{t.announcements}</Text>
+      {/* User Level Card */}
+      <TouchableOpacity
+        style={styles.levelCard}
+        onPress={() => router.push('/economy')}
+        activeOpacity={0.8}
+      >
+        <View style={styles.levelHeader}>
+          <View style={styles.levelBadge}>
+            <Text style={styles.levelBadgeText}>Lv.{userLevel.level}</Text>
           </View>
-          <View style={styles.announcementContent}>
-            {generalAnnouncements.map(item => renderAnnouncementItem(item, true))}
-          </View>
-        </Card>
-      )}
-
-      {flashEvents.length > 0 && (
-        <Card style={styles.flashCard}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="flash" size={24} color="#ffffff" />
-            <Text style={[styles.cardTitle, { color: '#ffffff' }]}>{t.flashEvents}</Text>
-          </View>
-          <View style={styles.announcementContent}>
-            {flashEvents.map(item => renderAnnouncementItem(item, false))}
-          </View>
-        </Card>
-      )}
-
-      {holidayEvents.length > 0 && (
-        <Card style={styles.holidayCard}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="gift" size={24} color="#ffffff" />
-            <Text style={[styles.cardTitle, { color: '#ffffff' }]}>
-              {isZh ? '節慶活動' : 'Holiday Events'}
+          <View style={styles.levelInfo}>
+            <Text style={styles.levelTitle}>{userLevel.title}</Text>
+            <Text style={styles.levelPhase}>
+              {isZh ? `第 ${userLevel.phase} 階段` : `Phase ${userLevel.phase}`}
             </Text>
           </View>
-          <View style={styles.announcementContent}>
-            {holidayEvents.map(item => renderAnnouncementItem(item, false))}
+          <View style={styles.loginStreak}>
+            <Text style={styles.loginStreakLabel}>
+              {isZh ? '連續登入' : 'Streak'}
+            </Text>
+            <View style={styles.loginStreakValue}>
+              <Ionicons name="flame" size={16} color="#F97316" />
+              <Text style={styles.loginStreakNumber}>{userLevel.loginStreak} {isZh ? '天' : 'd'}</Text>
+            </View>
           </View>
-        </Card>
-      )}
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
+        </View>
 
-      {/* 新版活動系統 - 節慶活動 */}
-      {events.festivals.length > 0 && (
-        <View style={styles.eventSection}>
+        <View style={styles.xpSection}>
+          <View style={styles.xpProgressBg}>
+            <View style={[styles.xpProgressFill, { width: `${xpProgress}%` }]} />
+          </View>
+          <View style={styles.xpRow}>
+            <Text style={styles.xpText}>
+              {userLevel.currentXp} / {userLevel.nextLevelXp} XP
+            </Text>
+            <Text style={styles.xpNextLevel}>
+              Lv.{userLevel.level} → Lv.{userLevel.level + 1}
+            </Text>
+          </View>
+          <Text style={styles.xpNeeded}>
+            {isZh
+              ? `還需 ${userLevel.nextLevelXp - userLevel.currentXp} XP 升級`
+              : `${userLevel.nextLevelXp - userLevel.currentXp} XP to level up`}
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      {/* Daily Task Card */}
+      <TouchableOpacity
+        style={styles.taskCard}
+        onPress={() => router.push('/economy')}
+        activeOpacity={0.8}
+      >
+        <View style={styles.taskLeft}>
+          <View style={styles.taskIcon}>
+            <Ionicons name="calendar-outline" size={24} color={MibuBrand.brown} />
+          </View>
+          <View style={styles.taskInfo}>
+            <Text style={styles.taskTitle}>
+              {isZh ? '每日任務' : 'Daily Tasks'}
+            </Text>
+            <Text style={styles.taskProgress}>
+              {dailyTask.completed}/{dailyTask.total} {isZh ? '完成' : 'done'}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.taskRight}>
+          <Text style={styles.taskEarnedLabel}>{isZh ? '已獲得' : 'Earned'}</Text>
+          <Text style={styles.taskEarnedXp}>+{dailyTask.earnedXp} XP</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
+      </TouchableOpacity>
+
+      {/* Task Progress Bar */}
+      <View style={styles.taskProgressContainer}>
+        <View style={styles.taskProgressBg}>
+          <View style={[styles.taskProgressFill, { width: `${taskProgress}%` }]} />
+        </View>
+      </View>
+
+      {/* Announcements Section */}
+      {events.announcements.length > 0 && (
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="calendar" size={22} color={MibuBrand.brown} />
+            <Ionicons name="megaphone-outline" size={20} color={MibuBrand.brown} />
             <Text style={styles.sectionTitle}>
-              {isZh ? '節慶活動' : 'Festival Events'}
+              {isZh ? '最新公告' : 'Announcements'}
             </Text>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.eventScrollContent}
-          >
-            {events.festivals.map(event => renderEventCard(event, '#dc2626'))}
-          </ScrollView>
+          {events.announcements.map(event => (
+            <TouchableOpacity
+              key={event.id}
+              style={styles.announcementCard}
+              onPress={() => router.push(`/event/${event.id}`)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.announcementIcon}>
+                <Ionicons name="megaphone-outline" size={18} color={MibuBrand.brown} />
+              </View>
+              <View style={styles.announcementContent}>
+                <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
+                <Text style={styles.announcementDesc} numberOfLines={2}>
+                  {getLocalizedDesc(event)}
+                </Text>
+                <Text style={styles.announcementDate}>
+                  {formatDate(event.startDate || event.createdAt)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
 
-      {/* 新版活動系統 - 限時活動 */}
+      {/* Flash Events Section */}
       {events.limitedEvents.length > 0 && (
-        <View style={styles.eventSection}>
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="time" size={22} color={MibuBrand.brown} />
+            <Ionicons name="sparkles" size={20} color={MibuBrand.brown} />
             <Text style={styles.sectionTitle}>
-              {isZh ? '限時活動' : 'Limited Events'}
+              {isZh ? '快閃活動' : 'Flash Events'}
             </Text>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.eventScrollContent}
-          >
-            {events.limitedEvents.map(event => renderEventCard(event, '#7c3aed'))}
-          </ScrollView>
+          {events.limitedEvents.map(event => (
+            <TouchableOpacity
+              key={event.id}
+              style={[styles.announcementCard, styles.flashEventCard]}
+              onPress={() => router.push(`/event/${event.id}`)}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.announcementIcon, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="sparkles" size={18} color="#D97706" />
+              </View>
+              <View style={styles.announcementContent}>
+                <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
+                <Text style={styles.announcementDesc} numberOfLines={2}>
+                  {getLocalizedDesc(event)}
+                </Text>
+                <Text style={[styles.announcementDate, { color: '#D97706' }]}>
+                  {formatDate(event.startDate || event.createdAt)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
 
-      {announcements.length === 0 && events.festivals.length === 0 && events.limitedEvents.length === 0 && (
-        <Card style={styles.emptyCard}>
-          <View style={styles.emptyContent}>
-            <Ionicons name="information-circle-outline" size={48} color={MibuBrand.copper} />
-            <Text style={styles.emptyText}>
-              {isZh ? '目前沒有公告' : 'No announcements'}
+      {/* Festival Events Section */}
+      {events.festivals.length > 0 && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="gift-outline" size={20} color={MibuBrand.brown} />
+            <Text style={styles.sectionTitle}>
+              {isZh ? '節慶活動' : 'Festivals'}
             </Text>
           </View>
-        </Card>
+          {events.festivals.map(event => (
+            <TouchableOpacity
+              key={event.id}
+              style={[styles.announcementCard, styles.festivalCard]}
+              onPress={() => router.push(`/event/${event.id}`)}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.announcementIcon, { backgroundColor: '#FEE2E2' }]}>
+                <Ionicons name="gift-outline" size={18} color="#DC2626" />
+              </View>
+              <View style={styles.announcementContent}>
+                <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
+                <Text style={styles.announcementDesc} numberOfLines={2}>
+                  {getLocalizedDesc(event)}
+                </Text>
+                <Text style={[styles.announcementDate, { color: '#DC2626' }]}>
+                  {formatDate(event.startDate || event.createdAt)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
       )}
+
+      {/* Empty State */}
+      {events.announcements.length === 0 &&
+        events.limitedEvents.length === 0 &&
+        events.festivals.length === 0 && (
+          <View style={styles.emptyState}>
+            <Ionicons name="sunny-outline" size={48} color={MibuBrand.tan} />
+            <Text style={styles.emptyText}>
+              {isZh ? '今天風和日麗，適合探索！' : 'Great day for exploring!'}
+            </Text>
+          </View>
+        )}
+
+      <View style={styles.bottomSpacer} />
     </ScrollView>
   );
 }
@@ -265,92 +391,194 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.creamLight,
   },
   loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: MibuBrand.creamLight,
   },
   content: {
-    padding: 20,
-    paddingTop: 60,
-    paddingBottom: 100,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingHorizontal: 16,
+    paddingBottom: 120,
   },
   header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: '900',
-    color: MibuBrand.brown,
-    letterSpacing: -1,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: MibuBrand.copper,
-    marginTop: 4,
-  },
-  announcementCard: {
-    backgroundColor: MibuBrand.highlight,
-    borderWidth: 1,
-    borderColor: MibuBrand.tan,
-    marginBottom: 20,
-    padding: 20,
-  },
-  flashCard: {
-    backgroundColor: MibuBrand.brown,
-    marginBottom: 20,
-    padding: 20,
-  },
-  holidayCard: {
-    backgroundColor: '#dc2626',
-    marginBottom: 20,
-    padding: 20,
-  },
-  emptyCard: {
-    backgroundColor: MibuBrand.highlight,
-    borderWidth: 1,
-    borderColor: MibuBrand.tan,
-    marginBottom: 20,
-    padding: 40,
-  },
-  emptyContent: {
-    alignItems: 'center',
-    gap: 12,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: MibuBrand.copper,
-  },
-  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  cardTitle: {
-    fontSize: 18,
+  avatarImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: MibuBrand.cream,
+  },
+  greeting: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  greetingTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: MibuBrand.brownDark,
+  },
+  greetingSubtitle: {
+    fontSize: 14,
+    color: MibuBrand.copper,
+    marginTop: 2,
+  },
+  levelCard: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+  },
+  levelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  levelBadge: {
+    backgroundColor: MibuBrand.brown,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  levelBadgeText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#ffffff',
+  },
+  levelInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  levelTitle: {
+    fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
-  announcementContent: {
-    gap: 12,
+  levelPhase: {
+    fontSize: 12,
+    color: MibuBrand.copper,
+    marginTop: 2,
   },
-  announcementItem: {
+  loginStreak: {
+    alignItems: 'flex-end',
+    marginRight: 8,
+  },
+  loginStreakLabel: {
+    fontSize: 11,
+    color: MibuBrand.tan,
+  },
+  loginStreakValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
   },
-  announcementText: {
+  loginStreakNumber: {
     fontSize: 16,
+    fontWeight: '700',
     color: MibuBrand.brownDark,
-    lineHeight: 24,
-    fontWeight: '600',
   },
-  announcementDescription: {
-    fontSize: 14,
+  xpSection: {
+    marginTop: 14,
+  },
+  xpProgressBg: {
+    height: 8,
+    backgroundColor: MibuBrand.tanLight,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  xpProgressFill: {
+    height: '100%',
+    backgroundColor: MibuBrand.brown,
+    borderRadius: 4,
+  },
+  xpRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  xpText: {
+    fontSize: 13,
     color: MibuBrand.copper,
-    lineHeight: 20,
+  },
+  xpNextLevel: {
+    fontSize: 13,
+    color: MibuBrand.copper,
+  },
+  xpNeeded: {
+    fontSize: 12,
+    color: MibuBrand.tan,
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  taskCard: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+  },
+  taskLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  taskIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: MibuBrand.creamLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  taskInfo: {
     marginLeft: 12,
   },
-  // 活動系統樣式
-  eventSection: {
+  taskTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+  },
+  taskProgress: {
+    fontSize: 13,
+    color: MibuBrand.copper,
+    marginTop: 2,
+  },
+  taskRight: {
+    alignItems: 'flex-end',
+    marginRight: 8,
+  },
+  taskEarnedLabel: {
+    fontSize: 11,
+    color: MibuBrand.tan,
+  },
+  taskEarnedXp: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: MibuBrand.brown,
+  },
+  taskProgressContainer: {
+    marginTop: -8,
+    marginBottom: 24,
+    paddingHorizontal: 16,
+  },
+  taskProgressBg: {
+    height: 6,
+    backgroundColor: MibuBrand.tanLight,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  taskProgressFill: {
+    height: '100%',
+    backgroundColor: MibuBrand.brown,
+    borderRadius: 3,
+  },
+  section: {
     marginBottom: 24,
   },
   sectionHeader: {
@@ -360,42 +588,60 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
-  eventScrollContent: {
-    paddingRight: 20,
-    gap: 12,
+  announcementCard: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
   },
-  eventCard: {
-    width: SCREEN_WIDTH * 0.7,
-    borderRadius: 16,
-    overflow: 'hidden',
+  flashEventCard: {
+    borderColor: '#FEF3C7',
   },
-  eventImage: {
-    width: '100%',
-    height: 120,
+  festivalCard: {
+    borderColor: '#FEE2E2',
   },
-  eventCardContent: {
-    padding: 14,
-    gap: 6,
-  },
-  eventTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  eventDesc: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  eventDateRow: {
-    flexDirection: 'row',
+  announcementIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: MibuBrand.creamLight,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 4,
+    marginBottom: 10,
   },
-  eventDate: {
-    fontSize: 11,
+  announcementContent: {},
+  announcementTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+    marginBottom: 6,
+  },
+  announcementDesc: {
+    fontSize: 13,
+    color: MibuBrand.copper,
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  announcementDate: {
+    fontSize: 12,
+    color: MibuBrand.tan,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 48,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: MibuBrand.tan,
+    marginTop: 12,
+  },
+  bottomSpacer: {
+    height: 40,
   },
 });
