@@ -119,6 +119,7 @@ export function MerchantDashboardScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
+          <Ionicons name="storefront" size={28} color={MibuBrand.brown} />
           <Text style={styles.title}>{translations.title}</Text>
           {state.user?.isSuperAdmin && <RoleSwitcher compact />}
         </View>

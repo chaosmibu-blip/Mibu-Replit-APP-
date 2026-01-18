@@ -6,6 +6,7 @@ import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender } from '../../../types';
+import { MibuBrand } from '../../../../constants/Colors';
 
 const GENDER_OPTIONS: { value: Gender; labelZh: string; labelEn: string }[] = [
   { value: 'male', labelZh: '男', labelEn: 'Male' },
@@ -337,13 +338,13 @@ export function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   header: {
     flexDirection: 'row',
@@ -352,9 +353,9 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.cream,
   },
   backButton: {
     width: 40,
@@ -365,7 +366,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brown,
   },
   saveButton: {
     paddingHorizontal: 16,
@@ -374,7 +375,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6366f1',
+    color: MibuBrand.copper,
   },
   content: {
     flex: 1,
@@ -386,29 +387,29 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.brownLight,
     marginBottom: 8,
     textTransform: 'uppercase',
   },
   input: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
-    color: '#1e293b',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    color: MibuBrand.dark,
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
   },
   readOnlyField: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.cream,
     borderRadius: 12,
     padding: 14,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
   },
   readOnlyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: MibuBrand.brownLight,
   },
   row: {
     flexDirection: 'row',
@@ -417,53 +418,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 12,
     padding: 14,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
   },
   pickerText: {
     fontSize: 16,
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   pickerPlaceholder: {
     fontSize: 16,
-    color: '#94a3b8',
+    color: MibuBrand.tan,
   },
   pickerOptions: {
     marginTop: 8,
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
     overflow: 'hidden',
   },
   pickerOption: {
     padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: MibuBrand.cream,
   },
   pickerOptionActive: {
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.highlight,
   },
   pickerOptionText: {
     fontSize: 16,
-    color: '#334155',
+    color: MibuBrand.brownLight,
   },
   pickerOptionTextActive: {
-    color: '#6366f1',
+    color: MibuBrand.brown,
     fontWeight: '600',
   },
   divider: {
     height: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: MibuBrand.cream,
     marginVertical: 24,
   },
   groupTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brown,
     marginBottom: 16,
   },
 });

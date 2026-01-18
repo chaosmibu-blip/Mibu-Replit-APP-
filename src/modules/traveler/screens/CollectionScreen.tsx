@@ -137,6 +137,13 @@ export function CollectionScreen() {
   const [selectedItem, setSelectedItem] = useState<GachaItem | null>(null);
   const [lastViewedTimestamp, setLastViewedTimestamp] = useState<number>(0);
 
+  // 統計資料
+  const totalSpots = collection.length;
+  const uniqueCities = new Set(collection.map(item => item.city || 'Unknown')).size;
+  const uniqueCategories = new Set(collection.map(item =>
+    (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other'
+  )).size;
+
   // 載入上次查看時間，並在短暫延遲後更新 + 呼叫後端 mark-read API
   useEffect(() => {
     const loadAndUpdateTimestamp = async () => {
@@ -229,11 +236,91 @@ export function CollectionScreen() {
   }
 
   return (
-    <ScrollView 
-      style={{ flex: 1, backgroundColor: MibuBrand.creamLight }} 
+    <ScrollView
+      style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}
       contentContainerStyle={{ padding: 16, paddingTop: 60, paddingBottom: 100 }}
     >
-      <Text style={{ fontSize: 28, fontWeight: '900', color: MibuBrand.dark, marginBottom: 16 }}>{t.myCollection}</Text>
+      {/* Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+        <Ionicons name="book-outline" size={28} color={MibuBrand.brown} />
+        <Text style={{ fontSize: 26, fontWeight: '800', color: MibuBrand.brown, marginLeft: 10 }}>
+          {language === 'zh-TW' ? '我的圖鑑' : 'My Collection'}
+        </Text>
+      </View>
+
+      {/* 統計卡片 */}
+      <View style={{
+        backgroundColor: MibuBrand.warmWhite,
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 20,
+        shadowColor: MibuBrand.brown,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 3,
+      }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+          <View style={{ alignItems: 'center' }}>
+            <View style={{
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              backgroundColor: MibuBrand.cream,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 8,
+            }}>
+              <Ionicons name="location" size={26} color={MibuBrand.brown} />
+            </View>
+            <Text style={{ fontSize: 22, fontWeight: '800', color: MibuBrand.brown }}>{totalSpots}</Text>
+            <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>
+              {language === 'zh-TW' ? '已收集' : 'Collected'}
+            </Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: MibuBrand.cream }} />
+          <View style={{ alignItems: 'center' }}>
+            <View style={{
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              backgroundColor: MibuBrand.cream,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 8,
+            }}>
+              <Ionicons name="map" size={26} color={MibuBrand.copper} />
+            </View>
+            <Text style={{ fontSize: 22, fontWeight: '800', color: MibuBrand.brown }}>{uniqueCities}</Text>
+            <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>
+              {language === 'zh-TW' ? '城市' : 'Cities'}
+            </Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: MibuBrand.cream }} />
+          <View style={{ alignItems: 'center' }}>
+            <View style={{
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              backgroundColor: MibuBrand.cream,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 8,
+            }}>
+              <Ionicons name="grid" size={26} color={MibuBrand.tan} />
+            </View>
+            <Text style={{ fontSize: 22, fontWeight: '800', color: MibuBrand.brown }}>{uniqueCategories}</Text>
+            <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>
+              {language === 'zh-TW' ? '類別' : 'Categories'}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* 城市列表標題 */}
+      <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.brownLight, marginBottom: 12 }}>
+        {language === 'zh-TW' ? '依城市分類' : 'By City'}
+      </Text>
 
       {Object.entries(groupedData)
         .sort((a, b) => b[1].items.length - a[1].items.length)

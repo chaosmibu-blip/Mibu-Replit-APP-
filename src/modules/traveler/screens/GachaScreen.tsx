@@ -596,25 +596,53 @@ export function GachaScreen() {
     return poolData.pool.jackpots;
   };
 
+  // 取得選中的國家和城市名稱
+  const selectedCountry = countries.find(c => c.id === selectedCountryId);
+  const selectedRegion = regions.find(r => r.id === selectedRegionId);
+  const countryName = selectedCountry ? getLocalizedName(selectedCountry) : '';
+  const regionName = selectedRegion ? getLocalizedName(selectedRegion) : '';
+
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: '#f8fafc' }}
-      contentContainerStyle={{ padding: 20, paddingTop: 20 }}
+      style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}
+      contentContainerStyle={{ padding: 20, paddingTop: 60 }}
     >
+      {/* 頂部 Logo 區 */}
       <View style={{ alignItems: 'center', marginBottom: 32 }}>
-        <Text style={{ fontSize: 32, fontWeight: '900', color: '#1e293b', letterSpacing: -0.5 }}>
-          {t.appTitle}
+        <Image
+          source={require('../../../../assets/images/icon.png')}
+          style={{ width: 80, height: 80, marginBottom: 12 }}
+          resizeMode="contain"
+        />
+        <Text style={{ fontSize: 28, fontWeight: '800', color: MibuBrand.brown, letterSpacing: 2 }}>
+          MIBU
         </Text>
-        {state.user?.firstName && (
-          <Text style={{ fontSize: 14, color: '#94a3b8', marginTop: 8 }}>
-            {state.language === 'zh-TW' ? `歡迎回來, ${state.user.firstName}` : `Welcome back, ${state.user.firstName}`}
-          </Text>
-        )}
+        <Text style={{ fontSize: 14, color: MibuBrand.brownLight, marginTop: 4 }}>
+          {state.language === 'zh-TW' ? '旅程扭蛋機' : 'Travel Gacha'}
+        </Text>
       </View>
 
-      <View style={{ gap: 16 }}>
+      {/* 選擇區域卡片 */}
+      <View style={{
+        backgroundColor: MibuBrand.warmWhite,
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 16,
+        shadowColor: MibuBrand.brown,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 3,
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+          <Ionicons name="globe-outline" size={20} color={MibuBrand.copper} />
+          <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.brown, marginLeft: 8 }}>
+            {state.language === 'zh-TW' ? '選擇探索區域' : 'Select Region'}
+          </Text>
+        </View>
+
         <Select
-          label={state.language === 'zh-TW' ? '選擇探索國家' : t.destination}
+          label={state.language === 'zh-TW' ? '國家' : 'Country'}
           options={countryOptions}
           value={selectedCountryId}
           onChange={(value) => {
@@ -627,128 +655,217 @@ export function GachaScreen() {
         />
 
         {selectedCountryId && (
-          <Select
-            label={state.language === 'zh-TW' ? '選擇城市/地區' : t.selectRegion}
-            options={regionOptions}
-            value={selectedRegionId}
-            onChange={(value) => {
-              setSelectedRegionId(value as number);
-            }}
-            placeholder={t.selectRegion}
-            loading={loadingRegions}
-          />
-        )}
-
-        {selectedRegionId && (
-          <View style={{ backgroundColor: '#ffffff', borderRadius: 16, padding: 16 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: '#64748b' }}>
-                {state.language === 'zh-TW' ? '抽取張數' : (t.pullCount || 'Pull Count')}
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  Alert.alert(
-                    state.language === 'zh-TW' ? '抽取張數說明' : 'Pull Count Info',
-                    state.language === 'zh-TW' 
-                      ? '每次扭蛋可抽取 5-12 張景點卡片。張數越多，行程越豐富！每日上限 36 張。'
-                      : 'You can draw 5-12 place cards per gacha. More cards mean a richer itinerary! Daily limit is 36 cards.'
-                  );
-                }}
-                style={{ 
-                  width: 24, 
-                  height: 24, 
-                  borderRadius: 12, 
-                  backgroundColor: '#e2e8f0', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
-                }}
-              >
-                <Ionicons name="information-circle-outline" size={18} color="#6366f1" />
-              </TouchableOpacity>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <Text style={{ fontSize: 12, color: '#94a3b8' }}>5</Text>
-              <Text style={{ fontSize: 24, fontWeight: '800', color: '#6366f1' }}>
-                {pullCount} {t.pulls || '張'}
-              </Text>
-              <Text style={{ fontSize: 12, color: '#94a3b8' }}>12</Text>
-            </View>
-            <Slider
-              style={{ width: '100%', height: 40 }}
-              minimumValue={5}
-              maximumValue={12}
-              step={1}
-              value={pullCount}
-              onValueChange={(value) => setPullCount(Math.round(value))}
-              minimumTrackTintColor="#6366f1"
-              maximumTrackTintColor="#e2e8f0"
-              thumbTintColor="#6366f1"
+          <View style={{ marginTop: 12 }}>
+            <Select
+              label={state.language === 'zh-TW' ? '城市/地區' : 'City/Region'}
+              options={regionOptions}
+              value={selectedRegionId}
+              onChange={(value) => {
+                setSelectedRegionId(value as number);
+              }}
+              placeholder={t.selectRegion}
+              loading={loadingRegions}
             />
           </View>
         )}
+      </View>
 
-        {/* 道具箱容量警告 */}
-        {isInventoryFull && (
-          <View style={{
-            backgroundColor: '#fef2f2',
-            borderRadius: 12,
-            padding: 14,
-            marginTop: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderWidth: 1,
-            borderColor: '#fecaca',
-          }}>
-            <Ionicons name="warning" size={20} color="#dc2626" />
-            <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={{ fontSize: 14, fontWeight: '700', color: '#dc2626' }}>
-                {state.language === 'zh-TW' ? '道具箱已滿' : 'Item Box Full'}
-              </Text>
-              <Text style={{ fontSize: 12, color: '#991b1b', marginTop: 2 }}>
-                {state.language === 'zh-TW' ? '請先清理道具箱再抽卡' : 'Please clear some items before drawing'}
+      {/* 抽取張數卡片 */}
+      {selectedRegionId && (
+        <View style={{
+          backgroundColor: MibuBrand.warmWhite,
+          borderRadius: 20,
+          padding: 20,
+          marginBottom: 16,
+          shadowColor: MibuBrand.brown,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
+          elevation: 3,
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="layers-outline" size={20} color={MibuBrand.copper} />
+              <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.brown, marginLeft: 8 }}>
+                {state.language === 'zh-TW' ? '抽取張數' : 'Pull Count'}
               </Text>
             </View>
             <TouchableOpacity
-              onPress={() => router.push('/(tabs)/collection/itembox')}
+              onPress={() => {
+                Alert.alert(
+                  state.language === 'zh-TW' ? '抽取張數說明' : 'Pull Count Info',
+                  state.language === 'zh-TW'
+                    ? '每次扭蛋可抽取 5-12 張景點卡片。張數越多，行程越豐富！每日上限 36 張。'
+                    : 'You can draw 5-12 place cards per gacha. More cards mean a richer itinerary! Daily limit is 36 cards.'
+                );
+              }}
               style={{
-                backgroundColor: '#dc2626',
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 8,
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: MibuBrand.creamLight,
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
-              <Text style={{ fontSize: 12, fontWeight: '700', color: '#ffffff' }}>
-                {state.language === 'zh-TW' ? '前往' : 'Go'}
-              </Text>
+              <Ionicons name="help-circle-outline" size={18} color={MibuBrand.copper} />
             </TouchableOpacity>
           </View>
-        )}
-        {!isInventoryFull && inventoryRemaining <= 5 && inventoryRemaining > 0 && (
-          <View style={{
-            backgroundColor: '#fef3c7',
-            borderRadius: 12,
-            padding: 12,
-            marginTop: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-            <Ionicons name="alert-circle" size={18} color="#d97706" />
-            <Text style={{ fontSize: 13, color: '#92400e', marginLeft: 8, flex: 1 }}>
-              {state.language === 'zh-TW'
-                ? `道具箱剩餘 ${inventoryRemaining} 格`
-                : `${inventoryRemaining} slots remaining in item box`}
+
+          {/* 大數字顯示 */}
+          <View style={{ alignItems: 'center', marginBottom: 16 }}>
+            <View style={{
+              backgroundColor: MibuBrand.cream,
+              borderRadius: 16,
+              paddingVertical: 16,
+              paddingHorizontal: 40,
+            }}>
+              <Text style={{ fontSize: 48, fontWeight: '800', color: MibuBrand.brown }}>
+                {pullCount}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 14, color: MibuBrand.brownLight, marginTop: 8 }}>
+              {state.language === 'zh-TW' ? '張景點卡片' : 'place cards'}
             </Text>
           </View>
-        )}
 
-        <Button
-          title={isInventoryFull
-            ? (state.language === 'zh-TW' ? '道具箱已滿' : 'Item Box Full')
-            : t.startGacha}
-          onPress={handleGacha}
-          disabled={!canSubmit || showLoadingAd}
-          style={{ marginTop: 8 }}
+          {/* Slider */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: MibuBrand.brownLight }}>5</Text>
+            <View style={{ flex: 1, marginHorizontal: 12 }}>
+              <Slider
+                style={{ width: '100%', height: 40 }}
+                minimumValue={5}
+                maximumValue={12}
+                step={1}
+                value={pullCount}
+                onValueChange={(value) => setPullCount(Math.round(value))}
+                minimumTrackTintColor={MibuBrand.brown}
+                maximumTrackTintColor={MibuBrand.cream}
+                thumbTintColor={MibuBrand.brown}
+              />
+            </View>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: MibuBrand.brownLight }}>12</Text>
+          </View>
+        </View>
+      )}
+
+      {/* 道具箱容量警告 */}
+      {isInventoryFull && (
+        <View style={{
+          backgroundColor: '#fef2f2',
+          borderRadius: 16,
+          padding: 16,
+          marginBottom: 16,
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderWidth: 1,
+          borderColor: '#fecaca',
+        }}>
+          <View style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: '#fee2e2',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <Ionicons name="warning" size={22} color="#dc2626" />
+          </View>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: '#dc2626' }}>
+              {state.language === 'zh-TW' ? '道具箱已滿' : 'Item Box Full'}
+            </Text>
+            <Text style={{ fontSize: 13, color: '#991b1b', marginTop: 2 }}>
+              {state.language === 'zh-TW' ? '請先清理道具箱再抽卡' : 'Please clear some items first'}
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => router.push('/(tabs)/collection/itembox')}
+            style={{
+              backgroundColor: '#dc2626',
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              borderRadius: 12,
+            }}
+          >
+            <Text style={{ fontSize: 13, fontWeight: '700', color: '#ffffff' }}>
+              {state.language === 'zh-TW' ? '前往' : 'Go'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {!isInventoryFull && inventoryRemaining <= 5 && inventoryRemaining > 0 && (
+        <View style={{
+          backgroundColor: MibuBrand.highlight,
+          borderRadius: 16,
+          padding: 14,
+          marginBottom: 16,
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}>
+          <Ionicons name="alert-circle" size={20} color={MibuBrand.copper} />
+          <Text style={{ fontSize: 14, color: MibuBrand.brown, marginLeft: 10, flex: 1 }}>
+            {state.language === 'zh-TW'
+              ? `道具箱剩餘 ${inventoryRemaining} 格`
+              : `${inventoryRemaining} slots remaining`}
+          </Text>
+        </View>
+      )}
+
+      {/* 開始扭蛋按鈕 */}
+      <TouchableOpacity
+        style={{
+          backgroundColor: (!canSubmit || showLoadingAd) ? MibuBrand.cream : MibuBrand.brown,
+          borderRadius: 28,
+          paddingVertical: 18,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: MibuBrand.brown,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: (!canSubmit || showLoadingAd) ? 0 : 0.2,
+          shadowRadius: 12,
+          elevation: (!canSubmit || showLoadingAd) ? 0 : 6,
+          marginBottom: 16,
+        }}
+        onPress={handleGacha}
+        disabled={!canSubmit || showLoadingAd}
+      >
+        <Ionicons
+          name="sparkles"
+          size={22}
+          color={(!canSubmit || showLoadingAd) ? MibuBrand.brownLight : MibuBrand.warmWhite}
         />
+        <Text style={{
+          fontSize: 18,
+          fontWeight: '800',
+          color: (!canSubmit || showLoadingAd) ? MibuBrand.brownLight : MibuBrand.warmWhite,
+          marginLeft: 10,
+        }}>
+          {isInventoryFull
+            ? (state.language === 'zh-TW' ? '道具箱已滿' : 'Item Box Full')
+            : (state.language === 'zh-TW' ? '開始扭蛋！' : 'Start Gacha!')}
+        </Text>
+      </TouchableOpacity>
+
+      {/* 已選擇區域顯示 */}
+      {selectedRegionId && (
+        <View style={{
+          backgroundColor: MibuBrand.cream,
+          borderRadius: 12,
+          padding: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <Ionicons name="location" size={16} color={MibuBrand.copper} />
+          <Text style={{ fontSize: 14, color: MibuBrand.brown, marginLeft: 8 }}>
+            {countryName} · {regionName}
+          </Text>
+        </View>
+      )}
 
 {/* TODO: 商家端開放後取消註解顯示機率說明按鈕
         <TouchableOpacity

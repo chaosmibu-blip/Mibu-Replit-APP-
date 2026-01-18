@@ -456,14 +456,46 @@ export function ItemBoxScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
-      <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: MibuBrand.cream }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={{ fontSize: 20, fontWeight: '800', color: MibuBrand.dark }}>
-            {state.language === 'zh-TW' ? '道具箱' : 'Item Box'}
-          </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: slotCount >= maxSlots ? '#fef2f2' : slotCount >= maxSlots * 0.8 ? '#fef3c7' : MibuBrand.cream, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
-            <Ionicons name="cube" size={16} color={slotCount >= maxSlots ? MibuBrand.error : slotCount >= maxSlots * 0.8 ? '#d97706' : MibuBrand.brown} />
-            <Text style={{ fontSize: 14, fontWeight: '700', color: slotCount >= maxSlots ? MibuBrand.error : slotCount >= maxSlots * 0.8 ? '#d97706' : MibuBrand.brown, marginLeft: 6 }}>
+      {/* Header 區域 */}
+      <View style={{
+        backgroundColor: MibuBrand.warmWhite,
+        paddingTop: 60,
+        paddingHorizontal: 20,
+        paddingBottom: 16,
+        borderBottomLeftRadius: 24,
+        borderBottomRightRadius: 24,
+        shadowColor: MibuBrand.brown,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 3,
+      }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="cube-outline" size={28} color={MibuBrand.brown} />
+            <Text style={{ fontSize: 24, fontWeight: '800', color: MibuBrand.brown, marginLeft: 10 }}>
+              {state.language === 'zh-TW' ? '道具箱' : 'Item Box'}
+            </Text>
+          </View>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: slotCount >= maxSlots ? '#fef2f2' : slotCount >= maxSlots * 0.8 ? '#fef3c7' : MibuBrand.cream,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 16,
+          }}>
+            <Ionicons
+              name="cube"
+              size={18}
+              color={slotCount >= maxSlots ? MibuBrand.error : slotCount >= maxSlots * 0.8 ? '#d97706' : MibuBrand.brown}
+            />
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '800',
+              color: slotCount >= maxSlots ? MibuBrand.error : slotCount >= maxSlots * 0.8 ? '#d97706' : MibuBrand.brown,
+              marginLeft: 6,
+            }}>
               {slotCount}/{maxSlots}
             </Text>
           </View>

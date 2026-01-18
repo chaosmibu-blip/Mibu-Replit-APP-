@@ -91,7 +91,11 @@ export function SettingsScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{t.navSettings}</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Ionicons name="settings-outline" size={28} color={MibuBrand.brown} />
+        <Text style={styles.title}>{isZh ? '設定' : 'Settings'}</Text>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
@@ -414,11 +418,16 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 100,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: MibuBrand.brownDark,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 24,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: MibuBrand.brown,
+    marginLeft: 10,
   },
   section: {
     marginBottom: 28,
