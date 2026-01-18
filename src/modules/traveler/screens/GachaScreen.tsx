@@ -889,7 +889,6 @@ export function GachaScreen() {
           </Text>
         </TouchableOpacity>
         */}
-      </View>
 
       <Modal
         visible={poolModalVisible}
