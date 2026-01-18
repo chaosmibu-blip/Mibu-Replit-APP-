@@ -540,9 +540,12 @@ export function ContributionScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isZh ? '社群貢獻' : 'Contributions'}
-        </Text>
+        <View style={styles.headerCenter}>
+          <Ionicons name="heart" size={24} color={MibuBrand.brownDark} />
+          <Text style={styles.headerTitle}>
+            {isZh ? '社群貢獻' : 'Contributions'}
+          </Text>
+        </View>
         <View style={styles.headerPlaceholder} />
       </View>
 
@@ -612,6 +615,11 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   headerTitle: {
     fontSize: 18,

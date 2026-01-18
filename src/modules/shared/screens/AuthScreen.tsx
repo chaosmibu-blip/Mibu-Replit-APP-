@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { UserRole } from '../../../types';
+import { MibuBrand } from '../../../../constants/Colors';
 
 interface AuthScreenProps {
   visible: boolean;
@@ -147,14 +148,14 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
               {mode === 'login' ? translations.login : translations.register}
             </Text>
             <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-              <Ionicons name="close" size={24} color="#64748b" />
+              <Ionicons name="close" size={24} color={MibuBrand.copper} />
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
             <View style={styles.content}>
               <View style={styles.iconContainer}>
-                <Ionicons name="person-circle" size={64} color="#6366f1" />
+                <Ionicons name="person-circle" size={64} color={MibuBrand.brown} />
               </View>
 
               {error && (
@@ -207,10 +208,10 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
                         ]}
                         onPress={() => setSelectedRole(role.value)}
                       >
-                        <Ionicons 
-                          name={role.icon as any} 
-                          size={24} 
-                          color={selectedRole === role.value ? '#6366f1' : '#64748b'} 
+                        <Ionicons
+                          name={role.icon as any}
+                          size={24}
+                          color={selectedRole === role.value ? MibuBrand.brown : MibuBrand.copper}
                         />
                         <Text style={[
                           styles.roleText,
@@ -263,7 +264,7 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
               </View>
 
               <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
-                <Ionicons name="person-outline" size={20} color="#6366f1" />
+                <Ionicons name="person-outline" size={20} color={MibuBrand.brown} />
                 <Text style={styles.guestButtonText}>{translations.guestLogin}</Text>
               </TouchableOpacity>
 
@@ -279,18 +280,20 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 24,
     width: '100%',
     maxWidth: 400,
     maxHeight: '90%',
     overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
   },
   header: {
     flexDirection: 'row',
@@ -299,12 +302,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: MibuBrand.tanLight,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   closeButton: {
     padding: 4,
@@ -334,19 +337,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   input: {
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    backgroundColor: MibuBrand.creamLight,
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 12,
   },
   roleLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginBottom: 12,
     marginTop: 8,
   },
@@ -359,23 +362,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     gap: 8,
   },
   roleCardActive: {
-    borderColor: '#6366f1',
-    backgroundColor: '#eef2ff',
+    borderColor: MibuBrand.brown,
+    backgroundColor: MibuBrand.highlight,
   },
   roleText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   roleTextActive: {
-    color: '#6366f1',
+    color: MibuBrand.brown,
   },
   approvalNote: {
     fontSize: 12,
@@ -384,7 +387,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   submitButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
@@ -404,11 +407,11 @@ const styles = StyleSheet.create({
   },
   switchText: {
     fontSize: 14,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   switchTextBold: {
     fontWeight: '700',
-    color: '#6366f1',
+    color: MibuBrand.brown,
   },
   divider: {
     flexDirection: 'row',
@@ -418,19 +421,19 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: MibuBrand.tanLight,
   },
   dividerText: {
     paddingHorizontal: 16,
     fontSize: 12,
-    color: '#94a3b8',
+    color: MibuBrand.tan,
   },
   guestButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.highlight,
     paddingVertical: 14,
     borderRadius: 12,
     marginTop: 8,
@@ -438,11 +441,11 @@ const styles = StyleSheet.create({
   guestButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6366f1',
+    color: MibuBrand.brown,
   },
   note: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: MibuBrand.tan,
     textAlign: 'center',
     marginTop: 16,
   },

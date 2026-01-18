@@ -19,6 +19,7 @@ import { API_BASE_URL } from '../../../constants/translations';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { SosAlert, SosAlertStatus } from '../../../types';
+import { MibuBrand } from '../../../../constants/Colors';
 
 const AUTH_TOKEN_KEY = '@mibu_token';
 
@@ -265,9 +266,12 @@ export function SOSScreen() {
     <View style={styles.container}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{isZh ? '安全中心' : 'Safety Center'}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Ionicons name="shield-checkmark" size={22} color={MibuBrand.brownDark} />
+          <Text style={styles.headerTitle}>{isZh ? '安全中心' : 'Safety Center'}</Text>
+        </View>
         <View style={{ width: 40 }} />
       </View>
 
@@ -431,7 +435,7 @@ export function SOSScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   scrollView: {
     flex: 1,
@@ -446,9 +450,9 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    backgroundColor: MibuBrand.warmWhite,
+    borderBottomWidth: 2,
+    borderBottomColor: MibuBrand.tanLight,
   },
   backButton: {
     width: 40,
@@ -459,31 +463,31 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   lockedCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     padding: 32,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   lockIcon: {
     width: 80,
     height: 80,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
@@ -492,18 +496,18 @@ const styles = StyleSheet.create({
   lockedTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 12,
   },
   lockedText: {
     fontSize: 14,
-    color: '#64748b',
+    color: MibuBrand.copper,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   purchaseButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
@@ -529,12 +533,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#64748b',
+    color: MibuBrand.copper,
     textAlign: 'center',
   },
   section: {
@@ -543,12 +547,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 8,
   },
   sectionDescription: {
     fontSize: 14,
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginBottom: 16,
     lineHeight: 20,
   },
@@ -590,12 +594,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   alertCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
   },
   alertHeader: {
     flexDirection: 'row',
@@ -614,7 +618,7 @@ const styles = StyleSheet.create({
   },
   alertDate: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: MibuBrand.tan,
   },
   alertRow: {
     flexDirection: 'row',
@@ -625,7 +629,7 @@ const styles = StyleSheet.create({
   alertRowText: {
     flex: 1,
     fontSize: 14,
-    color: '#334155',
+    color: MibuBrand.brownDark,
   },
   cancelAlertButton: {
     marginTop: 8,
@@ -640,40 +644,37 @@ const styles = StyleSheet.create({
     color: '#ef4444',
   },
   webhookBox: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
   },
   webhookLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   webhookContent: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
   },
   webhookUrl: {
     fontSize: 13,
-    color: '#334155',
+    color: MibuBrand.brownDark,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   copyButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#3b82f6',
+    backgroundColor: MibuBrand.brown,
     borderRadius: 8,
     paddingVertical: 12,
     gap: 8,

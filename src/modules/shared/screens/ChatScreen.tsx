@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
+import { MibuBrand } from '../../../../constants/Colors';
 
 interface Message {
   id: string;
@@ -223,7 +224,7 @@ export function ChatScreen() {
             {message.sender === 'assistant' && (
               <View style={styles.avatarContainer}>
                 <View style={styles.avatar}>
-                  <Ionicons name="sparkles" size={16} color="#6366f1" />
+                  <Ionicons name="sparkles" size={16} color={MibuBrand.brown} />
                 </View>
               </View>
             )}
@@ -251,11 +252,11 @@ export function ChatScreen() {
           <View style={[styles.messageBubble, styles.assistantBubble]}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatar}>
-                <Ionicons name="sparkles" size={16} color="#6366f1" />
+                <Ionicons name="sparkles" size={16} color={MibuBrand.brown} />
               </View>
             </View>
             <View style={[styles.messageContent, styles.assistantContent, styles.typingIndicator]}>
-              <ActivityIndicator size="small" color="#6366f1" />
+              <ActivityIndicator size="small" color={MibuBrand.brown} />
               <Text style={styles.typingText}>{texts.typing}</Text>
             </View>
           </View>
@@ -308,24 +309,24 @@ export function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     paddingTop: Platform.OS === 'ios' ? 60 : 20,
     paddingBottom: 16,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomWidth: 2,
+    borderBottomColor: MibuBrand.tanLight,
     gap: 12,
   },
   headerIcon: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -335,7 +336,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   headerStatus: {
     fontSize: 13,
@@ -366,7 +367,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.highlight,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -376,14 +377,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   userContent: {
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     borderBottomRightRadius: 4,
   },
   assistantContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderBottomLeftRadius: 4,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
   },
   messageText: {
     fontSize: 15,
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   assistantText: {
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   messageTime: {
     fontSize: 11,
@@ -404,7 +405,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   assistantTime: {
-    color: '#94a3b8',
+    color: MibuBrand.tan,
   },
   typingIndicator: {
     flexDirection: 'row',
@@ -414,18 +415,18 @@ const styles = StyleSheet.create({
   },
   typingText: {
     fontSize: 14,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   quickRepliesContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     paddingTop: 12,
     paddingBottom: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopWidth: 2,
+    borderTopColor: MibuBrand.tanLight,
   },
   quickRepliesLabel: {
     fontSize: 12,
-    color: '#64748b',
+    color: MibuBrand.copper,
     paddingHorizontal: 16,
     marginBottom: 8,
   },
@@ -434,49 +435,49 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   quickReplyButton: {
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.highlight,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#c7d2fe',
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
     marginRight: 8,
   },
   quickReplyText: {
     fontSize: 14,
-    color: '#6366f1',
+    color: MibuBrand.brown,
     fontWeight: '500',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 34 : 16,
     gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopWidth: 2,
+    borderTopColor: MibuBrand.tanLight,
   },
   input: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 24,
     paddingHorizontal: 20,
     paddingVertical: 12,
     fontSize: 16,
     maxHeight: 100,
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   sendButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: '#e2e8f0',
+    backgroundColor: MibuBrand.cream,
   },
 });
