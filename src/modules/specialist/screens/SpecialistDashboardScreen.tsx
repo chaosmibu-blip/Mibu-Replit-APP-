@@ -128,13 +128,13 @@ export function SpecialistDashboardScreen() {
           </View>
           <View style={styles.toggleContainer}>
             {toggling ? (
-              <ActivityIndicator size="small" color="#6366f1" />
+              <ActivityIndicator size="small" color={MibuBrand.brown} />
             ) : (
               <Switch
                 value={specialist?.isOnline || false}
                 onValueChange={handleToggleOnline}
-                trackColor={{ false: '#e2e8f0', true: '#c7d2fe' }}
-                thumbColor={specialist?.isOnline ? '#6366f1' : '#94a3b8'}
+                trackColor={{ false: MibuBrand.tanLight, true: MibuBrand.highlight }}
+                thumbColor={specialist?.isOnline ? MibuBrand.brown : MibuBrand.tan}
               />
             )}
           </View>
@@ -153,13 +153,13 @@ export function SpecialistDashboardScreen() {
           onPress={() => router.push('/specialist/travelers' as any)}
         >
           <View style={styles.menuIcon}>
-            <Ionicons name="people-outline" size={24} color="#6366f1" />
+            <Ionicons name="people-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{isZh ? '服務中旅客' : 'Active Travelers'}</Text>
             <Text style={styles.menuSubtitle}>{isZh ? '查看服務中的旅客' : 'View travelers being served'}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -167,13 +167,13 @@ export function SpecialistDashboardScreen() {
           onPress={() => router.push('/specialist/tracking' as any)}
         >
           <View style={styles.menuIcon}>
-            <Ionicons name="map-outline" size={24} color="#6366f1" />
+            <Ionicons name="map-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{isZh ? '即時位置追蹤' : 'Live Tracking'}</Text>
             <Text style={styles.menuSubtitle}>{isZh ? '在地圖上查看旅客位置' : 'View travelers on map'}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -181,13 +181,13 @@ export function SpecialistDashboardScreen() {
           onPress={() => router.push('/specialist/history' as any)}
         >
           <View style={styles.menuIcon}>
-            <Ionicons name="time-outline" size={24} color="#6366f1" />
+            <Ionicons name="time-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{isZh ? '服務歷史' : 'Service History'}</Text>
             <Text style={styles.menuSubtitle}>{isZh ? '查看過往服務記錄' : 'View past service records'}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -195,13 +195,13 @@ export function SpecialistDashboardScreen() {
           onPress={() => router.push('/specialist/profile' as any)}
         >
           <View style={styles.menuIcon}>
-            <Ionicons name="person-circle-outline" size={24} color="#6366f1" />
+            <Ionicons name="person-circle-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{isZh ? '專員資料' : 'Specialist Profile'}</Text>
             <Text style={styles.menuSubtitle}>{isZh ? '查看與編輯個人資料' : 'View and edit profile'}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
       </View>
 

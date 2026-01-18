@@ -215,9 +215,12 @@ export function AccountScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isZh ? '帳號綁定' : 'Linked Accounts'}
-        </Text>
+        <View style={styles.headerCenter}>
+          <Ionicons name="link" size={24} color={MibuBrand.brownDark} />
+          <Text style={styles.headerTitle}>
+            {isZh ? '帳號綁定' : 'Linked Accounts'}
+          </Text>
+        </View>
         <View style={styles.headerPlaceholder} />
       </View>
 
@@ -415,6 +418,11 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   headerTitle: {
     fontSize: 18,

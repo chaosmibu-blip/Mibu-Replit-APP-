@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
   levelHeader: {
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
   taskLeft: {
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 10,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
   flashEventCard: {
