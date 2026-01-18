@@ -58,3 +58,6 @@ export * from './referral';
 
 // Contribution (Phase 6)
 export * from './contribution';
+
+// Event (Phase 7 - sync-app #006)
+export * from './event';
