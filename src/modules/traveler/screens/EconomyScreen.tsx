@@ -1,6 +1,6 @@
 /**
- * EconomyScreen - 經濟系統畫面
- * 顯示用戶等級、經驗值、成就徽章
+ * EconomyScreen - 成就與任務畫面
+ * 顯示用戶等級、經驗值、每日任務、成就徽章
  *
  * @see 後端合約: contracts/APP.md Phase 5
  */
@@ -13,7 +13,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Alert,
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,47 +20,42 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { economyApi } from '../../../services/economyApi';
 import { MibuBrand } from '../../../../constants/Colors';
-import {
-  LevelInfo,
-  Achievement,
-  AchievementCategory,
-  AchievementTier,
-  ExperienceRecord,
-} from '../../../types/economy';
+import { LevelInfo, Achievement } from '../../../types/economy';
 
-const TIER_COLORS: Record<AchievementTier, { bg: string; border: string; text: string }> = {
-  bronze: { bg: '#F5E6D3', border: '#D4A574', text: '#8B5A2B' },
-  silver: { bg: '#F0F0F0', border: '#A0A0A0', text: '#505050' },
-  gold: { bg: '#FFF8E1', border: '#FFD700', text: '#8B7500' },
-  platinum: { bg: '#E8F4F8', border: '#00CED1', text: '#008B8B' },
-};
+// 任務類型定義
+type TaskCategory = 'daily' | 'onetime' | 'cumulative' | 'level';
 
-const CATEGORY_ICONS: Record<AchievementCategory, string> = {
-  collector: 'albums',
-  investor: 'trending-up',
-  promoter: 'megaphone',
-  business: 'business',
-  specialist: 'star',
-};
+interface Task {
+  id: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  description: string;
+  xp: number;
+  isCompleted: boolean;
+  category: TaskCategory;
+}
 
-const CATEGORY_LABELS: Record<AchievementCategory, { zh: string; en: string }> = {
-  collector: { zh: '收藏家', en: 'Collector' },
-  investor: { zh: '投資者', en: 'Investor' },
-  promoter: { zh: '推廣者', en: 'Promoter' },
-  business: { zh: '商業', en: 'Business' },
-  specialist: { zh: '策劃師', en: 'Specialist' },
-};
+// 每日任務靜態定義（實際應從 API 取得）
+const DAILY_TASKS: Task[] = [
+  { id: 'd1', icon: 'calendar-outline', title: '每日簽到', description: '登入 APP', xp: 5, isCompleted: false, category: 'daily' },
+  { id: 'd2', icon: 'gift-outline', title: '每日扭蛋', description: '完成 1 次扭蛋', xp: 10, isCompleted: false, category: 'daily' },
+  { id: 'd3', icon: 'book-outline', title: '瀏覽圖鑑', description: '查看圖鑑頁', xp: 5, isCompleted: false, category: 'daily' },
+  { id: 'd4', icon: 'map-outline', title: '查看行程', description: '查看旅程策劃', xp: 5, isCompleted: false, category: 'daily' },
+  { id: 'd5', icon: 'globe-outline', title: '探索地圖', description: '查看世界地圖', xp: 5, isCompleted: false, category: 'daily' },
+  { id: 'd6', icon: 'grid-outline', title: '每日全勤', description: '完成全部每日任務', xp: 30, isCompleted: false, category: 'daily' },
+];
 
-const SOURCE_LABELS: Record<string, { zh: string; en: string }> = {
-  gacha: { zh: '扭蛋', en: 'Gacha' },
-  collection: { zh: '收藏', en: 'Collection' },
-  referral: { zh: '推薦', en: 'Referral' },
-  contribution: { zh: '貢獻', en: 'Contribution' },
-  crowdfund: { zh: '募資', en: 'Crowdfund' },
-  achievement: { zh: '成就', en: 'Achievement' },
-  daily_login: { zh: '每日登入', en: 'Daily Login' },
-  trip_submit: { zh: '行程提交', en: 'Trip Submit' },
-};
+// 新手任務靜態定義
+const ONETIME_TASKS: Task[] = [
+  { id: 'o1', icon: 'compass-outline', title: '初次探索', description: '完成第一次扭蛋', xp: 50, isCompleted: false, category: 'onetime' },
+  { id: 'o2', icon: 'person-outline', title: '建立檔案', description: '設定個人暱稱', xp: 30, isCompleted: false, category: 'onetime' },
+  { id: 'o3', icon: 'image-outline', title: '頭像達人', description: '更換個人頭像', xp: 15, isCompleted: false, category: 'onetime' },
+  { id: 'o4', icon: 'options-outline', title: '選擇偏好', description: '設定旅遊偏好標籤', xp: 20, isCompleted: false, category: 'onetime' },
+  { id: 'o5', icon: 'cart-outline', title: '首購達成', description: '購買第一個行程', xp: 150, isCompleted: false, category: 'onetime' },
+  { id: 'o6', icon: 'people-outline', title: '推薦先鋒', description: '成功邀請第一位好友', xp: 100, isCompleted: false, category: 'onetime' },
+  { id: 'o7', icon: 'cube-outline', title: '道具新手', description: '使用第一個道具', xp: 20, isCompleted: false, category: 'onetime' },
+  { id: 'o8', icon: 'document-text-outline', title: '規劃達人', description: '建立第一個行程項目', xp: 30, isCompleted: false, category: 'onetime' },
+];
 
 export function EconomyScreen() {
   const { state, getToken } = useApp();
@@ -72,8 +66,9 @@ export function EconomyScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | null>(null);
-  const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [selectedTab, setSelectedTab] = useState<TaskCategory>('daily');
+  const [dailyTasks] = useState<Task[]>(DAILY_TASKS);
+  const [onetimeTasks] = useState<Task[]>(ONETIME_TASKS);
 
   const loadData = useCallback(async () => {
     try {
@@ -107,58 +102,96 @@ export function EconomyScreen() {
     loadData();
   }, [loadData]);
 
-  const handleClaimAchievement = async (achievement: Achievement) => {
-    if (claimingId || !achievement.isUnlocked || achievement.isClaimed) return;
-
-    setClaimingId(achievement.id);
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const result = await economyApi.claimAchievement(token, achievement.id);
-
-      if (result.success) {
-        // Update local state
-        setAchievements(prev =>
-          prev.map(a =>
-            a.id === achievement.id ? { ...a, isClaimed: true } : a
-          )
-        );
-
-        // Update level info if provided
-        if (result.newLevel || result.newExp) {
-          setLevelInfo(prev => prev ? {
-            ...prev,
-            currentExp: result.newExp,
-            level: result.newLevel || prev.level,
-          } : prev);
-        }
-
-        Alert.alert(
-          isZh ? '領取成功' : 'Claimed!',
-          isZh
-            ? `獲得 ${result.reward.exp} 經驗值${result.reward.credits ? ` 和 ${result.reward.credits} 點數` : ''}`
-            : `You earned ${result.reward.exp} XP${result.reward.credits ? ` and ${result.reward.credits} credits` : ''}`
-        );
-      }
-    } catch (error) {
-      console.error('Failed to claim achievement:', error);
-      Alert.alert(
-        isZh ? '錯誤' : 'Error',
-        isZh ? '領取失敗，請稍後再試' : 'Failed to claim, please try again'
-      );
-    } finally {
-      setClaimingId(null);
-    }
-  };
-
-  const filteredAchievements = selectedCategory
-    ? achievements.filter(a => a.category === selectedCategory)
-    : achievements;
-
   const expProgress = levelInfo
     ? (levelInfo.currentExp / levelInfo.nextLevelExp) * 100
     : 0;
+
+  const xpToNextLevel = levelInfo
+    ? levelInfo.nextLevelExp - levelInfo.currentExp
+    : 0;
+
+  // 統計數據
+  const unlockedCount = achievements.filter(a => a.isUnlocked).length;
+  const currentTier = levelInfo?.tier || 1;
+  const loginStreak = levelInfo?.loginStreak || 0;
+
+  // 完成的每日任務數
+  const completedDailyCount = dailyTasks.filter(t => t.isCompleted).length;
+  const totalDailyCount = dailyTasks.length;
+
+  // 完成的新手任務數
+  const completedOnetimeCount = onetimeTasks.filter(t => t.isCompleted).length;
+  const totalOnetimeCount = onetimeTasks.length;
+
+  const renderTaskItem = (task: Task) => (
+    <TouchableOpacity
+      key={task.id}
+      style={styles.taskCard}
+      activeOpacity={0.7}
+    >
+      <View style={[styles.taskIconContainer, task.isCompleted && styles.taskIconCompleted]}>
+        <Ionicons
+          name={task.icon}
+          size={22}
+          color={task.isCompleted ? MibuBrand.copper : MibuBrand.brown}
+        />
+      </View>
+      <View style={styles.taskContent}>
+        <Text style={styles.taskTitle}>{task.title}</Text>
+        <Text style={styles.taskDesc}>{task.description}</Text>
+      </View>
+      {task.isCompleted ? (
+        <View style={styles.taskCheckmark}>
+          <Ionicons name="checkmark" size={18} color="#ffffff" />
+        </View>
+      ) : (
+        <Text style={styles.taskXp}>+{task.xp} XP</Text>
+      )}
+    </TouchableOpacity>
+  );
+
+  const renderTabContent = () => {
+    switch (selectedTab) {
+      case 'daily':
+        return (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{isZh ? '每日任務' : 'Daily Tasks'}</Text>
+              <Text style={styles.sectionCount}>{completedDailyCount}/{totalDailyCount} {isZh ? '完成' : 'done'}</Text>
+            </View>
+            {dailyTasks.map(renderTaskItem)}
+          </>
+        );
+      case 'onetime':
+        return (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{isZh ? '新手任務' : 'Beginner Tasks'}</Text>
+              <Text style={styles.sectionCount}>{completedOnetimeCount}/{totalOnetimeCount} {isZh ? '完成' : 'done'}</Text>
+            </View>
+            {onetimeTasks.map(renderTaskItem)}
+          </>
+        );
+      case 'cumulative':
+        return (
+          <View style={styles.emptyState}>
+            <Ionicons name="stats-chart-outline" size={48} color={MibuBrand.tan} />
+            <Text style={styles.emptyText}>
+              {isZh ? '累計任務即將推出' : 'Cumulative tasks coming soon'}
+            </Text>
+          </View>
+        );
+      case 'level':
+        return (
+          <View style={styles.emptyState}>
+            <Ionicons name="trophy-outline" size={48} color={MibuBrand.tan} />
+            <Text style={styles.emptyText}>
+              {isZh ? '等級任務即將推出' : 'Level tasks coming soon'}
+            </Text>
+          </View>
+        );
+    }
+  };
 
   if (loading) {
     return (
@@ -175,7 +208,7 @@ export function EconomyScreen() {
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {isZh ? '等級與成就' : 'Level & Achievements'}
+          {isZh ? '成就與任務' : 'Achievements & Tasks'}
         </Text>
         <View style={styles.headerPlaceholder} />
       </View>
@@ -192,188 +225,91 @@ export function EconomyScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Level Card */}
-        {levelInfo && (
-          <View style={styles.levelCard}>
-            <View style={styles.levelHeader}>
+        {/* User Level Card */}
+        <View style={styles.levelCard}>
+          <View style={styles.levelTop}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Ionicons name="person" size={32} color={MibuBrand.tan} />
+              </View>
               <View style={styles.levelBadge}>
-                <Text style={styles.levelNumber}>{levelInfo.level}</Text>
-              </View>
-              <View style={styles.levelInfo}>
-                <Text style={styles.levelLabel}>
-                  {isZh ? '等級' : 'Level'} {levelInfo.level}
-                </Text>
-                <Text style={styles.expText}>
-                  {levelInfo.currentExp.toLocaleString()} / {levelInfo.nextLevelExp.toLocaleString()} XP
-                </Text>
-              </View>
-              <View style={styles.quotaBox}>
-                <Text style={styles.quotaNumber}>{levelInfo.dailyQuota}</Text>
-                <Text style={styles.quotaLabel}>
-                  {isZh ? '日配額' : 'Daily'}
-                </Text>
+                <Text style={styles.levelBadgeText}>Lv.{levelInfo?.level || 1}</Text>
               </View>
             </View>
 
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>{state.user?.firstName || (isZh ? '旅行萌新' : 'Traveler')}</Text>
+              <Text style={styles.userTier}>
+                {isZh ? `第 ${currentTier} 階段` : `Tier ${currentTier}`}
+              </Text>
+            </View>
+
+            <View style={styles.totalXpBox}>
+              <Text style={styles.totalXpLabel}>{isZh ? '總經驗值' : 'Total XP'}</Text>
+              <Text style={styles.totalXpValue}>{levelInfo?.totalExp?.toLocaleString() || 0} XP</Text>
+            </View>
+          </View>
+
+          <View style={styles.levelProgress}>
             <View style={styles.progressBarContainer}>
               <View style={styles.progressBarBg}>
                 <View style={[styles.progressBarFill, { width: `${Math.min(expProgress, 100)}%` }]} />
               </View>
-              <Text style={styles.progressText}>
-                {Math.round(expProgress)}%
+            </View>
+            <View style={styles.progressLabels}>
+              <Text style={styles.progressCurrent}>
+                {levelInfo?.currentExp || 0} / {levelInfo?.nextLevelExp || 0} XP
+              </Text>
+              <Text style={styles.progressNext}>
+                Lv.{levelInfo?.level || 1} → Lv.{(levelInfo?.level || 1) + 1}
               </Text>
             </View>
-
-            {/* Recent Experience */}
-            {levelInfo.recentExp && levelInfo.recentExp.length > 0 && (
-              <View style={styles.recentExpSection}>
-                <Text style={styles.recentExpTitle}>
-                  {isZh ? '近期經驗' : 'Recent XP'}
-                </Text>
-                {levelInfo.recentExp.slice(0, 3).map((record: ExperienceRecord) => (
-                  <View key={record.id} style={styles.expRecord}>
-                    <Text style={styles.expSource}>
-                      {SOURCE_LABELS[record.source]?.[isZh ? 'zh' : 'en'] || record.source}
-                    </Text>
-                    <Text style={[styles.expAmount, record.amount > 0 && styles.expPositive]}>
-                      {record.amount > 0 ? '+' : ''}{record.amount} XP
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* Category Filter */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoryScroll}
-          contentContainerStyle={styles.categoryContainer}
-        >
-          <TouchableOpacity
-            style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
-            onPress={() => setSelectedCategory(null)}
-          >
-            <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
-              {isZh ? '全部' : 'All'}
+            <Text style={styles.progressHint}>
+              {isZh ? `還需 ${xpToNextLevel} XP 升到 Lv.${(levelInfo?.level || 1) + 1}` : `${xpToNextLevel} XP to Lv.${(levelInfo?.level || 1) + 1}`}
             </Text>
-          </TouchableOpacity>
-          {(Object.keys(CATEGORY_LABELS) as AchievementCategory[]).map(cat => (
+          </View>
+        </View>
+
+        {/* Stats Cards */}
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Ionicons name="trophy" size={20} color={MibuBrand.warning} />
+            <Text style={styles.statNumber}>{unlockedCount}</Text>
+            <Text style={styles.statLabel}>{isZh ? '已解鎖' : 'Unlocked'}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Ionicons name="star" size={20} color={MibuBrand.copper} />
+            <Text style={styles.statNumber}>{currentTier}</Text>
+            <Text style={styles.statLabel}>{isZh ? '當前階段' : 'Tier'}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Ionicons name="flame" size={20} color="#f97316" />
+            <Text style={styles.statNumber}>{loginStreak}</Text>
+            <Text style={styles.statLabel}>{isZh ? '連續登入' : 'Streak'}</Text>
+          </View>
+        </View>
+
+        {/* Tab Switcher */}
+        <View style={styles.tabContainer}>
+          {(['daily', 'onetime', 'cumulative', 'level'] as TaskCategory[]).map(tab => (
             <TouchableOpacity
-              key={cat}
-              style={[styles.categoryChip, selectedCategory === cat && styles.categoryChipActive]}
-              onPress={() => setSelectedCategory(cat)}
+              key={tab}
+              style={[styles.tab, selectedTab === tab && styles.tabActive]}
+              onPress={() => setSelectedTab(tab)}
             >
-              <Ionicons
-                name={CATEGORY_ICONS[cat] as any}
-                size={14}
-                color={selectedCategory === cat ? MibuBrand.warmWhite : MibuBrand.copper}
-              />
-              <Text style={[styles.categoryChipText, selectedCategory === cat && styles.categoryChipTextActive]}>
-                {CATEGORY_LABELS[cat][isZh ? 'zh' : 'en']}
+              <Text style={[styles.tabText, selectedTab === tab && styles.tabTextActive]}>
+                {tab === 'daily' && (isZh ? '每日' : 'Daily')}
+                {tab === 'onetime' && (isZh ? '一次性' : 'Once')}
+                {tab === 'cumulative' && (isZh ? '累計' : 'Total')}
+                {tab === 'level' && (isZh ? '等級' : 'Level')}
               </Text>
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
 
-        {/* Achievements Grid */}
-        <View style={styles.achievementsSection}>
-          <Text style={styles.sectionTitle}>
-            {isZh ? '成就徽章' : 'Achievement Badges'}
-          </Text>
-
-          {filteredAchievements.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="trophy-outline" size={48} color={MibuBrand.tan} />
-              <Text style={styles.emptyText}>
-                {isZh ? '尚無成就' : 'No achievements yet'}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.achievementsGrid}>
-              {filteredAchievements.map(achievement => {
-                const tierStyle = TIER_COLORS[achievement.tier];
-                const progress = (achievement.progress / achievement.requirement) * 100;
-                const canClaim = achievement.isUnlocked && !achievement.isClaimed;
-
-                return (
-                  <TouchableOpacity
-                    key={achievement.id}
-                    style={[
-                      styles.achievementCard,
-                      { borderColor: achievement.isUnlocked ? tierStyle.border : MibuBrand.tanLight },
-                      !achievement.isUnlocked && styles.achievementLocked,
-                    ]}
-                    onPress={() => canClaim && handleClaimAchievement(achievement)}
-                    disabled={!canClaim || claimingId === achievement.id}
-                    activeOpacity={canClaim ? 0.7 : 1}
-                  >
-                    <View style={[styles.achievementIcon, { backgroundColor: tierStyle.bg }]}>
-                      {achievement.iconUrl ? (
-                        <Text style={styles.achievementEmoji}>🏆</Text>
-                      ) : (
-                        <Ionicons
-                          name={CATEGORY_ICONS[achievement.category] as any}
-                          size={24}
-                          color={tierStyle.text}
-                        />
-                      )}
-                      {!achievement.isUnlocked && (
-                        <View style={styles.lockOverlay}>
-                          <Ionicons name="lock-closed" size={16} color="#ffffff" />
-                        </View>
-                      )}
-                    </View>
-
-                    <Text style={styles.achievementTitle} numberOfLines={2}>
-                      {achievement.title}
-                    </Text>
-
-                    <View style={styles.achievementProgressBar}>
-                      <View
-                        style={[
-                          styles.achievementProgressFill,
-                          { width: `${Math.min(progress, 100)}%`, backgroundColor: tierStyle.border }
-                        ]}
-                      />
-                    </View>
-                    <Text style={styles.achievementProgressText}>
-                      {achievement.progress} / {achievement.requirement}
-                    </Text>
-
-                    {achievement.isClaimed ? (
-                      <View style={styles.claimedBadge}>
-                        <Ionicons name="checkmark-circle" size={16} color={MibuBrand.success} />
-                        <Text style={styles.claimedText}>
-                          {isZh ? '已領取' : 'Claimed'}
-                        </Text>
-                      </View>
-                    ) : canClaim ? (
-                      <TouchableOpacity
-                        style={styles.claimButton}
-                        onPress={() => handleClaimAchievement(achievement)}
-                        disabled={claimingId === achievement.id}
-                      >
-                        {claimingId === achievement.id ? (
-                          <ActivityIndicator size="small" color="#ffffff" />
-                        ) : (
-                          <Text style={styles.claimButtonText}>
-                            {isZh ? '領取獎勵' : 'Claim'}
-                          </Text>
-                        )}
-                      </TouchableOpacity>
-                    ) : (
-                      <Text style={styles.rewardPreview}>
-                        +{achievement.reward.exp} XP
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          )}
+        {/* Tab Content */}
+        <View style={styles.tabContent}>
+          {renderTabContent()}
         </View>
 
         <View style={styles.bottomSpacer} />
@@ -424,6 +360,8 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 16,
   },
+
+  // Level Card
   levelCard: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
@@ -432,249 +370,231 @@ const styles = StyleSheet.create({
     borderColor: MibuBrand.tanLight,
     marginBottom: 16,
   },
-  levelHeader: {
+  levelTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  levelBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: MibuBrand.brown,
+  avatarContainer: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: MibuBrand.cream,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  levelNumber: {
-    fontSize: 24,
-    fontWeight: '900',
+  levelBadge: {
+    position: 'absolute',
+    bottom: -4,
+    left: -4,
+    backgroundColor: MibuBrand.brown,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  levelBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
     color: '#ffffff',
   },
-  levelInfo: {
+  userInfo: {
     flex: 1,
     marginLeft: 16,
   },
-  levelLabel: {
+  userName: {
     fontSize: 18,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
-  expText: {
-    fontSize: 14,
+  userTier: {
+    fontSize: 13,
     color: MibuBrand.copper,
     marginTop: 2,
   },
-  quotaBox: {
-    alignItems: 'center',
-    backgroundColor: MibuBrand.highlight,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+  totalXpBox: {
+    alignItems: 'flex-end',
   },
-  quotaNumber: {
+  totalXpLabel: {
+    fontSize: 12,
+    color: MibuBrand.copper,
+  },
+  totalXpValue: {
     fontSize: 20,
     fontWeight: '800',
-    color: MibuBrand.brown,
+    color: MibuBrand.brownDark,
   },
-  quotaLabel: {
-    fontSize: 11,
-    color: MibuBrand.copper,
-    fontWeight: '600',
-  },
+  levelProgress: {},
   progressBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    marginBottom: 8,
   },
   progressBarBg: {
-    flex: 1,
-    height: 12,
+    height: 10,
     backgroundColor: MibuBrand.tanLight,
-    borderRadius: 6,
+    borderRadius: 5,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
     backgroundColor: MibuBrand.brown,
-    borderRadius: 6,
+    borderRadius: 5,
   },
-  progressText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: MibuBrand.copper,
-    minWidth: 40,
-    textAlign: 'right',
-  },
-  recentExpSection: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: MibuBrand.tanLight,
-  },
-  recentExpTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: MibuBrand.copper,
-    textTransform: 'uppercase',
-    marginBottom: 8,
-  },
-  expRecord: {
+  progressLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    marginBottom: 4,
   },
-  expSource: {
-    fontSize: 14,
-    color: MibuBrand.brownDark,
-  },
-  expAmount: {
-    fontSize: 14,
-    fontWeight: '600',
+  progressCurrent: {
+    fontSize: 13,
     color: MibuBrand.copper,
   },
-  expPositive: {
-    color: MibuBrand.success,
+  progressNext: {
+    fontSize: 13,
+    color: MibuBrand.copper,
   },
-  categoryScroll: {
+  progressHint: {
+    fontSize: 13,
+    color: MibuBrand.brown,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+
+  // Stats Row
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
     marginBottom: 16,
   },
-  categoryContainer: {
-    gap: 8,
-    paddingVertical: 4,
-  },
-  categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+  statCard: {
+    flex: 1,
     backgroundColor: MibuBrand.warmWhite,
-    borderWidth: 1.5,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
-  categoryChipActive: {
-    backgroundColor: MibuBrand.brown,
-    borderColor: MibuBrand.brown,
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: MibuBrand.brownDark,
+    marginTop: 6,
   },
-  categoryChipText: {
-    fontSize: 13,
+  statLabel: {
+    fontSize: 12,
+    color: MibuBrand.copper,
+    marginTop: 2,
+  },
+
+  // Tabs
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 16,
+    padding: 4,
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 12,
+  },
+  tabActive: {
+    backgroundColor: MibuBrand.brown,
+  },
+  tabText: {
+    fontSize: 14,
     fontWeight: '600',
     color: MibuBrand.copper,
   },
-  categoryChipTextActive: {
-    color: MibuBrand.warmWhite,
+  tabTextActive: {
+    color: '#ffffff',
   },
-  achievementsSection: {
-    marginTop: 8,
+
+  // Tab Content
+  tabContent: {},
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    marginBottom: 12,
   },
+  sectionCount: {
+    fontSize: 14,
+    color: MibuBrand.copper,
+  },
+
+  // Task Card
+  taskCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
+  },
+  taskIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: MibuBrand.highlight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  taskIconCompleted: {
+    backgroundColor: MibuBrand.cream,
+  },
+  taskContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  taskTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: MibuBrand.brownDark,
+  },
+  taskDesc: {
+    fontSize: 13,
+    color: MibuBrand.copper,
+    marginTop: 2,
+  },
+  taskXp: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: MibuBrand.brown,
+  },
+  taskCheckmark: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: MibuBrand.brown,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Empty State
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: 48,
   },
   emptyText: {
     fontSize: 15,
     color: MibuBrand.tan,
     marginTop: 12,
   },
-  achievementsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  achievementCard: {
-    width: '47%',
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 2,
-    alignItems: 'center',
-  },
-  achievementLocked: {
-    opacity: 0.6,
-  },
-  achievementIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-    position: 'relative',
-  },
-  achievementEmoji: {
-    fontSize: 24,
-  },
-  lockOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    borderRadius: 26,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  achievementTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: MibuBrand.brownDark,
-    textAlign: 'center',
-    marginBottom: 8,
-    minHeight: 32,
-  },
-  achievementProgressBar: {
-    width: '100%',
-    height: 6,
-    backgroundColor: MibuBrand.tanLight,
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: 4,
-  },
-  achievementProgressFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  achievementProgressText: {
-    fontSize: 11,
-    color: MibuBrand.copper,
-    marginBottom: 8,
-  },
-  claimedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  claimedText: {
-    fontSize: 12,
-    color: MibuBrand.success,
-    fontWeight: '600',
-  },
-  claimButton: {
-    backgroundColor: MibuBrand.brown,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  claimButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  rewardPreview: {
-    fontSize: 12,
-    color: MibuBrand.copper,
-    fontWeight: '500',
-  },
+
   bottomSpacer: {
     height: 100,
   },
