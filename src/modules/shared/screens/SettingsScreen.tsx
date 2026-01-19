@@ -172,6 +172,42 @@ export function SettingsScreen() {
               </View>
               <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.menuCard, { marginTop: 12 }]}
+              onPress={() => router.push('/favorites' as any)}
+            >
+              <View style={[styles.menuIconContainer, { backgroundColor: '#FEE2E2' }]}>
+                <Ionicons name="heart" size={24} color="#EF4444" />
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuTitle}>
+                  {isZh ? '我的最愛' : 'My Favorites'}
+                </Text>
+                <Text style={styles.menuSubtitle}>
+                  {isZh ? '收藏的景點' : 'Saved places'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.menuCard, { marginTop: 12 }]}
+              onPress={() => router.push('/sos-contacts' as any)}
+            >
+              <View style={[styles.menuIconContainer, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="shield-checkmark" size={24} color="#F59E0B" />
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuTitle}>
+                  {isZh ? '緊急聯絡人' : 'Emergency Contacts'}
+                </Text>
+                <Text style={styles.menuSubtitle}>
+                  {isZh ? '管理 SOS 通知對象' : 'Manage SOS notification contacts'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.section}>

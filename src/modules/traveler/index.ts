@@ -15,6 +15,7 @@ export { CrowdfundingScreen } from './screens/CrowdfundingScreen';
 export { CrowdfundingDetailScreen } from './screens/CrowdfundingDetailScreen';
 export { ReferralScreen } from './screens/ReferralScreen';
 export { ContributionScreen } from './screens/ContributionScreen';
+export { FavoritesScreen } from './screens/FavoritesScreen';
 
 // Components
 export { CouponWinAnimation, CouponPreviewCard } from './components';

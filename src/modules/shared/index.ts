@@ -12,6 +12,7 @@ export { default as SOSScreen } from './screens/SOSScreen';
 export { default as LocationScreen } from './screens/LocationScreen';
 export { default as PendingApprovalScreen } from './screens/PendingApprovalScreen';
 export { AccountScreen } from './screens/AccountScreen';
+export { SOSContactsScreen } from './screens/SOSContactsScreen';
 
 // Components
 export * from './components';

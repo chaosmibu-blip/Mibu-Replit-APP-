@@ -6,6 +6,54 @@
 
 ## 最新回報
 
+### 2026-01-19 #009
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 前端 API 審計補齊 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+- [x] `collectionApi.ts` 新增我的最愛 API（4 個方法）
+  - `getFavorites(token)` → `GET /api/collections/favorites`
+  - `addFavorite(token, placeId)` → `POST /api/collections/:placeId/favorite`
+  - `removeFavorite(token, placeId)` → `DELETE /api/collections/:placeId/favorite`
+  - `getFavoriteStatus(token, placeId)` → `GET /api/collections/:placeId/favorite/status`
+- [x] 新增 `configApi.ts` 服務（2 個方法）
+  - `getAppConfig()` → `GET /api/config/app`
+  - `getMapboxConfig(token)` → `GET /api/config/mapbox`
+- [x] 新增 `couponApi.ts` 服務（2 個方法）
+  - `getMyCoupons(token)` → `GET /api/coupons/my`
+  - `redeemCoupon(token, params)` → `POST /api/coupons/redeem`
+- [x] 新增型別定義
+  - `src/types/collection.ts`: `FavoriteItem`, `FavoritesResponse`, `AddFavoriteResponse`
+- [x] 新增 UI 頁面
+  - `FavoritesScreen.tsx` - 我的最愛頁面（列表、移除功能）
+  - `SOSContactsScreen.tsx` - 緊急聯絡人管理（CRUD 完整功能）
+- [x] 新增路由
+  - `app/favorites.tsx`
+  - `app/sos-contacts.tsx`
+- [x] 更新 `SettingsScreen.tsx` 新增導航入口
+
+### 使用的 API
+| Endpoint | 功能 |
+|----------|------|
+| `GET /api/collections/favorites` | 取得我的最愛列表 |
+| `POST /api/collections/:placeId/favorite` | 加入我的最愛 |
+| `DELETE /api/collections/:placeId/favorite` | 移除我的最愛 |
+| `GET /api/collections/:placeId/favorite/status` | 檢查最愛狀態 |
+| `GET /api/config/app` | 取得 App 設定 |
+| `GET /api/config/mapbox` | 取得 Mapbox Token |
+| `GET /api/coupons/my` | 取得我的優惠券 |
+| `POST /api/coupons/redeem` | 核銷優惠券 |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-19 #008
 
 | 項目 | 內容 |

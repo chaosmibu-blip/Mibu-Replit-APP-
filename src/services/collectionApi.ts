@@ -8,6 +8,10 @@ import {
   CollectionItem,
   CollectionResponse,
   PaginationParams,
+  FavoritesResponse,
+  FavoriteStatusResponse,
+  AddFavoriteResponse,
+  RemoveFavoriteResponse,
 } from '../types';
 
 export interface PlacePromoResponse {
@@ -112,6 +116,60 @@ class CollectionApiService extends ApiBase {
    */
   async getCollectionStats(token: string): Promise<CollectionStatsResponse> {
     return this.request<CollectionStatsResponse>('/api/collections/stats', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  // ========== 我的最愛 ==========
+
+  /**
+   * 取得我的最愛列表
+   * GET /api/collections/favorites
+   */
+  async getFavorites(
+    token: string,
+    params?: { page?: number; limit?: number }
+  ): Promise<FavoritesResponse> {
+    const query = new URLSearchParams();
+    if (params?.page) query.append('page', String(params.page));
+    if (params?.limit) query.append('limit', String(params.limit));
+
+    const queryString = query.toString();
+    const endpoint = `/api/collections/favorites${queryString ? `?${queryString}` : ''}`;
+
+    return this.request<FavoritesResponse>(endpoint, {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 加入我的最愛
+   * POST /api/collections/:placeId/favorite
+   */
+  async addFavorite(token: string, placeId: string): Promise<AddFavoriteResponse> {
+    return this.request<AddFavoriteResponse>(`/api/collections/${placeId}/favorite`, {
+      method: 'POST',
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 移除我的最愛
+   * DELETE /api/collections/:placeId/favorite
+   */
+  async removeFavorite(token: string, placeId: string): Promise<RemoveFavoriteResponse> {
+    return this.request<RemoveFavoriteResponse>(`/api/collections/${placeId}/favorite`, {
+      method: 'DELETE',
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 檢查是否為我的最愛
+   * GET /api/collections/:placeId/favorite/status
+   */
+  async getFavoriteStatus(token: string, placeId: string): Promise<FavoriteStatusResponse> {
+    return this.request<FavoriteStatusResponse>(`/api/collections/${placeId}/favorite/status`, {
       headers: this.authHeaders(token),
     });
   }
