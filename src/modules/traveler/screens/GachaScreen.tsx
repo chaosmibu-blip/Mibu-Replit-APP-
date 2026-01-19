@@ -687,76 +687,52 @@ export function GachaScreen() {
           shadowRadius: 12,
           elevation: 4,
         }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons name="layers-outline" size={20} color={MibuBrand.copper} />
-              <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.brown, marginLeft: 8 }}>
-                {state.language === 'zh-TW' ? '抽取張數' : 'Pull Count'}
-              </Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => {
-                Alert.alert(
-                  state.language === 'zh-TW' ? '抽取張數說明' : 'Pull Count Info',
-                  state.language === 'zh-TW'
-                    ? '每次扭蛋可抽取 5-12 張景點卡片。張數越多，行程越豐富！每日上限 36 張。'
-                    : 'You can draw 5-12 place cards per gacha. More cards mean a richer itinerary! Daily limit is 36 cards.'
-                );
-              }}
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 14,
-                backgroundColor: MibuBrand.creamLight,
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <Ionicons name="help-circle-outline" size={18} color={MibuBrand.copper} />
-            </TouchableOpacity>
-          </View>
-
-          {/* 大數字顯示 */}
-          <View style={{ alignItems: 'center', marginBottom: 16 }}>
-            <View style={{
-              backgroundColor: MibuBrand.cream,
-              borderRadius: 16,
-              paddingVertical: 16,
-              paddingHorizontal: 40,
-            }}>
-              <Text style={{ fontSize: 48, fontWeight: '800', color: MibuBrand.brown }}>
-                {pullCount}
-              </Text>
-            </View>
-            <Text style={{ fontSize: 14, color: MibuBrand.brownLight, marginTop: 8 }}>
-              {state.language === 'zh-TW' ? '張景點卡片' : 'place cards'}
+          {/* 標題行：扭蛋次數 + 數字顯示 */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <Text style={{ fontSize: 15, fontWeight: '600', color: MibuBrand.copper }}>
+              {state.language === 'zh-TW' ? '扭蛋次數' : 'Pull Count'}
+            </Text>
+            <Text style={{ fontSize: 28, fontWeight: '800', color: MibuBrand.brownDark }}>
+              {pullCount} <Text style={{ fontSize: 16, fontWeight: '600' }}>{state.language === 'zh-TW' ? '次' : 'pulls'}</Text>
             </Text>
           </View>
 
-          {/* Slider */}
-          <View style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            paddingHorizontal: 8,
-            backgroundColor: MibuBrand.creamLight,
-            borderRadius: 16,
-            paddingVertical: 12,
+          {/* Slider - 簡潔樣式 */}
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
           }}>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: MibuBrand.brownLight, marginLeft: 8 }}>5</Text>
-            <View style={{ flex: 1, marginHorizontal: 16 }}>
+            <View style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: MibuBrand.brown,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.warmWhite }}>
+                {pullCount}
+              </Text>
+            </View>
+            <View style={{ flex: 1, marginHorizontal: 12 }}>
               <Slider
-                style={{ width: '100%', height: 48 }}
+                style={{ width: '100%', height: 40 }}
                 minimumValue={5}
                 maximumValue={12}
                 step={1}
                 value={pullCount}
                 onValueChange={(value) => setPullCount(Math.round(value))}
-                minimumTrackTintColor={MibuBrand.copper}
-                maximumTrackTintColor={MibuBrand.tan}
+                minimumTrackTintColor={MibuBrand.brown}
+                maximumTrackTintColor={MibuBrand.tanLight}
                 thumbTintColor={MibuBrand.brown}
               />
             </View>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: MibuBrand.brownLight, marginRight: 8 }}>12</Text>
+          </View>
+
+          {/* 範圍標籤 */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, paddingHorizontal: 4 }}>
+            <Text style={{ fontSize: 13, color: MibuBrand.tan }}>5</Text>
+            <Text style={{ fontSize: 13, color: MibuBrand.tan }}>12</Text>
           </View>
         </View>
       )}
