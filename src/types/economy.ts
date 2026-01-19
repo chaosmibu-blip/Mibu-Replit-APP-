@@ -10,6 +10,8 @@ export interface LevelInfo {
   nextLevelExp: number;
   totalExp: number;
   dailyQuota: number; // 扭蛋日配額
+  tier?: number; // 用戶階段
+  loginStreak?: number; // 連續登入天數
   recentExp: ExperienceRecord[];
 }
 

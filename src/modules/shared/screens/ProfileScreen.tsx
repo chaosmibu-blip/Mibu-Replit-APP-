@@ -23,7 +23,7 @@ const RELATION_OPTIONS = [
 ];
 
 export function ProfileScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, setUser } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
@@ -112,6 +112,19 @@ export function ProfileScreen() {
         setEmergencyContactName(data.emergencyContactName || '');
         setEmergencyContactPhone(data.emergencyContactPhone || '');
         setEmergencyContactRelation(data.emergencyContactRelation || '');
+
+        // 同步更新全域用戶狀態（修復 #017 用戶名消失問題）
+        if (state.user) {
+          const updatedUser = {
+            ...state.user,
+            firstName: data.firstName || state.user.firstName,
+            lastName: data.lastName || state.user.lastName,
+            name: data.firstName && data.lastName
+              ? `${data.firstName} ${data.lastName}`
+              : data.firstName || data.lastName || state.user.name,
+          };
+          setUser(updatedUser);
+        }
       }
 
       Alert.alert(
