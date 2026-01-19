@@ -6,6 +6,103 @@
 
 ## 最新回報
 
+### 2026-01-19 #017：Bug 修復與 UI 更新
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #017 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+
+**Phase 1：Bug 修復**
+
+- [x] 修復 EconomyScreen/HomeScreen 物件渲染錯誤
+  - `HomeScreen.tsx`: 修正 level 資料映射，使用正確屬性名稱
+    - `levelData.currentXp` → `levelData.currentExp`
+    - `levelData.nextLevelXp` → `levelData.nextLevelExp`
+    - `levelData.totalXp` → `levelData.totalExp`
+    - `levelData.phase` → `levelData.tier`
+  - 新增 `getLevelTitle()` 函數根據等級產生稱號
+- [x] 修復用戶名消失問題
+  - `ProfileScreen.tsx`: 儲存成功後同步更新 AppContext 的 user 狀態
+  - 確保 firstName/lastName 變更即時反映到全域狀態
+- [x] 更新 `economy.ts` 型別定義
+  - `LevelInfo` 新增 `tier?: number` 和 `loginStreak?: number`
+
+**UI 更新**
+
+- [x] 首頁活動區塊改名
+  - 「節慶活動」→「在地活動」
+  - 「Festivals」→「Local Activities」
+  - 圖標：`gift-outline` → `location-outline`
+  - 配色：紅色系 → 藍色系 (`#E0F2FE`, `#0284C7`)
+
+### 修改的檔案
+
+| 檔案 | 變更 |
+|------|------|
+| `HomeScreen.tsx` | 修正 level 映射、改名活動區塊 |
+| `ProfileScreen.tsx` | 新增 user 狀態同步 |
+| `economy.ts` | 新增 tier, loginStreak 欄位 |
+
+**Phase 2：設計系統標準化**
+
+- [x] 建立 `src/theme/designTokens.ts` 設計常數檔
+  - 間距系統：4px 基準（xs:4, sm:8, md:12, lg:16, xl:24, xxl:32, xxxl:48）
+  - 圓角系統：xs:4, sm:8, md:12, lg:16, xl:20, xxl:24, full:999
+  - 字體大小：xs:10, sm:12, md:14, lg:16, xl:18, xxl:22, xxxl:28
+  - 陰影預設：sm/md/lg 三級
+- [x] 更新 `constants/Colors.ts` 新增 `SemanticColors`
+  - success：綠色系（#DCFCE7, #5D8A66, #16A34A）
+  - warning：黃色系（#FEF3C7, #D4A24C, #D97706）
+  - error：紅色系（#FEE2E2, #C45C5C, #DC2626）
+  - info：藍色系（#E0F2FE, #6B8CAE, #0284C7）
+  - starYellow：星級評分（#F59E0B）
+- [x] 更新 `HomeScreen.tsx` 移除硬編碼色碼
+  - 快閃活動：使用 `SemanticColors.warningLight/Dark`
+  - 在地活動：使用 `SemanticColors.infoLight/Dark`
+
+**Phase 2b：全域色碼遷移**
+
+- [x] `GachaScreen.tsx` - 遷移硬編碼色碼
+  - 稀有度色碼：使用 `MibuBrand.tierSP/SSR/SR/S/R` 系列
+  - 狀態色：`SemanticColors.starYellow` 取代 `#F59E0B`
+  - 背景/邊框：`MibuBrand.warmWhite/tanLight` 取代 `#ffffff/#E5D5BC`
+- [x] `FavoritesScreen.tsx` - 遷移硬編碼色碼
+  - 星級評分：`SemanticColors.starYellow` 取代 `#F59E0B`
+  - 錯誤狀態：`SemanticColors.errorMain` 取代 `#EF4444`
+- [x] `ItemsScreen.tsx` - 遷移硬編碼色碼
+  - N 稀有度色碼：`MibuBrand.brownLight` 取代硬編碼值
+- [x] `AnnouncementManageScreen.tsx` - 遷移硬編碼色碼
+  - 狀態色：`SemanticColors.successMain/warningMain` 取代硬編碼
+  - 按鈕/圖標：`MibuBrand.warmWhite` 取代 `#ffffff`
+- [x] `CrowdfundingDetailScreen.tsx` - 遷移硬編碼色碼
+  - 白色文字：`MibuBrand.warmWhite` 取代 `#ffffff`
+  - 選中狀態：`MibuBrand.creamLight` 取代 `rgba(255,255,255,0.85)`
+
+### 修改的檔案
+
+| 檔案 | 變更 |
+|------|------|
+| `HomeScreen.tsx` | 修正 level 映射、改名活動區塊、使用 SemanticColors |
+| `ProfileScreen.tsx` | 新增 user 狀態同步 |
+| `economy.ts` | 新增 tier, loginStreak 欄位 |
+| `Colors.ts` | 新增 SemanticColors |
+| `designTokens.ts` | 新建設計系統常數 |
+| `GachaScreen.tsx` | 遷移硬編碼色碼至 MibuBrand/SemanticColors |
+| `FavoritesScreen.tsx` | 遷移硬編碼色碼至 SemanticColors |
+| `ItemsScreen.tsx` | 遷移硬編碼色碼至 MibuBrand |
+| `AnnouncementManageScreen.tsx` | 遷移硬編碼色碼至 MibuBrand/SemanticColors |
+| `CrowdfundingDetailScreen.tsx` | 遷移硬編碼色碼至 MibuBrand |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-19 #013：API 補齊與錯誤碼更新
 
 | 項目 | 內容 |

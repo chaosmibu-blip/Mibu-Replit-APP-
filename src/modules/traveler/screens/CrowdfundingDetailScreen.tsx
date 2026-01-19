@@ -298,7 +298,7 @@ export function CrowdfundingDetailScreen() {
             style={[styles.contributeButton, !selectedTier && styles.contributeButtonDisabled]}
             onPress={handleContribute}
           >
-            <Ionicons name="heart" size={20} color="#ffffff" />
+            <Ionicons name="heart" size={20} color={MibuBrand.warmWhite} />
             <Text style={styles.contributeButtonText}>
               {selectedTier
                 ? (isZh ? `贊助 ${formatCurrency(selectedTier.minAmount)}` : `Back ${formatCurrency(selectedTier.minAmount)}`)
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   backBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
+    color: MibuBrand.warmWhite,
   },
   header: {
     flexDirection: 'row',
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
   },
   rewardTierSelected: {
-    color: '#ffffff',
+    color: MibuBrand.warmWhite,
   },
   rewardMin: {
     fontSize: 16,
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   rewardDescSelected: {
-    color: 'rgba(255,255,255,0.85)',
+    color: MibuBrand.creamLight,
   },
   rewardRemaining: {
     fontSize: 12,
@@ -579,6 +579,6 @@ const styles = StyleSheet.create({
   contributeButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: MibuBrand.warmWhite,
   },
 });

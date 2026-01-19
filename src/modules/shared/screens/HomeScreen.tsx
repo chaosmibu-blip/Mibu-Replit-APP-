@@ -17,7 +17,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
@@ -86,14 +86,23 @@ export function HomeScreen() {
         try {
           const levelData = await economyApi.getUserLevel(token);
           if (levelData) {
+            // 根據等級決定稱號
+            const getLevelTitle = (level: number): string => {
+              if (level >= 50) return isZh ? '傳奇旅者' : 'Legendary';
+              if (level >= 30) return isZh ? '資深冒險家' : 'Expert';
+              if (level >= 15) return isZh ? '旅行達人' : 'Traveler';
+              if (level >= 5) return isZh ? '探索者' : 'Explorer';
+              return isZh ? '旅行新手' : 'Newbie';
+            };
+
             setUserLevel({
-              level: levelData.level,
-              title: levelData.title,
-              phase: levelData.phase || 1,
-              currentXp: levelData.currentXp,
-              nextLevelXp: levelData.nextLevelXp,
-              totalXp: levelData.totalXp,
-              loginStreak: levelData.loginStreak || 1,
+              level: levelData.level ?? 1,
+              title: getLevelTitle(levelData.level ?? 1),
+              phase: levelData.tier ?? 1,
+              currentXp: levelData.currentExp ?? 0,
+              nextLevelXp: levelData.nextLevelExp ?? 100,
+              totalXp: levelData.totalExp ?? 0,
+              loginStreak: levelData.loginStreak ?? 1,
             });
           }
         } catch {
@@ -318,15 +327,15 @@ export function HomeScreen() {
               onPress={() => router.push(`/event/${event.id}`)}
               activeOpacity={0.8}
             >
-              <View style={[styles.announcementIcon, { backgroundColor: '#FEF3C7' }]}>
-                <Ionicons name="sparkles" size={18} color="#D97706" />
+              <View style={[styles.announcementIcon, { backgroundColor: SemanticColors.warningLight }]}>
+                <Ionicons name="sparkles" size={18} color={SemanticColors.warningDark} />
               </View>
               <View style={styles.announcementContent}>
                 <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
                 <Text style={styles.announcementDesc} numberOfLines={2}>
                   {getLocalizedDesc(event)}
                 </Text>
-                <Text style={[styles.announcementDate, { color: '#D97706' }]}>
+                <Text style={[styles.announcementDate, { color: SemanticColors.warningDark }]}>
                   {formatDate(event.startDate || event.createdAt)}
                 </Text>
               </View>
@@ -335,31 +344,31 @@ export function HomeScreen() {
         </View>
       )}
 
-      {/* Festival Events Section */}
+      {/* Local Activities Section */}
       {events.festivals.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="gift-outline" size={20} color={MibuBrand.brown} />
+            <Ionicons name="location-outline" size={20} color={MibuBrand.brown} />
             <Text style={styles.sectionTitle}>
-              {isZh ? '節慶活動' : 'Festivals'}
+              {isZh ? '在地活動' : 'Local Activities'}
             </Text>
           </View>
           {events.festivals.map(event => (
             <TouchableOpacity
               key={event.id}
-              style={[styles.announcementCard, styles.festivalCard]}
+              style={[styles.announcementCard, styles.localActivityCard]}
               onPress={() => router.push(`/event/${event.id}`)}
               activeOpacity={0.8}
             >
-              <View style={[styles.announcementIcon, { backgroundColor: '#FEE2E2' }]}>
-                <Ionicons name="gift-outline" size={18} color="#DC2626" />
+              <View style={[styles.announcementIcon, { backgroundColor: SemanticColors.infoLight }]}>
+                <Ionicons name="location-outline" size={18} color={SemanticColors.infoDark} />
               </View>
               <View style={styles.announcementContent}>
                 <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
                 <Text style={styles.announcementDesc} numberOfLines={2}>
                   {getLocalizedDesc(event)}
                 </Text>
-                <Text style={[styles.announcementDate, { color: '#DC2626' }]}>
+                <Text style={[styles.announcementDate, { color: SemanticColors.infoDark }]}>
                   {formatDate(event.startDate || event.createdAt)}
                 </Text>
               </View>
@@ -610,10 +619,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   flashEventCard: {
-    borderColor: '#FEF3C7',
+    borderColor: SemanticColors.warningLight,
   },
-  festivalCard: {
-    borderColor: '#FEE2E2',
+  localActivityCard: {
+    borderColor: SemanticColors.infoLight,
   },
   announcementIcon: {
     width: 32,

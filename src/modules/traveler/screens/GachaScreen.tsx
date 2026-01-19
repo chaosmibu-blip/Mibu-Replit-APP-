@@ -23,7 +23,7 @@ import { apiService } from '../../../services/api';
 import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse, ItineraryItemRaw, LocalizedContent, GachaMeta, CouponWon } from '../../../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../../../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { ErrorCode, isAuthError } from '../../../shared/errors';
 
 const UNLIMITED_EMAILS = ['s8869420@gmail.com'];
@@ -562,7 +562,7 @@ export function GachaScreen() {
           </View>
           
           <Text
-            style={{ fontSize: 13, fontWeight: '700', color: '#1e293b' }}
+            style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.dark }}
             numberOfLines={2}
           >
             {getLocalizedPoolItemName(item.name)}
@@ -574,14 +574,14 @@ export function GachaScreen() {
                 flexDirection: 'row',
                 alignItems: 'center',
                 marginTop: 6,
-                backgroundColor: '#fef3c7',
+                backgroundColor: SemanticColors.starBg,
                 paddingHorizontal: 6,
                 paddingVertical: 3,
                 borderRadius: 6,
               }}
             >
-              <Ionicons name="star" size={10} color="#f59e0b" />
-              <Text style={{ fontSize: 10, color: '#b45309', marginLeft: 4, fontWeight: '600' }}>
+              <Ionicons name="star" size={10} color={SemanticColors.starYellow} />
+              <Text style={{ fontSize: 10, color: SemanticColors.warningDark, marginLeft: 4, fontWeight: '600' }}>
                 {t.merchant || '特約商家'}
               </Text>
             </View>
@@ -764,37 +764,37 @@ export function GachaScreen() {
       {/* 道具箱容量警告 */}
       {isInventoryFull && (
         <View style={{
-          backgroundColor: '#fef2f2',
+          backgroundColor: SemanticColors.errorLight,
           borderRadius: 20,
           padding: 18,
           marginBottom: 24,
           flexDirection: 'row',
           alignItems: 'center',
           borderWidth: 1,
-          borderColor: '#fecaca',
+          borderColor: SemanticColors.errorLight,
         }}>
           <View style={{
             width: 40,
             height: 40,
             borderRadius: 20,
-            backgroundColor: '#fee2e2',
+            backgroundColor: SemanticColors.errorLight,
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <Ionicons name="warning" size={22} color="#dc2626" />
+            <Ionicons name="warning" size={22} color={SemanticColors.errorDark} />
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: '#dc2626' }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: SemanticColors.errorDark }}>
               {state.language === 'zh-TW' ? '道具箱已滿' : 'Item Box Full'}
             </Text>
-            <Text style={{ fontSize: 13, color: '#991b1b', marginTop: 2 }}>
+            <Text style={{ fontSize: 13, color: SemanticColors.errorDark, marginTop: 2 }}>
               {state.language === 'zh-TW' ? '請先清理道具箱再抽卡' : 'Please clear some items first'}
             </Text>
           </View>
           <TouchableOpacity
             onPress={() => router.push('/(tabs)/collection/itembox')}
             style={{
-              backgroundColor: '#dc2626',
+              backgroundColor: SemanticColors.errorDark,
               paddingHorizontal: 14,
               paddingVertical: 8,
               borderRadius: 12,
@@ -932,10 +932,10 @@ export function GachaScreen() {
                 justifyContent: 'space-between',
                 padding: 20,
                 borderBottomWidth: 1,
-                borderBottomColor: '#f1f5f9',
+                borderBottomColor: MibuBrand.creamLight,
               }}
             >
-              <Text style={{ fontSize: 18, fontWeight: '800', color: '#1e293b' }}>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark }}>
                 {t.poolPreview || '獎池預覽'}
               </Text>
               <TouchableOpacity
@@ -944,19 +944,19 @@ export function GachaScreen() {
                   width: 32,
                   height: 32,
                   borderRadius: 16,
-                  backgroundColor: '#f1f5f9',
+                  backgroundColor: MibuBrand.creamLight,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Ionicons name="close" size={20} color="#64748b" />
+                <Ionicons name="close" size={20} color={MibuBrand.tan} />
               </TouchableOpacity>
             </View>
 
             {loadingPool ? (
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 }}>
                 <ActivityIndicator size="large" color="#6366f1" />
-                <Text style={{ marginTop: 16, color: '#64748b', fontSize: 14 }}>
+                <Text style={{ marginTop: 16, color: MibuBrand.tan, fontSize: 14 }}>
                   {t.loadingPool || '載入獎池中...'}
                 </Text>
               </View>
@@ -974,8 +974,8 @@ export function GachaScreen() {
                     )}
                     
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                      <Ionicons name="ticket" size={18} color="#d97706" />
-                      <Text style={{ fontSize: 14, fontWeight: '700', color: '#d97706', marginLeft: 6 }}>
+                      <Ionicons name="ticket" size={18} color={SemanticColors.warningDark} />
+                      <Text style={{ fontSize: 14, fontWeight: '700', color: SemanticColors.warningDark, marginLeft: 6 }}>
                         {state.language === 'zh-TW' ? 'SP/SSR 稀有優惠券' : 'SP/SSR Rare Coupons'} ({(prizePoolData?.coupons?.length || 0) + (Array.isArray(couponPoolData) ? couponPoolData.length : 0)})
                       </Text>
                     </View>
@@ -984,18 +984,18 @@ export function GachaScreen() {
                       <View
                         key={`prize-${coupon.id}`}
                         style={{
-                          backgroundColor: coupon.rarity === 'SP' ? '#fef3c7' : '#ddd6fe',
+                          backgroundColor: coupon.rarity === 'SP' ? SemanticColors.starBg : '#ddd6fe',
                           borderRadius: 12,
                           padding: 14,
                           marginBottom: 10,
                           borderWidth: 2,
-                          borderColor: coupon.rarity === 'SP' ? '#f59e0b' : '#8b5cf6',
+                          borderColor: coupon.rarity === 'SP' ? SemanticColors.starYellow : '#8b5cf6',
                         }}
                       >
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
                           <View
                             style={{
-                              backgroundColor: coupon.rarity === 'SP' ? '#f59e0b' : '#8b5cf6',
+                              backgroundColor: coupon.rarity === 'SP' ? SemanticColors.starYellow : '#8b5cf6',
                               paddingHorizontal: 8,
                               paddingVertical: 3,
                               borderRadius: 6,
@@ -1007,14 +1007,14 @@ export function GachaScreen() {
                             </Text>
                           </View>
                         </View>
-                        
-                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', marginBottom: 4 }}>
+
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.dark, marginBottom: 4 }}>
                           {coupon.title}
                         </Text>
-                        
+
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <Ionicons name="location-outline" size={12} color="#94a3b8" />
-                          <Text style={{ fontSize: 11, color: '#94a3b8', marginLeft: 4 }}>
+                          <Ionicons name="location-outline" size={12} color={MibuBrand.tan} />
+                          <Text style={{ fontSize: 11, color: MibuBrand.tan, marginLeft: 4 }}>
                             {coupon.placeName}
                           </Text>
                         </View>
@@ -1025,7 +1025,7 @@ export function GachaScreen() {
                       <View
                         key={`coupon-${coupon.id}`}
                         style={{
-                          backgroundColor: coupon.rarity === 'SSR' ? '#fef3c7' : '#f3e8ff',
+                          backgroundColor: coupon.rarity === 'SSR' ? SemanticColors.starBg : '#f3e8ff',
                           borderRadius: 12,
                           padding: 14,
                           marginBottom: 10,
@@ -1050,7 +1050,7 @@ export function GachaScreen() {
                           {coupon.discount && (
                             <View
                               style={{
-                                backgroundColor: '#ef4444',
+                                backgroundColor: SemanticColors.errorDark,
                                 paddingHorizontal: 6,
                                 paddingVertical: 2,
                                 borderRadius: 4,
@@ -1062,15 +1062,15 @@ export function GachaScreen() {
                             </View>
                           )}
                         </View>
-                        
-                        <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', marginBottom: 2 }}>
+
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.dark, marginBottom: 2 }}>
                           {coupon.title}
                         </Text>
-                        
+
                         {coupon.merchantName && (
                           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Ionicons name="storefront-outline" size={12} color="#94a3b8" />
-                            <Text style={{ fontSize: 11, color: '#94a3b8', marginLeft: 4 }}>
+                            <Ionicons name="storefront-outline" size={12} color={MibuBrand.tan} />
+                            <Text style={{ fontSize: 11, color: MibuBrand.tan, marginLeft: 4 }}>
                               {coupon.merchantName}
                             </Text>
                           </View>
@@ -1085,15 +1085,15 @@ export function GachaScreen() {
                         width: 80,
                         height: 80,
                         borderRadius: 40,
-                        backgroundColor: '#fef3c7',
+                        backgroundColor: SemanticColors.warningLight,
                         alignItems: 'center',
                         justifyContent: 'center',
                         marginBottom: 16,
                       }}
                     >
-                      <Ionicons name="ticket-outline" size={40} color="#d97706" />
+                      <Ionicons name="ticket-outline" size={40} color={SemanticColors.warningDark} />
                     </View>
-                    <Text style={{ fontSize: 14, color: '#94a3b8', textAlign: 'center' }}>
+                    <Text style={{ fontSize: 14, color: MibuBrand.tan, textAlign: 'center' }}>
                       {state.language === 'zh-TW' ? '此區域尚無稀有優惠券' : 'No rare coupons in this region'}
                     </Text>
                   </View>
