@@ -80,7 +80,8 @@ class CommonApiService extends ApiBase {
   }
 
   async sendSosAlert(token: string, params: SosSendParams): Promise<SosSendResponse> {
-    return this.request<SosSendResponse>('/api/sos/alert', {
+    // #011: 端點對齊 /api/sos/trigger
+    return this.request<SosSendResponse>('/api/sos/trigger', {
       method: 'POST',
       headers: this.authHeaders(token),
       body: JSON.stringify(params),
@@ -162,6 +163,121 @@ class CommonApiService extends ApiBase {
       headers: this.authHeaders(token),
     });
   }
+
+  // ========== #010 推播通知 ==========
+
+  /**
+   * 註冊推播 Token
+   * POST /api/notifications/register-token
+   */
+  async registerPushToken(
+    token: string,
+    params: { pushToken: string; platform: 'ios' | 'android' }
+  ): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/api/notifications/register-token', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * 全部標記已讀
+   * POST /api/notifications/read-all
+   */
+  async markAllNotificationsRead(token: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/api/notifications/read-all', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 標記單一通知已讀
+   * PATCH /api/notifications/:id/read
+   */
+  async markNotificationRead(
+    token: string,
+    notificationId: number
+  ): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/api/notifications/${notificationId}/read`, {
+      method: 'PATCH',
+      headers: this.authHeaders(token),
+    });
+  }
+
+  // ========== #010 App 設定 ==========
+
+  /**
+   * 取得 App 設定
+   * GET /api/config/app
+   */
+  async getAppConfig(): Promise<AppConfigResponse> {
+    return this.request<AppConfigResponse>('/api/config/app');
+  }
+
+  /**
+   * 取得 Mapbox Token
+   * GET /api/config/mapbox
+   */
+  async getMapboxToken(): Promise<{ accessToken: string }> {
+    return this.request<{ accessToken: string }>('/api/config/mapbox');
+  }
+
+  // ========== #011 SOS 狀態補齊 ==========
+
+  /**
+   * 查詢 SOS 狀態
+   * GET /api/sos/status
+   */
+  async getSOSStatus(token: string): Promise<SOSStatusResponse> {
+    return this.request<SOSStatusResponse>('/api/sos/status', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 更新 SOS 位置
+   * POST /api/sos/location
+   */
+  async updateSOSLocation(
+    token: string,
+    sosId: number,
+    location: { lat: number; lng: number }
+  ): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/api/sos/location', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify({ sosId, location }),
+    });
+  }
+}
+
+// ========== #010 類型定義 ==========
+
+export interface AppConfigResponse {
+  minVersion: string;
+  currentVersion: string;
+  forceUpdate: boolean;
+  maintenanceMode: boolean;
+  maintenanceMessage?: string;
+  features: {
+    sosEnabled: boolean;
+    chatEnabled: boolean;
+    merchantEnabled: boolean;
+  };
+}
+
+// ========== #011 類型定義 ==========
+
+export interface SOSStatusResponse {
+  hasActiveAlert: boolean;
+  activeAlert?: {
+    id: number;
+    status: 'active' | 'resolved' | 'cancelled';
+    createdAt: string;
+    location?: { lat: number; lng: number };
+  };
 }
 
 export const commonApi = new CommonApiService();

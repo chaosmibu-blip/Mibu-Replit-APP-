@@ -76,16 +76,15 @@ class AuthApiService extends ApiBase {
     });
   }
 
+  /**
+   * 刪除用戶帳號
+   * DELETE /api/auth/account (#011 端點對齊)
+   */
   async deleteAccount(token: string): Promise<DeleteAccountResponse> {
-    const url = `${this.baseUrl}/api/user/account`;
-    const response = await fetch(url, {
+    return this.request<DeleteAccountResponse>('/api/auth/account', {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+      headers: this.authHeaders(token),
     });
-    return response.json();
   }
 
   /**

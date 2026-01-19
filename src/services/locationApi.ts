@@ -5,16 +5,28 @@ import { ApiBase } from './base';
 import { Country, Region } from '../types';
 
 class LocationApiService extends ApiBase {
+  /**
+   * 取得國家列表
+   * GET /api/countries (#010 端點對齊)
+   */
   async getCountries(): Promise<Country[]> {
-    const data = await this.request<{ countries: Country[] }>('/api/locations/countries');
+    const data = await this.request<{ countries: Country[] }>('/api/countries');
     return data.countries || [];
   }
 
+  /**
+   * 取得地區列表
+   * GET /api/regions/:countryId (#010 端點對齊)
+   */
   async getRegions(countryId: number): Promise<Region[]> {
-    const data = await this.request<{ regions: Region[] }>(`/api/locations/regions/${countryId}`);
+    const data = await this.request<{ regions: Region[] }>(`/api/regions/${countryId}`);
     return data.regions || [];
   }
 
+  /**
+   * 取得區域列表
+   * GET /api/districts/:regionId (#010 端點對齊)
+   */
   async getDistricts(regionId: number): Promise<{
     count: number;
     districts: {
@@ -26,7 +38,7 @@ class LocationApiService extends ApiBase {
       nameKo?: string
     }[]
   }> {
-    const data = await this.request<{ districts: { id: number; name: string; nameZh?: string; nameEn?: string; nameJa?: string; nameKo?: string }[]; count?: number }>(`/api/locations/districts/${regionId}`);
+    const data = await this.request<{ districts: { id: number; name: string; nameZh?: string; nameEn?: string; nameJa?: string; nameKo?: string }[]; count?: number }>(`/api/districts/${regionId}`);
     return {
       count: data.districts?.length || data.count || 0,
       districts: data.districts || []

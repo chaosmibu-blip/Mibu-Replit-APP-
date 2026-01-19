@@ -6,6 +6,177 @@
 
 ## 最新回報
 
+### 2026-01-19 #011：低優先級 API 補齊
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #011 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+- [x] `commonApi.ts` 新增 SOS 系統補齊
+  - `getSOSStatus(token)` → `GET /api/sos/status`
+  - `updateSOSLocation(token, sosId, location)` → `POST /api/sos/location`
+- [x] `inventoryApi.ts` 新增背包系統補齊
+  - `addInventoryItem(token, params)` → `POST /api/inventory/add`
+- [x] 端點對齊修正
+  - `collectionApi.saveToCollection`: `/api/collections` → `/api/collections/add`
+  - `authApi.deleteAccount`: `/api/user/account` → `/api/auth/account`
+  - `commonApi.sendSosAlert`: `/api/sos/alert` → `/api/sos/trigger`
+
+### 使用的 API
+| Endpoint | 功能 |
+|----------|------|
+| `GET /api/sos/status` | 查詢 SOS 狀態 |
+| `POST /api/sos/location` | 更新 SOS 位置 |
+| `POST /api/inventory/add` | 新增物品到背包 |
+| `POST /api/collections/add` | 新增收藏項目 |
+| `DELETE /api/auth/account` | 刪除用戶帳號 |
+| `POST /api/sos/trigger` | 發送緊急求救 |
+
+### 異常回報
+（無）
+
+---
+
+### 2026-01-19 #010：中優先級 API 補齊
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #010 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+- [x] `commonApi.ts` 新增設定 API
+  - `getAppConfig()` → `GET /api/config/app`
+  - `getMapboxToken()` → `GET /api/config/mapbox`
+- [x] `commonApi.ts` 新增推播通知 API
+  - `registerPushToken(token, params)` → `POST /api/notifications/register-token`
+  - `markAllNotificationsRead(token)` → `POST /api/notifications/read-all`
+  - `markNotificationRead(token, notificationId)` → `PATCH /api/notifications/:id/read`
+- [x] `gachaApi.ts` 新增行程提交 API
+  - `submitTrip(token, params)` → `POST /api/gacha/submit-trip`
+- [x] `locationApi.ts` 端點對齊
+  - `/api/locations/countries` → `/api/countries`
+  - `/api/locations/regions/:id` → `/api/regions/:countryId`
+  - `/api/locations/districts/:id` → `/api/districts/:regionId`
+- [x] 新增型別定義
+  - `src/types/gacha.ts`: `SubmitTripResponse`
+  - `src/services/commonApi.ts`: `AppConfigResponse`
+
+### 使用的 API
+| Endpoint | 功能 |
+|----------|------|
+| `GET /api/config/app` | 取得 App 設定 |
+| `GET /api/config/mapbox` | 取得 Mapbox Token |
+| `POST /api/notifications/register-token` | 註冊推播 Token |
+| `POST /api/notifications/read-all` | 全部標記已讀 |
+| `PATCH /api/notifications/:id/read` | 標記單一通知已讀 |
+| `POST /api/gacha/submit-trip` | 提交行程至官網 SEO |
+| `GET /api/countries` | 取得國家列表 |
+| `GET /api/regions/:countryId` | 取得地區列表 |
+| `GET /api/districts/:regionId` | 取得區域列表 |
+
+### 異常回報
+（無）
+
+---
+
+### 2026-01-19 #009：高優先級 API 補齊
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #009 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+- [x] `economyApi.ts` 每日任務 API（已有，確認無誤）
+  - `getDailyTasks(token)` → `GET /api/user/daily-tasks`
+  - `completeDailyTask(token, taskId)` → `POST /api/user/daily-tasks/:id/complete`
+- [x] `collectionApi.ts` 我的最愛 API（已有，確認無誤）
+  - `getFavorites(token)` → `GET /api/collections/favorites`
+  - `addFavorite(token, placeId)` → `POST /api/collections/:placeId/favorite`
+  - `removeFavorite(token, placeId)` → `DELETE /api/collections/:placeId/favorite`
+  - `getFavoriteStatus(token, placeId)` → `GET /api/collections/:placeId/favorite/status`
+- [x] `gachaApi.ts` 新增扭蛋額度 API
+  - `getQuota(token)` → `GET /api/gacha/quota`
+- [x] `gachaApi.ts` 端點對齊
+  - `pullGacha`: `/api/gacha/pull` → `/api/gacha/pull/v3`
+- [x] 更新型別定義
+  - `src/types/gacha.ts`: 新增 `GachaQuotaResponse`
+  - `src/types/economy.ts`: 更新 `DailyTask`, `DailyTasksResponse`, `CompleteDailyTaskResponse` 符合後端規格
+
+### 使用的 API
+| Endpoint | 功能 |
+|----------|------|
+| `GET /api/user/daily-tasks` | 取得每日任務列表 |
+| `POST /api/user/daily-tasks/:id/complete` | 領取每日任務獎勵 |
+| `GET /api/collections/favorites` | 取得我的最愛列表 |
+| `POST /api/collections/:placeId/favorite` | 加入我的最愛 |
+| `DELETE /api/collections/:placeId/favorite` | 移除我的最愛 |
+| `GET /api/collections/:placeId/favorite/status` | 檢查最愛狀態 |
+| `GET /api/gacha/quota` | 取得今日扭蛋額度 |
+| `POST /api/gacha/pull/v3` | 扭蛋抽獎 |
+
+### 異常回報
+（無）
+
+---
+
+### 2026-01-19 #009-前端審計
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 前端 API 審計補齊（此為內部編號，非後端指令） |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+- [x] `collectionApi.ts` 新增我的最愛 API（4 個方法）
+  - `getFavorites(token)` → `GET /api/collections/favorites`
+  - `addFavorite(token, placeId)` → `POST /api/collections/:placeId/favorite`
+  - `removeFavorite(token, placeId)` → `DELETE /api/collections/:placeId/favorite`
+  - `getFavoriteStatus(token, placeId)` → `GET /api/collections/:placeId/favorite/status`
+- [x] 新增 `configApi.ts` 服務（2 個方法）
+  - `getAppConfig()` → `GET /api/config/app`
+  - `getMapboxConfig(token)` → `GET /api/config/mapbox`
+- [x] 新增 `couponApi.ts` 服務（2 個方法）
+  - `getMyCoupons(token)` → `GET /api/coupons/my`
+  - `redeemCoupon(token, params)` → `POST /api/coupons/redeem`
+- [x] 新增型別定義
+  - `src/types/collection.ts`: `FavoriteItem`, `FavoritesResponse`, `AddFavoriteResponse`
+- [x] 新增 UI 頁面
+  - `FavoritesScreen.tsx` - 我的最愛頁面（列表、移除功能）
+  - `SOSContactsScreen.tsx` - 緊急聯絡人管理（CRUD 完整功能）
+- [x] 新增路由
+  - `app/favorites.tsx`
+  - `app/sos-contacts.tsx`
+- [x] 更新 `SettingsScreen.tsx` 新增導航入口
+
+### 使用的 API
+| Endpoint | 功能 |
+|----------|------|
+| `GET /api/collections/favorites` | 取得我的最愛列表 |
+| `POST /api/collections/:placeId/favorite` | 加入我的最愛 |
+| `DELETE /api/collections/:placeId/favorite` | 移除我的最愛 |
+| `GET /api/collections/:placeId/favorite/status` | 檢查最愛狀態 |
+| `GET /api/config/app` | 取得 App 設定 |
+| `GET /api/config/mapbox` | 取得 Mapbox Token |
+| `GET /api/coupons/my` | 取得我的優惠券 |
+| `POST /api/coupons/redeem` | 核銷優惠券 |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-19 #008
 
 | 項目 | 內容 |

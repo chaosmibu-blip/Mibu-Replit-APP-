@@ -278,3 +278,35 @@ export interface DailyLimitExceededResponse {
   currentCount: number;
   remainingQuota: number;
 }
+
+// ========== #009 新增類型 ==========
+
+/**
+ * 扭蛋額度查詢回應
+ * GET /api/gacha/quota
+ */
+export interface GachaQuotaResponse {
+  dailyLimit: number;       // 每日上限（36）
+  usedToday: number;        // 今日已用
+  remaining: number;        // 剩餘額度
+  isUnlimited: boolean;     // 是否無限（管理員）
+}
+
+// ========== #010 新增類型 ==========
+
+/**
+ * 行程提交回應
+ * POST /api/gacha/submit-trip
+ */
+export interface SubmitTripResponse {
+  success: boolean;
+  message: string;
+  trip: {
+    sessionId: string;
+    city: string;
+    district?: string;
+    tripImageUrl?: string;
+    isPublished: boolean;
+    publishedAt: string;
+  };
+}

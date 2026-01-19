@@ -39,3 +39,46 @@ export interface CollectionStats {
   byCategory: Record<string, number>;
   unreadCount: number;
 }
+
+// ========== 我的最愛系統 ==========
+
+export interface FavoriteItem {
+  id: number;
+  placeId: string;
+  placeName: string;
+  category: string;
+  subcategory?: string;
+  district: string;
+  city: string;
+  country: string;
+  imageUrl?: string;
+  rating?: number;
+  addedAt: string; // ISO 8601
+}
+
+export interface FavoritesResponse {
+  success: boolean;
+  favorites: FavoriteItem[];
+  total: number;
+  pagination?: {
+    page: number;
+    limit: number;
+    hasMore: boolean;
+  };
+}
+
+export interface FavoriteStatusResponse {
+  isFavorite: boolean;
+  favoriteId?: number;
+}
+
+export interface AddFavoriteResponse {
+  success: boolean;
+  favorite: FavoriteItem;
+  message: string;
+}
+
+export interface RemoveFavoriteResponse {
+  success: boolean;
+  message: string;
+}
