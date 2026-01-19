@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Language } from '../../../types';
+import { MibuBrand } from '../../../../constants/Colors';
 
 export type GachaSubView = 'gacha' | 'collection' | 'itembox';
 
@@ -49,12 +50,12 @@ export function GachaTopNav({
     <View
       style={{
         flexDirection: 'row',
-        backgroundColor: '#ffffff',
+        backgroundColor: MibuBrand.creamLight,
         paddingHorizontal: 16,
         paddingTop: 8,
         paddingBottom: 4,
         borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
+        borderBottomColor: MibuBrand.tanLight,
       }}
     >
       {tabs.map(({ key, hasNew }) => {
@@ -77,7 +78,7 @@ export function GachaTopNav({
                 style={{
                   fontSize: 16,
                   fontWeight: isActive ? '700' : '500',
-                  color: isActive ? '#6366f1' : '#64748b',
+                  color: isActive ? MibuBrand.brown : MibuBrand.copper,
                 }}
               >
                 {label}
@@ -102,7 +103,7 @@ export function GachaTopNav({
                   left: '25%',
                   right: '25%',
                   height: 3,
-                  backgroundColor: '#6366f1',
+                  backgroundColor: MibuBrand.brown,
                   borderRadius: 2,
                 }}
               />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
@@ -342,10 +342,6 @@ export function SettingsScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.title}>{isZh ? '設定' : 'Settings'}</Text>
-        <Image
-          source={require('../../../../assets/images/icon.png')}
-          style={styles.headerMascot}
-        />
       </View>
 
       {state.isAuthenticated && state.user && (
@@ -519,11 +515,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '800',
     color: MibuBrand.brownDark,
-  },
-  headerMascot: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
   },
   section: {
     marginBottom: 24,

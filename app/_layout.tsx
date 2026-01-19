@@ -24,6 +24,14 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="economy" options={{ headerShown: false }} />
+          <Stack.Screen name="profile" options={{ headerShown: false }} />
+          <Stack.Screen name="account" options={{ headerShown: false }} />
+          <Stack.Screen name="referral" options={{ headerShown: false }} />
+          <Stack.Screen name="crowdfunding" options={{ headerShown: false }} />
+          <Stack.Screen name="contribution" options={{ headerShown: false }} />
+          <Stack.Screen name="favorites" options={{ headerShown: false }} />
+          <Stack.Screen name="sos-contacts" options={{ headerShown: false }} />
           <Stack.Screen name="merchant-dashboard" options={{ headerShown: false }} />
           <Stack.Screen name="specialist-dashboard" options={{ headerShown: false }} />
           <Stack.Screen name="pending-approval" options={{ headerShown: false }} />
