@@ -65,6 +65,10 @@ export interface GachaItem {
   merchant?: MerchantInfo;
   imageUrl?: string;
   rarity?: 'N' | 'R' | 'SR' | 'SSR' | 'SP';
+  /** 是否已核銷 */
+  isRedeemed?: boolean;
+  /** 核銷時間 */
+  redeemedAt?: string;
 }
 
 export interface GachaMeta {

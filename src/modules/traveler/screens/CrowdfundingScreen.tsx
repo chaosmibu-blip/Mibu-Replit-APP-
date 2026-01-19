@@ -394,15 +394,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: MibuBrand.tanLight,
+    paddingHorizontal: 16,
+    gap: 12,
   },
   statItem: {
     flex: 1,
     alignItems: 'center',
+    backgroundColor: MibuBrand.warmWhite,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   statValue: {
     fontSize: 24,
@@ -416,10 +430,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: MibuBrand.tanLight,
-    marginHorizontal: 16,
+    display: 'none',
   },
   content: {
     flex: 1,
@@ -435,10 +446,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
@@ -448,10 +459,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
+    padding: 18,
+    marginBottom: 10,
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   regionLeft: {
     flexDirection: 'row',
@@ -459,8 +481,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   regionFlag: {
-    fontSize: 28,
-    marginRight: 12,
+    fontSize: 32,
+    marginRight: 14,
   },
   regionInfo: {
     flex: 1,
@@ -478,16 +500,16 @@ const styles = StyleSheet.create({
   },
   progressBarBg: {
     flex: 1,
-    height: 6,
+    height: 8,
     backgroundColor: MibuBrand.tanLight,
-    borderRadius: 3,
+    borderRadius: 4,
     overflow: 'hidden',
     maxWidth: 100,
   },
   progressBarFill: {
     height: '100%',
     backgroundColor: '#6366f1',
-    borderRadius: 3,
+    borderRadius: 4,
   },
   progressText: {
     fontSize: 12,
@@ -546,8 +568,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     backgroundColor: MibuBrand.brown,
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 16,
+    paddingVertical: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: MibuBrand.brown,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   ctaText: {
     fontSize: 16,

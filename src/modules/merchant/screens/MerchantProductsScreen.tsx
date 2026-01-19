@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantProduct } from '../../../types';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 
 export function MerchantProductsScreen() {
   const { state, getToken } = useApp();
@@ -150,7 +151,7 @@ export function MerchantProductsScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{translations.loading}</Text>
       </View>
     );
@@ -165,13 +166,13 @@ export function MerchantProductsScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#1e293b" />
+            <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
           </TouchableOpacity>
           <Text style={styles.title}>{translations.title}</Text>
         </View>
 
         <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
-          <Ionicons name="add-circle-outline" size={24} color="#ffffff" />
+          <Ionicons name="add-circle-outline" size={24} color={MibuBrand.warmWhite} />
           <Text style={styles.addButtonText}>{translations.addNew}</Text>
         </TouchableOpacity>
 
@@ -179,7 +180,7 @@ export function MerchantProductsScreen() {
 
         {products.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Ionicons name="cube-outline" size={48} color="#94a3b8" />
+            <Ionicons name="cube-outline" size={48} color={MibuBrand.tan} />
             <Text style={styles.emptyText}>{translations.noProducts}</Text>
           </View>
         ) : (
@@ -224,13 +225,13 @@ export function MerchantProductsScreen() {
                     style={styles.actionButton}
                     onPress={() => openModal(product)}
                   >
-                    <Ionicons name="pencil-outline" size={20} color="#6366f1" />
+                    <Ionicons name="pencil-outline" size={20} color={MibuBrand.copper} />
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => handleDelete(product)}
                   >
-                    <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                    <Ionicons name="trash-outline" size={20} color={MibuBrand.error} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -256,7 +257,7 @@ export function MerchantProductsScreen() {
                 value={formData.name}
                 onChangeText={text => setFormData({ ...formData, name: text })}
                 placeholder={translations.name}
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={MibuBrand.tan}
               />
 
               <Text style={styles.inputLabel}>{translations.description}</Text>
@@ -265,7 +266,7 @@ export function MerchantProductsScreen() {
                 value={formData.description}
                 onChangeText={text => setFormData({ ...formData, description: text })}
                 placeholder={translations.description}
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={MibuBrand.tan}
                 multiline
                 numberOfLines={3}
               />
@@ -278,7 +279,7 @@ export function MerchantProductsScreen() {
                     value={formData.price}
                     onChangeText={text => setFormData({ ...formData, price: text })}
                     placeholder="0"
-                    placeholderTextColor="#94a3b8"
+                    placeholderTextColor={MibuBrand.tan}
                     keyboardType="numeric"
                   />
                 </View>
@@ -289,7 +290,7 @@ export function MerchantProductsScreen() {
                     value={formData.discountPrice}
                     onChangeText={text => setFormData({ ...formData, discountPrice: text })}
                     placeholder="0"
-                    placeholderTextColor="#94a3b8"
+                    placeholderTextColor={MibuBrand.tan}
                     keyboardType="numeric"
                   />
                 </View>
@@ -309,7 +310,7 @@ export function MerchantProductsScreen() {
                 disabled={saving}
               >
                 {saving ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
                 ) : (
                   <Text style={styles.saveButtonText}>{translations.save}</Text>
                 )}
@@ -325,7 +326,7 @@ export function MerchantProductsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   content: {
     padding: 20,
@@ -336,10 +337,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: MibuBrand.creamLight,
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: MibuBrand.copper,
     fontSize: 16,
   },
   header: {
@@ -352,23 +354,23 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     paddingVertical: 16,
     borderRadius: 16,
     marginBottom: 24,
@@ -376,25 +378,25 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: MibuBrand.warmWhite,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 16,
   },
   emptyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 40,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginTop: 12,
   },
   productsList: {
@@ -402,11 +404,11 @@ const styles = StyleSheet.create({
   },
   productCard: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   productInfo: {
     flex: 1,
@@ -414,12 +416,12 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 4,
   },
   productDesc: {
     fontSize: 13,
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginBottom: 8,
   },
   priceRow: {
@@ -430,16 +432,16 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   discountPrice: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ef4444',
+    color: MibuBrand.error,
   },
   originalPrice: {
     fontSize: 14,
-    color: '#94a3b8',
+    color: MibuBrand.tan,
     textDecorationLine: 'line-through',
   },
   statusBadge: {
@@ -448,20 +450,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   activeBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
   },
   inactiveBadge: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.tanLight,
   },
   statusText: {
     fontSize: 11,
     fontWeight: '600',
   },
   activeText: {
-    color: '#16a34a',
+    color: SemanticColors.successDark,
   },
   inactiveText: {
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   productActions: {
     flexDirection: 'column',
@@ -471,7 +473,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -481,7 +483,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -490,24 +492,24 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 20,
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
-    color: '#1e293b',
+    borderColor: MibuBrand.tanLight,
+    color: MibuBrand.brownDark,
     marginBottom: 16,
   },
   textArea: {
@@ -530,24 +532,24 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.tanLight,
     alignItems: 'center',
   },
   cancelModalButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   saveButton: {
     flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     alignItems: 'center',
   },
   saveButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: MibuBrand.warmWhite,
   },
 });

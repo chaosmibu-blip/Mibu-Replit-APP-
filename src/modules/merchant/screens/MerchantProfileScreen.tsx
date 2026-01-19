@@ -6,15 +6,18 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
+import { authApi } from '../../../services/authApi';
 import { MerchantMe } from '../../../types';
+import { MibuBrand } from '../../../../constants/Colors';
 
 export function MerchantProfileScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, setUser } = useApp();
   const router = useRouter();
   const [merchant, setMerchant] = useState<MerchantMe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +39,16 @@ export function MerchantProfileScreen() {
     memberSince: isZh ? '加入時間' : 'Member Since',
     loading: isZh ? '載入中...' : 'Loading...',
     points: isZh ? '點' : 'pts',
+    dangerZone: isZh ? '危險區域' : 'Danger Zone',
+    deleteAccount: isZh ? '刪除帳號' : 'Delete Account',
+    deleteConfirmTitle: isZh ? '確認刪除帳號' : 'Confirm Delete Account',
+    deleteConfirmMessage: isZh
+      ? '此操作無法復原，所有資料將被永久刪除。確定要繼續嗎？'
+      : 'This action cannot be undone. All your data will be permanently deleted. Are you sure you want to continue?',
+    cancel: isZh ? '取消' : 'Cancel',
+    confirm: isZh ? '確認刪除' : 'Confirm Delete',
+    deleteSuccess: isZh ? '帳號已刪除' : 'Account deleted',
+    deleteFailed: isZh ? '刪除失敗，請稍後再試' : 'Delete failed, please try again later',
   };
 
   useEffect(() => {
@@ -73,10 +86,36 @@ export function MerchantProfileScreen() {
     }
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      translations.deleteConfirmTitle,
+      translations.deleteConfirmMessage,
+      [
+        { text: translations.cancel, style: 'cancel' },
+        {
+          text: translations.confirm,
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await getToken();
+              if (!token) return;
+              await authApi.deleteAccount(token);
+              setUser(null);
+              Alert.alert(translations.deleteSuccess);
+            } catch (error) {
+              console.error('Failed to delete account:', error);
+              Alert.alert(translations.deleteFailed);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{translations.loading}</Text>
       </View>
     );
@@ -86,14 +125,14 @@ export function MerchantProfileScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
       </View>
 
       <View style={styles.avatarSection}>
         <View style={styles.avatar}>
-          <Ionicons name="storefront" size={48} color="#6366f1" />
+          <Ionicons name="storefront" size={48} color={MibuBrand.brown} />
         </View>
         <Text style={styles.businessName}>
           {merchant?.businessName || merchant?.name || '-'}
@@ -114,7 +153,7 @@ export function MerchantProfileScreen() {
       <View style={styles.infoCard}>
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
-            <Ionicons name="mail-outline" size={20} color="#6366f1" />
+            <Ionicons name="mail-outline" size={20} color={MibuBrand.brown} />
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{translations.email}</Text>
@@ -128,7 +167,7 @@ export function MerchantProfileScreen() {
 
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
-            <Ionicons name="wallet-outline" size={20} color="#6366f1" />
+            <Ionicons name="wallet-outline" size={20} color={MibuBrand.brown} />
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{translations.balance}</Text>
@@ -142,7 +181,7 @@ export function MerchantProfileScreen() {
 
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
-            <Ionicons name="ribbon-outline" size={20} color="#6366f1" />
+            <Ionicons name="ribbon-outline" size={20} color={MibuBrand.brown} />
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{translations.plan}</Text>
@@ -156,7 +195,7 @@ export function MerchantProfileScreen() {
 
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
-            <Ionicons name="calendar-outline" size={20} color="#6366f1" />
+            <Ionicons name="calendar-outline" size={20} color={MibuBrand.brown} />
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{translations.memberSince}</Text>
@@ -166,6 +205,15 @@ export function MerchantProfileScreen() {
           </View>
         </View>
       </View>
+
+      {/* Danger Zone */}
+      <View style={styles.dangerCard}>
+        <Text style={styles.dangerTitle}>{translations.dangerZone}</Text>
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+          <Ionicons name="trash-outline" size={20} color="#ffffff" />
+          <Text style={styles.deleteButtonText}>{translations.deleteAccount}</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -173,7 +221,7 @@ export function MerchantProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   content: {
     padding: 20,
@@ -187,7 +235,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: MibuBrand.copper,
     fontSize: 16,
   },
   header: {
@@ -200,16 +248,16 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   avatarSection: {
     alignItems: 'center',
@@ -219,17 +267,17 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.highlight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     borderWidth: 3,
-    borderColor: '#c7d2fe',
+    borderColor: MibuBrand.tan,
   },
   businessName: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 12,
   },
   statusBadge: {
@@ -254,11 +302,11 @@ const styles = StyleSheet.create({
     color: '#d97706',
   },
   infoCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     padding: 20,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   infoRow: {
     flexDirection: 'row',
@@ -269,7 +317,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.highlight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -279,17 +327,47 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 13,
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginBottom: 4,
   },
   infoValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   divider: {
     height: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: MibuBrand.tanLight,
     marginVertical: 4,
+  },
+  // Danger Zone styles
+  dangerCard: {
+    backgroundColor: '#fef2f2',
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 24,
+    borderWidth: 2,
+    borderColor: '#fecaca',
+  },
+  dangerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#dc2626',
+    marginBottom: 16,
+  },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ef4444',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 8,
+  },
+  deleteButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

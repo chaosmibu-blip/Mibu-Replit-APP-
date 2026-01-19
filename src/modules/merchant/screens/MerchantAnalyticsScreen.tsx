@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { merchantApi } from '../../../services/merchantApi';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import {
   MerchantAnalytics,
   MerchantPlace,
@@ -201,14 +201,14 @@ export function MerchantAnalyticsScreen() {
               style={styles.placeFilterButton}
               onPress={() => setShowPlaceDropdown(!showPlaceDropdown)}
             >
-              <Ionicons name="storefront-outline" size={18} color="#64748b" />
+              <Ionicons name="storefront-outline" size={18} color={MibuBrand.copper} />
               <Text style={styles.placeFilterText} numberOfLines={1}>
                 {getSelectedPlaceName()}
               </Text>
               <Ionicons
                 name={showPlaceDropdown ? 'chevron-up' : 'chevron-down'}
                 size={18}
-                color="#64748b"
+                color={MibuBrand.copper}
               />
             </TouchableOpacity>
 
@@ -271,33 +271,33 @@ export function MerchantAnalyticsScreen() {
             label={translations.totalExposures}
             value={analytics?.overview?.totalExposures}
             unit={translations.times}
-            color="#0891b2"
+            color={MibuBrand.info}
           />
           <StatCard
             icon="people-outline"
             label={translations.totalCollectors}
             value={analytics?.overview?.totalCollectors}
             unit={translations.people}
-            color="#6366f1"
+            color={MibuBrand.brown}
           />
           <StatCard
             icon="pricetag-outline"
             label={translations.couponIssued}
             value={analytics?.overview?.couponIssued}
-            color="#10b981"
+            color={MibuBrand.success}
           />
           <StatCard
             icon="checkmark-circle-outline"
             label={translations.couponRedeemed}
             value={analytics?.overview?.couponRedeemed}
-            color="#f59e0b"
+            color={SemanticColors.warningDark}
           />
         </View>
 
         {/* 核銷率 */}
         <View style={styles.rateCard}>
           <View style={styles.rateHeader}>
-            <Ionicons name="trending-up-outline" size={24} color="#6366f1" />
+            <Ionicons name="trending-up-outline" size={24} color={MibuBrand.brown} />
             <Text style={styles.rateLabel}>{translations.redemptionRate}</Text>
           </View>
           <Text style={styles.rateValue}>
@@ -350,8 +350,8 @@ export function MerchantAnalyticsScreen() {
                   style={styles.listItem}
                   onPress={() => handlePlaceSelect(place.placeId)}
                 >
-                  <View style={[styles.listRank, { backgroundColor: '#eef2ff' }]}>
-                    <Ionicons name="storefront" size={16} color="#6366f1" />
+                  <View style={[styles.listRank, { backgroundColor: `${MibuBrand.brown}15` }]}>
+                    <Ionicons name="storefront" size={16} color={MibuBrand.brown} />
                   </View>
                   <View style={styles.listContent}>
                     <Text style={styles.listTitle} numberOfLines={1}>
@@ -361,7 +361,7 @@ export function MerchantAnalyticsScreen() {
                       {translations.collectionCount}: {place.collectionCount}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+                  <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   header: {
     flexDirection: 'row',
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: MibuBrand.cream,
+    backgroundColor: MibuBrand.warmWhite,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
   },
@@ -411,16 +411,16 @@ const styles = StyleSheet.create({
     width: 40,
   },
   filtersContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: MibuBrand.warmWhite,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.tanLight,
     zIndex: 100,
   },
   periodSelector: {
     flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.tanLight,
     borderRadius: 12,
     padding: 4,
   },
@@ -431,20 +431,20 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   periodButtonActive: {
-    backgroundColor: '#fff',
+    backgroundColor: MibuBrand.brown,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 2,
     elevation: 2,
   },
   periodButtonText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   periodButtonTextActive: {
-    color: '#1e293b',
+    color: MibuBrand.warmWhite,
     fontWeight: '600',
   },
   placeFilterContainer: {
@@ -455,18 +455,18 @@ const styles = StyleSheet.create({
   placeFilterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     gap: 8,
   },
   placeFilterText: {
     flex: 1,
     fontSize: 14,
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   placeDropdown: {
     position: 'absolute',
@@ -474,10 +474,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     marginTop: 4,
-    backgroundColor: '#fff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -489,17 +489,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: MibuBrand.tanLight,
   },
   placeDropdownItemActive: {
-    backgroundColor: '#eef2ff',
+    backgroundColor: `${MibuBrand.brown}15`,
   },
   placeDropdownText: {
     fontSize: 14,
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   placeDropdownTextActive: {
-    color: '#6366f1',
+    color: MibuBrand.brown,
     fontWeight: '600',
   },
   content: {
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '47%',
-    backgroundColor: '#fff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 13,
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginBottom: 4,
   },
   statValue: {
@@ -551,10 +551,10 @@ const styles = StyleSheet.create({
   statUnit: {
     fontSize: 14,
     fontWeight: '400',
-    color: '#94a3b8',
+    color: MibuBrand.tan,
   },
   rateCard: {
-    backgroundColor: '#fff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
@@ -577,10 +577,10 @@ const styles = StyleSheet.create({
   rateValue: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#6366f1',
+    color: MibuBrand.brown,
   },
   listContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
@@ -593,13 +593,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: MibuBrand.tanLight,
   },
   listRank: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#fef3c7',
+    backgroundColor: SemanticColors.warningLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
   listRankText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#d97706',
+    color: SemanticColors.warningDark,
   },
   listContent: {
     flex: 1,
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
   listTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 4,
   },
   listStats: {
@@ -625,11 +625,11 @@ const styles = StyleSheet.create({
   },
   listStatText: {
     fontSize: 12,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   listStatRate: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#10b981',
+    color: MibuBrand.success,
   },
 });

@@ -11,6 +11,8 @@ export interface CouponData {
   title: LocalizedContent;
   code: string;
   terms: LocalizedContent;
+  /** 優惠券到期時間 */
+  expiresAt?: string;
 }
 
 export interface MerchantInfo {

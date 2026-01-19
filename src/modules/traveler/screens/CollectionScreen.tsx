@@ -14,6 +14,7 @@ import { collectionApi } from '../../../services/collectionApi';
 import { GachaItem, Language } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
+import FilterChips from '../../shared/components/FilterChips';
 
 const LAST_VIEWED_KEY = '@mibu_lastViewedCollection';
 
@@ -136,11 +137,30 @@ export function CollectionScreen() {
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const [selectedItem, setSelectedItem] = useState<GachaItem | null>(null);
   const [lastViewedTimestamp, setLastViewedTimestamp] = useState<number>(0);
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
-  // 統計資料
-  const totalSpots = collection.length;
-  const uniqueCities = new Set(collection.map(item => item.city || 'Unknown')).size;
-  const uniqueCategories = new Set(collection.map(item =>
+  // 篩選選項
+  const FILTER_OPTIONS = useMemo(() => [
+    { key: 'all', label: language === 'zh-TW' ? '全部' : 'All' },
+    { key: 'food', label: language === 'zh-TW' ? '美食' : 'Food' },
+    { key: 'attraction', label: language === 'zh-TW' ? '景點' : 'Attraction' },
+    { key: 'accommodation', label: language === 'zh-TW' ? '住宿' : 'Stay' },
+    { key: 'shopping', label: language === 'zh-TW' ? '購物' : 'Shop' },
+  ], [language]);
+
+  // 根據選擇的類別過濾收藏
+  const filteredCollection = useMemo(() => {
+    if (selectedFilter === 'all') return collection;
+    return collection.filter(item => {
+      const category = (typeof item.category === 'string' ? item.category : '').toLowerCase();
+      return category === selectedFilter;
+    });
+  }, [collection, selectedFilter]);
+
+  // 統計資料（基於過濾後的收藏）
+  const totalSpots = filteredCollection.length;
+  const uniqueCities = new Set(filteredCollection.map(item => item.city || 'Unknown')).size;
+  const uniqueCategories = new Set(filteredCollection.map(item =>
     (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other'
   )).size;
 
@@ -203,7 +223,7 @@ export function CollectionScreen() {
   const groupedData = useMemo(() => {
     const cityMap: Record<string, { displayName: string; items: GachaItem[]; newCount: number; byCategory: Record<string, GachaItem[]> }> = {};
 
-    collection.forEach(item => {
+    filteredCollection.forEach(item => {
       const city = item.city || 'Unknown';
       const cityDisplay = item.cityDisplay || city;
       const category = (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other';
@@ -223,7 +243,7 @@ export function CollectionScreen() {
     });
 
     return cityMap;
-  }, [collection, lastViewedTimestamp]);
+  }, [filteredCollection, lastViewedTimestamp]);
 
   if (collection.length === 0) {
     return (
@@ -241,86 +261,137 @@ export function CollectionScreen() {
       contentContainerStyle={{ padding: 16, paddingTop: 60, paddingBottom: 100 }}
     >
       {/* Header */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
         <Ionicons name="book-outline" size={28} color={MibuBrand.brown} />
         <Text style={{ fontSize: 26, fontWeight: '800', color: MibuBrand.brown, marginLeft: 10 }}>
           {language === 'zh-TW' ? '我的圖鑑' : 'My Collection'}
         </Text>
       </View>
 
-      {/* 統計卡片 */}
+      {/* 篩選晶片 */}
+      <View style={{ marginBottom: 16 }}>
+        <FilterChips
+          options={FILTER_OPTIONS}
+          selected={selectedFilter}
+          onSelect={setSelectedFilter}
+          scrollable
+          variant="filled"
+        />
+      </View>
+
+      {/* 統計卡片 - StatCard-like 設計 */}
       <View style={{
-        backgroundColor: MibuBrand.warmWhite,
-        borderRadius: 20,
-        padding: 20,
+        flexDirection: 'row',
+        gap: 12,
         marginBottom: 20,
-        shadowColor: MibuBrand.brown,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
-        elevation: 3,
       }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-          <View style={{ alignItems: 'center' }}>
-            <View style={{
-              width: 56,
-              height: 56,
-              borderRadius: 28,
-              backgroundColor: MibuBrand.cream,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 8,
-            }}>
-              <Ionicons name="location" size={26} color={MibuBrand.brown} />
-            </View>
-            <Text style={{ fontSize: 22, fontWeight: '800', color: MibuBrand.brown }}>{totalSpots}</Text>
-            <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>
-              {language === 'zh-TW' ? '已收集' : 'Collected'}
-            </Text>
+        <View style={{
+          flex: 1,
+          backgroundColor: MibuBrand.warmWhite,
+          borderRadius: 16,
+          padding: 16,
+          minHeight: 100,
+        }}>
+          <View style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: `${MibuBrand.brown}15`,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 8,
+          }}>
+            <Ionicons name="location" size={18} color={MibuBrand.brown} />
           </View>
-          <View style={{ width: 1, backgroundColor: MibuBrand.cream }} />
-          <View style={{ alignItems: 'center' }}>
-            <View style={{
-              width: 56,
-              height: 56,
-              borderRadius: 28,
-              backgroundColor: MibuBrand.cream,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 8,
-            }}>
-              <Ionicons name="map" size={26} color={MibuBrand.copper} />
-            </View>
-            <Text style={{ fontSize: 22, fontWeight: '800', color: MibuBrand.brown }}>{uniqueCities}</Text>
-            <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>
-              {language === 'zh-TW' ? '城市' : 'Cities'}
-            </Text>
+          <Text style={{ fontSize: 13, color: MibuBrand.copper, marginBottom: 4 }}>
+            {language === 'zh-TW' ? '已收集' : 'Collected'}
+          </Text>
+          <Text style={{ fontSize: 28, fontWeight: '700', color: MibuBrand.brownDark }}>{totalSpots}</Text>
+        </View>
+
+        <View style={{
+          flex: 1,
+          backgroundColor: MibuBrand.warmWhite,
+          borderRadius: 16,
+          padding: 16,
+          minHeight: 100,
+        }}>
+          <View style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: `${MibuBrand.copper}15`,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 8,
+          }}>
+            <Ionicons name="map" size={18} color={MibuBrand.copper} />
           </View>
-          <View style={{ width: 1, backgroundColor: MibuBrand.cream }} />
-          <View style={{ alignItems: 'center' }}>
-            <View style={{
-              width: 56,
-              height: 56,
-              borderRadius: 28,
-              backgroundColor: MibuBrand.cream,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 8,
-            }}>
-              <Ionicons name="grid" size={26} color={MibuBrand.tan} />
-            </View>
-            <Text style={{ fontSize: 22, fontWeight: '800', color: MibuBrand.brown }}>{uniqueCategories}</Text>
-            <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>
-              {language === 'zh-TW' ? '類別' : 'Categories'}
-            </Text>
+          <Text style={{ fontSize: 13, color: MibuBrand.copper, marginBottom: 4 }}>
+            {language === 'zh-TW' ? '城市' : 'Cities'}
+          </Text>
+          <Text style={{ fontSize: 28, fontWeight: '700', color: MibuBrand.brownDark }}>{uniqueCities}</Text>
+        </View>
+
+        <View style={{
+          flex: 1,
+          backgroundColor: MibuBrand.warmWhite,
+          borderRadius: 16,
+          padding: 16,
+          minHeight: 100,
+        }}>
+          <View style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: `${MibuBrand.tan}15`,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 8,
+          }}>
+            <Ionicons name="grid" size={18} color={MibuBrand.tan} />
           </View>
+          <Text style={{ fontSize: 13, color: MibuBrand.copper, marginBottom: 4 }}>
+            {language === 'zh-TW' ? '類別' : 'Categories'}
+          </Text>
+          <Text style={{ fontSize: 28, fontWeight: '700', color: MibuBrand.brownDark }}>{uniqueCategories}</Text>
         </View>
       </View>
 
+      {/* 篩選結果為空的提示 */}
+      {filteredCollection.length === 0 && collection.length > 0 && (
+        <View style={{
+          alignItems: 'center',
+          paddingVertical: 40,
+          paddingHorizontal: 20,
+        }}>
+          <Ionicons name="search-outline" size={48} color={MibuBrand.tanLight} />
+          <Text style={{ fontSize: 16, fontWeight: '600', color: MibuBrand.brownLight, marginTop: 12, textAlign: 'center' }}>
+            {language === 'zh-TW' ? '沒有符合條件的收藏' : 'No matching collections'}
+          </Text>
+          <TouchableOpacity
+            style={{
+              marginTop: 16,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              backgroundColor: MibuBrand.brown,
+              borderRadius: 20,
+            }}
+            onPress={() => setSelectedFilter('all')}
+          >
+            <Text style={{ color: MibuBrand.warmWhite, fontWeight: '600' }}>
+              {language === 'zh-TW' ? '顯示全部' : 'Show All'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* 城市列表標題 */}
-      <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.brownLight, marginBottom: 12 }}>
-        {language === 'zh-TW' ? '依城市分類' : 'By City'}
-      </Text>
+      {filteredCollection.length > 0 && (
+        <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.brownLight, marginBottom: 12 }}>
+          {language === 'zh-TW' ? '依城市分類' : 'By City'}
+        </Text>
+      )}
 
       {Object.entries(groupedData)
         .sort((a, b) => b[1].items.length - a[1].items.length)
