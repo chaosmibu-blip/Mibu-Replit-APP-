@@ -7,7 +7,7 @@
 
 export const MibuBrand = {
   cream: '#F5E6D3',
-  creamLight: '#FDF8F3',
+  creamLight: '#F5EDE3',    // 調暖調深，讓卡片更突出
   creamDark: '#E8D5C0',
   brown: '#7A5230',
   brownLight: '#9A7250',
@@ -15,10 +15,10 @@ export const MibuBrand = {
   copper: '#B08860',
   copperLight: '#C9A580',
   tan: '#D4B896',
-  tanLight: '#E5D4BC',
+  tanLight: '#E8DCC8',      // 邊框色調暖
   dark: '#3D2415',
   darkBg: '#2A1A0F',
-  warmWhite: '#FFFAF5',
+  warmWhite: '#FFFDF9',     // 卡片更白更亮
   highlight: '#FFEFD8',
   success: '#5D8A66',
   warning: '#D4A24C',
