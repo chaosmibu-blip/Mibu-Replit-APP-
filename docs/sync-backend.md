@@ -6,6 +6,81 @@
 
 ## 最新回報
 
+### 2026-01-19 #018：Lovable 設計系統實作
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 用戶提供 Lovable 設計稿截圖 (29 張) |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+
+**Phase 1：設計規格文件**
+
+- [x] 建立 `docs/design-spec-lovable.md` 完整設計規格
+  - 色彩系統（MibuBrand 整合）
+  - 間距、圓角、陰影規範
+  - 元件庫規格（8 個核心元件）
+  - 頁面結構文件（6 個頁面）
+  - 商家端元件規格（8 個元件）
+
+**Phase 2：共用元件建立**
+
+- [x] `FilterChips.tsx` - 篩選晶片元件
+  - 支援 filled/outline 樣式變體
+  - 可選計數徽章
+  - 支援水平滾動模式
+- [x] `SearchInput.tsx` - 搜尋框元件
+  - 左側搜尋圖標
+  - 清除按鈕
+  - 符合 Lovable 設計
+- [x] `CtaButton.tsx` - 行動呼籲按鈕
+  - primary/secondary/danger 變體
+  - 支援圖標、載入狀態
+- [x] `StatCard.tsx` - 統計卡片
+  - 圖標、數值、變化量顯示
+  - 正/負變化顏色區分
+
+**Phase 3：頁面 UI 更新**
+
+- [x] `EconomyScreen.tsx` - 任務頁面重構
+  - 任務分組卡片設計（taskGroup）
+  - 今日經驗值摘要列
+  - 簡化 header
+- [x] `HapticTab.tsx` - Tab Bar 選中狀態
+  - 新增圓角背景 for 選中項目
+  - 使用 MibuBrand.highlight 色
+- [x] `MerchantDashboardScreen.tsx` - 商家後台重構
+  - 簡化為 5 個主要功能入口
+  - 新增店家選擇器 dropdown
+  - 移除 daily code 和 credits 區塊
+
+### 新增的檔案
+
+| 檔案 | 說明 |
+|------|------|
+| `docs/design-spec-lovable.md` | Lovable 設計規格文件 |
+| `FilterChips.tsx` | 篩選晶片元件 |
+| `SearchInput.tsx` | 搜尋框元件 |
+| `CtaButton.tsx` | CTA 按鈕元件 |
+| `StatCard.tsx` | 統計卡片元件 |
+
+### 修改的檔案
+
+| 檔案 | 變更 |
+|------|------|
+| `EconomyScreen.tsx` | 任務分組、今日 XP、簡化 header |
+| `HapticTab.tsx` | 選中狀態圓角背景 |
+| `MerchantDashboardScreen.tsx` | 簡化選單、店家選擇器 |
+| `shared/components/index.ts` | 匯出新元件 |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-19 #017：Bug 修復與 UI 更新
 
 | 項目 | 內容 |
