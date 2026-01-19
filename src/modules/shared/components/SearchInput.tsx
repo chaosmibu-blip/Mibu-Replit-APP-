@@ -17,7 +17,7 @@ interface SearchInputProps {
   onClear?: () => void;
 }
 
-export function SearchInput({
+export default function SearchInput({
   value,
   onChangeText,
   placeholder = '搜尋...',

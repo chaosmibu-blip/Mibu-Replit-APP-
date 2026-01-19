@@ -10,10 +10,10 @@ export { default as TagInput } from './TagInput';
 export { TutorialOverlay, GACHA_TUTORIAL_STEPS, useTutorial, resetTutorial } from './TutorialOverlay';
 
 // Lovable Design System Components
-export { FilterChips, type FilterOption } from './FilterChips';
-export { SearchInput } from './SearchInput';
-export { CtaButton } from './CtaButton';
-export { StatCard } from './StatCard';
+export { default as FilterChips, type FilterOption } from './FilterChips';
+export { default as SearchInput } from './SearchInput';
+export { default as CtaButton } from './CtaButton';
+export { default as StatCard } from './StatCard';
 
 // UI Components
 export { default as Button } from './ui/Button';
