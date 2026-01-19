@@ -125,24 +125,23 @@ export function EconomyScreen() {
 
   const renderTaskItem = (task: Task) => (
     <TouchableOpacity
-      key={task.id}
-      style={styles.taskCard}
+      style={styles.taskItem}
       activeOpacity={0.7}
     >
       <View style={[styles.taskIconContainer, task.isCompleted && styles.taskIconCompleted]}>
         <Ionicons
           name={task.icon}
-          size={22}
-          color={task.isCompleted ? MibuBrand.copper : MibuBrand.brown}
+          size={20}
+          color={task.isCompleted ? MibuBrand.tan : MibuBrand.copper}
         />
       </View>
       <View style={styles.taskContent}>
-        <Text style={styles.taskTitle}>{task.title}</Text>
+        <Text style={[styles.taskTitle, task.isCompleted && styles.taskTitleCompleted]}>{task.title}</Text>
         <Text style={styles.taskDesc}>{task.description}</Text>
       </View>
       {task.isCompleted ? (
         <View style={styles.taskCheckmark}>
-          <Ionicons name="checkmark" size={18} color="#ffffff" />
+          <Ionicons name="checkmark" size={16} color={MibuBrand.warmWhite} />
         </View>
       ) : (
         <Text style={styles.taskXp}>+{task.xp} XP</Text>
@@ -155,11 +154,35 @@ export function EconomyScreen() {
       case 'daily':
         return (
           <>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{isZh ? '每日任務' : 'Daily Tasks'}</Text>
-              <Text style={styles.sectionCount}>{completedDailyCount}/{totalDailyCount} {isZh ? '完成' : 'done'}</Text>
+            {/* 每日任務區塊 */}
+            <View style={styles.taskGroup}>
+              {dailyTasks.map((task, index) => (
+                <React.Fragment key={task.id}>
+                  {renderTaskItem(task)}
+                  {index < dailyTasks.length - 1 && <View style={styles.taskDivider} />}
+                </React.Fragment>
+              ))}
             </View>
-            {dailyTasks.map(renderTaskItem)}
+
+            {/* 今日經驗值 */}
+            <View style={styles.dailyXpRow}>
+              <Text style={styles.dailyXpLabel}>{isZh ? '今日經驗值' : "Today's XP"}</Text>
+              <Text style={styles.dailyXpValue}>{dailyEarnedXp} / {dailyTotalXp} XP</Text>
+            </View>
+
+            {/* 新手任務區塊 */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{isZh ? '新手任務' : 'Beginner Tasks'}</Text>
+              <Text style={styles.sectionCount}>{completedOnetimeCount}/{totalOnetimeCount} {isZh ? '完成' : 'done'}</Text>
+            </View>
+            <View style={styles.taskGroup}>
+              {onetimeTasks.map((task, index) => (
+                <React.Fragment key={task.id}>
+                  {renderTaskItem(task)}
+                  {index < onetimeTasks.length - 1 && <View style={styles.taskDivider} />}
+                </React.Fragment>
+              ))}
+            </View>
           </>
         );
       case 'onetime':
@@ -169,7 +192,14 @@ export function EconomyScreen() {
               <Text style={styles.sectionTitle}>{isZh ? '新手任務' : 'Beginner Tasks'}</Text>
               <Text style={styles.sectionCount}>{completedOnetimeCount}/{totalOnetimeCount} {isZh ? '完成' : 'done'}</Text>
             </View>
-            {onetimeTasks.map(renderTaskItem)}
+            <View style={styles.taskGroup}>
+              {onetimeTasks.map((task, index) => (
+                <React.Fragment key={task.id}>
+                  {renderTaskItem(task)}
+                  {index < onetimeTasks.length - 1 && <View style={styles.taskDivider} />}
+                </React.Fragment>
+              ))}
+            </View>
           </>
         );
       case 'cumulative':
@@ -201,18 +231,19 @@ export function EconomyScreen() {
     );
   }
 
+  // 今日可獲得的 XP 總和
+  const dailyTotalXp = dailyTasks.reduce((sum, t) => sum + t.xp, 0);
+  const dailyEarnedXp = dailyTasks.filter(t => t.isCompleted).reduce((sum, t) => sum + t.xp, 0);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Ionicons name="ribbon" size={24} color={MibuBrand.brownDark} />
-          <Text style={styles.headerTitle}>
-            {isZh ? '成就與任務' : 'Achievements & Tasks'}
-          </Text>
-        </View>
+        <Text style={styles.headerTitle}>
+          {isZh ? '成就系統' : 'Achievements'}
+        </Text>
         <View style={styles.headerPlaceholder} />
       </View>
 
@@ -358,9 +389,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
-    backgroundColor: MibuBrand.warmWhite,
-    borderBottomWidth: 1,
-    borderBottomColor: MibuBrand.tanLight,
+    backgroundColor: MibuBrand.creamLight,
   },
   backButton: {
     width: 40,
@@ -368,13 +397,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
@@ -631,30 +655,36 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
   },
 
-  // Task Card
-  taskCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  // Task Group (grouped card container)
+  taskGroup: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+    overflow: 'hidden',
+  },
+  taskItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  taskDivider: {
+    height: 1,
+    backgroundColor: MibuBrand.tanLight,
+    marginLeft: 60,
   },
   taskIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: MibuBrand.highlight,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: MibuBrand.creamLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   taskIconCompleted: {
-    backgroundColor: MibuBrand.cream,
+    backgroundColor: MibuBrand.tanLight,
   },
   taskContent: {
     flex: 1,
@@ -665,6 +695,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: MibuBrand.brownDark,
   },
+  taskTitleCompleted: {
+    color: MibuBrand.tan,
+  },
   taskDesc: {
     fontSize: 13,
     color: MibuBrand.copper,
@@ -672,16 +705,35 @@ const styles = StyleSheet.create({
   },
   taskXp: {
     fontSize: 14,
-    fontWeight: '700',
-    color: MibuBrand.brown,
+    fontWeight: '600',
+    color: MibuBrand.copper,
   },
   taskCheckmark: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: MibuBrand.brown,
+    backgroundColor: MibuBrand.tan,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  // Daily XP Summary
+  dailyXpRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    marginBottom: 16,
+  },
+  dailyXpLabel: {
+    fontSize: 14,
+    color: MibuBrand.copper,
+  },
+  dailyXpValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
   },
 
   // Empty State
