@@ -65,6 +65,24 @@
   - 快閃活動：使用 `SemanticColors.warningLight/Dark`
   - 在地活動：使用 `SemanticColors.infoLight/Dark`
 
+**Phase 2b：全域色碼遷移**
+
+- [x] `GachaScreen.tsx` - 遷移硬編碼色碼
+  - 稀有度色碼：使用 `MibuBrand.tierSP/SSR/SR/S/R` 系列
+  - 狀態色：`SemanticColors.starYellow` 取代 `#F59E0B`
+  - 背景/邊框：`MibuBrand.warmWhite/tanLight` 取代 `#ffffff/#E5D5BC`
+- [x] `FavoritesScreen.tsx` - 遷移硬編碼色碼
+  - 星級評分：`SemanticColors.starYellow` 取代 `#F59E0B`
+  - 錯誤狀態：`SemanticColors.errorMain` 取代 `#EF4444`
+- [x] `ItemsScreen.tsx` - 遷移硬編碼色碼
+  - N 稀有度色碼：`MibuBrand.brownLight` 取代硬編碼值
+- [x] `AnnouncementManageScreen.tsx` - 遷移硬編碼色碼
+  - 狀態色：`SemanticColors.successMain/warningMain` 取代硬編碼
+  - 按鈕/圖標：`MibuBrand.warmWhite` 取代 `#ffffff`
+- [x] `CrowdfundingDetailScreen.tsx` - 遷移硬編碼色碼
+  - 白色文字：`MibuBrand.warmWhite` 取代 `#ffffff`
+  - 選中狀態：`MibuBrand.creamLight` 取代 `rgba(255,255,255,0.85)`
+
 ### 修改的檔案
 
 | 檔案 | 變更 |
@@ -74,6 +92,11 @@
 | `economy.ts` | 新增 tier, loginStreak 欄位 |
 | `Colors.ts` | 新增 SemanticColors |
 | `designTokens.ts` | 新建設計系統常數 |
+| `GachaScreen.tsx` | 遷移硬編碼色碼至 MibuBrand/SemanticColors |
+| `FavoritesScreen.tsx` | 遷移硬編碼色碼至 SemanticColors |
+| `ItemsScreen.tsx` | 遷移硬編碼色碼至 MibuBrand |
+| `AnnouncementManageScreen.tsx` | 遷移硬編碼色碼至 MibuBrand/SemanticColors |
+| `CrowdfundingDetailScreen.tsx` | 遷移硬編碼色碼至 MibuBrand |
 
 ### 異常回報
 （無）
