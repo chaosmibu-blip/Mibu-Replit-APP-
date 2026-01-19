@@ -14,7 +14,6 @@ import { collectionApi } from '../../../services/collectionApi';
 import { GachaItem, Language } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
-import FilterChips from '../../shared/components/FilterChips';
 
 const LAST_VIEWED_KEY = '@mibu_lastViewedCollection';
 
@@ -133,30 +132,11 @@ export function CollectionScreen() {
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const [selectedItem, setSelectedItem] = useState<GachaItem | null>(null);
   const [lastViewedTimestamp, setLastViewedTimestamp] = useState<number>(0);
-  const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
-  // 篩選選項
-  const FILTER_OPTIONS = useMemo(() => [
-    { key: 'all', label: language === 'zh-TW' ? '全部' : 'All' },
-    { key: 'food', label: language === 'zh-TW' ? '美食' : 'Food' },
-    { key: 'attraction', label: language === 'zh-TW' ? '景點' : 'Attraction' },
-    { key: 'accommodation', label: language === 'zh-TW' ? '住宿' : 'Stay' },
-    { key: 'shopping', label: language === 'zh-TW' ? '購物' : 'Shop' },
-  ], [language]);
-
-  // 根據選擇的類別過濾收藏
-  const filteredCollection = useMemo(() => {
-    if (selectedFilter === 'all') return collection;
-    return collection.filter(item => {
-      const category = (typeof item.category === 'string' ? item.category : '').toLowerCase();
-      return category === selectedFilter;
-    });
-  }, [collection, selectedFilter]);
-
-  // 統計資料（基於過濾後的收藏）
-  const totalSpots = filteredCollection.length;
-  const uniqueCities = new Set(filteredCollection.map(item => item.city || 'Unknown')).size;
-  const uniqueCategories = new Set(filteredCollection.map(item =>
+  // 統計資料
+  const totalSpots = collection.length;
+  const uniqueCities = new Set(collection.map(item => item.city || 'Unknown')).size;
+  const uniqueCategories = new Set(collection.map(item =>
     (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other'
   )).size;
 
@@ -219,7 +199,7 @@ export function CollectionScreen() {
   const groupedData = useMemo(() => {
     const cityMap: Record<string, { displayName: string; items: GachaItem[]; newCount: number; byCategory: Record<string, GachaItem[]> }> = {};
 
-    filteredCollection.forEach(item => {
+    collection.forEach(item => {
       const city = item.city || 'Unknown';
       const cityDisplay = item.cityDisplay || city;
       const category = (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other';
@@ -239,7 +219,7 @@ export function CollectionScreen() {
     });
 
     return cityMap;
-  }, [filteredCollection, lastViewedTimestamp]);
+  }, [collection, lastViewedTimestamp]);
 
   if (collection.length === 0) {
     return (
@@ -262,17 +242,6 @@ export function CollectionScreen() {
         <Text style={{ fontSize: 26, fontWeight: '800', color: MibuBrand.brown, marginLeft: 10 }}>
           {language === 'zh-TW' ? '我的圖鑑' : 'My Collection'}
         </Text>
-      </View>
-
-      {/* 篩選晶片 */}
-      <View style={{ marginBottom: 16 }}>
-        <FilterChips
-          options={FILTER_OPTIONS}
-          selected={selectedFilter}
-          onSelect={setSelectedFilter}
-          scrollable
-          variant="filled"
-        />
       </View>
 
       {/* 統計卡片 - StatCard-like 設計 */}
@@ -354,36 +323,8 @@ export function CollectionScreen() {
         </View>
       </View>
 
-      {/* 篩選結果為空的提示 */}
-      {filteredCollection.length === 0 && collection.length > 0 && (
-        <View style={{
-          alignItems: 'center',
-          paddingVertical: 40,
-          paddingHorizontal: 20,
-        }}>
-          <Ionicons name="search-outline" size={48} color={MibuBrand.tanLight} />
-          <Text style={{ fontSize: 16, fontWeight: '600', color: MibuBrand.brownLight, marginTop: 12, textAlign: 'center' }}>
-            {language === 'zh-TW' ? '沒有符合條件的收藏' : 'No matching collections'}
-          </Text>
-          <TouchableOpacity
-            style={{
-              marginTop: 16,
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              backgroundColor: MibuBrand.brown,
-              borderRadius: 20,
-            }}
-            onPress={() => setSelectedFilter('all')}
-          >
-            <Text style={{ color: MibuBrand.warmWhite, fontWeight: '600' }}>
-              {language === 'zh-TW' ? '顯示全部' : 'Show All'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
       {/* 城市列表標題 */}
-      {filteredCollection.length > 0 && (
+      {collection.length > 0 && (
         <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.brownLight, marginBottom: 12 }}>
           {language === 'zh-TW' ? '依城市分類' : 'By City'}
         </Text>
