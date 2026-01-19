@@ -608,16 +608,16 @@ export function GachaScreen() {
       contentContainerStyle={{ padding: 20, paddingTop: 60 }}
     >
       {/* 頂部 Logo 區 */}
-      <View style={{ alignItems: 'center', marginBottom: 32 }}>
+      <View style={{ alignItems: 'center', marginBottom: 40 }}>
         <Image
           source={require('../../../../assets/images/icon.png')}
-          style={{ width: 80, height: 80, marginBottom: 12 }}
+          style={{ width: 88, height: 88, marginBottom: 16 }}
           resizeMode="contain"
         />
-        <Text style={{ fontSize: 28, fontWeight: '800', color: MibuBrand.brown, letterSpacing: 2 }}>
+        <Text style={{ fontSize: 32, fontWeight: '800', color: MibuBrand.brown, letterSpacing: 3 }}>
           MIBU
         </Text>
-        <Text style={{ fontSize: 14, color: MibuBrand.brownLight, marginTop: 4 }}>
+        <Text style={{ fontSize: 15, color: MibuBrand.brownLight, marginTop: 6, fontWeight: '500' }}>
           {state.language === 'zh-TW' ? '旅程扭蛋機' : 'Travel Gacha'}
         </Text>
       </View>
@@ -625,16 +625,16 @@ export function GachaScreen() {
       {/* 選擇區域卡片 */}
       <View style={{
         backgroundColor: MibuBrand.warmWhite,
-        borderRadius: 20,
-        padding: 20,
-        marginBottom: 16,
-        borderWidth: 2,
+        borderRadius: 24,
+        padding: 24,
+        marginBottom: 24,
+        borderWidth: 1,
         borderColor: MibuBrand.tanLight,
         shadowColor: MibuBrand.brown,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
-        elevation: 3,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 4,
       }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
           <Ionicons name="globe-outline" size={20} color={MibuBrand.copper} />
@@ -676,16 +676,16 @@ export function GachaScreen() {
       {selectedRegionId && (
         <View style={{
           backgroundColor: MibuBrand.warmWhite,
-          borderRadius: 20,
-          padding: 20,
-          marginBottom: 16,
-          borderWidth: 2,
+          borderRadius: 24,
+          padding: 24,
+          marginBottom: 24,
+          borderWidth: 1,
           borderColor: MibuBrand.tanLight,
           shadowColor: MibuBrand.brown,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 8,
-          elevation: 3,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.06,
+          shadowRadius: 12,
+          elevation: 4,
         }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -734,22 +734,29 @@ export function GachaScreen() {
           </View>
 
           {/* Slider */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 }}>
-            <Text style={{ fontSize: 14, fontWeight: '600', color: MibuBrand.brownLight }}>5</Text>
-            <View style={{ flex: 1, marginHorizontal: 12 }}>
+          <View style={{ 
+            flexDirection: 'row', 
+            alignItems: 'center', 
+            paddingHorizontal: 8,
+            backgroundColor: MibuBrand.creamLight,
+            borderRadius: 16,
+            paddingVertical: 12,
+          }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: MibuBrand.brownLight, marginLeft: 8 }}>5</Text>
+            <View style={{ flex: 1, marginHorizontal: 16 }}>
               <Slider
-                style={{ width: '100%', height: 40 }}
+                style={{ width: '100%', height: 48 }}
                 minimumValue={5}
                 maximumValue={12}
                 step={1}
                 value={pullCount}
                 onValueChange={(value) => setPullCount(Math.round(value))}
-                minimumTrackTintColor={MibuBrand.brown}
-                maximumTrackTintColor={MibuBrand.cream}
+                minimumTrackTintColor={MibuBrand.copper}
+                maximumTrackTintColor={MibuBrand.tan}
                 thumbTintColor={MibuBrand.brown}
               />
             </View>
-            <Text style={{ fontSize: 14, fontWeight: '600', color: MibuBrand.brownLight }}>12</Text>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: MibuBrand.brownLight, marginRight: 8 }}>12</Text>
           </View>
         </View>
       )}
@@ -758,9 +765,9 @@ export function GachaScreen() {
       {isInventoryFull && (
         <View style={{
           backgroundColor: '#fef2f2',
-          borderRadius: 16,
-          padding: 16,
-          marginBottom: 16,
+          borderRadius: 20,
+          padding: 18,
+          marginBottom: 24,
           flexDirection: 'row',
           alignItems: 'center',
           borderWidth: 1,
@@ -803,9 +810,9 @@ export function GachaScreen() {
       {!isInventoryFull && inventoryRemaining <= 5 && inventoryRemaining > 0 && (
         <View style={{
           backgroundColor: MibuBrand.highlight,
-          borderRadius: 16,
-          padding: 14,
-          marginBottom: 16,
+          borderRadius: 20,
+          padding: 16,
+          marginBottom: 24,
           flexDirection: 'row',
           alignItems: 'center',
         }}>
@@ -822,31 +829,32 @@ export function GachaScreen() {
       <TouchableOpacity
         style={{
           backgroundColor: (!canSubmit || showLoadingAd) ? MibuBrand.cream : MibuBrand.brown,
-          borderRadius: 28,
-          paddingVertical: 18,
+          borderRadius: 24,
+          height: 64,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
           shadowColor: MibuBrand.brown,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: (!canSubmit || showLoadingAd) ? 0 : 0.2,
-          shadowRadius: 12,
-          elevation: (!canSubmit || showLoadingAd) ? 0 : 6,
-          marginBottom: 16,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: (!canSubmit || showLoadingAd) ? 0 : 0.25,
+          shadowRadius: 16,
+          elevation: (!canSubmit || showLoadingAd) ? 0 : 8,
+          marginBottom: 24,
         }}
         onPress={handleGacha}
         disabled={!canSubmit || showLoadingAd}
       >
         <Ionicons
           name="sparkles"
-          size={22}
+          size={24}
           color={(!canSubmit || showLoadingAd) ? MibuBrand.brownLight : MibuBrand.warmWhite}
         />
         <Text style={{
-          fontSize: 18,
+          fontSize: 20,
           fontWeight: '800',
           color: (!canSubmit || showLoadingAd) ? MibuBrand.brownLight : MibuBrand.warmWhite,
-          marginLeft: 10,
+          marginLeft: 12,
+          letterSpacing: 1,
         }}>
           {isInventoryFull
             ? (state.language === 'zh-TW' ? '道具箱已滿' : 'Item Box Full')
@@ -858,14 +866,15 @@ export function GachaScreen() {
       {selectedRegionId && (
         <View style={{
           backgroundColor: MibuBrand.cream,
-          borderRadius: 12,
-          padding: 12,
+          borderRadius: 16,
+          paddingVertical: 14,
+          paddingHorizontal: 20,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-          <Ionicons name="location" size={16} color={MibuBrand.copper} />
-          <Text style={{ fontSize: 14, color: MibuBrand.brown, marginLeft: 8 }}>
+          <Ionicons name="location" size={18} color={MibuBrand.copper} />
+          <Text style={{ fontSize: 15, color: MibuBrand.brown, marginLeft: 10, fontWeight: '600' }}>
             {countryName} · {regionName}
           </Text>
         </View>
