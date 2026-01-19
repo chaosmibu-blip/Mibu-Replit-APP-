@@ -13,7 +13,12 @@ import {
   SosSendParams,
   SosSendResponse,
   SosAlertsResponse,
-  SosAlert
+  SosAlert,
+  SOSContactsResponse,
+  SOSContactResponse,
+  CreateSOSContactParams,
+  UpdateSOSContactParams,
+  DeleteSOSContactResponse,
 } from '../types';
 
 class CommonApiService extends ApiBase {
@@ -97,6 +102,63 @@ class CommonApiService extends ApiBase {
 
   async getSosLink(token: string): Promise<{ sosLink: string; sosKey: string }> {
     return this.request<{ sosLink: string; sosKey: string }>('/api/user/sos-link', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  // === 緊急聯絡人 ===
+
+  /**
+   * 取得緊急聯絡人列表
+   * GET /api/sos/contacts
+   */
+  async getSOSContacts(token: string): Promise<SOSContactsResponse> {
+    return this.request<SOSContactsResponse>('/api/sos/contacts', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 新增緊急聯絡人
+   * POST /api/sos/contacts
+   */
+  async addSOSContact(
+    token: string,
+    params: CreateSOSContactParams
+  ): Promise<SOSContactResponse> {
+    return this.request<SOSContactResponse>('/api/sos/contacts', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * 更新緊急聯絡人
+   * PUT /api/sos/contacts/:id
+   */
+  async updateSOSContact(
+    token: string,
+    contactId: number,
+    params: UpdateSOSContactParams
+  ): Promise<SOSContactResponse> {
+    return this.request<SOSContactResponse>(`/api/sos/contacts/${contactId}`, {
+      method: 'PUT',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * 刪除緊急聯絡人
+   * DELETE /api/sos/contacts/:id
+   */
+  async deleteSOSContact(
+    token: string,
+    contactId: number
+  ): Promise<DeleteSOSContactResponse> {
+    return this.request<DeleteSOSContactResponse>(`/api/sos/contacts/${contactId}`, {
+      method: 'DELETE',
       headers: this.authHeaders(token),
     });
   }

@@ -17,6 +17,9 @@ import {
   TransactionsResponse,
   WithdrawParams,
   WithdrawResponse,
+  LeaderboardPeriod,
+  LeaderboardResponse,
+  MyRankResponse,
 } from '../types/referral';
 
 class ReferralApiService extends ApiBase {
@@ -138,6 +141,35 @@ class ReferralApiService extends ApiBase {
       method: 'POST',
       headers: this.authHeaders(token),
       body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * 取得推薦排行榜
+   * GET /api/referral/leaderboard
+   */
+  async getLeaderboard(
+    token: string,
+    params?: { period?: LeaderboardPeriod }
+  ): Promise<LeaderboardResponse> {
+    const query = new URLSearchParams();
+    if (params?.period) query.append('period', params.period);
+
+    const queryString = query.toString();
+    const endpoint = `/api/referral/leaderboard${queryString ? `?${queryString}` : ''}`;
+
+    return this.request<LeaderboardResponse>(endpoint, {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 取得我的排名
+   * GET /api/referral/leaderboard/my-rank
+   */
+  async getMyRank(token: string): Promise<MyRankResponse> {
+    return this.request<MyRankResponse>('/api/referral/leaderboard/my-rank', {
+      headers: this.authHeaders(token),
     });
   }
 }

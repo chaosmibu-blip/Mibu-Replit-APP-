@@ -132,3 +132,28 @@ export interface WithdrawResponse {
   transactionId: string;
   estimatedArrival: string; // ISO 8601
 }
+
+// ========== 排行榜系統 ==========
+
+export type LeaderboardPeriod = 'weekly' | 'monthly' | 'all';
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: number;
+  nickname: string;
+  avatarUrl?: string;
+  referralCount: number;
+}
+
+export interface LeaderboardResponse {
+  success: boolean;
+  leaderboard: LeaderboardEntry[];
+  period: LeaderboardPeriod;
+}
+
+export interface MyRankResponse {
+  success: boolean;
+  rank: number;
+  referralCount: number;
+  isOnLeaderboard: boolean;
+}

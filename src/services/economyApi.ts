@@ -10,6 +10,8 @@ import {
   AchievementsResponse,
   AchievementCategory,
   ClaimAchievementResponse,
+  DailyTasksResponse,
+  CompleteDailyTaskResponse,
 } from '../types/economy';
 
 class EconomyApiService extends ApiBase {
@@ -93,6 +95,30 @@ class EconomyApiService extends ApiBase {
         method: 'POST',
         headers: this.authHeaders(token),
         body: JSON.stringify(params),
+      }
+    );
+  }
+
+  /**
+   * 取得每日任務列表
+   * GET /api/user/daily-tasks
+   */
+  async getDailyTasks(token: string): Promise<DailyTasksResponse> {
+    return this.request<DailyTasksResponse>('/api/user/daily-tasks', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 領取每日任務獎勵
+   * POST /api/user/daily-tasks/:id/complete
+   */
+  async completeDailyTask(token: string, taskId: number): Promise<CompleteDailyTaskResponse> {
+    return this.request<CompleteDailyTaskResponse>(
+      `/api/user/daily-tasks/${taskId}/complete`,
+      {
+        method: 'POST',
+        headers: this.authHeaders(token),
       }
     );
   }

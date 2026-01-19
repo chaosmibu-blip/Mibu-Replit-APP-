@@ -51,3 +51,39 @@ export interface SosSendResponse {
 export interface SosAlertsResponse {
   alerts: SosAlert[];
 }
+
+// ========== 緊急聯絡人 ==========
+
+export interface SOSContact {
+  id: number;
+  name: string;
+  phone: string;
+  relationship?: string;
+}
+
+export interface CreateSOSContactParams {
+  name: string;
+  phone: string;
+  relationship?: string;
+}
+
+export interface UpdateSOSContactParams {
+  name?: string;
+  phone?: string;
+  relationship?: string;
+}
+
+export interface SOSContactsResponse {
+  success: boolean;
+  contacts: SOSContact[];
+}
+
+export interface SOSContactResponse {
+  success: boolean;
+  contact: SOSContact;
+}
+
+export interface DeleteSOSContactResponse {
+  success: boolean;
+  message: string;
+}

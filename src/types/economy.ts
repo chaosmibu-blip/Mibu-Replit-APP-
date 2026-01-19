@@ -92,3 +92,27 @@ export interface ClaimAchievementResponse {
   newExp: number;
   newLevel?: number; // 如果升級
 }
+
+// ========== 每日任務系統 ==========
+
+export interface DailyTask {
+  id: number;
+  name: string;
+  description: string;
+  xpReward: number;
+  isCompleted: boolean;
+  completedAt?: string; // ISO 8601
+}
+
+export interface DailyTasksResponse {
+  success: boolean;
+  tasks: DailyTask[];
+  completedCount: number;
+  totalCount: number;
+}
+
+export interface CompleteDailyTaskResponse {
+  success: boolean;
+  xpGained: number;
+  message: string;
+}
