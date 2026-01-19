@@ -47,6 +47,23 @@ export interface RedeemCouponResponse {
   coupon: UserCoupon;
 }
 
+export interface VerifyCouponResponse {
+  success: boolean;
+  valid: boolean;
+  coupon?: {
+    id: number;
+    code: string;
+    title: string;
+    discount: {
+      type: 'percentage' | 'fixed';
+      value: number;
+    };
+    expiresAt: string;
+    status: 'active' | 'used' | 'expired';
+  };
+  message?: string;
+}
+
 // ========== API 服務 ==========
 
 class CouponApiService extends ApiBase {
@@ -83,6 +100,20 @@ class CouponApiService extends ApiBase {
       method: 'POST',
       headers: this.authHeaders(token),
       body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * 驗證優惠券有效性（商家用）
+   * GET /api/coupons/verify/:code
+   * @see 後端合約 #013
+   */
+  async verifyCoupon(
+    token: string,
+    code: string
+  ): Promise<VerifyCouponResponse> {
+    return this.request<VerifyCouponResponse>(`/api/coupons/verify/${encodeURIComponent(code)}`, {
+      headers: this.authHeaders(token),
     });
   }
 }

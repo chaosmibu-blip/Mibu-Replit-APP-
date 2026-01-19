@@ -6,6 +6,40 @@
 
 ## 最新回報
 
+### 2026-01-19 #013：API 補齊與錯誤碼更新
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #013 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+
+- [x] `errors.ts` 新增 E10xxx-E13xxx 錯誤碼（26 個）
+  - E10xxx: 經濟系統（8 個）：`LEVEL_NOT_FOUND`, `ACHIEVEMENT_NOT_FOUND`, `REWARD_ALREADY_CLAIMED` 等
+  - E11xxx: 眾籌系統（5 個）：`CAMPAIGN_NOT_FOUND`, `CAMPAIGN_NOT_ACTIVE`, `IAP_VERIFICATION_FAILED` 等
+  - E12xxx: 推薦系統（8 個）：`REFERRAL_CODE_NOT_FOUND`, `REFERRAL_SELF_NOT_ALLOWED`, `WITHDRAW_PENDING` 等
+  - E13xxx: 貢獻系統（5 個）：`REPORT_DUPLICATE`, `VOTE_ALREADY_CAST`, `CONTRIBUTION_LIMIT_REACHED` 等
+- [x] `couponApi.ts` 新增優惠券驗證 API
+  - `verifyCoupon(token, code)` → `GET /api/coupons/verify/:code`
+- [x] `commonApi.ts` 新增 SOS 取消 API
+  - `cancelSOS(token, params)` → `POST /api/sos/cancel`
+  - 保留舊版 `cancelSosAlert` 向後相容（標記 @deprecated）
+
+### 使用的 API
+
+| Endpoint | 功能 |
+|----------|------|
+| `GET /api/coupons/verify/:code` | 驗證優惠券有效性（商家用） |
+| `POST /api/sos/cancel` | 取消 SOS 警報 |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-19 #012：六層架構一致性比對
 
 | 項目 | 內容 |
