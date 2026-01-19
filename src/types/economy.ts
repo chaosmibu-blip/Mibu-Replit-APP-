@@ -95,24 +95,61 @@ export interface ClaimAchievementResponse {
 
 // ========== 每日任務系統 ==========
 
+/**
+ * 每日任務（符合後端 #009 規格）
+ */
 export interface DailyTask {
   id: number;
-  name: string;
+  code: string;
+  nameZh: string;
+  nameEn?: string;
   description: string;
-  xpReward: number;
-  isCompleted: boolean;
-  completedAt?: string; // ISO 8601
+  icon?: string;
+  expReward: number;
+  targetCount: number;
+  triggerEvent: string;
+  progress: {
+    currentCount: number;
+    isCompleted: boolean;
+    rewardClaimed: boolean;
+    claimedAt?: string; // ISO 8601
+  };
+  // 向後相容欄位
+  name?: string;
+  xpReward?: number;
+  isCompleted?: boolean;
+  completedAt?: string;
 }
 
 export interface DailyTasksResponse {
-  success: boolean;
   tasks: DailyTask[];
-  completedCount: number;
-  totalCount: number;
+  summary: {
+    totalTasks: number;
+    completedTasks: number;
+    claimedRewards: number;
+    pendingRewards: number;
+    totalExpAvailable: number;
+  };
+  // 向後相容欄位
+  success?: boolean;
+  completedCount?: number;
+  totalCount?: number;
 }
 
 export interface CompleteDailyTaskResponse {
   success: boolean;
-  xpGained: number;
   message: string;
+  rewards: {
+    exp: number;
+  };
+  newLevel?: UserLevel;
+  // 向後相容欄位
+  xpGained?: number;
+}
+
+/** 用戶等級資訊（用於升級通知） */
+export interface UserLevel {
+  level: number;
+  currentExp: number;
+  nextLevelExp: number;
 }

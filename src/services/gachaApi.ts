@@ -8,7 +8,9 @@ import {
   GachaPullPayload,
   GachaPullResponse,
   ItineraryGenerateResponse,
-  PrizePoolResponse
+  PrizePoolResponse,
+  GachaQuotaResponse,
+  SubmitTripResponse,
 } from '../types';
 
 class GachaApiService extends ApiBase {
@@ -93,7 +95,8 @@ class GachaApiService extends ApiBase {
 
   async pullGacha(payload: GachaPullPayload): Promise<GachaPullResponse> {
     try {
-      const data = await this.request<GachaPullResponse>('/api/gacha/pull', {
+      // #009: 端點對齊 /api/gacha/pull/v3
+      const data = await this.request<GachaPullResponse>('/api/gacha/pull/v3', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
@@ -133,6 +136,35 @@ class GachaApiService extends ApiBase {
     if (params.city) queryParams.append('city', params.city);
 
     return this.request(`/api/place/promo?${queryParams}`);
+  }
+
+  // ========== #009 新增 ==========
+
+  /**
+   * 取得今日扭蛋額度
+   * GET /api/gacha/quota
+   */
+  async getQuota(token: string): Promise<GachaQuotaResponse> {
+    return this.request<GachaQuotaResponse>('/api/gacha/quota', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  // ========== #010 新增 ==========
+
+  /**
+   * 提交行程至官網 SEO
+   * POST /api/gacha/submit-trip
+   */
+  async submitTrip(
+    token: string,
+    params: { sessionId: string; tripImageUrl?: string }
+  ): Promise<SubmitTripResponse> {
+    return this.request<SubmitTripResponse>('/api/gacha/submit-trip', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
+    });
   }
 }
 

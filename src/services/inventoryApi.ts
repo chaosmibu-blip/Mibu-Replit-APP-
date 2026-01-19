@@ -90,6 +90,23 @@ class InventoryApiService extends ApiBase {
     });
   }
 
+  // ========== #011 新增 ==========
+
+  /**
+   * 新增物品到背包
+   * POST /api/inventory/add
+   */
+  async addInventoryItem(
+    token: string,
+    params: { type: 'coupon' | 'item'; itemId: number; gachaSessionId?: string }
+  ): Promise<InventoryItem> {
+    return this.request<InventoryItem>('/api/inventory/add', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
+    });
+  }
+
   // =====================
   // 本地配置（不需要後端 API）
   // =====================

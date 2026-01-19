@@ -49,10 +49,10 @@ class CollectionApiService extends ApiBase {
 
   /**
    * 新增收藏項目
-   * POST /api/collections
+   * POST /api/collections/add (#011 端點對齊)
    */
   async saveToCollection(token: string, item: Partial<GachaItem>): Promise<{ collection: CollectionItem }> {
-    return this.request<{ collection: CollectionItem }>('/api/collections', {
+    return this.request<{ collection: CollectionItem }>('/api/collections/add', {
       method: 'POST',
       headers: this.authHeaders(token),
       body: JSON.stringify(item),
