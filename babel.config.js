@@ -5,16 +5,8 @@ module.exports = function (api) {
       ["babel-preset-expo", { jsxImportSource: "nativewind" }],
       "nativewind/babel",
     ],
-    plugins: [
-      [
-        "@tamagui/babel-plugin",
-        {
-          components: ["tamagui"],
-          config: "./tamagui.config.ts",
-          logTimings: true,
-          disableExtraction: process.env.NODE_ENV === "development",
-        },
-      ],
-    ],
+    // Note: @tamagui/babel-plugin removed due to Expo Go compatibility issues
+    // Tamagui works without it in development mode (just slower)
+    // Re-enable for production builds if needed
   };
 };
