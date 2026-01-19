@@ -1,3 +1,3 @@
-import { FavoritesScreen } from '@/modules/traveler';
+import { FavoritesScreen } from '../src/modules/traveler';
 
 export default FavoritesScreen;
