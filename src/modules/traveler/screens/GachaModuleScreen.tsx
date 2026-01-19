@@ -26,7 +26,7 @@ export function GachaModuleScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}>
       <GachaTopNav
         currentTab={currentTab}
         onChange={setCurrentTab}
@@ -34,7 +34,7 @@ export function GachaModuleScreen() {
         hasNewCollection={hasNewCollection}
         hasNewItems={hasNewItems}
       />
-      <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+      <View style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}>
         {renderContent()}
       </View>
     </SafeAreaView>

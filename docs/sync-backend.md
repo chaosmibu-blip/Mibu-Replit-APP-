@@ -6,6 +6,77 @@
 
 ## 最新回報
 
+### 2026-01-19 #019 補充：UI 調整與設定頁整理
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 用戶指定 UI 調整 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+
+**1. 全域背景與卡片顏色調換**
+
+- [x] 所有頁面背景：`MibuBrand.creamLight` → `MibuBrand.warmWhite`
+- [x] 所有卡片/Header：`MibuBrand.warmWhite` → `MibuBrand.creamLight`
+- 影響檔案：
+  - `HomeScreen.tsx`
+  - `SettingsScreen.tsx`
+  - `EconomyScreen.tsx`
+  - `GachaModuleScreen.tsx`
+  - `GachaScreen.tsx`
+  - `CollectionScreen.tsx`
+  - `ItemBoxScreen.tsx`
+  - `ProfileScreen.tsx`
+  - `CrowdfundingScreen.tsx`
+  - `ModuleNav.tsx`
+
+**2. 設定頁 Profile Card 移除，頭像移至個人資料頁**
+
+- [x] 移除 `SettingsScreen.tsx` 的 Profile Card 區塊
+- [x] 移除相關未使用樣式（profileCard, avatar, avatarText, profileInfo, profileName, editProfileButton）
+- [x] `ProfileScreen.tsx` 頂部新增頭像區塊
+  - 大頭像（100x100）顯示用戶首字
+  - 相機編輯徽章
+  - 點擊提示「更換頭像」（功能待開發）
+
+**3. 設定頁入口整理**
+
+- [x] 移除「我的最愛」入口（功能已整合至圖鑑頁面）
+- [x] 移除「緊急聯絡人」入口（功能已整合至個人資料頁面）
+- [x] 移除「募資活動」入口（功能已整合至全球地圖）
+- [x] 創建 `/map` 路由指向 `CrowdfundingScreen`（全球探索地圖）
+
+**4. 其他 UI 調整**
+
+- [x] 隱藏獨立頁面的 Stack Header（economy, profile, account 等 8 個頁面）
+- [x] 扭蛋模組頂部導航欄套用品牌色
+- [x] 移除設定頁 Header 的 Mibu 吉祥物圖片
+
+### 修改的檔案
+
+| 檔案 | 變更 |
+|------|------|
+| `HomeScreen.tsx` | 背景色調換 |
+| `SettingsScreen.tsx` | 背景色調換、移除 Profile Card 和相關樣式、移除我的最愛/緊急聯絡人/募資活動入口 |
+| `EconomyScreen.tsx` | 背景色調換 |
+| `GachaModuleScreen.tsx` | 背景色調換 |
+| `GachaScreen.tsx` | 背景色調換、卡片色調換 |
+| `CollectionScreen.tsx` | 背景色調換、卡片色調換 |
+| `ItemBoxScreen.tsx` | 背景色調換、Header 色調換 |
+| `ProfileScreen.tsx` | 背景色調換、新增頭像區塊 |
+| `CrowdfundingScreen.tsx` | 背景色調換、卡片色調換 |
+| `ModuleNav.tsx` | 背景色調換 |
+| `app/_layout.tsx` | 隱藏獨立頁面 Stack Header |
+| `app/map.tsx` | 新建，指向 CrowdfundingScreen |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-19 #019：刪除圖鑑分類篩選
 
 | 項目 | 內容 |

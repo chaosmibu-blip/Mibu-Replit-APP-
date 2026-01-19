@@ -50,7 +50,7 @@ export function GachaTopNav({
     <View
       style={{
         flexDirection: 'row',
-        backgroundColor: MibuBrand.creamLight,
+        backgroundColor: MibuBrand.warmWhite,
         paddingHorizontal: 16,
         paddingTop: 8,
         paddingBottom: 4,
