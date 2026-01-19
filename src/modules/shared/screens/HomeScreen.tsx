@@ -405,13 +405,13 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: MibuBrand.creamLight,
+    backgroundColor: MibuBrand.warmWhite,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: MibuBrand.creamLight,
+    backgroundColor: MibuBrand.warmWhite,
   },
   content: {
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   levelCard: {
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
     padding: 20,
     marginBottom: 16,
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   taskCard: {
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
     padding: 18,
     flexDirection: 'row',
@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
   },
   announcementCard: {
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
     padding: 18,
     marginBottom: 12,

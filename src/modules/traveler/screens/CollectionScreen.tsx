@@ -223,7 +223,7 @@ export function CollectionScreen() {
 
   if (collection.length === 0) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, backgroundColor: MibuBrand.creamLight }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, backgroundColor: MibuBrand.warmWhite }}>
         <Ionicons name="location-outline" size={64} color={MibuBrand.tanLight} />
         <Text style={{ fontSize: 18, fontWeight: '700', color: MibuBrand.brownLight, marginTop: 16 }}>{t.noCollection}</Text>
         <Text style={{ fontSize: 14, color: MibuBrand.tan, marginTop: 8 }}>{t.startToCollect}</Text>
@@ -233,7 +233,7 @@ export function CollectionScreen() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}
+      style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}
       contentContainerStyle={{ padding: 16, paddingTop: 60, paddingBottom: 100 }}
     >
       {/* Header */}
@@ -252,7 +252,7 @@ export function CollectionScreen() {
       }}>
         <View style={{
           flex: 1,
-          backgroundColor: MibuBrand.warmWhite,
+          backgroundColor: MibuBrand.creamLight,
           borderRadius: 16,
           padding: 16,
           minHeight: 100,
@@ -276,7 +276,7 @@ export function CollectionScreen() {
 
         <View style={{
           flex: 1,
-          backgroundColor: MibuBrand.warmWhite,
+          backgroundColor: MibuBrand.creamLight,
           borderRadius: 16,
           padding: 16,
           minHeight: 100,
@@ -300,7 +300,7 @@ export function CollectionScreen() {
 
         <View style={{
           flex: 1,
-          backgroundColor: MibuBrand.warmWhite,
+          backgroundColor: MibuBrand.creamLight,
           borderRadius: 16,
           padding: 16,
           minHeight: 100,
@@ -336,10 +336,10 @@ export function CollectionScreen() {
           const isRegionOpen = openRegions.has(regionKey);
 
           return (
-            <View 
-              key={regionKey} 
+            <View
+              key={regionKey}
               style={{
-                backgroundColor: MibuBrand.warmWhite,
+                backgroundColor: MibuBrand.creamLight,
                 borderRadius: 20,
                 marginBottom: 16,
                 overflow: 'hidden',
@@ -374,7 +374,7 @@ export function CollectionScreen() {
                         justifyContent: 'center',
                         paddingHorizontal: 4,
                         borderWidth: 2,
-                        borderColor: MibuBrand.warmWhite,
+                        borderColor: MibuBrand.creamLight,
                       }}>
                         <Text style={{ color: '#ffffff', fontSize: 10, fontWeight: '700' }}>
                           {data.newCount > 9 ? '9+' : data.newCount}

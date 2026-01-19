@@ -445,7 +445,7 @@ export function ItemBoxScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: MibuBrand.warmWhite, alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={{ marginTop: 16, color: MibuBrand.brownLight }}>
           {state.language === 'zh-TW' ? '載入中...' : 'Loading...'}
@@ -455,10 +455,10 @@ export function ItemBoxScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+    <View style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}>
       {/* Header 區域 */}
       <View style={{
-        backgroundColor: MibuBrand.warmWhite,
+        backgroundColor: MibuBrand.creamLight,
         paddingTop: 60,
         paddingHorizontal: 20,
         paddingBottom: 16,

@@ -191,30 +191,6 @@ export function SettingsScreen() {
           iconColor: '#6366f1',
         },
         {
-          icon: 'heart',
-          label: isZh ? '我的最愛' : 'My Favorites',
-          action: () => router.push('/favorites' as any),
-          hasArrow: true,
-          iconBg: '#FEE2E2',
-          iconColor: '#EF4444',
-        },
-        {
-          icon: 'shield-checkmark-outline',
-          label: isZh ? '緊急聯絡人' : 'Emergency Contacts',
-          action: () => router.push('/sos-contacts' as any),
-          hasArrow: true,
-          iconBg: '#FEF3C7',
-          iconColor: '#F59E0B',
-        },
-        {
-          icon: 'rocket-outline',
-          label: isZh ? '募資活動' : 'Crowdfunding',
-          action: () => router.push('/crowdfunding' as any),
-          hasArrow: true,
-          iconBg: '#FEF3C7',
-          iconColor: '#D97706',
-        },
-        {
           icon: 'hand-left-outline',
           label: isZh ? '社群貢獻' : 'Contributions',
           action: () => router.push('/contribution' as any),
@@ -343,29 +319,6 @@ export function SettingsScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>{isZh ? '設定' : 'Settings'}</Text>
       </View>
-
-      {state.isAuthenticated && state.user && (
-        <View style={styles.section}>
-          <View style={styles.profileCard}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {state.user.firstName?.charAt(0) || state.user.name?.charAt(0) || '?'}
-              </Text>
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>
-                {state.user.firstName || state.user.name || 'User'}
-              </Text>
-            </View>
-            <TouchableOpacity 
-              style={styles.editProfileButton}
-              onPress={() => router.push('/profile' as any)}
-            >
-              <Ionicons name="create-outline" size={18} color={MibuBrand.brown} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
 
       {settingGroups.map((group, groupIndex) => (
         <View key={group.title} style={styles.section}>
@@ -498,7 +451,7 @@ export function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: MibuBrand.creamLight,
+    backgroundColor: MibuBrand.warmWhite,
   },
   content: {
     padding: 20,
@@ -529,7 +482,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   card: {
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -597,50 +550,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
-  profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    backgroundColor: MibuBrand.brown,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    color: '#ffffff',
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  profileInfo: {
-    flex: 1,
-    marginLeft: 14,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
-  editProfileButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: MibuBrand.highlight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   aboutCard: {
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
@@ -672,7 +583,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
     padding: 20,
     width: '85%',

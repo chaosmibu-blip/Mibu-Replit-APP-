@@ -389,13 +389,13 @@ export function EconomyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: MibuBrand.creamLight,
+    backgroundColor: MibuBrand.warmWhite,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: MibuBrand.creamLight,
+    backgroundColor: MibuBrand.warmWhite,
   },
   header: {
     flexDirection: 'row',
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
-    backgroundColor: MibuBrand.creamLight,
+    backgroundColor: MibuBrand.warmWhite,
   },
   backButton: {
     width: 40,
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
 
   // Level Card
   levelCard: {
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
     padding: 20,
     borderWidth: 2,
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
     padding: 18,
     alignItems: 'center',
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
   // Tabs
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
     padding: 4,
     marginBottom: 16,
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
 
   // Task Group (grouped card container)
   taskGroup: {
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
     marginBottom: 16,
     borderWidth: 1,

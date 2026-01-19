@@ -171,6 +171,31 @@ export function ProfileScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        {/* 頭像區塊 */}
+        <View style={styles.avatarSection}>
+          <TouchableOpacity
+            style={styles.avatarContainer}
+            onPress={() => {
+              Alert.alert(
+                isZh ? '更換頭像' : 'Change Avatar',
+                isZh ? '此功能即將開放' : 'Coming soon'
+              );
+            }}
+          >
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {firstName?.charAt(0) || profile?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
+              </Text>
+            </View>
+            <View style={styles.avatarEditBadge}>
+              <Ionicons name="camera" size={14} color="#ffffff" />
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.avatarHint}>
+            {isZh ? '點擊更換頭像' : 'Tap to change avatar'}
+          </Text>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '用戶 ID' : 'User ID'}</Text>
           <View style={styles.readOnlyField}>
@@ -351,13 +376,58 @@ export function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: MibuBrand.creamLight,
+    backgroundColor: MibuBrand.warmWhite,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: MibuBrand.creamLight,
+    backgroundColor: MibuBrand.warmWhite,
+  },
+  avatarSection: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  avatarContainer: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: MibuBrand.brown,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 4,
+    borderColor: MibuBrand.creamLight,
+    shadowColor: MibuBrand.brown,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  avatarText: {
+    fontSize: 40,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  avatarEditBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: MibuBrand.copper,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: MibuBrand.warmWhite,
+  },
+  avatarHint: {
+    marginTop: 8,
+    fontSize: 13,
+    color: MibuBrand.copper,
   },
   header: {
     flexDirection: 'row',
@@ -366,7 +436,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
-    backgroundColor: MibuBrand.warmWhite,
+    backgroundColor: MibuBrand.creamLight,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.cream,
   },
@@ -405,16 +475,13 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   input: {
-    backgroundColor: MibuBrand.creamLight,
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 14,
     fontSize: 16,
     color: MibuBrand.dark,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
   },
   readOnlyField: {
     backgroundColor: MibuBrand.cream,
@@ -437,14 +504,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: MibuBrand.creamLight,
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
   },
   pickerText: {
     fontSize: 16,

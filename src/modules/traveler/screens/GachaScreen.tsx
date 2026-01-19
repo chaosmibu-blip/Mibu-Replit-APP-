@@ -604,7 +604,7 @@ export function GachaScreen() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}
+      style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}
       contentContainerStyle={{ padding: 20, paddingTop: 60 }}
     >
       {/* 頂部 Logo 區 */}
@@ -619,7 +619,7 @@ export function GachaScreen() {
 
       {/* 選擇區域卡片 */}
       <View style={{
-        backgroundColor: MibuBrand.warmWhite,
+        backgroundColor: MibuBrand.creamLight,
         borderRadius: 24,
         padding: 24,
         marginBottom: 24,
@@ -670,7 +670,7 @@ export function GachaScreen() {
       {/* 抽取張數卡片 */}
       {selectedRegionId && (
         <View style={{
-          backgroundColor: MibuBrand.warmWhite,
+          backgroundColor: MibuBrand.creamLight,
           borderRadius: 24,
           padding: 24,
           marginBottom: 24,
