@@ -1,89 +1,39 @@
 /**
- * FavoritesScreen - 我的最愛 (Tamagui 版本)
+ * FavoritesScreen - 我的最愛 (React Native Paper 版本)
  * 顯示用戶收藏的景點列表
  *
  * @see 後端合約: contracts/APP.md
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
+  View,
+  StyleSheet,
   FlatList,
   RefreshControl,
   Alert,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import {
-  YStack,
-  XStack,
   Text,
   Card,
-  Button,
-  View,
-  Spinner,
-  styled,
+  IconButton,
+  Chip,
+  ActivityIndicator,
+  Surface,
   useTheme,
-} from 'tamagui';
+} from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { collectionApi } from '../../../services/collectionApi';
 import { MibuBrand } from '../../../../constants/Colors';
 import { FavoriteItem } from '../../../types/collection';
 
-// 自定義樣式元件
-const HeaderContainer = styled(XStack, {
-  name: 'HeaderContainer',
-  paddingTop: Platform.OS === 'ios' ? 60 : 40,
-  paddingHorizontal: '$4',
-  paddingBottom: '$4',
-  backgroundColor: '$backgroundStrong',
-  borderBottomWidth: 1,
-  borderBottomColor: '$borderColor',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-});
-
-const StatsBar = styled(XStack, {
-  name: 'StatsBar',
-  paddingHorizontal: '$4',
-  paddingVertical: '$3',
-  backgroundColor: '$backgroundStrong',
-  borderBottomWidth: 1,
-  borderBottomColor: '$borderColor',
-});
-
-const ItemCard = styled(Card, {
-  name: 'ItemCard',
-  marginBottom: '$3',
-  padding: '$4',
-  backgroundColor: '$card',
-  borderRadius: '$3',
-  borderWidth: 1,
-  borderColor: '$borderColor',
-  flexDirection: 'row',
-  alignItems: 'center',
-  pressStyle: {
-    scale: 0.98,
-    opacity: 0.9,
-  },
-  animation: 'fast',
-});
-
-const CategoryBadge = styled(XStack, {
-  name: 'CategoryBadge',
-  alignItems: 'center',
-  gap: '$1',
-  backgroundColor: '$accent',
-  paddingHorizontal: '$2',
-  paddingVertical: '$1',
-  borderRadius: '$2',
-});
-
 export function FavoritesScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
   const theme = useTheme();
+  const isZh = state.language === 'zh-TW';
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -167,108 +117,100 @@ export function FavoritesScreen() {
   };
 
   const renderItem = ({ item }: { item: FavoriteItem }) => (
-    <ItemCard elevate>
-      <YStack flex={1} gap="$2">
-        {/* 分類與評分 */}
-        <XStack alignItems="center" gap="$2">
-          <CategoryBadge>
-            <Ionicons
-              name={getCategoryIcon(item.category)}
-              size={14}
-              color={MibuBrand.brown}
-            />
-            <Text fontSize={12} fontWeight="600" color="$primary">
+    <Card style={styles.itemCard} mode="elevated">
+      <Card.Content style={styles.cardContent}>
+        <View style={styles.itemContent}>
+          {/* 分類與評分 */}
+          <View style={styles.itemHeader}>
+            <Chip
+              icon={() => (
+                <Ionicons
+                  name={getCategoryIcon(item.category)}
+                  size={14}
+                  color={theme.colors.primary}
+                />
+              )}
+              style={styles.categoryChip}
+              textStyle={styles.categoryText}
+              compact
+            >
               {item.category}
-            </Text>
-          </CategoryBadge>
-          {item.rating && (
-            <XStack alignItems="center" gap="$1">
-              <Ionicons name="star" size={12} color="#F59E0B" />
-              <Text fontSize={12} fontWeight="600" color="#F59E0B">
-                {item.rating.toFixed(1)}
-              </Text>
-            </XStack>
-          )}
-        </XStack>
+            </Chip>
+            {item.rating && (
+              <View style={styles.ratingBadge}>
+                <Ionicons name="star" size={14} color="#F59E0B" />
+                <Text variant="labelSmall" style={styles.ratingText}>
+                  {item.rating.toFixed(1)}
+                </Text>
+              </View>
+            )}
+          </View>
 
-        {/* 地點名稱 */}
-        <Text
-          fontSize={16}
-          fontWeight="700"
-          color="$color"
-          numberOfLines={1}
-        >
-          {item.placeName}
-        </Text>
-
-        {/* 位置 */}
-        <XStack alignItems="center" gap="$1">
-          <Ionicons name="location-outline" size={14} color={MibuBrand.tan} />
-          <Text fontSize={13} color="$placeholderColor" numberOfLines={1} flex={1}>
-            {item.district}, {item.city}
+          {/* 地點名稱 */}
+          <Text variant="titleMedium" style={styles.placeName} numberOfLines={1}>
+            {item.placeName}
           </Text>
-        </XStack>
 
-        {/* 加入時間 */}
-        <Text fontSize={11} color="$placeholderColor">
-          {isZh ? '加入於 ' : 'Added '}
-          {new Date(item.addedAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
-        </Text>
-      </YStack>
+          {/* 位置 */}
+          <View style={styles.locationRow}>
+            <Ionicons name="location-outline" size={14} color={theme.colors.outline} />
+            <Text variant="bodySmall" style={styles.locationText} numberOfLines={1}>
+              {item.district}, {item.city}
+            </Text>
+          </View>
 
-      {/* 移除按鈕 */}
-      <Button
-        size="$4"
-        circular
-        chromeless
-        onPress={() => handleRemoveFavorite(item.placeId, item.placeName)}
-        pressStyle={{ scale: 0.9 }}
-        animation="fast"
-      >
-        <Ionicons name="heart" size={24} color="#EF4444" />
-      </Button>
-    </ItemCard>
+          {/* 加入時間 */}
+          <Text variant="labelSmall" style={styles.addedAt}>
+            {isZh ? '加入於 ' : 'Added '}
+            {new Date(item.addedAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
+          </Text>
+        </View>
+
+        {/* 移除按鈕 */}
+        <IconButton
+          icon="heart"
+          iconColor="#EF4444"
+          size={24}
+          onPress={() => handleRemoveFavorite(item.placeId, item.placeName)}
+          style={styles.removeBtn}
+        />
+      </Card.Content>
+    </Card>
   );
 
   if (loading) {
     return (
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="$background">
-        <Spinner size="large" color="$primary" />
-      </YStack>
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
     );
   }
 
   return (
-    <YStack flex={1} backgroundColor="$background">
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
-      <HeaderContainer>
-        <Button
-          size="$4"
-          circular
-          chromeless
+      <Surface style={styles.header} elevation={1}>
+        <IconButton
+          icon="arrow-left"
+          iconColor={theme.colors.primary}
+          size={24}
           onPress={() => router.back()}
-          pressStyle={{ scale: 0.9 }}
-          animation="fast"
-        >
-          <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
-        </Button>
-
-        <XStack alignItems="center" gap="$2">
+        />
+        <View style={styles.headerCenter}>
           <Ionicons name="heart" size={24} color="#EF4444" />
-          <Text fontSize={18} fontWeight="700" color="$color">
+          <Text variant="titleLarge" style={{ color: theme.colors.onSurface, marginLeft: 8 }}>
             {isZh ? '我的最愛' : 'My Favorites'}
           </Text>
-        </XStack>
-
-        <View width={40} />
-      </HeaderContainer>
+        </View>
+        <View style={styles.headerPlaceholder} />
+      </Surface>
 
       {/* Stats */}
-      <StatsBar>
-        <Text fontSize={14} color="$secondary" fontWeight="500">
+      <Surface style={styles.statsBar} elevation={0}>
+        <Text variant="labelLarge" style={{ color: theme.colors.secondary }}>
           {isZh ? `共 ${total} 個收藏` : `${total} favorites`}
         </Text>
-      </StatsBar>
+      </Surface>
 
       {/* List */}
       {favorites.length > 0 ? (
@@ -276,40 +218,131 @@ export function FavoritesScreen() {
           data={favorites}
           keyExtractor={item => item.id.toString()}
           renderItem={renderItem}
-          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+          contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={MibuBrand.brown}
+              tintColor={theme.colors.primary}
             />
           }
           showsVerticalScrollIndicator={false}
         />
       ) : (
-        <YStack flex={1} justifyContent="center" alignItems="center" padding="$6">
-          <Ionicons name="heart-outline" size={64} color={MibuBrand.tan} />
-          <Text
-            fontSize={18}
-            fontWeight="700"
-            color="$color"
-            marginTop="$4"
-            marginBottom="$2"
-          >
+        <View style={styles.emptyContainer}>
+          <Ionicons name="heart-outline" size={64} color={theme.colors.outline} />
+          <Text variant="titleMedium" style={[styles.emptyTitle, { color: theme.colors.onSurface }]}>
             {isZh ? '還沒有最愛' : 'No favorites yet'}
           </Text>
-          <Text
-            fontSize={14}
-            color="$placeholderColor"
-            textAlign="center"
-            lineHeight={20}
-          >
+          <Text variant="bodyMedium" style={[styles.emptySubtitle, { color: theme.colors.outline }]}>
             {isZh
               ? '在圖鑑中點擊愛心即可加入最愛'
               : 'Tap the heart icon in your collection to add favorites'}
           </Text>
-        </YStack>
+        </View>
       )}
-    </YStack>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingHorizontal: 4,
+    paddingBottom: 8,
+  },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerPlaceholder: {
+    width: 48,
+  },
+  statsBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: MibuBrand.tanLight,
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  itemCard: {
+    marginBottom: 12,
+    borderRadius: 12,
+  },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  itemContent: {
+    flex: 1,
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  categoryChip: {
+    height: 28,
+  },
+  categoryText: {
+    fontSize: 12,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ratingText: {
+    color: '#F59E0B',
+    fontWeight: '600',
+  },
+  placeName: {
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
+  locationText: {
+    flex: 1,
+  },
+  addedAt: {
+    opacity: 0.7,
+  },
+  removeBtn: {
+    margin: 0,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  emptyTitle: {
+    fontWeight: '700',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+});

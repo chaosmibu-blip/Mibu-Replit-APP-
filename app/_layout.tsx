@@ -4,11 +4,11 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { TamaguiProvider } from 'tamagui';
+import { PaperProvider } from 'react-native-paper';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AppProvider } from '../src/context/AppContext';
-import tamaguiConfig from '../tamagui.config';
+import { mibuLightTheme, mibuDarkTheme } from '../src/theme/paperTheme';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -20,8 +20,10 @@ export default function RootLayout() {
     return null;
   }
 
+  const paperTheme = colorScheme === 'dark' ? mibuDarkTheme : mibuLightTheme;
+
   return (
-    <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme ?? 'light'}>
+    <PaperProvider theme={paperTheme}>
       <AppProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack>
@@ -37,6 +39,6 @@ export default function RootLayout() {
           <StatusBar style="auto" />
         </ThemeProvider>
       </AppProvider>
-    </TamaguiProvider>
+    </PaperProvider>
   );
 }
