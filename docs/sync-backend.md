@@ -6,6 +6,48 @@
 
 ## 最新回報
 
+### 2026-01-19 #019：刪除圖鑑分類篩選
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #019 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+
+- [x] 刪除圖鑑頁面（CollectionScreen）的分類篩選按鈕
+  - 移除 FilterChips 元件及其 import
+  - 移除 `selectedFilter` 狀態和 `FILTER_OPTIONS` 定義
+  - 移除 `filteredCollection` 邏輯（直接使用 `collection`）
+  - 移除「顯示全部」按鈕區塊
+
+### EconomyScreen 渲染錯誤修復
+
+**問題根因**：
+- 後端 API `/api/user/level` 返回的物件結構可能是 `{ level: {...} }` 或直接 `{...}`
+- 後端使用 `currentLevel` 欄位名稱，前端期望 `level`
+- 直接 `setLevelInfo(levelData)` 導致 `levelInfo?.level` 取得整個物件而非數字
+
+**修復方式**：
+- 新增 API 回應格式處理邏輯（判斷是否有包裹層）
+- 映射後端 `currentLevel` 到前端 `level`
+- 確保所有欄位都有預設值
+
+### 修改的檔案
+
+| 檔案 | 變更 |
+|------|------|
+| `CollectionScreen.tsx` | 移除分類篩選功能 |
+| `EconomyScreen.tsx` | 修復 level API 回應處理邏輯 |
+| `HomeScreen.tsx` | 修復 level API 調用（getUserLevel → getLevelInfo）及回應處理 |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-19 #018：Lovable 設計系統實作
 
 | 項目 | 內容 |

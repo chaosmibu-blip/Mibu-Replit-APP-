@@ -115,6 +115,14 @@ export function SettingsScreen() {
       title: isZh ? '帳號' : 'Account',
       items: [
         {
+          icon: 'person-outline',
+          label: isZh ? '個人資料' : 'Profile',
+          action: () => router.push('/profile' as any),
+          hasArrow: true,
+          iconBg: '#FEF3C7',
+          iconColor: '#D97706',
+        },
+        {
           icon: 'gift-outline',
           label: isZh ? '推薦領好禮' : 'Refer & Earn',
           action: () => router.push('/referral' as any),
@@ -351,9 +359,6 @@ export function SettingsScreen() {
             <View style={styles.profileInfo}>
               <Text style={styles.profileName}>
                 {state.user.firstName || state.user.name || 'User'}
-              </Text>
-              <Text style={styles.profileEmail}>
-                {state.user.email || ''}
               </Text>
             </View>
             <TouchableOpacity 
@@ -634,11 +639,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    marginBottom: 2,
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: MibuBrand.copper,
   },
   editProfileButton: {
     width: 36,

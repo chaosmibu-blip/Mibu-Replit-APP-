@@ -78,12 +78,27 @@ export function EconomyScreen() {
         return;
       }
 
-      const [levelData, achievementsData] = await Promise.all([
+      const [levelResponse, achievementsData] = await Promise.all([
         economyApi.getLevelInfo(token),
         economyApi.getAchievements(token),
       ]);
 
-      setLevelInfo(levelData);
+      // 處理後端 API 回應格式（可能是 { level: {...} } 或直接 {...}）
+      const rawLevel = (levelResponse as any)?.level || levelResponse;
+
+      // 映射後端欄位名稱到前端格式
+      const mappedLevel: LevelInfo = {
+        level: rawLevel?.currentLevel ?? rawLevel?.level ?? 1,
+        currentExp: rawLevel?.currentExp ?? 0,
+        nextLevelExp: rawLevel?.nextLevelExp ?? 100,
+        totalExp: rawLevel?.totalExp ?? rawLevel?.currentExp ?? 0,
+        dailyQuota: rawLevel?.dailyPullLimit ?? 10,
+        tier: rawLevel?.tier ?? 1,
+        loginStreak: rawLevel?.loginStreak ?? 0,
+        recentExp: rawLevel?.recentExp ?? [],
+      };
+
+      setLevelInfo(mappedLevel);
       setAchievements(achievementsData.achievements);
     } catch (error) {
       console.error('Failed to load economy data:', error);
