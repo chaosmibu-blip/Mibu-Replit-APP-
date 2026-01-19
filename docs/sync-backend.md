@@ -6,6 +6,53 @@
 
 ## 最新回報
 
+### 2026-01-19 #017：Bug 修復與 UI 更新
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #017 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+
+**Phase 1：Bug 修復**
+
+- [x] 修復 EconomyScreen/HomeScreen 物件渲染錯誤
+  - `HomeScreen.tsx`: 修正 level 資料映射，使用正確屬性名稱
+    - `levelData.currentXp` → `levelData.currentExp`
+    - `levelData.nextLevelXp` → `levelData.nextLevelExp`
+    - `levelData.totalXp` → `levelData.totalExp`
+    - `levelData.phase` → `levelData.tier`
+  - 新增 `getLevelTitle()` 函數根據等級產生稱號
+- [x] 修復用戶名消失問題
+  - `ProfileScreen.tsx`: 儲存成功後同步更新 AppContext 的 user 狀態
+  - 確保 firstName/lastName 變更即時反映到全域狀態
+- [x] 更新 `economy.ts` 型別定義
+  - `LevelInfo` 新增 `tier?: number` 和 `loginStreak?: number`
+
+**UI 更新**
+
+- [x] 首頁活動區塊改名
+  - 「節慶活動」→「在地活動」
+  - 「Festivals」→「Local Activities」
+  - 圖標：`gift-outline` → `location-outline`
+  - 配色：紅色系 → 藍色系 (`#E0F2FE`, `#0284C7`)
+
+### 修改的檔案
+
+| 檔案 | 變更 |
+|------|------|
+| `HomeScreen.tsx` | 修正 level 映射、改名活動區塊 |
+| `ProfileScreen.tsx` | 新增 user 狀態同步 |
+| `economy.ts` | 新增 tier, loginStreak 欄位 |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-19 #013：API 補齊與錯誤碼更新
 
 | 項目 | 內容 |
