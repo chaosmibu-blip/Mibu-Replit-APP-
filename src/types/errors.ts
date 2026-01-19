@@ -93,6 +93,48 @@ export const SERVER_ERRORS = {
   E9004: 'MAINTENANCE_MODE',
 } as const;
 
+// E10xxx: 經濟系統相關錯誤
+export const ECONOMY_ERRORS = {
+  E10001: 'LEVEL_NOT_FOUND',
+  E10002: 'ACHIEVEMENT_NOT_FOUND',
+  E10003: 'ACHIEVEMENT_NOT_UNLOCKED',
+  E10004: 'REWARD_ALREADY_CLAIMED',
+  E10005: 'DAILY_LIMIT_REACHED',
+  E10006: 'DAILY_TASK_NOT_FOUND',
+  E10007: 'DAILY_TASK_ALREADY_COMPLETED',
+  E10008: 'INSUFFICIENT_COINS',
+} as const;
+
+// E11xxx: 眾籌系統相關錯誤
+export const CROWDFUNDING_ERRORS = {
+  E11001: 'CAMPAIGN_NOT_FOUND',
+  E11002: 'CAMPAIGN_NOT_ACTIVE',
+  E11003: 'CAMPAIGN_COMPLETED',
+  E11004: 'INVALID_CONTRIBUTION',
+  E11005: 'IAP_VERIFICATION_FAILED',
+} as const;
+
+// E12xxx: 推薦系統相關錯誤
+export const REFERRAL_ERRORS = {
+  E12001: 'REFERRAL_CODE_NOT_FOUND',
+  E12002: 'REFERRAL_CODE_INVALID',
+  E12003: 'REFERRAL_SELF_NOT_ALLOWED',
+  E12004: 'REFERRAL_ALREADY_USED',
+  E12005: 'REFERRAL_INSUFFICIENT_BALANCE',
+  E12006: 'WITHDRAW_MIN_AMOUNT',
+  E12007: 'WITHDRAW_PENDING',
+  E12008: 'BANK_INFO_REQUIRED',
+} as const;
+
+// E13xxx: 貢獻系統相關錯誤
+export const CONTRIBUTION_ERRORS = {
+  E13001: 'REPORT_DUPLICATE',
+  E13002: 'SUGGESTION_DUPLICATE',
+  E13003: 'VOTE_ALREADY_CAST',
+  E13004: 'VOTE_NOT_ELIGIBLE',
+  E13005: 'CONTRIBUTION_LIMIT_REACHED',
+} as const;
+
 // 合併所有錯誤碼
 export const ERROR_CODES = {
   ...AUTH_ERRORS,
@@ -103,6 +145,10 @@ export const ERROR_CODES = {
   ...RESOURCE_ERRORS,
   ...PAYMENT_ERRORS,
   ...SERVER_ERRORS,
+  ...ECONOMY_ERRORS,
+  ...CROWDFUNDING_ERRORS,
+  ...REFERRAL_ERRORS,
+  ...CONTRIBUTION_ERRORS,
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;
@@ -209,6 +255,40 @@ export function getErrorMessage(code: ErrorMessage, language: 'zh-TW' | 'en' = '
     SERVICE_UNAVAILABLE: { 'zh-TW': '服務暫時無法使用', en: 'Service unavailable' },
     INTERNAL_ERROR: { 'zh-TW': '系統錯誤，請稍後再試', en: 'Internal error' },
     MAINTENANCE_MODE: { 'zh-TW': '系統維護中', en: 'System under maintenance' },
+
+    // Economy errors (E10xxx)
+    LEVEL_NOT_FOUND: { 'zh-TW': '等級資料不存在', en: 'Level data not found' },
+    ACHIEVEMENT_NOT_FOUND: { 'zh-TW': '成就不存在', en: 'Achievement not found' },
+    ACHIEVEMENT_NOT_UNLOCKED: { 'zh-TW': '成就尚未解鎖', en: 'Achievement not unlocked' },
+    REWARD_ALREADY_CLAIMED: { 'zh-TW': '獎勵已領取', en: 'Reward already claimed' },
+    DAILY_LIMIT_REACHED: { 'zh-TW': '已達每日上限', en: 'Daily limit reached' },
+    DAILY_TASK_NOT_FOUND: { 'zh-TW': '找不到每日任務', en: 'Daily task not found' },
+    DAILY_TASK_ALREADY_COMPLETED: { 'zh-TW': '此任務今日已完成', en: 'Daily task already completed' },
+    INSUFFICIENT_COINS: { 'zh-TW': '金幣不足', en: 'Insufficient coins' },
+
+    // Crowdfunding errors (E11xxx)
+    CAMPAIGN_NOT_FOUND: { 'zh-TW': '募資活動不存在', en: 'Campaign not found' },
+    CAMPAIGN_NOT_ACTIVE: { 'zh-TW': '募資活動未開放', en: 'Campaign not active' },
+    CAMPAIGN_COMPLETED: { 'zh-TW': '募資活動已結束', en: 'Campaign completed' },
+    INVALID_CONTRIBUTION: { 'zh-TW': '無效的貢獻金額', en: 'Invalid contribution amount' },
+    IAP_VERIFICATION_FAILED: { 'zh-TW': 'IAP 驗證失敗', en: 'IAP verification failed' },
+
+    // Referral errors (E12xxx)
+    REFERRAL_CODE_NOT_FOUND: { 'zh-TW': '推薦碼不存在', en: 'Referral code not found' },
+    REFERRAL_CODE_INVALID: { 'zh-TW': '無效的推薦碼', en: 'Invalid referral code' },
+    REFERRAL_SELF_NOT_ALLOWED: { 'zh-TW': '不能推薦自己', en: 'Self-referral not allowed' },
+    REFERRAL_ALREADY_USED: { 'zh-TW': '已使用過推薦碼', en: 'Referral code already used' },
+    REFERRAL_INSUFFICIENT_BALANCE: { 'zh-TW': '餘額不足', en: 'Insufficient balance' },
+    WITHDRAW_MIN_AMOUNT: { 'zh-TW': '未達最低提現金額', en: 'Minimum withdrawal amount not met' },
+    WITHDRAW_PENDING: { 'zh-TW': '有待處理的提現申請', en: 'Withdrawal pending' },
+    BANK_INFO_REQUIRED: { 'zh-TW': '需要銀行帳號資訊', en: 'Bank info required' },
+
+    // Contribution errors (E13xxx)
+    REPORT_DUPLICATE: { 'zh-TW': '重複回報', en: 'Duplicate report' },
+    SUGGESTION_DUPLICATE: { 'zh-TW': '重複建議', en: 'Duplicate suggestion' },
+    VOTE_ALREADY_CAST: { 'zh-TW': '已投過票', en: 'Vote already cast' },
+    VOTE_NOT_ELIGIBLE: { 'zh-TW': '無投票資格', en: 'Not eligible to vote' },
+    CONTRIBUTION_LIMIT_REACHED: { 'zh-TW': '已達每日貢獻上限', en: 'Daily contribution limit reached' },
   };
 
   return messages[code]?.[language] || code;

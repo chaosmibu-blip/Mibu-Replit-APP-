@@ -94,10 +94,30 @@ class CommonApiService extends ApiBase {
     });
   }
 
+  /**
+   * 取消 SOS 警報（舊版，向後相容）
+   * @deprecated 請使用 cancelSOS
+   */
   async cancelSosAlert(token: string, alertId: number): Promise<{ success: boolean; alert: SosAlert }> {
     return this.request<{ success: boolean; alert: SosAlert }>(`/api/sos/alerts/${alertId}/cancel`, {
       method: 'PATCH',
       headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 取消 SOS 警報
+   * POST /api/sos/cancel
+   * @see 後端合約 #013
+   */
+  async cancelSOS(
+    token: string,
+    params: { sosId: number; reason?: string }
+  ): Promise<{ success: boolean; message?: string }> {
+    return this.request<{ success: boolean; message?: string }>('/api/sos/cancel', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
     });
   }
 
