@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { MibuBrand } from '../../../../../constants/Colors';
 
 interface Option {
   label: string;
@@ -38,7 +39,7 @@ export function Select({ options, value, onChange, placeholder, label, loading }
         <Text style={[styles.selectorText, !selectedOption && styles.placeholder]}>
           {loading ? '載入中...' : (selectedOption?.label || placeholder)}
         </Text>
-        <Ionicons name="chevron-down" size={20} color="#94a3b8" />
+        <Ionicons name="chevron-down" size={20} color={MibuBrand.tan} />
       </TouchableOpacity>
 
       <Modal visible={isOpen} transparent animationType="slide">
@@ -51,7 +52,7 @@ export function Select({ options, value, onChange, placeholder, label, loading }
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{placeholder}</Text>
               <TouchableOpacity onPress={() => setIsOpen(false)}>
-                <Ionicons name="close" size={24} color="#64748b" />
+                <Ionicons name="close" size={24} color={MibuBrand.copper} />
               </TouchableOpacity>
             </View>
 
@@ -80,7 +81,7 @@ export function Select({ options, value, onChange, placeholder, label, loading }
                       {item.label}
                     </Text>
                     {item.value === value && (
-                      <Ionicons name="checkmark" size={20} color="#6366f1" />
+                      <Ionicons name="checkmark" size={20} color={MibuBrand.brown} />
                     )}
                   </TouchableOpacity>
                 )}
@@ -101,27 +102,27 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#334155',
+    color: MibuBrand.brownDark,
     marginBottom: 8,
   },
   selector: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 16,
   },
   selectorText: {
     fontSize: 16,
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     fontWeight: '500',
   },
   placeholder: {
-    color: '#94a3b8',
+    color: MibuBrand.tan,
   },
   modalOverlay: {
     flex: 1,
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '70%',
@@ -140,12 +141,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: MibuBrand.tanLight,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   optionsList: {
     paddingHorizontal: 8,
@@ -160,14 +161,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   selectedOption: {
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.highlight,
   },
   optionText: {
     fontSize: 16,
-    color: '#334155',
+    color: MibuBrand.brownDark,
   },
   selectedOptionText: {
-    color: '#6366f1',
+    color: MibuBrand.brown,
     fontWeight: '600',
   },
   emptyState: {
@@ -177,6 +178,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#94a3b8',
+    color: MibuBrand.tan,
   },
 });

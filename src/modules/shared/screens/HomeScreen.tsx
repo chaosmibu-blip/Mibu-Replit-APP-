@@ -182,11 +182,6 @@ export function HomeScreen() {
     >
       {/* Header with greeting */}
       <View style={styles.header}>
-        <Image
-          source={require('../../../../assets/images/icon.png')}
-          style={styles.avatarImage}
-          defaultSource={require('../../../../assets/images/icon.png')}
-        />
         <View style={styles.greeting}>
           <Text style={styles.greetingTitle}>
             {isZh ? '嗨，旅行者！' : 'Hi, Traveler!'}
@@ -418,18 +413,9 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 20,
   },
-  avatarImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: MibuBrand.cream,
-  },
   greeting: {
-    marginLeft: 12,
     flex: 1,
   },
   greetingTitle: {

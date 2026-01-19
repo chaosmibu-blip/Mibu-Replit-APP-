@@ -609,16 +609,11 @@ export function GachaScreen() {
     >
       {/* 頂部 Logo 區 */}
       <View style={{ alignItems: 'center', marginBottom: 40 }}>
-        <Image
-          source={require('../../../../assets/images/icon.png')}
-          style={{ width: 88, height: 88, marginBottom: 16 }}
-          resizeMode="contain"
-        />
         <Text style={{ fontSize: 32, fontWeight: '800', color: MibuBrand.brown, letterSpacing: 3 }}>
           MIBU
         </Text>
         <Text style={{ fontSize: 15, color: MibuBrand.brownLight, marginTop: 6, fontWeight: '500' }}>
-          {state.language === 'zh-TW' ? '旅程扭蛋機' : 'Travel Gacha'}
+          {state.language === 'zh-TW' ? '今天去哪玩？老天說了算' : 'Let Fate Decide Your Trip'}
         </Text>
       </View>
 
@@ -820,16 +815,10 @@ export function GachaScreen() {
         onPress={handleGacha}
         disabled={!canSubmit || showLoadingAd}
       >
-        <Ionicons
-          name="sparkles"
-          size={24}
-          color={(!canSubmit || showLoadingAd) ? MibuBrand.brownLight : MibuBrand.warmWhite}
-        />
         <Text style={{
           fontSize: 20,
           fontWeight: '800',
           color: (!canSubmit || showLoadingAd) ? MibuBrand.brownLight : MibuBrand.warmWhite,
-          marginLeft: 12,
           letterSpacing: 1,
         }}>
           {isInventoryFull

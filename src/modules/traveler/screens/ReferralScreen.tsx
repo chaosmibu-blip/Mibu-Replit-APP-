@@ -89,7 +89,27 @@ export function ReferralScreen() {
         referralApi.getMyRank(token).catch(() => null),
       ]);
 
-      if (codeData) setMyCode(codeData);
+      // 如果還沒有推薦碼，自動生成一個
+      if (codeData) {
+        setMyCode(codeData);
+      } else {
+        // 自動生成推薦碼
+        try {
+          const result = await referralApi.generateCode(token);
+          if (result.success) {
+            setMyCode({
+              code: result.code,
+              createdAt: new Date().toISOString(),
+              usageCount: 0,
+              maxUsage: null,
+              isActive: true,
+            });
+          }
+        } catch {
+          // 靜默處理錯誤
+        }
+      }
+
       setReferrals(referralsData.referrals);
       setReferralStats(referralsData.stats);
       if (balanceData) setBalance(balanceData);

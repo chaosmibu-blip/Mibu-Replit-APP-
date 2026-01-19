@@ -115,16 +115,8 @@ export function SettingsScreen() {
       title: isZh ? '帳號' : 'Account',
       items: [
         {
-          icon: 'person-outline',
-          label: isZh ? '個人資料' : 'Profile',
-          action: () => router.push('/profile' as any),
-          hasArrow: true,
-          iconBg: MibuBrand.highlight,
-          iconColor: MibuBrand.brown,
-        },
-        {
           icon: 'gift-outline',
-          label: isZh ? '邀請好友賺獎勵' : 'Invite Friends & Earn',
+          label: isZh ? '推薦領好禮' : 'Refer & Earn',
           action: () => router.push('/referral' as any),
           hasArrow: true,
           highlight: true,
