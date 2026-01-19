@@ -132,7 +132,7 @@ export function ProfileScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
       </View>
     );
   }
@@ -150,7 +150,7 @@ export function ProfileScreen() {
         <Text style={styles.headerTitle}>{isZh ? '個人資料' : 'Profile'}</Text>
         <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveButton}>
           {saving ? (
-            <ActivityIndicator size="small" color="#6366f1" />
+            <ActivityIndicator size="small" color={MibuBrand.brown} />
           ) : (
             <Text style={styles.saveButtonText}>{isZh ? '儲存' : 'Save'}</Text>
           )}
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: MibuBrand.copper,
+    color: MibuBrand.brown,
   },
   content: {
     flex: 1,
@@ -392,20 +392,26 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   input: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 12,
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: 16,
     padding: 14,
     fontSize: 16,
     color: MibuBrand.dark,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   readOnlyField: {
     backgroundColor: MibuBrand.cream,
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 14,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   readOnlyText: {
     fontSize: 16,
@@ -418,11 +424,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 12,
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: 16,
     padding: 14,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   pickerText: {
     fontSize: 16,
@@ -435,10 +444,13 @@ const styles = StyleSheet.create({
   pickerOptions: {
     marginTop: 8,
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
+    borderRadius: 20,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   pickerOption: {
     padding: 14,

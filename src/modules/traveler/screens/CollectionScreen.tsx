@@ -332,11 +332,14 @@ export function CollectionScreen() {
               key={regionKey} 
               style={{
                 backgroundColor: MibuBrand.warmWhite,
-                borderRadius: 16,
-                borderWidth: 2,
-                borderColor: MibuBrand.tanLight,
-                marginBottom: 12,
+                borderRadius: 20,
+                marginBottom: 16,
                 overflow: 'hidden',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.06,
+                shadowRadius: 8,
+                elevation: 2,
               }}
             >
               <TouchableOpacity
@@ -461,14 +464,14 @@ export function CollectionScreen() {
                                     key={`${item.id}-${idx}`}
                                     style={{
                                       backgroundColor: MibuBrand.warmWhite,
-                                      borderRadius: 16,
+                                      borderRadius: 20,
                                       overflow: 'hidden',
                                       flexDirection: 'row',
-                                      shadowColor: MibuBrand.brown,
-                                      shadowOffset: { width: 0, height: 2 },
-                                      shadowOpacity: 0.06,
-                                      shadowRadius: 8,
-                                      elevation: 2,
+                                      shadowColor: '#000',
+                                      shadowOffset: { width: 0, height: 3 },
+                                      shadowOpacity: 0.08,
+                                      shadowRadius: 10,
+                                      elevation: 3,
                                     }}
                                     onPress={() => setSelectedItem(item)}
                                   >

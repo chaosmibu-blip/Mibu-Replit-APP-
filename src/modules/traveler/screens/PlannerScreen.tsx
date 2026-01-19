@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
+import { MibuBrand } from '../../../../constants/Colors';
 
 export function PlannerScreen() {
   const { t, state } = useApp();
@@ -62,7 +63,7 @@ export function PlannerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   content: {
     padding: 20,
@@ -72,22 +73,25 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 24,
   },
   comingSoon: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 20,
     padding: 32,
     alignItems: 'center',
     marginBottom: 24,
-    borderWidth: 2,
-    borderColor: '#f1f5f9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 4,
   },
   iconContainer: {
     width: 80,
     height: 80,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.cream,
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
@@ -96,12 +100,12 @@ const styles = StyleSheet.create({
   comingSoonTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 8,
   },
   comingSoonDesc: {
     fontSize: 14,
-    color: '#64748b',
+    color: MibuBrand.copper,
     textAlign: 'center',
   },
   featureList: {
@@ -110,12 +114,15 @@ const styles = StyleSheet.create({
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     gap: 16,
-    borderWidth: 2,
-    borderColor: '#f1f5f9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   featureText: {
     flex: 1,
@@ -123,11 +130,11 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 2,
   },
   featureDesc: {
     fontSize: 14,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
 });
