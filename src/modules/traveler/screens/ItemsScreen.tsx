@@ -13,7 +13,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useApp } from '../../../context/AppContext';
 import { GachaItem, Language, LocalizedContent, GachaMeta } from '../../../types';
 import { getCategoryLabel, getCategoryColor } from '../../../constants/translations';
-import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
 import { InfoToast } from '../../shared/components/InfoToast';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -22,7 +22,7 @@ const RARITY_COLORS: Record<string, string> = {
   SR: MibuBrand.tierSR,
   S: MibuBrand.tierS,
   R: MibuBrand.tierR,
-  N: '#94a3b8',
+  N: MibuBrand.tan,
 };
 
 const RARITY_BG_COLORS: Record<string, string> = {
@@ -31,7 +31,7 @@ const RARITY_BG_COLORS: Record<string, string> = {
   SR: MibuBrand.tierSRBg,
   S: MibuBrand.tierSBg,
   R: MibuBrand.tierRBg,
-  N: '#f1f5f9',
+  N: MibuBrand.creamLight,
 };
 
 interface ItemCardProps {

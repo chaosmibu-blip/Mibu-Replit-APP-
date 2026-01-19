@@ -26,7 +26,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { collectionApi } from '../../../services/collectionApi';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { FavoriteItem } from '../../../types/collection';
 
 export function FavoritesScreen() {
@@ -138,7 +138,7 @@ export function FavoritesScreen() {
             </Chip>
             {item.rating && (
               <View style={styles.ratingBadge}>
-                <Ionicons name="star" size={14} color="#F59E0B" />
+                <Ionicons name="star" size={14} color={SemanticColors.starYellow} />
                 <Text variant="labelSmall" style={styles.ratingText}>
                   {item.rating.toFixed(1)}
                 </Text>
@@ -169,7 +169,7 @@ export function FavoritesScreen() {
         {/* 移除按鈕 */}
         <IconButton
           icon="heart"
-          iconColor="#EF4444"
+          iconColor={SemanticColors.errorDark}
           size={24}
           onPress={() => handleRemoveFavorite(item.placeId, item.placeName)}
           style={styles.removeBtn}
@@ -197,7 +197,7 @@ export function FavoritesScreen() {
           onPress={() => router.back()}
         />
         <View style={styles.headerCenter}>
-          <Ionicons name="heart" size={24} color="#EF4444" />
+          <Ionicons name="heart" size={24} color={SemanticColors.errorDark} />
           <Text variant="titleLarge" style={{ color: theme.colors.onSurface, marginLeft: 8 }}>
             {isZh ? '我的最愛' : 'My Favorites'}
           </Text>
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ratingText: {
-    color: '#F59E0B',
+    color: SemanticColors.starYellow,
     fontWeight: '600',
   },
   placeName: {

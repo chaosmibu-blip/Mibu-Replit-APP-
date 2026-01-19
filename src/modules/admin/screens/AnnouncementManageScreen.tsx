@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { Announcement, AnnouncementType } from '../../../types';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 
 type EditMode = 'create' | 'edit' | null;
 
@@ -187,9 +187,9 @@ export function AnnouncementManageScreen() {
   const getTypeColor = (type: AnnouncementType) => {
     switch (type) {
       case 'announcement': return MibuBrand.brown;
-      case 'flash_event': return '#f59e0b';
+      case 'flash_event': return SemanticColors.starYellow;
       case 'holiday_event': return '#ec4899';
-      default: return '#64748b';
+      default: return MibuBrand.tan;
     }
   };
 
@@ -211,7 +211,7 @@ export function AnnouncementManageScreen() {
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
         <TouchableOpacity style={styles.addButton} onPress={handleCreate}>
-          <Ionicons name="add" size={24} color="#ffffff" />
+          <Ionicons name="add" size={24} color={MibuBrand.warmWhite} />
         </TouchableOpacity>
       </View>
 
@@ -242,7 +242,7 @@ export function AnnouncementManageScreen() {
                   <Text style={styles.editButtonText}>{translations.edit}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item)}>
-                  <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                  <Ionicons name="trash-outline" size={16} color={SemanticColors.errorDark} />
                   <Text style={styles.deleteButtonText}>{translations.delete}</Text>
                 </TouchableOpacity>
               </View>
@@ -259,7 +259,7 @@ export function AnnouncementManageScreen() {
                 {editMode === 'create' ? translations.createTitle : translations.editTitle}
               </Text>
               <TouchableOpacity onPress={() => setEditMode(null)}>
-                <Ionicons name="close" size={24} color="#64748b" />
+                <Ionicons name="close" size={24} color={MibuBrand.tan} />
               </TouchableOpacity>
             </View>
 
@@ -318,8 +318,8 @@ export function AnnouncementManageScreen() {
                 <Switch
                   value={formData.isActive}
                   onValueChange={value => setFormData(prev => ({ ...prev, isActive: value }))}
-                  trackColor={{ false: '#e2e8f0', true: MibuBrand.copper }}
-                  thumbColor={formData.isActive ? MibuBrand.brown : '#f4f3f4'}
+                  trackColor={{ false: MibuBrand.tanLight, true: MibuBrand.copper }}
+                  thumbColor={formData.isActive ? MibuBrand.brown : MibuBrand.creamLight}
                 />
               </View>
             </ScrollView>
@@ -330,7 +330,7 @@ export function AnnouncementManageScreen() {
               </TouchableOpacity>
               <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={actionLoading}>
                 {actionLoading ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
                 ) : (
                   <Text style={styles.saveButtonText}>{translations.save}</Text>
                 )}
@@ -361,16 +361,16 @@ const styles = StyleSheet.create({
   typeBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   typeBadgeText: { fontSize: 12, fontWeight: '600' },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  activeStatus: { backgroundColor: '#dcfce7' },
-  inactiveStatus: { backgroundColor: '#fee2e2' },
-  statusText: { fontSize: 11, fontWeight: '600', color: '#16a34a' },
+  activeStatus: { backgroundColor: SemanticColors.successLight },
+  inactiveStatus: { backgroundColor: SemanticColors.errorLight },
+  statusText: { fontSize: 11, fontWeight: '600', color: SemanticColors.successDark },
   cardTitle: { fontSize: 16, fontWeight: '700', color: MibuBrand.brownDark, marginBottom: 6 },
   cardContent: { fontSize: 14, color: MibuBrand.copper, lineHeight: 20, marginBottom: 12 },
   cardActions: { flexDirection: 'row', gap: 12 },
   editButton: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: MibuBrand.highlight, borderRadius: 8 },
   editButtonText: { fontSize: 13, fontWeight: '600', color: MibuBrand.brown },
-  deleteButton: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#fef2f2', borderRadius: 8 },
-  deleteButtonText: { fontSize: 13, fontWeight: '600', color: '#ef4444' },
+  deleteButton: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: SemanticColors.errorLight, borderRadius: 8 },
+  deleteButtonText: { fontSize: 13, fontWeight: '600', color: SemanticColors.errorDark },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: MibuBrand.warmWhite, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '90%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: MibuBrand.tanLight },
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   typeOption: { flex: 1, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, backgroundColor: MibuBrand.creamLight, alignItems: 'center' },
   typeOptionActive: { backgroundColor: MibuBrand.brown },
   typeOptionText: { fontSize: 13, fontWeight: '600', color: MibuBrand.copper },
-  typeOptionTextActive: { color: '#ffffff' },
+  typeOptionTextActive: { color: MibuBrand.warmWhite },
   input: { backgroundColor: MibuBrand.creamLight, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: MibuBrand.brownDark, borderWidth: 1, borderColor: MibuBrand.tanLight },
   textArea: { height: 100, textAlignVertical: 'top' },
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, paddingVertical: 12 },
@@ -390,5 +390,5 @@ const styles = StyleSheet.create({
   cancelButton: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: MibuBrand.creamLight, alignItems: 'center' },
   cancelButtonText: { fontSize: 16, fontWeight: '600', color: MibuBrand.copper },
   saveButton: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: MibuBrand.brown, alignItems: 'center' },
-  saveButtonText: { fontSize: 16, fontWeight: '700', color: '#ffffff' },
+  saveButtonText: { fontSize: 16, fontWeight: '700', color: MibuBrand.warmWhite },
 });
