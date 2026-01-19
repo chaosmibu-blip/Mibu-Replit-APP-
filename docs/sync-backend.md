@@ -88,9 +88,17 @@
 | 來源 | 後端 sync-app.md #017 |
 | 收到時間 | 2026-01-19 |
 | 完成時間 | 2026-01-19 |
-| 狀態 | ✅ 完成 |
+| 狀態 | ✅ 完成（含 Part 4 補齊） |
 
 ### 完成項目
+
+**Part 4：圖鑑地圖按鈕更新**（2026-01-19 補齊）
+
+- [x] 更新 `CollectionScreen.tsx` 圖鑑詳情彈窗
+  - `handleNavigate()` 從 Google Maps 導航改為 Google Search 搜尋
+  - 按鈕圖標：`navigate` → `search`
+  - 按鈕文字：「在 Google 地圖中查看」→「在 Google 搜尋」
+  - 與扭蛋卡片（ItemsScreen）行為一致
 
 **Phase 1：Bug 修復**
 
@@ -122,6 +130,7 @@
 | `HomeScreen.tsx` | 修正 level 映射、改名活動區塊 |
 | `ProfileScreen.tsx` | 新增 user 狀態同步 |
 | `economy.ts` | 新增 tier, loginStreak 欄位 |
+| `CollectionScreen.tsx` | 圖鑑按鈕改為 Google Search（Part 4 補齊） |
 
 **Phase 2：設計系統標準化**
 
