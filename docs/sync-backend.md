@@ -6,6 +6,117 @@
 
 ## 最新回報
 
+### 2026-01-19 #012：六層架構一致性比對
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #012 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 比對範圍
+- `src/services/*Api.ts` (16 個檔案) vs `docs/contracts/APP.md`
+- `src/types/*.ts` (19 個檔案) vs 後端合約
+- `src/types/errors.ts` vs `docs/contracts/COMMON.md`
+
+### 比對結果摘要
+
+| 類別 | 數量 | 狀態 |
+|------|------|------|
+| 完全匹配端點 | 50+ | ✅ |
+| 前端缺失端點 | 2 | ⚠️ 需補齊 |
+| 前端獨有端點 | 15+ | ❓ 待後端確認 |
+| 缺失錯誤碼範圍 | 4 | ⚠️ 需補齊 |
+
+### ✅ 完全匹配的 API 服務
+
+以下服務已完全對齊後端合約：
+
+| 服務檔案 | 端點數量 | 備註 |
+|----------|----------|------|
+| `economyApi.ts` | 5 | 等級、經驗、成就、每日任務 |
+| `crowdfundingApi.ts` | 4 | 募資活動、贊助 |
+| `referralApi.ts` | 11 | 推薦碼、排行榜、餘額 |
+| `contributionApi.ts` | 11 | 回報、建議、投票 |
+| `gachaApi.ts` | 6 | 扭蛋核心功能 |
+| `collectionApi.ts` | 6 | 圖鑑、最愛 |
+| `inventoryApi.ts` | 4 | 背包系統 |
+| `authApi.ts` | 8 | 認證、帳號綁定 |
+| `commonApi.ts` | 12 | SOS、通知、設定 |
+
+### ⚠️ 前端缺失端點（需補齊）
+
+| 端點 | 功能 | 建議處理 |
+|------|------|----------|
+| `GET /api/coupons/verify/:code` | 驗證優惠券有效性 | 新增至 `couponApi.ts` |
+| `POST /api/sos/cancel` | 取消 SOS 警報 | 新增至 `commonApi.ts` |
+
+### ❓ 前端獨有端點（待後端確認）
+
+以下端點存在於前端但未見於 `contracts/APP.md`，需確認是否為：
+1. 後端合約遺漏
+2. 已棄用端點
+3. 開發中功能
+
+| 端點 | 所在服務 |
+|------|----------|
+| `GET /api/gacha/pool` | gachaApi.ts |
+| `GET /api/gacha/prize-pool` | gachaApi.ts |
+| `GET /api/gacha/history` | gachaApi.ts |
+| `GET /api/gacha/tiers` | gachaApi.ts |
+| `GET /api/sos/eligibility` | commonApi.ts |
+| `GET /api/collections/stats` | collectionApi.ts |
+| `POST /api/collections/add` | collectionApi.ts (可能與 /api/collections 重複) |
+| `GET /api/inventory/stats` | inventoryApi.ts |
+| `POST /api/inventory/add` | inventoryApi.ts |
+| `GET /api/coupons/my` | couponApi.ts |
+| `POST /api/coupons/redeem` | couponApi.ts |
+| `GET /api/config/app` | configApi.ts |
+| `GET /api/config/mapbox` | configApi.ts |
+| `GET /api/merchant/*` | merchantApi.ts (多個端點) |
+| `GET /api/specialist/*` | specialistApi.ts (多個端點) |
+
+### ⚠️ 缺失錯誤碼範圍
+
+`src/types/errors.ts` 缺少以下錯誤碼範圍（已在 `COMMON.md` 定義）：
+
+| 範圍 | 類別 | 範例錯誤碼 |
+|------|------|-----------|
+| E10xxx | 經濟系統 | `INSUFFICIENT_XP`, `ALREADY_CLAIMED` |
+| E11xxx | 眾籌系統 | `CAMPAIGN_NOT_ACTIVE`, `ALREADY_CONTRIBUTED` |
+| E12xxx | 推薦系統 | `INVALID_REFERRAL_CODE`, `SELF_REFERRAL_NOT_ALLOWED` |
+| E13xxx | 貢獻系統 | `ALREADY_VOTED`, `REPORT_NOT_FOUND` |
+
+### 型別定義比對
+
+| 類型檔案 | 狀態 | 備註 |
+|----------|------|------|
+| `gacha.ts` | ✅ | 完整匹配 |
+| `collection.ts` | ✅ | 完整匹配 |
+| `inventory.ts` | ✅ | 完整匹配 |
+| `economy.ts` | ✅ | 完整匹配 |
+| `crowdfunding.ts` | ✅ | 完整匹配 |
+| `referral.ts` | ✅ | 完整匹配 |
+| `contribution.ts` | ✅ | 完整匹配 |
+| `errors.ts` | ⚠️ | 缺少 E10xxx-E13xxx |
+
+### 建議行動項目
+
+1. **立即處理**
+   - [ ] 補齊 `couponApi.ts` 的 `verifyCoupon(token, code)` 方法
+   - [ ] 補齊 `commonApi.ts` 的 `cancelSOS(token, sosId)` 方法
+   - [ ] 更新 `errors.ts` 加入 E10xxx-E13xxx 錯誤碼
+
+2. **待後端確認**
+   - [ ] 請後端確認前端獨有端點是否應加入 `contracts/APP.md`
+   - [ ] 確認 Merchant/Specialist 端點是否需要獨立合約文件
+
+### 異常回報
+（無重大異常，僅有上述需補齊項目）
+
+---
+
 ### 2026-01-19 #011：低優先級 API 補齊
 
 | 項目 | 內容 |
