@@ -28,6 +28,8 @@ import {
   ReferralCode,
   Referral,
   ReferralBalance,
+  LeaderboardEntry,
+  LeaderboardPeriod,
 } from '../../../types/referral';
 
 // 獎勵等級設定
@@ -45,22 +47,6 @@ const REWARD_TIERS: RewardTier[] = [
   { count: 10, reward: 'NT$ 100 現金回饋', icon: 'cash', color: '#DC2626' },
 ];
 
-// 排行榜用戶資料
-interface LeaderboardUser {
-  rank: number;
-  name: string;
-  inviteCount: number;
-  isCurrentUser?: boolean;
-}
-
-// 模擬本週排行榜資料（未來可接 API）
-const MOCK_LEADERBOARD: LeaderboardUser[] = [
-  { rank: 1, name: '旅遊達人小明', inviteCount: 23 },
-  { rank: 2, name: 'Adventure王', inviteCount: 18 },
-  { rank: 3, name: '背包客阿花', inviteCount: 15 },
-  { rank: 4, name: '環遊世界小美', inviteCount: 12 },
-  { rank: 5, name: '探險家Jason', inviteCount: 9 },
-];
 
 export function ReferralScreen() {
   const { state, getToken } = useApp();
@@ -82,6 +68,9 @@ export function ReferralScreen() {
     totalRewardEarned: 0
   });
   const [balance, setBalance] = useState<ReferralBalance | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [myRank, setMyRank] = useState<{ rank: number; isOnLeaderboard: boolean } | null>(null);
+  const [leaderboardPeriod, setLeaderboardPeriod] = useState<LeaderboardPeriod>('weekly');
 
   const loadData = useCallback(async () => {
     try {
@@ -92,16 +81,20 @@ export function ReferralScreen() {
       }
 
       // 載入所有資料
-      const [codeData, referralsData, balanceData] = await Promise.all([
+      const [codeData, referralsData, balanceData, leaderboardData, myRankData] = await Promise.all([
         referralApi.getMyCode(token).catch(() => null),
         referralApi.getMyReferrals(token).catch(() => ({ referrals: [], stats: { totalReferrals: 0, activeReferrals: 0, totalRewardEarned: 0 } })),
         referralApi.getBalance(token).catch(() => null),
+        referralApi.getLeaderboard(token, { period: leaderboardPeriod }).catch(() => ({ success: false, leaderboard: [], period: 'weekly' as LeaderboardPeriod })),
+        referralApi.getMyRank(token).catch(() => null),
       ]);
 
       if (codeData) setMyCode(codeData);
       setReferrals(referralsData.referrals);
       setReferralStats(referralsData.stats);
       if (balanceData) setBalance(balanceData);
+      if (leaderboardData.success) setLeaderboard(leaderboardData.leaderboard);
+      if (myRankData) setMyRank({ rank: myRankData.rank, isOnLeaderboard: myRankData.isOnLeaderboard });
 
     } catch (error) {
       console.error('Failed to load referral data:', error);
@@ -109,7 +102,7 @@ export function ReferralScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [getToken, router]);
+  }, [getToken, router, leaderboardPeriod]);
 
   useEffect(() => {
     loadData();
@@ -303,65 +296,75 @@ export function ReferralScreen() {
             </Text>
           </View>
           <View style={styles.leaderboardCard}>
-            {MOCK_LEADERBOARD.map((user, index) => {
-              // 前三名的徽章顏色
-              const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32']; // 金銀銅
-              const isTopThree = user.rank <= 3;
+            {leaderboard.length > 0 ? (
+              leaderboard.slice(0, 5).map((user, index) => {
+                // 前三名的徽章顏色
+                const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32']; // 金銀銅
+                const isTopThree = user.rank <= 3;
+                const isCurrentUser = myRank?.rank === user.rank && myRank?.isOnLeaderboard;
 
-              return (
-                <View
-                  key={user.rank}
-                  style={[
-                    styles.leaderboardItem,
-                    index < MOCK_LEADERBOARD.length - 1 && styles.leaderboardItemBorder,
-                    user.isCurrentUser && styles.leaderboardItemHighlight,
-                  ]}
-                >
-                  {/* 排名 */}
+                return (
                   <View
+                    key={user.rank}
                     style={[
-                      styles.rankBadge,
-                      isTopThree && { backgroundColor: rankColors[user.rank - 1] },
+                      styles.leaderboardItem,
+                      index < Math.min(leaderboard.length, 5) - 1 && styles.leaderboardItemBorder,
+                      isCurrentUser && styles.leaderboardItemHighlight,
                     ]}
                   >
-                    {isTopThree ? (
-                      <Ionicons name="medal" size={16} color="#fff" />
-                    ) : (
-                      <Text style={styles.rankText}>{user.rank}</Text>
-                    )}
-                  </View>
+                    {/* 排名 */}
+                    <View
+                      style={[
+                        styles.rankBadge,
+                        isTopThree && { backgroundColor: rankColors[user.rank - 1] },
+                      ]}
+                    >
+                      {isTopThree ? (
+                        <Ionicons name="medal" size={16} color="#fff" />
+                      ) : (
+                        <Text style={styles.rankText}>{user.rank}</Text>
+                      )}
+                    </View>
 
-                  {/* 頭像 */}
-                  <View
-                    style={[
-                      styles.leaderboardAvatar,
-                      isTopThree && { borderColor: rankColors[user.rank - 1], borderWidth: 2 },
-                    ]}
-                  >
-                    <Text style={styles.leaderboardAvatarText}>
-                      {user.name.charAt(0)}
+                    {/* 頭像 */}
+                    <View
+                      style={[
+                        styles.leaderboardAvatar,
+                        isTopThree && { borderColor: rankColors[user.rank - 1], borderWidth: 2 },
+                      ]}
+                    >
+                      <Text style={styles.leaderboardAvatarText}>
+                        {user.nickname.charAt(0)}
+                      </Text>
+                    </View>
+
+                    {/* 名稱 */}
+                    <Text
+                      style={[
+                        styles.leaderboardName,
+                        isCurrentUser && styles.leaderboardNameHighlight,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {user.nickname}
                     </Text>
-                  </View>
 
-                  {/* 名稱 */}
-                  <Text
-                    style={[
-                      styles.leaderboardName,
-                      user.isCurrentUser && styles.leaderboardNameHighlight,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {user.name}
-                  </Text>
-
-                  {/* 邀請數 */}
-                  <View style={styles.inviteCountBadge}>
-                    <Ionicons name="person-add" size={12} color={MibuBrand.brown} />
-                    <Text style={styles.inviteCountText}>{user.inviteCount}</Text>
+                    {/* 邀請數 */}
+                    <View style={styles.inviteCountBadge}>
+                      <Ionicons name="person-add" size={12} color={MibuBrand.brown} />
+                      <Text style={styles.inviteCountText}>{user.referralCount}</Text>
+                    </View>
                   </View>
-                </View>
-              );
-            })}
+                );
+              })
+            ) : (
+              <View style={styles.emptyLeaderboard}>
+                <Ionicons name="people-outline" size={32} color={MibuBrand.tan} />
+                <Text style={styles.emptyLeaderboardText}>
+                  {isZh ? '暫無排行資料' : 'No ranking data yet'}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -739,6 +742,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: MibuBrand.brown,
+  },
+  emptyLeaderboard: {
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyLeaderboardText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: MibuBrand.tan,
   },
   codeCard: {
     backgroundColor: MibuBrand.warmWhite,

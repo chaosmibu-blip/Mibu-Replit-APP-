@@ -6,6 +6,53 @@
 
 ## 最新回報
 
+### 2026-01-19 #008
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #008 API 服務層補齊 |
+| 收到時間 | 2026-01-19 |
+| 完成時間 | 2026-01-19 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+- [x] `economyApi.ts` 新增每日任務 API
+  - `getDailyTasks(token)` → `GET /api/user/daily-tasks`
+  - `completeDailyTask(token, taskId)` → `POST /api/user/daily-tasks/:id/complete`
+- [x] `referralApi.ts` 新增排行榜 API
+  - `getLeaderboard(token, params)` → `GET /api/referral/leaderboard`
+  - `getMyRank(token)` → `GET /api/referral/leaderboard/my-rank`
+- [x] `commonApi.ts` 新增緊急聯絡人 CRUD
+  - `getSOSContacts(token)` → `GET /api/sos/contacts`
+  - `addSOSContact(token, params)` → `POST /api/sos/contacts`
+  - `updateSOSContact(token, contactId, params)` → `PUT /api/sos/contacts/:id`
+  - `deleteSOSContact(token, contactId)` → `DELETE /api/sos/contacts/:id`
+- [x] 新增對應 TypeScript 型別定義
+  - `src/types/economy.ts`: `DailyTask`, `DailyTasksResponse`, `CompleteDailyTaskResponse`
+  - `src/types/referral.ts`: `LeaderboardEntry`, `LeaderboardResponse`, `MyRankResponse`
+  - `src/types/sos.ts`: `SOSContact`, `CreateSOSContactParams`, `UpdateSOSContactParams`
+- [x] 更新 `ReferralScreen.tsx` 使用真實排行榜 API
+  - 移除 MOCK_LEADERBOARD 模擬資料
+  - 整合 `getLeaderboard()` 和 `getMyRank()` API
+  - 新增空狀態顯示
+
+### 使用的 API
+| Endpoint | 功能 |
+|----------|------|
+| `GET /api/user/daily-tasks` | 取得每日任務列表 |
+| `POST /api/user/daily-tasks/:id/complete` | 完成每日任務 |
+| `GET /api/referral/leaderboard` | 取得推薦排行榜 |
+| `GET /api/referral/leaderboard/my-rank` | 取得我的排名 |
+| `GET /api/sos/contacts` | 取得緊急聯絡人 |
+| `POST /api/sos/contacts` | 新增緊急聯絡人 |
+| `PUT /api/sos/contacts/:id` | 更新緊急聯絡人 |
+| `DELETE /api/sos/contacts/:id` | 刪除緊急聯絡人 |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-18 #007
 
 | 項目 | 內容 |
