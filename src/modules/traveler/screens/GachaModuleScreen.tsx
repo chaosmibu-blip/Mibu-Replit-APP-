@@ -5,6 +5,7 @@ import { GachaTopNav, GachaSubView } from '../../shared/components/ModuleNav';
 import { GachaScreen } from './GachaScreen';
 import { CollectionScreen } from './CollectionScreen';
 import { ItemBoxScreen } from './ItemBoxScreen';
+import { MibuBrand } from '../../../../constants/Colors';
 
 export function GachaModuleScreen() {
   const { state } = useApp();
@@ -25,7 +26,7 @@ export function GachaModuleScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
       <GachaTopNav
         currentTab={currentTab}
         onChange={setCurrentTab}
@@ -33,7 +34,7 @@ export function GachaModuleScreen() {
         hasNewCollection={hasNewCollection}
         hasNewItems={hasNewItems}
       />
-      <View style={{ flex: 1, backgroundColor: currentTab === 'gacha' ? '#f8fafc' : '#ffffff' }}>
+      <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
         {renderContent()}
       </View>
     </SafeAreaView>
