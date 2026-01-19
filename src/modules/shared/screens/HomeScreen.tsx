@@ -84,8 +84,14 @@ export function HomeScreen() {
       // 載入用戶等級資料
       if (token) {
         try {
-          const levelData = await economyApi.getUserLevel(token);
-          if (levelData) {
+          const levelResponse = await economyApi.getLevelInfo(token);
+          if (levelResponse) {
+            // 處理後端 API 回應格式（可能是 { level: {...} } 或直接 {...}）
+            const rawLevel = (levelResponse as any)?.level || levelResponse;
+
+            // 後端返回 currentLevel，前端需要映射
+            const userLv = rawLevel?.currentLevel ?? rawLevel?.level ?? 1;
+
             // 根據等級決定稱號
             const getLevelTitle = (level: number): string => {
               if (level >= 50) return isZh ? '傳奇旅者' : 'Legendary';
@@ -96,13 +102,13 @@ export function HomeScreen() {
             };
 
             setUserLevel({
-              level: levelData.level ?? 1,
-              title: getLevelTitle(levelData.level ?? 1),
-              phase: levelData.tier ?? 1,
-              currentXp: levelData.currentExp ?? 0,
-              nextLevelXp: levelData.nextLevelExp ?? 100,
-              totalXp: levelData.totalExp ?? 0,
-              loginStreak: levelData.loginStreak ?? 1,
+              level: userLv,
+              title: getLevelTitle(userLv),
+              phase: rawLevel?.tier ?? 1,
+              currentXp: rawLevel?.currentExp ?? 0,
+              nextLevelXp: rawLevel?.nextLevelExp ?? 100,
+              totalXp: rawLevel?.totalExp ?? rawLevel?.currentExp ?? 0,
+              loginStreak: rawLevel?.loginStreak ?? 1,
             });
           }
         } catch {

@@ -23,17 +23,25 @@
   - 移除 `filteredCollection` 邏輯（直接使用 `collection`）
   - 移除「顯示全部」按鈕區塊
 
-### 關於 EconomyScreen 渲染錯誤
+### EconomyScreen 渲染錯誤修復
 
-- 經檢查 `EconomyScreen.tsx` 和 `HomeScreen.tsx`，程式碼已正確使用 `levelInfo?.level`、`levelInfo?.title` 等屬性存取方式
-- 未發現直接渲染 `{level}` 或 `{levelData}` 物件的問題
-- 如仍有錯誤，請提供具體的錯誤行號或截圖
+**問題根因**：
+- 後端 API `/api/user/level` 返回的物件結構可能是 `{ level: {...} }` 或直接 `{...}`
+- 後端使用 `currentLevel` 欄位名稱，前端期望 `level`
+- 直接 `setLevelInfo(levelData)` 導致 `levelInfo?.level` 取得整個物件而非數字
+
+**修復方式**：
+- 新增 API 回應格式處理邏輯（判斷是否有包裹層）
+- 映射後端 `currentLevel` 到前端 `level`
+- 確保所有欄位都有預設值
 
 ### 修改的檔案
 
 | 檔案 | 變更 |
 |------|------|
 | `CollectionScreen.tsx` | 移除分類篩選功能 |
+| `EconomyScreen.tsx` | 修復 level API 回應處理邏輯 |
+| `HomeScreen.tsx` | 修復 level API 調用（getUserLevel → getLevelInfo）及回應處理 |
 
 ### 異常回報
 （無）
