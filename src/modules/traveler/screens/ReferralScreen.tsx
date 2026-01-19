@@ -250,55 +250,167 @@ export function ReferralScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Section */}
-        <View style={styles.heroCard}>
-          <View style={styles.heroIconWrapper}>
-            <Ionicons name="gift" size={48} color={MibuBrand.brown} />
+        {/* Prominent Referral Code Card */}
+        {myCode ? (
+          <View style={styles.referralCodeCard}>
+            <View style={styles.codeCardHeader}>
+              <Ionicons name="gift" size={24} color="#fff" />
+              <Text style={styles.codeCardTitle}>
+                {isZh ? '我的專屬推薦碼' : 'My Referral Code'}
+              </Text>
+            </View>
+            <View style={styles.codeDisplayArea}>
+              <Text style={styles.codeTextLarge}>{myCode.code}</Text>
+            </View>
+            <View style={styles.codeCardActions}>
+              <TouchableOpacity
+                style={styles.copyButton}
+                onPress={handleCopyCode}
+              >
+                <Ionicons name="copy-outline" size={20} color={MibuBrand.brown} />
+                <Text style={styles.copyButtonText}>
+                  {isZh ? '複製' : 'Copy'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.shareButton}
+                onPress={handleShareCode}
+              >
+                <Ionicons name="share-social" size={20} color="#fff" />
+                <Text style={styles.shareButtonText}>
+                  {isZh ? '分享給好友' : 'Share'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.codeUsageText}>
+              {isZh
+                ? `已有 ${myCode.usageCount} 位好友使用此推薦碼`
+                : `${myCode.usageCount} friends used this code`}
+            </Text>
           </View>
-          <Text style={styles.heroTitle}>
-            {isZh ? '邀請好友，一起賺獎勵！' : 'Invite & Earn Together!'}
-          </Text>
-          <Text style={styles.heroSubtitle}>
-            {isZh
-              ? '每邀請一位好友成功註冊，你們都能獲得豐富獎勵'
-              : 'Both you and your friend earn rewards when they sign up'}
-          </Text>
-        </View>
+        ) : (
+          <View style={styles.generateCodeCard}>
+            <View style={styles.generateCardInner}>
+              <Ionicons name="gift-outline" size={48} color={MibuBrand.brown} />
+              <Text style={styles.generateTitle}>
+                {isZh ? '生成你的專屬推薦碼' : 'Generate Your Code'}
+              </Text>
+              <Text style={styles.generateSubtitle}>
+                {isZh ? '分享給好友，一起賺取豐富獎勵' : 'Share with friends and earn rewards together'}
+              </Text>
+              <TouchableOpacity
+                style={styles.generateBtn}
+                onPress={handleGenerateCode}
+                disabled={generatingCode}
+              >
+                {generatingCode ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <>
+                    <Ionicons name="add-circle" size={20} color="#ffffff" />
+                    <Text style={styles.generateBtnText}>
+                      {isZh ? '立即生成' : 'Generate Now'}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
-        {/* Stats Row */}
+        {/* Stats Row - 邀請人數, 成功推薦, 獲得獎勵 */}
         <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{referralStats.totalReferrals}</Text>
-            <Text style={styles.statLabel}>{isZh ? '已邀請' : 'Invited'}</Text>
+          <View style={styles.statCard}>
+            <View style={[styles.statIconCircle, { backgroundColor: MibuBrand.highlight }]}>
+              <Ionicons name="person-add" size={20} color={MibuBrand.brown} />
+            </View>
+            <Text style={styles.statNumber}>{referralStats.totalReferrals}</Text>
+            <Text style={styles.statLabel}>{isZh ? '邀請人數' : 'Invited'}</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#059669' }]}>
+          <View style={styles.statCard}>
+            <View style={[styles.statIconCircle, { backgroundColor: '#DCFCE7' }]}>
+              <Ionicons name="checkmark-circle" size={20} color="#059669" />
+            </View>
+            <Text style={[styles.statNumber, { color: '#059669' }]}>
               {referralStats.activeReferrals}
             </Text>
-            <Text style={styles.statLabel}>{isZh ? '活躍好友' : 'Active'}</Text>
+            <Text style={styles.statLabel}>{isZh ? '成功推薦' : 'Successful'}</Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: '#6366f1' }]}>
+          <View style={styles.statCard}>
+            <View style={[styles.statIconCircle, { backgroundColor: '#E0E7FF' }]}>
+              <Ionicons name="diamond" size={20} color="#6366f1" />
+            </View>
+            <Text style={[styles.statNumber, { color: '#6366f1' }]}>
               {balance?.totalEarned || 0}
             </Text>
-            <Text style={styles.statLabel}>{isZh ? '累計 XP' : 'Total XP'}</Text>
+            <Text style={styles.statLabel}>{isZh ? '獲得獎勵' : 'XP Earned'}</Text>
           </View>
         </View>
 
-        {/* Weekly Leaderboard */}
+        {/* Reward Mechanism Explanation */}
         <View style={styles.section}>
-          <View style={styles.leaderboardHeader}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="information-circle" size={20} color={MibuBrand.brown} />
+            <Text style={styles.sectionTitle}>
+              {isZh ? '獎勵機制說明' : 'How It Works'}
+            </Text>
+          </View>
+          <View style={styles.howItWorksCard}>
+            <View style={styles.howItWorksStep}>
+              <View style={styles.stepNumber}>
+                <Text style={styles.stepNumberText}>1</Text>
+              </View>
+              <View style={styles.stepContent}>
+                <Text style={styles.stepTitle}>
+                  {isZh ? '分享推薦碼' : 'Share Your Code'}
+                </Text>
+                <Text style={styles.stepDesc}>
+                  {isZh ? '複製你的專屬推薦碼分享給好友' : 'Copy and share your unique referral code'}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.stepConnector} />
+            <View style={styles.howItWorksStep}>
+              <View style={styles.stepNumber}>
+                <Text style={styles.stepNumberText}>2</Text>
+              </View>
+              <View style={styles.stepContent}>
+                <Text style={styles.stepTitle}>
+                  {isZh ? '好友註冊' : 'Friend Signs Up'}
+                </Text>
+                <Text style={styles.stepDesc}>
+                  {isZh ? '好友使用你的推薦碼完成註冊' : 'Your friend registers using your code'}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.stepConnector} />
+            <View style={styles.howItWorksStep}>
+              <View style={styles.stepNumber}>
+                <Text style={styles.stepNumberText}>3</Text>
+              </View>
+              <View style={styles.stepContent}>
+                <Text style={styles.stepTitle}>
+                  {isZh ? '雙方獲得獎勵' : 'Both Earn Rewards'}
+                </Text>
+                <Text style={styles.stepDesc}>
+                  {isZh ? '你和好友都能獲得 50 XP 獎勵' : 'You and your friend each earn 50 XP'}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Leaderboard - Top 5 */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
             <Ionicons name="trophy" size={20} color={MibuBrand.brown} />
             <Text style={styles.sectionTitle}>
-              {isZh ? '本週邀請排行榜' : 'Weekly Invite Leaders'}
+              {isZh ? '本週邀請排行榜' : 'Weekly Leaderboard'}
             </Text>
           </View>
           <View style={styles.leaderboardCard}>
             {leaderboard.length > 0 ? (
               leaderboard.slice(0, 5).map((user, index) => {
-                // 前三名的徽章顏色
                 const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32']; // 金銀銅
                 const isTopThree = user.rank <= 3;
                 const isCurrentUser = myRank?.rank === user.rank && myRank?.isOnLeaderboard;
@@ -347,6 +459,9 @@ export function ReferralScreen() {
                       numberOfLines={1}
                     >
                       {user.nickname}
+                      {isCurrentUser && (
+                        <Text style={styles.youBadge}> ({isZh ? '你' : 'You'})</Text>
+                      )}
                     </Text>
 
                     {/* 邀請數 */}
@@ -359,111 +474,33 @@ export function ReferralScreen() {
               })
             ) : (
               <View style={styles.emptyLeaderboard}>
-                <Ionicons name="people-outline" size={32} color={MibuBrand.tan} />
+                <Ionicons name="people-outline" size={40} color={MibuBrand.tan} />
                 <Text style={styles.emptyLeaderboardText}>
                   {isZh ? '暫無排行資料' : 'No ranking data yet'}
+                </Text>
+                <Text style={styles.emptyLeaderboardSubtext}>
+                  {isZh ? '成為第一個邀請好友的人！' : 'Be the first to invite friends!'}
                 </Text>
               </View>
             )}
           </View>
-        </View>
-
-        {/* My Code Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {isZh ? '我的推薦碼' : 'My Referral Code'}
-          </Text>
-
-          {myCode ? (
-            <View style={styles.codeCard}>
-              <View style={styles.codeDisplay}>
-                <Text style={styles.codeText}>{myCode.code}</Text>
-              </View>
-              <View style={styles.codeActions}>
-                <TouchableOpacity
-                  style={styles.codeActionBtn}
-                  onPress={handleCopyCode}
-                >
-                  <Ionicons name="copy-outline" size={20} color={MibuBrand.brown} />
-                  <Text style={styles.codeActionText}>
-                    {isZh ? '複製' : 'Copy'}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.codeActionBtn, styles.shareBtn]}
-                  onPress={handleShareCode}
-                >
-                  <Ionicons name="share-social" size={20} color="#fff" />
-                  <Text style={[styles.codeActionText, { color: '#fff' }]}>
-                    {isZh ? '分享給好友' : 'Share'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.codeUsage}>
-                {isZh
-                  ? `已有 ${myCode.usageCount} 位好友使用`
-                  : `${myCode.usageCount} friends used this code`}
+          {myRank && !myRank.isOnLeaderboard && myRank.rank > 0 && (
+            <View style={styles.myRankCard}>
+              <Text style={styles.myRankText}>
+                {isZh ? `你目前排名第 ${myRank.rank} 名` : `Your current rank: #${myRank.rank}`}
               </Text>
             </View>
-          ) : (
-            <TouchableOpacity
-              style={styles.generateBtn}
-              onPress={handleGenerateCode}
-              disabled={generatingCode}
-            >
-              {generatingCode ? (
-                <ActivityIndicator size="small" color="#ffffff" />
-              ) : (
-                <>
-                  <Ionicons name="add-circle" size={20} color="#ffffff" />
-                  <Text style={styles.generateBtnText}>
-                    {isZh ? '生成我的推薦碼' : 'Generate My Code'}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
           )}
-        </View>
-
-        {/* Apply Code Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {isZh ? '輸入好友推薦碼' : 'Enter Friend\'s Code'}
-          </Text>
-          <View style={styles.applyCard}>
-            <View style={styles.applyInputRow}>
-              <TextInput
-                style={styles.applyInput}
-                value={inputCode}
-                onChangeText={setInputCode}
-                placeholder={isZh ? '輸入推薦碼' : 'Enter code'}
-                placeholderTextColor={MibuBrand.tan}
-                autoCapitalize="characters"
-                maxLength={8}
-              />
-              <TouchableOpacity
-                style={[
-                  styles.applyBtn,
-                  !inputCode.trim() && styles.applyBtnDisabled
-                ]}
-                onPress={handleApplyCode}
-                disabled={applyingCode || !inputCode.trim()}
-              >
-                {applyingCode ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
-                ) : (
-                  <Ionicons name="checkmark" size={24} color="#fff" />
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
 
         {/* Rewards Tiers */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {isZh ? '邀請獎勵' : 'Invite Rewards'}
-          </Text>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="gift" size={20} color={MibuBrand.brown} />
+            <Text style={styles.sectionTitle}>
+              {isZh ? '邀請獎勵' : 'Invite Rewards'}
+            </Text>
+          </View>
           <View style={styles.rewardsList}>
             {REWARD_TIERS.map((tier, index) => {
               const isAchieved = referralStats.totalReferrals >= tier.count;
@@ -513,12 +550,55 @@ export function ReferralScreen() {
           </View>
         </View>
 
+        {/* Apply Code Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="enter-outline" size={20} color={MibuBrand.brown} />
+            <Text style={styles.sectionTitle}>
+              {isZh ? '輸入好友推薦碼' : "Enter Friend's Code"}
+            </Text>
+          </View>
+          <View style={styles.applyCard}>
+            <Text style={styles.applyCardHint}>
+              {isZh ? '有好友推薦碼？輸入獲取獎勵' : 'Have a referral code? Enter to earn rewards'}
+            </Text>
+            <View style={styles.applyInputRow}>
+              <TextInput
+                style={styles.applyInput}
+                value={inputCode}
+                onChangeText={setInputCode}
+                placeholder={isZh ? '輸入推薦碼' : 'Enter code'}
+                placeholderTextColor={MibuBrand.tan}
+                autoCapitalize="characters"
+                maxLength={8}
+              />
+              <TouchableOpacity
+                style={[
+                  styles.applyBtn,
+                  !inputCode.trim() && styles.applyBtnDisabled
+                ]}
+                onPress={handleApplyCode}
+                disabled={applyingCode || !inputCode.trim()}
+              >
+                {applyingCode ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Ionicons name="checkmark" size={24} color="#fff" />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
         {/* Recent Referrals */}
         {referrals.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {isZh ? '邀請紀錄' : 'Invite History'}
-            </Text>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="time" size={20} color={MibuBrand.brown} />
+              <Text style={styles.sectionTitle}>
+                {isZh ? '邀請紀錄' : 'Invite History'}
+              </Text>
+            </View>
             <View style={styles.referralsList}>
               {referrals.slice(0, 5).map(referral => (
                 <View key={referral.id} style={styles.referralItem}>
@@ -595,53 +675,157 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 16,
   },
-  heroCard: {
-    backgroundColor: MibuBrand.warmWhite,
+  // Prominent Referral Code Card - Brown background, white text
+  referralCodeCard: {
+    backgroundColor: MibuBrand.brown,
     borderRadius: 20,
     padding: 24,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  codeCardHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+  },
+  codeCardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    opacity: 0.9,
+  },
+  codeDisplayArea: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  codeTextLarge: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#fff',
+    letterSpacing: 6,
+  },
+  codeCardActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  copyButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  copyButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: MibuBrand.brown,
+  },
+  shareButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  shareButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  codeUsageText: {
+    textAlign: 'center',
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  // Generate Code Card (when no code exists)
+  generateCodeCard: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 20,
+    padding: 4,
+    marginBottom: 20,
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
-    marginBottom: 16,
+    borderStyle: 'dashed',
   },
-  heroIconWrapper: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: MibuBrand.highlight,
-    justifyContent: 'center',
+  generateCardInner: {
     alignItems: 'center',
-    marginBottom: 16,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
   },
-  heroTitle: {
-    fontSize: 20,
-    fontWeight: '800',
+  generateTitle: {
+    fontSize: 18,
+    fontWeight: '700',
     color: MibuBrand.brownDark,
+    marginTop: 16,
     marginBottom: 8,
-    textAlign: 'center',
   },
-  heroSubtitle: {
+  generateSubtitle: {
     fontSize: 14,
     color: MibuBrand.copper,
     textAlign: 'center',
-    lineHeight: 20,
+    marginBottom: 20,
   },
-  statsRow: {
+  generateBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: MibuBrand.brown,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+  },
+  generateBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  // Stats Row - StatCard style with icon circle
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  statCard: {
+    flex: 1,
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: MibuBrand.tanLight,
-    marginBottom: 24,
-  },
-  statItem: {
-    flex: 1,
+    paddingHorizontal: 12,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  statValue: {
+  statIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  statNumber: {
     fontSize: 24,
     fontWeight: '800',
     color: MibuBrand.brownDark,
@@ -650,27 +834,74 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 12,
     color: MibuBrand.copper,
+    textAlign: 'center',
   },
-  statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: MibuBrand.tanLight,
-  },
+  // Section styles
   section: {
     marginBottom: 24,
   },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginBottom: 12,
-  },
-  leaderboardHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 12,
   },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+  },
+  // How It Works Card
+  howItWorksCard: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  howItWorksStep: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  stepNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: MibuBrand.brown,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  stepNumberText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  stepContent: {
+    flex: 1,
+  },
+  stepTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+    marginBottom: 4,
+  },
+  stepDesc: {
+    fontSize: 13,
+    color: MibuBrand.copper,
+    lineHeight: 18,
+  },
+  stepConnector: {
+    width: 2,
+    height: 20,
+    backgroundColor: MibuBrand.tanLight,
+    marginLeft: 15,
+    marginVertical: 8,
+  },
+  // Leaderboard
   leaderboardCard: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
@@ -684,8 +915,8 @@ const styles = StyleSheet.create({
   leaderboardItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
   },
   leaderboardItemBorder: {
     borderBottomWidth: 1,
@@ -695,36 +926,36 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.highlight,
   },
   rankBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: MibuBrand.creamLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 12,
   },
   rankText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: MibuBrand.copper,
   },
   leaderboardAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: MibuBrand.cream,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 12,
   },
   leaderboardAvatarText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brown,
   },
   leaderboardName: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: MibuBrand.brownDark,
   },
@@ -732,130 +963,54 @@ const styles = StyleSheet.create({
     color: MibuBrand.brown,
     fontWeight: '700',
   },
+  youBadge: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: MibuBrand.copper,
+  },
   inviteCountBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     backgroundColor: MibuBrand.highlight,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 12,
   },
   inviteCountText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: MibuBrand.brown,
   },
   emptyLeaderboard: {
-    padding: 24,
+    padding: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyLeaderboardText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: MibuBrand.tan,
-  },
-  codeCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
-    padding: 24,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  codeDisplay: {
-    backgroundColor: MibuBrand.highlight,
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  codeText: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: MibuBrand.brown,
-    letterSpacing: 4,
-  },
-  codeActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
-  codeActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: MibuBrand.creamLight,
-  },
-  shareBtn: {
-    backgroundColor: MibuBrand.brown,
-  },
-  codeActionText: {
-    fontSize: 14,
+    marginTop: 12,
+    fontSize: 15,
     fontWeight: '600',
-    color: MibuBrand.brown,
+    color: MibuBrand.copper,
   },
-  codeUsage: {
+  emptyLeaderboardSubtext: {
+    marginTop: 4,
     fontSize: 13,
     color: MibuBrand.tan,
   },
-  generateBtn: {
-    flexDirection: 'row',
+  myRankCard: {
+    marginTop: 12,
+    backgroundColor: MibuBrand.highlight,
+    borderRadius: 12,
+    padding: 14,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: MibuBrand.brown,
-    paddingVertical: 16,
-    borderRadius: 12,
   },
-  generateBtnText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  applyCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
-    padding: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  applyInputRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  applyInput: {
-    flex: 1,
-    backgroundColor: MibuBrand.creamLight,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 18,
+  myRankText: {
+    fontSize: 14,
     fontWeight: '600',
-    color: MibuBrand.brownDark,
-    letterSpacing: 2,
-    textAlign: 'center',
+    color: MibuBrand.brown,
   },
-  applyBtn: {
-    backgroundColor: MibuBrand.brown,
-    width: 52,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  applyBtnDisabled: {
-    backgroundColor: MibuBrand.tan,
-  },
+  // Rewards list
   rewardsList: {
     gap: 10,
   },
@@ -925,6 +1080,49 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: MibuBrand.brown,
   },
+  // Apply code section
+  applyCard: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  applyCardHint: {
+    fontSize: 13,
+    color: MibuBrand.copper,
+    marginBottom: 12,
+  },
+  applyInputRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  applyInput: {
+    flex: 1,
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 18,
+    fontWeight: '600',
+    color: MibuBrand.brownDark,
+    letterSpacing: 2,
+    textAlign: 'center',
+  },
+  applyBtn: {
+    backgroundColor: MibuBrand.brown,
+    width: 52,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  applyBtnDisabled: {
+    backgroundColor: MibuBrand.tan,
+  },
+  // Referrals history
   referralsList: {
     gap: 8,
   },

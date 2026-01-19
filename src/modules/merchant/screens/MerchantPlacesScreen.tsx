@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantPlace, PlaceSearchResult } from '../../../types';
+import { MibuBrand } from '../../../../constants/Colors';
 
 export function MerchantPlacesScreen() {
   const { state, getToken } = useApp();
@@ -133,7 +134,7 @@ export function MerchantPlacesScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{translations.loading}</Text>
       </View>
     );
@@ -148,7 +149,7 @@ export function MerchantPlacesScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
       </View>
@@ -159,7 +160,7 @@ export function MerchantPlacesScreen() {
             style={styles.claimButton}
             onPress={() => setShowSearch(true)}
           >
-            <Ionicons name="add-circle-outline" size={24} color="#ffffff" />
+            <Ionicons name="add-circle-outline" size={24} color={MibuBrand.warmWhite} />
             <Text style={styles.claimButtonText}>{translations.claimNew}</Text>
           </TouchableOpacity>
 
@@ -167,7 +168,7 @@ export function MerchantPlacesScreen() {
 
           {places.length === 0 ? (
             <View style={styles.emptyCard}>
-              <Ionicons name="storefront-outline" size={48} color="#94a3b8" />
+              <Ionicons name="storefront-outline" size={48} color={MibuBrand.tan} />
               <Text style={styles.emptyText}>{translations.noPlaces}</Text>
             </View>
           ) : (
@@ -182,7 +183,7 @@ export function MerchantPlacesScreen() {
                     activeOpacity={0.7}
                   >
                     <View style={styles.placeIcon}>
-                      <Ionicons name="storefront" size={24} color="#6366f1" />
+                      <Ionicons name="storefront" size={24} color={MibuBrand.brown} />
                     </View>
                     <View style={styles.placeInfo}>
                       <Text style={styles.placeName}>{place.placeName}</Text>
@@ -196,7 +197,7 @@ export function MerchantPlacesScreen() {
                       </Text>
                     </View>
                     <View style={styles.editIcon}>
-                      <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+                      <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
                     </View>
                   </TouchableOpacity>
                 );
@@ -213,7 +214,7 @@ export function MerchantPlacesScreen() {
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder={translations.search}
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={MibuBrand.tan}
                 onSubmitEditing={handleSearch}
               />
               <TouchableOpacity
@@ -222,9 +223,9 @@ export function MerchantPlacesScreen() {
                 disabled={searching}
               >
                 {searching ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
                 ) : (
-                  <Ionicons name="search" size={20} color="#ffffff" />
+                  <Ionicons name="search" size={20} color={MibuBrand.warmWhite} />
                 )}
               </TouchableOpacity>
             </View>
@@ -242,7 +243,7 @@ export function MerchantPlacesScreen() {
 
           {searchResults.length === 0 && searchQuery && !searching ? (
             <View style={styles.emptyCard}>
-              <Ionicons name="search-outline" size={48} color="#94a3b8" />
+              <Ionicons name="search-outline" size={48} color={MibuBrand.tan} />
               <Text style={styles.emptyText}>{translations.noResults}</Text>
             </View>
           ) : (
@@ -250,7 +251,7 @@ export function MerchantPlacesScreen() {
               {searchResults.map(result => (
                 <View key={result.placeId} style={styles.placeCard}>
                   <View style={styles.placeIcon}>
-                    <Ionicons name="location" size={24} color="#6366f1" />
+                    <Ionicons name="location" size={24} color={MibuBrand.brown} />
                   </View>
                   <View style={styles.placeInfo}>
                     <Text style={styles.placeName}>{result.placeName}</Text>
@@ -269,7 +270,7 @@ export function MerchantPlacesScreen() {
                       disabled={claiming === result.placeId}
                     >
                       {claiming === result.placeId ? (
-                        <ActivityIndicator size="small" color="#ffffff" />
+                        <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
                       ) : (
                         <Text style={styles.claimBadgeText}>{translations.claim}</Text>
                       )}
@@ -289,7 +290,7 @@ export function MerchantPlacesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   content: {
     padding: 20,
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: MibuBrand.copper,
     fontSize: 16,
   },
   header: {
@@ -316,23 +317,23 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   claimButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     paddingVertical: 16,
     borderRadius: 16,
     marginBottom: 24,
@@ -340,25 +341,25 @@ const styles = StyleSheet.create({
   claimButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: MibuBrand.warmWhite,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 16,
   },
   emptyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 40,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: MibuBrand.copper,
     marginTop: 12,
   },
   placesList: {
@@ -367,17 +368,17 @@ const styles = StyleSheet.create({
   placeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   placeIcon: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.highlight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -388,12 +389,12 @@ const styles = StyleSheet.create({
   placeName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 4,
   },
   placeLocation: {
     fontSize: 13,
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -429,18 +430,18 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
-    color: '#1e293b',
+    borderColor: MibuBrand.tanLight,
+    color: MibuBrand.brownDark,
   },
   searchButton: {
     width: 52,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -452,28 +453,28 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   claimedBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.tanLight,
   },
   claimedText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#64748b',
+    color: MibuBrand.copper,
   },
   claimBadge: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
   },
   claimBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#ffffff',
+    color: MibuBrand.warmWhite,
   },
 });
