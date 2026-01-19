@@ -1,3 +1,3 @@
-import { SOSContactsScreen } from '@/modules/shared';
+import { SOSContactsScreen } from '../src/modules/shared';
 
 export default SOSContactsScreen;
