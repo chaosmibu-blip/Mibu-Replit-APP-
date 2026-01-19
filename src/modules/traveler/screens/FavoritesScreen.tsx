@@ -1,32 +1,89 @@
 /**
- * FavoritesScreen - 我的最愛
+ * FavoritesScreen - 我的最愛 (Tamagui 版本)
  * 顯示用戶收藏的景點列表
  *
  * @see 後端合約: contracts/APP.md
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   Alert,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import {
+  YStack,
+  XStack,
+  Text,
+  Card,
+  Button,
+  View,
+  Spinner,
+  styled,
+  useTheme,
+} from 'tamagui';
 import { useApp } from '../../../context/AppContext';
 import { collectionApi } from '../../../services/collectionApi';
 import { MibuBrand } from '../../../../constants/Colors';
 import { FavoriteItem } from '../../../types/collection';
 
+// 自定義樣式元件
+const HeaderContainer = styled(XStack, {
+  name: 'HeaderContainer',
+  paddingTop: Platform.OS === 'ios' ? 60 : 40,
+  paddingHorizontal: '$4',
+  paddingBottom: '$4',
+  backgroundColor: '$backgroundStrong',
+  borderBottomWidth: 1,
+  borderBottomColor: '$borderColor',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+});
+
+const StatsBar = styled(XStack, {
+  name: 'StatsBar',
+  paddingHorizontal: '$4',
+  paddingVertical: '$3',
+  backgroundColor: '$backgroundStrong',
+  borderBottomWidth: 1,
+  borderBottomColor: '$borderColor',
+});
+
+const ItemCard = styled(Card, {
+  name: 'ItemCard',
+  marginBottom: '$3',
+  padding: '$4',
+  backgroundColor: '$card',
+  borderRadius: '$3',
+  borderWidth: 1,
+  borderColor: '$borderColor',
+  flexDirection: 'row',
+  alignItems: 'center',
+  pressStyle: {
+    scale: 0.98,
+    opacity: 0.9,
+  },
+  animation: 'fast',
+});
+
+const CategoryBadge = styled(XStack, {
+  name: 'CategoryBadge',
+  alignItems: 'center',
+  gap: '$1',
+  backgroundColor: '$accent',
+  paddingHorizontal: '$2',
+  paddingVertical: '$1',
+  borderRadius: '$2',
+});
+
 export function FavoritesScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
+  const theme = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -97,52 +154,6 @@ export function FavoritesScreen() {
     );
   };
 
-  const renderItem = ({ item }: { item: FavoriteItem }) => (
-    <View style={styles.itemCard}>
-      <View style={styles.itemContent}>
-        <View style={styles.itemHeader}>
-          <View style={styles.categoryBadge}>
-            <Ionicons
-              name={getCategoryIcon(item.category)}
-              size={14}
-              color={MibuBrand.brown}
-            />
-            <Text style={styles.categoryText}>{item.category}</Text>
-          </View>
-          {item.rating && (
-            <View style={styles.ratingBadge}>
-              <Ionicons name="star" size={12} color="#F59E0B" />
-              <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
-            </View>
-          )}
-        </View>
-
-        <Text style={styles.placeName} numberOfLines={1}>
-          {item.placeName}
-        </Text>
-
-        <View style={styles.locationRow}>
-          <Ionicons name="location-outline" size={14} color={MibuBrand.tan} />
-          <Text style={styles.locationText} numberOfLines={1}>
-            {item.district}, {item.city}
-          </Text>
-        </View>
-
-        <Text style={styles.addedAt}>
-          {isZh ? '加入於 ' : 'Added '}
-          {new Date(item.addedAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
-        </Text>
-      </View>
-
-      <TouchableOpacity
-        style={styles.removeBtn}
-        onPress={() => handleRemoveFavorite(item.placeId, item.placeName)}
-      >
-        <Ionicons name="heart" size={24} color="#EF4444" />
-      </TouchableOpacity>
-    </View>
-  );
-
   const getCategoryIcon = (category: string): keyof typeof Ionicons.glyphMap => {
     const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
       '餐廳': 'restaurant',
@@ -155,36 +166,109 @@ export function FavoritesScreen() {
     return iconMap[category] || 'location';
   };
 
+  const renderItem = ({ item }: { item: FavoriteItem }) => (
+    <ItemCard elevate>
+      <YStack flex={1} gap="$2">
+        {/* 分類與評分 */}
+        <XStack alignItems="center" gap="$2">
+          <CategoryBadge>
+            <Ionicons
+              name={getCategoryIcon(item.category)}
+              size={14}
+              color={MibuBrand.brown}
+            />
+            <Text fontSize={12} fontWeight="600" color="$primary">
+              {item.category}
+            </Text>
+          </CategoryBadge>
+          {item.rating && (
+            <XStack alignItems="center" gap="$1">
+              <Ionicons name="star" size={12} color="#F59E0B" />
+              <Text fontSize={12} fontWeight="600" color="#F59E0B">
+                {item.rating.toFixed(1)}
+              </Text>
+            </XStack>
+          )}
+        </XStack>
+
+        {/* 地點名稱 */}
+        <Text
+          fontSize={16}
+          fontWeight="700"
+          color="$color"
+          numberOfLines={1}
+        >
+          {item.placeName}
+        </Text>
+
+        {/* 位置 */}
+        <XStack alignItems="center" gap="$1">
+          <Ionicons name="location-outline" size={14} color={MibuBrand.tan} />
+          <Text fontSize={13} color="$placeholderColor" numberOfLines={1} flex={1}>
+            {item.district}, {item.city}
+          </Text>
+        </XStack>
+
+        {/* 加入時間 */}
+        <Text fontSize={11} color="$placeholderColor">
+          {isZh ? '加入於 ' : 'Added '}
+          {new Date(item.addedAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
+        </Text>
+      </YStack>
+
+      {/* 移除按鈕 */}
+      <Button
+        size="$4"
+        circular
+        chromeless
+        onPress={() => handleRemoveFavorite(item.placeId, item.placeName)}
+        pressStyle={{ scale: 0.9 }}
+        animation="fast"
+      >
+        <Ionicons name="heart" size={24} color="#EF4444" />
+      </Button>
+    </ItemCard>
+  );
+
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={MibuBrand.brown} />
-      </View>
+      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="$background">
+        <Spinner size="large" color="$primary" />
+      </YStack>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <YStack flex={1} backgroundColor="$background">
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <HeaderContainer>
+        <Button
+          size="$4"
+          circular
+          chromeless
+          onPress={() => router.back()}
+          pressStyle={{ scale: 0.9 }}
+          animation="fast"
+        >
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
+        </Button>
+
+        <XStack alignItems="center" gap="$2">
           <Ionicons name="heart" size={24} color="#EF4444" />
-          <Text style={styles.headerTitle}>
+          <Text fontSize={18} fontWeight="700" color="$color">
             {isZh ? '我的最愛' : 'My Favorites'}
           </Text>
-        </View>
-        <View style={styles.headerPlaceholder} />
-      </View>
+        </XStack>
+
+        <View width={40} />
+      </HeaderContainer>
 
       {/* Stats */}
-      <View style={styles.statsBar}>
-        <Text style={styles.statsText}>
+      <StatsBar>
+        <Text fontSize={14} color="$secondary" fontWeight="500">
           {isZh ? `共 ${total} 個收藏` : `${total} favorites`}
         </Text>
-      </View>
+      </StatsBar>
 
       {/* List */}
       {favorites.length > 0 ? (
@@ -192,7 +276,7 @@ export function FavoritesScreen() {
           data={favorites}
           keyExtractor={item => item.id.toString()}
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -203,166 +287,29 @@ export function FavoritesScreen() {
           showsVerticalScrollIndicator={false}
         />
       ) : (
-        <View style={styles.emptyContainer}>
+        <YStack flex={1} justifyContent="center" alignItems="center" padding="$6">
           <Ionicons name="heart-outline" size={64} color={MibuBrand.tan} />
-          <Text style={styles.emptyTitle}>
+          <Text
+            fontSize={18}
+            fontWeight="700"
+            color="$color"
+            marginTop="$4"
+            marginBottom="$2"
+          >
             {isZh ? '還沒有最愛' : 'No favorites yet'}
           </Text>
-          <Text style={styles.emptySubtitle}>
+          <Text
+            fontSize={14}
+            color="$placeholderColor"
+            textAlign="center"
+            lineHeight={20}
+          >
             {isZh
               ? '在圖鑑中點擊愛心即可加入最愛'
               : 'Tap the heart icon in your collection to add favorites'}
           </Text>
-        </View>
+        </YStack>
       )}
-    </View>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: MibuBrand.creamLight,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: MibuBrand.creamLight,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: MibuBrand.warmWhite,
-    borderBottomWidth: 1,
-    borderBottomColor: MibuBrand.tanLight,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
-  headerPlaceholder: {
-    width: 40,
-  },
-  statsBar: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: MibuBrand.warmWhite,
-    borderBottomWidth: 1,
-    borderBottomColor: MibuBrand.tanLight,
-  },
-  statsText: {
-    fontSize: 14,
-    color: MibuBrand.copper,
-    fontWeight: '500',
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
-  itemCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: MibuBrand.tanLight,
-  },
-  itemContent: {
-    flex: 1,
-  },
-  itemHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  categoryBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: MibuBrand.highlight,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  categoryText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: MibuBrand.brown,
-  },
-  ratingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  ratingText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#F59E0B',
-  },
-  placeName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginBottom: 4,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 4,
-  },
-  locationText: {
-    fontSize: 13,
-    color: MibuBrand.tan,
-    flex: 1,
-  },
-  addedAt: {
-    fontSize: 11,
-    color: MibuBrand.tan,
-  },
-  removeBtn: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: MibuBrand.tan,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-});
