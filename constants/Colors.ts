@@ -24,6 +24,7 @@ export const MibuBrand = {
   warning: '#D4A24C',
   error: '#C45C5C',
   info: '#6B8CAE',
+  // 稀有度色彩
   tierSP: '#D4A24C',
   tierSSR: '#B08860',
   tierSR: '#9A7250',
@@ -34,6 +35,29 @@ export const MibuBrand = {
   tierSRBg: '#EDE0D4',
   tierSBg: '#F8F0E8',
   tierRBg: '#FDFBF8',
+};
+
+// ========== 語意色彩（用於狀態顯示） ==========
+export const SemanticColors = {
+  // 成功狀態（綠色系）
+  successLight: '#DCFCE7',
+  successMain: '#5D8A66',
+  successDark: '#16A34A',
+  // 警告狀態（黃色系）
+  warningLight: '#FEF3C7',
+  warningMain: '#D4A24C',
+  warningDark: '#D97706',
+  // 錯誤狀態（紅色系）
+  errorLight: '#FEE2E2',
+  errorMain: '#C45C5C',
+  errorDark: '#DC2626',
+  // 資訊狀態（藍色系）
+  infoLight: '#E0F2FE',
+  infoMain: '#6B8CAE',
+  infoDark: '#0284C7',
+  // 星級評分（金色）
+  starYellow: '#F59E0B',
+  starBg: '#FEF3C7',
 };
 
 export interface CategoryToken {

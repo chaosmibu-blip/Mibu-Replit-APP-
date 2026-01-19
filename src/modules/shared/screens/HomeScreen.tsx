@@ -17,7 +17,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
@@ -327,15 +327,15 @@ export function HomeScreen() {
               onPress={() => router.push(`/event/${event.id}`)}
               activeOpacity={0.8}
             >
-              <View style={[styles.announcementIcon, { backgroundColor: '#FEF3C7' }]}>
-                <Ionicons name="sparkles" size={18} color="#D97706" />
+              <View style={[styles.announcementIcon, { backgroundColor: SemanticColors.warningLight }]}>
+                <Ionicons name="sparkles" size={18} color={SemanticColors.warningDark} />
               </View>
               <View style={styles.announcementContent}>
                 <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
                 <Text style={styles.announcementDesc} numberOfLines={2}>
                   {getLocalizedDesc(event)}
                 </Text>
-                <Text style={[styles.announcementDate, { color: '#D97706' }]}>
+                <Text style={[styles.announcementDate, { color: SemanticColors.warningDark }]}>
                   {formatDate(event.startDate || event.createdAt)}
                 </Text>
               </View>
@@ -360,15 +360,15 @@ export function HomeScreen() {
               onPress={() => router.push(`/event/${event.id}`)}
               activeOpacity={0.8}
             >
-              <View style={[styles.announcementIcon, { backgroundColor: '#E0F2FE' }]}>
-                <Ionicons name="location-outline" size={18} color="#0284C7" />
+              <View style={[styles.announcementIcon, { backgroundColor: SemanticColors.infoLight }]}>
+                <Ionicons name="location-outline" size={18} color={SemanticColors.infoDark} />
               </View>
               <View style={styles.announcementContent}>
                 <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
                 <Text style={styles.announcementDesc} numberOfLines={2}>
                   {getLocalizedDesc(event)}
                 </Text>
-                <Text style={[styles.announcementDate, { color: '#0284C7' }]}>
+                <Text style={[styles.announcementDate, { color: SemanticColors.infoDark }]}>
                   {formatDate(event.startDate || event.createdAt)}
                 </Text>
               </View>
@@ -619,10 +619,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   flashEventCard: {
-    borderColor: '#FEF3C7',
+    borderColor: SemanticColors.warningLight,
   },
   localActivityCard: {
-    borderColor: '#E0F2FE',
+    borderColor: SemanticColors.infoLight,
   },
   announcementIcon: {
     width: 32,
