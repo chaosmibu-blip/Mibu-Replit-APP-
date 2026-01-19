@@ -20,7 +20,7 @@ interface CtaButtonProps {
   variant?: 'primary' | 'secondary' | 'danger';
 }
 
-export function CtaButton({
+export default function CtaButton({
   title,
   onPress,
   icon,

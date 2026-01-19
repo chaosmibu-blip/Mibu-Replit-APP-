@@ -33,7 +33,7 @@ interface FilterChipsProps {
   variant?: 'filled' | 'outline';
 }
 
-export function FilterChips({
+export default function FilterChips({
   options,
   selected,
   onSelect,

@@ -20,7 +20,7 @@ interface StatCardProps {
   formatNumber?: boolean;
 }
 
-export function StatCard({
+export default function StatCard({
   label,
   value,
   change,
