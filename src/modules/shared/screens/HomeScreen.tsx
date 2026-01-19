@@ -204,8 +204,15 @@ export function HomeScreen() {
         activeOpacity={0.8}
       >
         <View style={styles.levelHeader}>
-          <View style={styles.levelBadge}>
-            <Text style={styles.levelBadgeText}>Lv.{userLevel.level}</Text>
+          {/* Circular Avatar with Level Badge */}
+          <View style={styles.avatarWithBadge}>
+            <Image
+              source={require('../../../../assets/images/icon.png')}
+              style={styles.levelAvatar}
+            />
+            <View style={styles.levelBadgeCircle}>
+              <Text style={styles.levelBadgeText}>Lv.{userLevel.level}</Text>
+            </View>
           </View>
           <View style={styles.levelInfo}>
             <Text style={styles.levelTitle}>{userLevel.title}</Text>
@@ -450,16 +457,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  levelBadge: {
+  avatarWithBadge: {
+    position: 'relative',
+    width: 64,
+    height: 64,
+  },
+  levelAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: MibuBrand.cream,
+  },
+  levelBadgeCircle: {
+    position: 'absolute',
+    bottom: -4,
+    left: '50%',
+    transform: [{ translateX: -24 }],
     backgroundColor: MibuBrand.brown,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    minWidth: 48,
+    alignItems: 'center',
   },
   levelBadgeText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '800',
-    color: '#ffffff',
+    color: MibuBrand.warmWhite,
   },
   levelInfo: {
     marginLeft: 12,
