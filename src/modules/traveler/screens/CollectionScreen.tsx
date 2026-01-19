@@ -62,13 +62,9 @@ function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
   const districtDisplay = item.districtDisplay || item.district || '';
 
   const handleNavigate = () => {
-    let url: string;
-    if (item.location) {
-      url = `https://www.google.com/maps/dir/?api=1&destination=${item.location.lat},${item.location.lng}`;
-    } else {
-      const query = [placeName, districtDisplay, cityDisplay].filter(Boolean).join(' ');
-      url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
-    }
+    // 使用 Google Search 搜尋店名，與扭蛋卡片行為一致
+    const query = [placeName, districtDisplay, cityDisplay].filter(Boolean).join(' ');
+    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     Linking.openURL(url);
   };
 
@@ -115,12 +111,12 @@ function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
               <Text style={{ fontSize: 16, color: MibuBrand.brownLight, lineHeight: 24, marginBottom: 20 }}>{description}</Text>
             )}
 
-            <TouchableOpacity 
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: MibuBrand.brown, paddingVertical: 16, borderRadius: 16 }} 
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: MibuBrand.brown, paddingVertical: 16, borderRadius: 16 }}
               onPress={handleNavigate}
             >
-              <Ionicons name="navigate" size={20} color="#ffffff" />
-              <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>在 Google 地圖中查看</Text>
+              <Ionicons name="search" size={20} color="#ffffff" />
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>在 Google 搜尋</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
