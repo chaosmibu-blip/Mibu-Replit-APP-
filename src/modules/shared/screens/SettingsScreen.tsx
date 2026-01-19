@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
@@ -15,10 +15,31 @@ const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
   { code: 'ko', label: '한국어', flag: '🇰🇷' },
 ];
 
+type SettingItem = {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  action?: () => void;
+  hasArrow?: boolean;
+  highlight?: boolean;
+  badge?: string;
+  value?: string;
+  toggle?: boolean;
+  checked?: boolean;
+  onChange?: (value: boolean) => void;
+  iconBg?: string;
+  iconColor?: string;
+};
+
+type SettingGroup = {
+  title: string;
+  items: SettingItem[];
+};
+
 export function SettingsScreen() {
   const { state, t, setLanguage, setUser, getToken } = useApp();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [notifications, setNotifications] = useState(true);
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
@@ -89,230 +110,331 @@ export function SettingsScreen() {
     );
   };
 
+  const settingGroups: SettingGroup[] = state.isAuthenticated ? [
+    {
+      title: isZh ? '帳號' : 'Account',
+      items: [
+        {
+          icon: 'person-outline',
+          label: isZh ? '個人資料' : 'Profile',
+          action: () => router.push('/profile' as any),
+          hasArrow: true,
+          iconBg: MibuBrand.highlight,
+          iconColor: MibuBrand.brown,
+        },
+        {
+          icon: 'gift-outline',
+          label: isZh ? '邀請好友賺獎勵' : 'Invite Friends & Earn',
+          action: () => router.push('/referral' as any),
+          hasArrow: true,
+          highlight: true,
+          iconBg: '#ECFDF5',
+          iconColor: '#059669',
+        },
+        {
+          icon: 'globe-outline',
+          label: isZh ? '語言設定' : 'Language',
+          action: () => setShowLanguageDropdown(true),
+          value: currentLang.label,
+          hasArrow: true,
+          iconBg: '#EEF2FF',
+          iconColor: '#6366f1',
+        },
+      ],
+    },
+    {
+      title: isZh ? '探索' : 'Explore',
+      items: [
+        {
+          icon: 'map-outline',
+          label: isZh ? '全球地圖' : 'World Map',
+          action: () => router.push('/map' as any),
+          hasArrow: true,
+          badge: isZh ? '1 已解鎖' : '1 Unlocked',
+          iconBg: '#FEF3C7',
+          iconColor: '#D97706',
+        },
+        {
+          icon: 'trophy-outline',
+          label: isZh ? '等級與成就' : 'Level & Achievements',
+          action: () => router.push('/economy' as any),
+          hasArrow: true,
+          badge: '2/10',
+          iconBg: '#FFF3D4',
+          iconColor: '#D4A24C',
+        },
+      ],
+    },
+    {
+      title: isZh ? '偏好設定' : 'Preferences',
+      items: [
+        {
+          icon: 'notifications-outline',
+          label: isZh ? '推播通知' : 'Push Notifications',
+          toggle: true,
+          checked: notifications,
+          onChange: setNotifications,
+          iconBg: '#FEE2E2',
+          iconColor: '#EF4444',
+        },
+      ],
+    },
+    {
+      title: isZh ? '更多功能' : 'More Features',
+      items: [
+        {
+          icon: 'link-outline',
+          label: isZh ? '帳號綁定' : 'Linked Accounts',
+          action: () => router.push('/account' as any),
+          hasArrow: true,
+          iconBg: '#EEF2FF',
+          iconColor: '#6366f1',
+        },
+        {
+          icon: 'heart',
+          label: isZh ? '我的最愛' : 'My Favorites',
+          action: () => router.push('/favorites' as any),
+          hasArrow: true,
+          iconBg: '#FEE2E2',
+          iconColor: '#EF4444',
+        },
+        {
+          icon: 'shield-checkmark-outline',
+          label: isZh ? '緊急聯絡人' : 'Emergency Contacts',
+          action: () => router.push('/sos-contacts' as any),
+          hasArrow: true,
+          iconBg: '#FEF3C7',
+          iconColor: '#F59E0B',
+        },
+        {
+          icon: 'rocket-outline',
+          label: isZh ? '募資活動' : 'Crowdfunding',
+          action: () => router.push('/crowdfunding' as any),
+          hasArrow: true,
+          iconBg: '#FEF3C7',
+          iconColor: '#D97706',
+        },
+        {
+          icon: 'hand-left-outline',
+          label: isZh ? '社群貢獻' : 'Contributions',
+          action: () => router.push('/contribution' as any),
+          hasArrow: true,
+          iconBg: '#F0FDF4',
+          iconColor: '#16a34a',
+        },
+      ],
+    },
+    {
+      title: isZh ? '關於' : 'About',
+      items: [
+        {
+          icon: 'shield-checkmark-outline',
+          label: isZh ? '隱私政策' : 'Privacy Policy',
+          action: () => Linking.openURL('https://mibu-travel.com/privacy'),
+          hasArrow: true,
+          iconBg: MibuBrand.highlight,
+          iconColor: MibuBrand.copper,
+        },
+        {
+          icon: 'document-text-outline',
+          label: isZh ? '服務條款' : 'Terms of Service',
+          action: () => Linking.openURL('https://mibu-travel.com/terms'),
+          hasArrow: true,
+          iconBg: MibuBrand.highlight,
+          iconColor: MibuBrand.copper,
+        },
+        {
+          icon: 'help-circle-outline',
+          label: isZh ? '幫助中心' : 'Help Center',
+          action: () => Linking.openURL('https://mibu-travel.com/support'),
+          hasArrow: true,
+          iconBg: MibuBrand.highlight,
+          iconColor: MibuBrand.copper,
+        },
+      ],
+    },
+  ] : [
+    {
+      title: isZh ? '設定' : 'Settings',
+      items: [
+        {
+          icon: 'globe-outline',
+          label: isZh ? '語言設定' : 'Language',
+          action: () => setShowLanguageDropdown(true),
+          value: currentLang.label,
+          hasArrow: true,
+          iconBg: '#EEF2FF',
+          iconColor: '#6366f1',
+        },
+      ],
+    },
+    {
+      title: isZh ? '關於' : 'About',
+      items: [
+        {
+          icon: 'shield-checkmark-outline',
+          label: isZh ? '隱私政策' : 'Privacy Policy',
+          action: () => Linking.openURL('https://mibu-travel.com/privacy'),
+          hasArrow: true,
+          iconBg: MibuBrand.highlight,
+          iconColor: MibuBrand.copper,
+        },
+        {
+          icon: 'document-text-outline',
+          label: isZh ? '服務條款' : 'Terms of Service',
+          action: () => Linking.openURL('https://mibu-travel.com/terms'),
+          hasArrow: true,
+          iconBg: MibuBrand.highlight,
+          iconColor: MibuBrand.copper,
+        },
+        {
+          icon: 'help-circle-outline',
+          label: isZh ? '幫助中心' : 'Help Center',
+          action: () => Linking.openURL('https://mibu-travel.com/support'),
+          hasArrow: true,
+          iconBg: MibuBrand.highlight,
+          iconColor: MibuBrand.copper,
+        },
+      ],
+    },
+  ];
+
+  const renderSettingItem = (item: SettingItem, index: number, isLast: boolean) => (
+    <TouchableOpacity
+      key={`${item.label}-${index}`}
+      style={[
+        styles.settingItem,
+        !isLast && styles.settingItemBorder,
+        item.highlight && styles.settingItemHighlight,
+      ]}
+      onPress={item.action}
+      activeOpacity={item.toggle ? 1 : 0.7}
+    >
+      <View style={[styles.iconContainer, { backgroundColor: item.iconBg || MibuBrand.highlight }]}>
+        <Ionicons name={item.icon} size={20} color={item.iconColor || MibuBrand.brown} />
+      </View>
+      <Text style={[styles.itemLabel, item.highlight && styles.itemLabelHighlight]}>
+        {item.label}
+      </Text>
+      {item.badge && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{item.badge}</Text>
+        </View>
+      )}
+      {item.value && (
+        <Text style={styles.itemValue}>{item.value}</Text>
+      )}
+      {item.toggle && (
+        <Switch
+          value={item.checked}
+          onValueChange={item.onChange}
+          trackColor={{ false: '#e2e8f0', true: MibuBrand.brown }}
+          thumbColor="#ffffff"
+        />
+      )}
+      {item.hasArrow && (
+        <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+      )}
+    </TouchableOpacity>
+  );
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
       <View style={styles.header}>
-        <Ionicons name="settings-outline" size={28} color={MibuBrand.brown} />
         <Text style={styles.title}>{isZh ? '設定' : 'Settings'}</Text>
+        <View style={styles.headerIcon}>
+          <Ionicons name="settings" size={28} color={MibuBrand.brown} />
+        </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          {isZh ? '語言' : 'Language'}
-        </Text>
-        <TouchableOpacity 
-          style={styles.dropdownButton}
-          onPress={() => setShowLanguageDropdown(true)}
-        >
-          <View style={styles.dropdownLeft}>
-            <Text style={styles.dropdownFlag}>{currentLang.flag}</Text>
-            <Text style={styles.dropdownLabel}>{currentLang.label}</Text>
-          </View>
-          <Ionicons name="chevron-down" size={20} color={MibuBrand.copper} />
-        </TouchableOpacity>
-      </View>
-
-      {state.isAuthenticated && (
-        <>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {isZh ? '個人資料' : 'Profile'}
-            </Text>
-            <TouchableOpacity
-              style={styles.menuCard}
+      {state.isAuthenticated && state.user && (
+        <View style={styles.section}>
+          <View style={styles.profileCard}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {state.user.firstName?.charAt(0) || state.user.name?.charAt(0) || '?'}
+              </Text>
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>
+                {state.user.firstName || state.user.name || 'User'}
+              </Text>
+              <Text style={styles.profileEmail}>
+                {state.user.email || ''}
+              </Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.editProfileButton}
               onPress={() => router.push('/profile' as any)}
             >
-              <View style={styles.menuIconContainer}>
-                <Ionicons name="person-outline" size={24} color={MibuBrand.brown} />
-              </View>
-              <View style={styles.menuInfo}>
-                <Text style={styles.menuTitle}>
-                  {state.user?.firstName || state.user?.name || 'User'}
-                </Text>
-                <Text style={styles.menuSubtitle}>
-                  {isZh ? '編輯個人資料' : 'Edit profile'}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+              <Ionicons name="create-outline" size={18} color={MibuBrand.brown} />
             </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
-            <TouchableOpacity
-              style={[styles.menuCard, { marginTop: 12 }]}
-              onPress={() => router.push('/economy' as any)}
-            >
-              <View style={[styles.menuIconContainer, { backgroundColor: '#FFF3D4' }]}>
-                <Ionicons name="trophy-outline" size={24} color="#D4A24C" />
-              </View>
-              <View style={styles.menuInfo}>
-                <Text style={styles.menuTitle}>
-                  {isZh ? '等級與成就' : 'Level & Achievements'}
-                </Text>
-                <Text style={styles.menuSubtitle}>
-                  {isZh ? '查看經驗值和成就徽章' : 'View XP and badges'}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-            </TouchableOpacity>
+      {settingGroups.map((group, groupIndex) => (
+        <View key={group.title} style={styles.section}>
+          <Text style={styles.sectionTitle}>{group.title}</Text>
+          <View style={styles.card}>
+            {group.items.map((item, index) => 
+              renderSettingItem(item, index, index === group.items.length - 1)
+            )}
+          </View>
+        </View>
+      ))}
 
+      {state.user?.role === 'admin' && !state.user?.isSuperAdmin && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{isZh ? '管理員' : 'Admin'}</Text>
+          <View style={styles.card}>
             <TouchableOpacity
-              style={[styles.menuCard, { marginTop: 12 }]}
-              onPress={() => router.push('/account' as any)}
+              style={styles.settingItem}
+              onPress={() => router.push('/admin-exclusions')}
             >
-              <View style={[styles.menuIconContainer, { backgroundColor: '#EEF2FF' }]}>
-                <Ionicons name="link-outline" size={24} color="#6366f1" />
+              <View style={[styles.iconContainer, { backgroundColor: '#EEF2FF' }]}>
+                <Ionicons name="ban-outline" size={20} color="#6366f1" />
               </View>
-              <View style={styles.menuInfo}>
-                <Text style={styles.menuTitle}>
-                  {isZh ? '帳號綁定' : 'Linked Accounts'}
-                </Text>
-                <Text style={styles.menuSubtitle}>
-                  {isZh ? '管理 Apple/Google 登入方式' : 'Manage Apple/Google login'}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.menuCard, { marginTop: 12 }]}
-              onPress={() => router.push('/favorites' as any)}
-            >
-              <View style={[styles.menuIconContainer, { backgroundColor: '#FEE2E2' }]}>
-                <Ionicons name="heart" size={24} color="#EF4444" />
-              </View>
-              <View style={styles.menuInfo}>
-                <Text style={styles.menuTitle}>
-                  {isZh ? '我的最愛' : 'My Favorites'}
-                </Text>
-                <Text style={styles.menuSubtitle}>
-                  {isZh ? '收藏的景點' : 'Saved places'}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.menuCard, { marginTop: 12 }]}
-              onPress={() => router.push('/sos-contacts' as any)}
-            >
-              <View style={[styles.menuIconContainer, { backgroundColor: '#FEF3C7' }]}>
-                <Ionicons name="shield-checkmark" size={24} color="#F59E0B" />
-              </View>
-              <View style={styles.menuInfo}>
-                <Text style={styles.menuTitle}>
-                  {isZh ? '緊急聯絡人' : 'Emergency Contacts'}
-                </Text>
-                <Text style={styles.menuSubtitle}>
-                  {isZh ? '管理 SOS 通知對象' : 'Manage SOS notification contacts'}
-                </Text>
-              </View>
+              <Text style={styles.itemLabel}>
+                {isZh ? '全域排除管理' : 'Global Exclusions'}
+              </Text>
               <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
             </TouchableOpacity>
           </View>
+        </View>
+      )}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {isZh ? '社群功能' : 'Community'}
-            </Text>
+      {state.isAuthenticated && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{isZh ? '帳號管理' : 'Account Management'}</Text>
+          <View style={styles.card}>
             <TouchableOpacity
-              style={styles.menuCard}
-              onPress={() => router.push('/referral' as any)}
+              style={[styles.settingItem, styles.settingItemBorder]}
+              onPress={handleLogout}
             >
-              <View style={[styles.menuIconContainer, { backgroundColor: '#ECFDF5' }]}>
-                <Ionicons name="gift-outline" size={24} color="#059669" />
+              <View style={[styles.iconContainer, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="log-out-outline" size={20} color="#D97706" />
               </View>
-              <View style={styles.menuInfo}>
-                <Text style={styles.menuTitle}>
-                  {isZh ? '推薦好友' : 'Refer Friends'}
-                </Text>
-                <Text style={styles.menuSubtitle}>
-                  {isZh ? '分享推薦碼獲得獎勵' : 'Share your code and earn rewards'}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+              <Text style={styles.itemLabel}>{isZh ? '登出' : 'Logout'}</Text>
             </TouchableOpacity>
-
             <TouchableOpacity
-              style={[styles.menuCard, { marginTop: 12 }]}
-              onPress={() => router.push('/crowdfunding' as any)}
+              style={styles.settingItem}
+              onPress={handleDeleteAccount}
             >
-              <View style={[styles.menuIconContainer, { backgroundColor: '#FEF3C7' }]}>
-                <Ionicons name="rocket-outline" size={24} color="#D97706" />
+              <View style={[styles.iconContainer, { backgroundColor: '#FEE2E2' }]}>
+                <Ionicons name="trash-outline" size={20} color="#EF4444" />
               </View>
-              <View style={styles.menuInfo}>
-                <Text style={styles.menuTitle}>
-                  {isZh ? '募資活動' : 'Crowdfunding'}
-                </Text>
-                <Text style={styles.menuSubtitle}>
-                  {isZh ? '支持新功能開發' : 'Support new features'}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.menuCard, { marginTop: 12 }]}
-              onPress={() => router.push('/contribution' as any)}
-            >
-              <View style={[styles.menuIconContainer, { backgroundColor: '#F0FDF4' }]}>
-                <Ionicons name="hand-left-outline" size={24} color="#16a34a" />
-              </View>
-              <View style={styles.menuInfo}>
-                <Text style={styles.menuTitle}>
-                  {isZh ? '社群貢獻' : 'Contributions'}
-                </Text>
-                <Text style={styles.menuSubtitle}>
-                  {isZh ? '回報、建議景點、投票' : 'Report, suggest, vote'}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+              <Text style={[styles.itemLabel, { color: '#EF4444' }]}>
+                {isZh ? '刪除帳號' : 'Delete Account'}
+              </Text>
             </TouchableOpacity>
           </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {isZh ? '帳號' : 'Account'}
-            </Text>
-            <View style={styles.accountCard}>
-              <View style={styles.accountInfo}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {state.user?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
-                  </Text>
-                </View>
-                <View style={styles.profileTextContainer}>
-                  <Text style={styles.accountName}>
-                    {state.user?.firstName || state.user?.name || 'User'}
-                  </Text>
-                  <Text style={styles.accountEmail}>
-                    {state.user?.email || ''}
-                  </Text>
-                </View>
-              </View>
-              
-              <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-                <Text style={styles.logoutText}>
-                  {isZh ? '登出' : 'Logout'}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
-                <Ionicons name="trash-outline" size={18} color="#dc2626" />
-                <Text style={styles.deleteText}>
-                  {isZh ? '刪除帳號' : 'Delete Account'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </>
+        </View>
       )}
 
       {!state.isAuthenticated && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {isZh ? '帳號' : 'Account'}
-          </Text>
+          <Text style={styles.sectionTitle}>{isZh ? '帳號' : 'Account'}</Text>
           <TouchableOpacity style={styles.loginButton} onPress={() => setShowAuthModal(true)}>
             <Ionicons name="log-in-outline" size={20} color="#ffffff" />
             <Text style={styles.loginButtonText}>{t.login}</Text>
@@ -320,83 +442,18 @@ export function SettingsScreen() {
         </View>
       )}
 
+      <View style={styles.section}>
+        <View style={styles.aboutCard}>
+          <Text style={styles.appName}>Mibu 旅行扭蛋</Text>
+          <Text style={styles.appVersion}>Version 1.0.0</Text>
+          <Text style={styles.copyright}>© 2025 查爾斯有限公司</Text>
+        </View>
+      </View>
+
       <AuthScreen 
         visible={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
-
-      {state.user?.role === 'admin' && !state.user?.isSuperAdmin && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {isZh ? '管理員' : 'Admin'}
-          </Text>
-          <TouchableOpacity style={styles.adminCard} onPress={() => router.push('/admin-exclusions')}>
-            <View style={styles.adminIconContainer}>
-              <Ionicons name="ban-outline" size={24} color="#6366f1" />
-            </View>
-            <View style={styles.adminInfo}>
-              <Text style={styles.adminTitle}>
-                {isZh ? '全域排除管理' : 'Global Exclusions'}
-              </Text>
-              <Text style={styles.adminSubtitle}>
-                {isZh ? '管理所有使用者不會抽到的地點' : 'Manage places excluded for all users'}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-          </TouchableOpacity>
-        </View>
-      )}
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          {isZh ? '法律與支援' : 'Legal & Support'}
-        </Text>
-        <View style={styles.legalCard}>
-          <TouchableOpacity 
-            style={styles.legalItem}
-            onPress={() => Linking.openURL('https://mibu-travel.com/privacy')}
-          >
-            <Ionicons name="shield-checkmark-outline" size={20} color={MibuBrand.copper} />
-            <Text style={styles.legalText}>
-              {isZh ? '隱私權政策' : 'Privacy Policy'}
-            </Text>
-            <Ionicons name="open-outline" size={16} color="#94a3b8" />
-          </TouchableOpacity>
-          <View style={styles.legalDivider} />
-          <TouchableOpacity 
-            style={styles.legalItem}
-            onPress={() => Linking.openURL('https://mibu-travel.com/terms')}
-          >
-            <Ionicons name="document-text-outline" size={20} color={MibuBrand.copper} />
-            <Text style={styles.legalText}>
-              {isZh ? '使用條款' : 'Terms of Service'}
-            </Text>
-            <Ionicons name="open-outline" size={16} color="#94a3b8" />
-          </TouchableOpacity>
-          <View style={styles.legalDivider} />
-          <TouchableOpacity 
-            style={styles.legalItem}
-            onPress={() => Linking.openURL('https://mibu-travel.com/support')}
-          >
-            <Ionicons name="help-circle-outline" size={20} color={MibuBrand.copper} />
-            <Text style={styles.legalText}>
-              {isZh ? '技術支援' : 'Support'}
-            </Text>
-            <Ionicons name="open-outline" size={16} color="#94a3b8" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          {isZh ? '關於' : 'About'}
-        </Text>
-        <View style={styles.aboutCard}>
-          <Text style={styles.appName}>Mibu 旅行扭蛋</Text>
-          <Text style={styles.version}>Version 1.0.0</Text>
-          <Text style={styles.copyright}>© 2025 查爾斯有限公司</Text>
-        </View>
-      </View>
 
       <Modal
         visible={showLanguageDropdown}
@@ -457,147 +514,88 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 24,
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '800',
-    color: MibuBrand.brown,
-    marginLeft: 10,
+    color: MibuBrand.brownDark,
+  },
+  headerIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: MibuBrand.highlight,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   section: {
-    marginBottom: 28,
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
     color: MibuBrand.copper,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 12,
+    marginBottom: 8,
+    marginLeft: 4,
   },
-  dropdownButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  card: {
     backgroundColor: MibuBrand.warmWhite,
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  dropdownLeft: {
+  settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 16,
     gap: 12,
   },
-  dropdownFlag: {
-    fontSize: 24,
+  settingItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: MibuBrand.tanLight,
   },
-  dropdownLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: MibuBrand.brownDark,
+  settingItemHighlight: {
+    backgroundColor: `${MibuBrand.brown}08`,
   },
-  menuCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: MibuBrand.warmWhite,
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
-    gap: 12,
-  },
-  menuIconContainer: {
+  iconContainer: {
     width: 44,
     height: 44,
-    backgroundColor: MibuBrand.highlight,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  menuInfo: {
-    flex: 1,
-  },
-  menuTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginBottom: 2,
-  },
-  menuSubtitle: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-  },
-  accountCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
-  },
-  accountInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    backgroundColor: MibuBrand.brown,
-    borderRadius: 24,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  profileTextContainer: {
+  itemLabel: {
     flex: 1,
-  },
-  accountName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     color: MibuBrand.brownDark,
   },
-  accountEmail: {
+  itemLabelHighlight: {
+    color: MibuBrand.brown,
+  },
+  itemValue: {
     fontSize: 14,
     color: MibuBrand.copper,
+    marginRight: 4,
   },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
+  badge: {
+    backgroundColor: `${MibuBrand.brown}15`,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: '#fef2f2',
-    marginBottom: 8,
   },
-  logoutText: {
-    fontSize: 14,
+  badgeText: {
+    fontSize: 12,
     fontWeight: '600',
-    color: '#ef4444',
-  },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: '#fef2f2',
-    borderWidth: 1,
-    borderColor: '#fecaca',
-  },
-  deleteText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#dc2626',
+    color: MibuBrand.brown,
   },
   loginButton: {
     flexDirection: 'row',
@@ -613,13 +611,63 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 20,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    backgroundColor: MibuBrand.brown,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  profileInfo: {
+    flex: 1,
+    marginLeft: 14,
+  },
+  profileName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+    marginBottom: 2,
+  },
+  profileEmail: {
+    fontSize: 14,
+    color: MibuBrand.copper,
+  },
+  editProfileButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: MibuBrand.highlight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   aboutCard: {
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   appName: {
     fontSize: 18,
@@ -627,7 +675,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
     marginBottom: 4,
   },
-  version: {
+  appVersion: {
     fontSize: 14,
     color: MibuBrand.copper,
     marginBottom: 8,
@@ -636,94 +684,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: MibuBrand.tan,
   },
-  legalCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
-    overflow: 'hidden',
-  },
-  legalItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    gap: 12,
-  },
-  legalText: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '500',
-    color: MibuBrand.brownDark,
-  },
-  legalDivider: {
-    height: 1,
-    backgroundColor: MibuBrand.tanLight,
-    marginHorizontal: 16,
-  },
-  adminCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: MibuBrand.warmWhite,
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#c7d2fe',
-    gap: 12,
-  },
-  adminIconContainer: {
-    width: 44,
-    height: 44,
-    backgroundColor: '#eef2ff',
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  adminInfo: {
-    flex: 1,
-  },
-  adminTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginBottom: 2,
-  },
-  adminSubtitle: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
   modalContent: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     padding: 20,
-    width: '100%',
-    maxWidth: 320,
+    width: '85%',
+    maxWidth: 340,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    textAlign: 'center',
     marginBottom: 16,
+    textAlign: 'center',
   },
   languageOption: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
     borderRadius: 12,
-    gap: 12,
+    marginBottom: 8,
+    backgroundColor: MibuBrand.creamLight,
   },
   languageOptionActive: {
     backgroundColor: MibuBrand.highlight,
   },
   languageOptionFlag: {
     fontSize: 24,
+    marginRight: 12,
   },
   languageOptionLabel: {
     flex: 1,
