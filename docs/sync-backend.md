@@ -48,6 +48,33 @@
 | `ProfileScreen.tsx` | 新增 user 狀態同步 |
 | `economy.ts` | 新增 tier, loginStreak 欄位 |
 
+**Phase 2：設計系統標準化**
+
+- [x] 建立 `src/theme/designTokens.ts` 設計常數檔
+  - 間距系統：4px 基準（xs:4, sm:8, md:12, lg:16, xl:24, xxl:32, xxxl:48）
+  - 圓角系統：xs:4, sm:8, md:12, lg:16, xl:20, xxl:24, full:999
+  - 字體大小：xs:10, sm:12, md:14, lg:16, xl:18, xxl:22, xxxl:28
+  - 陰影預設：sm/md/lg 三級
+- [x] 更新 `constants/Colors.ts` 新增 `SemanticColors`
+  - success：綠色系（#DCFCE7, #5D8A66, #16A34A）
+  - warning：黃色系（#FEF3C7, #D4A24C, #D97706）
+  - error：紅色系（#FEE2E2, #C45C5C, #DC2626）
+  - info：藍色系（#E0F2FE, #6B8CAE, #0284C7）
+  - starYellow：星級評分（#F59E0B）
+- [x] 更新 `HomeScreen.tsx` 移除硬編碼色碼
+  - 快閃活動：使用 `SemanticColors.warningLight/Dark`
+  - 在地活動：使用 `SemanticColors.infoLight/Dark`
+
+### 修改的檔案
+
+| 檔案 | 變更 |
+|------|------|
+| `HomeScreen.tsx` | 修正 level 映射、改名活動區塊、使用 SemanticColors |
+| `ProfileScreen.tsx` | 新增 user 狀態同步 |
+| `economy.ts` | 新增 tier, loginStreak 欄位 |
+| `Colors.ts` | 新增 SemanticColors |
+| `designTokens.ts` | 新建設計系統常數 |
+
 ### 異常回報
 （無）
 
