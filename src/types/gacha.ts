@@ -3,6 +3,7 @@
  */
 import { LocalizedContent, CouponTier, Category } from './common';
 import { MerchantInfo, CouponData } from './merchant';
+import { Achievement } from './economy';
 
 export interface GachaPoolItem {
   id: string;
@@ -162,6 +163,8 @@ export interface ItineraryGenerateResponse {
   message?: string;
   code?: string;
   remainingQuota?: number;
+  /** 扭蛋後新解鎖的成就 (#020) */
+  unlockedAchievements?: Achievement[];
 }
 
 export interface GachaResponse {

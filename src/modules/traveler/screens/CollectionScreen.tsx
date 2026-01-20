@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,16 +6,17 @@ import {
   TouchableOpacity,
   Linking,
   Modal,
+  RefreshControl,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
 import { collectionApi } from '../../../services/collectionApi';
-import { GachaItem, Language } from '../../../types';
+import { GachaItem, Language, CollectionItem } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
 
-const LAST_VIEWED_KEY = '@mibu_lastViewedCollection';
+// 擴展 GachaItem 類型以包含 isRead
+type GachaItemWithRead = GachaItem & { isRead?: boolean; collectionId?: number };
 
 const getPlaceName = (item: GachaItem): string => {
   return item.placeName || '';
@@ -32,17 +33,6 @@ const formatDate = (dateStr: string | undefined): string => {
     return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
   } catch {
     return '';
-  }
-};
-
-// 檢查是否為新收藏（在上次查看之後才收藏的）
-const isNewSinceLastView = (collectedAt: string | undefined, lastViewedTimestamp: number): boolean => {
-  if (!collectedAt || lastViewedTimestamp === 0) return false;
-  try {
-    const collected = new Date(collectedAt).getTime();
-    return collected > lastViewedTimestamp;
-  } catch {
-    return false;
   }
 };
 
@@ -127,11 +117,16 @@ function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
 
 export function CollectionScreen() {
   const { state, t, getToken } = useApp();
-  const { collection, language } = state;
+  const { collection: localCollection, language } = state;
   const [openRegions, setOpenRegions] = useState<Set<string>>(new Set());
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
-  const [selectedItem, setSelectedItem] = useState<GachaItem | null>(null);
-  const [lastViewedTimestamp, setLastViewedTimestamp] = useState<number>(0);
+  const [selectedItem, setSelectedItem] = useState<GachaItemWithRead | null>(null);
+  const [apiCollection, setApiCollection] = useState<GachaItemWithRead[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [hasLoadedFromApi, setHasLoadedFromApi] = useState(false);
+
+  // 使用 API 資料或本地資料
+  const collection = hasLoadedFromApi ? apiCollection : localCollection as GachaItemWithRead[];
 
   // 統計資料
   const totalSpots = collection.length;
@@ -139,34 +134,73 @@ export function CollectionScreen() {
   const uniqueCategories = new Set(collection.map(item =>
     (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other'
   )).size;
+  const unreadCount = collection.filter(item => item.isRead === false).length;
 
-  // 載入上次查看時間，並在短暫延遲後更新 + 呼叫後端 mark-read API
-  useEffect(() => {
-    const loadAndUpdateTimestamp = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(LAST_VIEWED_KEY);
-        const timestamp = stored ? parseInt(stored, 10) : 0;
-        setLastViewedTimestamp(timestamp);
+  // 從後端載入圖鑑資料，使用 sort=unread 排序
+  const loadCollections = useCallback(async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
 
-        // 短暫延遲後更新時間戳（讓用戶先看到 NEW 標籤）
-        setTimeout(async () => {
-          const now = Date.now();
-          await AsyncStorage.setItem(LAST_VIEWED_KEY, now.toString());
-          setLastViewedTimestamp(now);
-
-          // 呼叫後端 API 標記已讀
-          const token = await getToken();
-          if (token) {
-            collectionApi.markCollectionRead(token).catch(() => {
-              // 靜默處理錯誤
-            });
-          }
-        }, 2000);
-      } catch {
-        // 靜默處理錯誤
+      const response = await collectionApi.getCollections(token, { sort: 'unread' });
+      if (response.items) {
+        // 將 CollectionItem 轉換為 GachaItemWithRead
+        const items: GachaItemWithRead[] = response.items.map(item => ({
+          id: item.placeId || item.id?.toString() || '',
+          placeId: item.placeId,
+          placeName: item.placeName,
+          description: item.description,
+          category: item.category,
+          city: item.city,
+          cityDisplay: item.cityDisplay,
+          district: item.district,
+          districtDisplay: item.districtDisplay,
+          collectedAt: item.collectedAt,
+          isRead: item.isRead,
+          collectionId: item.id,
+          merchant: item.merchant,
+          isCoupon: item.isCoupon,
+          couponData: item.couponData,
+        }));
+        setApiCollection(items);
+        setHasLoadedFromApi(true);
       }
-    };
-    loadAndUpdateTimestamp();
+    } catch (error) {
+      console.error('Failed to load collections:', error);
+    }
+  }, [getToken]);
+
+  useEffect(() => {
+    loadCollections();
+  }, [loadCollections]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadCollections();
+    setRefreshing(false);
+  }, [loadCollections]);
+
+  // 點擊項目時標記為已讀
+  const handleItemPress = useCallback(async (item: GachaItemWithRead) => {
+    setSelectedItem(item);
+
+    // 如果是未讀項目，標記為已讀
+    if (item.isRead === false && item.collectionId) {
+      try {
+        const token = await getToken();
+        if (token) {
+          await collectionApi.markCollectionItemRead(token, item.collectionId);
+          // 更新本地狀態
+          setApiCollection(prev =>
+            prev.map(i =>
+              i.collectionId === item.collectionId ? { ...i, isRead: true } : i
+            )
+          );
+        }
+      } catch (error) {
+        console.error('Failed to mark item as read:', error);
+      }
+    }
   }, [getToken]);
 
   const toggleRegion = (region: string) => {
@@ -197,7 +231,7 @@ export function CollectionScreen() {
   };
 
   const groupedData = useMemo(() => {
-    const cityMap: Record<string, { displayName: string; items: GachaItem[]; newCount: number; byCategory: Record<string, GachaItem[]> }> = {};
+    const cityMap: Record<string, { displayName: string; items: GachaItemWithRead[]; unreadCount: number; byCategory: Record<string, GachaItemWithRead[]> }> = {};
 
     collection.forEach(item => {
       const city = item.city || 'Unknown';
@@ -205,11 +239,12 @@ export function CollectionScreen() {
       const category = (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other';
 
       if (!cityMap[city]) {
-        cityMap[city] = { displayName: cityDisplay, items: [], newCount: 0, byCategory: {} };
+        cityMap[city] = { displayName: cityDisplay, items: [], unreadCount: 0, byCategory: {} };
       }
       cityMap[city].items.push(item);
-      if (isNewSinceLastView(item.collectedAt, lastViewedTimestamp)) {
-        cityMap[city].newCount++;
+      // 使用後端的 isRead 欄位判斷未讀
+      if (item.isRead === false) {
+        cityMap[city].unreadCount++;
       }
 
       if (!cityMap[city].byCategory[category]) {
@@ -219,7 +254,7 @@ export function CollectionScreen() {
     });
 
     return cityMap;
-  }, [collection, lastViewedTimestamp]);
+  }, [collection]);
 
   if (collection.length === 0) {
     return (
@@ -235,6 +270,14 @@ export function CollectionScreen() {
     <ScrollView
       style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}
       contentContainerStyle={{ padding: 16, paddingTop: 60, paddingBottom: 100 }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={[MibuBrand.brown]}
+          tintColor={MibuBrand.brown}
+        />
+      }
     >
       {/* Header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
@@ -361,7 +404,7 @@ export function CollectionScreen() {
                         {data.displayName.charAt(0)}
                       </Text>
                     </View>
-                    {data.newCount > 0 && (
+                    {data.unreadCount > 0 && (
                       <View style={{
                         position: 'absolute',
                         top: -4,
@@ -377,7 +420,7 @@ export function CollectionScreen() {
                         borderColor: MibuBrand.creamLight,
                       }}>
                         <Text style={{ color: '#ffffff', fontSize: 10, fontWeight: '700' }}>
-                          {data.newCount > 9 ? '9+' : data.newCount}
+                          {data.unreadCount > 9 ? '9+' : data.unreadCount}
                         </Text>
                       </View>
                     )}
@@ -456,7 +499,7 @@ export function CollectionScreen() {
                                 const placeName = getPlaceName(item);
                                 const description = getDescription(item);
                                 const date = formatDate(item.collectedAt);
-                                const isNew = isNewSinceLastView(item.collectedAt, lastViewedTimestamp);
+                                const isUnread = item.isRead === false;
 
                                 const hasPromo = item.merchant;
                                 const hasCoupon = item.isCoupon && item.couponData;
@@ -481,14 +524,14 @@ export function CollectionScreen() {
                                       shadowRadius: 10,
                                       elevation: 3,
                                     }}
-                                    onPress={() => setSelectedItem(item)}
+                                    onPress={() => handleItemPress(item)}
                                   >
                                     <View style={{ width: 4, backgroundColor: stripeColor }} />
                                     <View style={{ flex: 1, padding: 16 }}>
                                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                                           <Text style={{ fontSize: 12, color: MibuBrand.brownLight }}>{date}</Text>
-                                          {isNew && (
+                                          {isUnread && (
                                             <View style={{
                                               backgroundColor: '#ef4444',
                                               paddingHorizontal: 6,

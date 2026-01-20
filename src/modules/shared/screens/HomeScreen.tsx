@@ -115,13 +115,20 @@ export function HomeScreen() {
           // 忽略錯誤，使用預設值
         }
 
-        // TODO: 載入每日任務進度
-        // 目前使用靜態資料
-        setDailyTask({
-          completed: 3,
-          total: 5,
-          earnedXp: 30,
-        });
+        // 載入每日任務進度
+        try {
+          const dailyTasksRes = await economyApi.getDailyTasks(token);
+          if (dailyTasksRes.summary) {
+            setDailyTask({
+              completed: dailyTasksRes.summary.completedTasks || 0,
+              total: dailyTasksRes.summary.totalTasks || 5,
+              earnedXp: dailyTasksRes.summary.claimedRewards || 0,
+            });
+          }
+        } catch {
+          // 使用預設值
+          setDailyTask({ completed: 0, total: 5, earnedXp: 0 });
+        }
       }
     } catch (error) {
       console.log('Failed to load home data:', error);

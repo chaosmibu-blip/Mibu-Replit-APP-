@@ -449,6 +449,21 @@ export function GachaScreen() {
         couponsWon,
       };
 
+      // 處理成就解鎖通知 (#020)
+      const unlockedAchievements = response.unlockedAchievements || [];
+      if (unlockedAchievements.length > 0) {
+        const achievementNames = unlockedAchievements.map(a => a.title).join('、');
+        const totalReward = unlockedAchievements.reduce((sum, a) => sum + (a.reward?.exp || 0), 0);
+        setTimeout(() => {
+          Alert.alert(
+            state.language === 'zh-TW' ? '🏆 成就解鎖！' : '🏆 Achievement Unlocked!',
+            state.language === 'zh-TW'
+              ? `恭喜解鎖：${achievementNames}\n獲得 ${totalReward} 經驗值！`
+              : `Unlocked: ${achievementNames}\nEarned ${totalReward} XP!`
+          );
+        }, 2000); // 延遲顯示，讓扭蛋結果先呈現
+      }
+
       setIsApiComplete(true);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);

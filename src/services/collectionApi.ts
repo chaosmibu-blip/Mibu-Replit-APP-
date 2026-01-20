@@ -32,17 +32,30 @@ class CollectionApiService extends ApiBase {
   /**
    * 獲取用戶收藏列表
    * GET /api/collections
+   * @param params.sort - 排序方式：'unread' 優先顯示未讀、'newest' 最新、'oldest' 最舊
    */
-  async getCollections(token: string, params?: PaginationParams & { city?: string }): Promise<CollectionResponse> {
+  async getCollections(token: string, params?: PaginationParams & { city?: string; sort?: 'unread' | 'newest' | 'oldest' }): Promise<CollectionResponse> {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.city) queryParams.append('city', params.city);
+    if (params?.sort) queryParams.append('sort', params.sort);
 
     const query = queryParams.toString();
     const url = `/api/collections${query ? `?${query}` : ''}`;
 
     return this.request<CollectionResponse>(url, {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 標記單一收藏項目為已讀
+   * POST /api/collections/:id/read
+   */
+  async markCollectionItemRead(token: string, collectionId: number): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/api/collections/${collectionId}/read`, {
+      method: 'POST',
       headers: this.authHeaders(token),
     });
   }

@@ -6,6 +6,90 @@
 
 ## 最新回報
 
+### 2026-01-20 #020：Phase 2 後端完成 - APP 對接任務
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #020 |
+| 收到時間 | 2026-01-20 |
+| 完成時間 | 2026-01-20 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+
+**任務 1：推播通知對接**
+- [x] 安裝 `expo-notifications`、`expo-device`
+- [x] 更新 `app.json` plugins 配置
+- [x] 建立 `pushNotificationService.ts` 推播服務
+- [x] App 啟動時自動註冊 Expo Push Token
+- [x] 登入成功後向後端 `/api/notifications/register-token` 註冊
+- [x] 登出時取消註冊
+
+**任務 2：Profile API 對接**
+- [x] 更新 `authApi.ts` 端點 `/api/profile` → `/api/account/profile`
+
+**任務 3：圖鑑未讀標記**
+- [x] `collectionApi.getCollections()` 新增 `sort` 參數（支援 'unread'）
+- [x] 新增 `markCollectionItemRead()` 方法標記單一項目已讀
+- [x] 更新 `CollectionScreen.tsx` 使用後端 `isRead` 欄位
+- [x] 城市卡片顯示未讀計數紅點
+- [x] 點擊項目詳情時自動標記已讀
+- [x] 下拉刷新功能
+
+**任務 4：推薦碼改版**
+- [x] 新增 G/A 格式說明文字
+- [x] 更新分享訊息內容
+
+**任務 5：成就追蹤對接**
+- [x] `EconomyScreen.tsx` 新增「累計」Tab 顯示成就進度
+- [x] 成就項目顯示進度條、解鎖狀態、獎勵
+- [x] 新增成就相關樣式
+- [x] `gacha.ts` 新增 `unlockedAchievements` 欄位
+- [x] `GachaScreen.tsx` 扭蛋後顯示成就解鎖 Alert
+
+**任務 6：RevenueCat 募資購買**
+- [x] 安裝 `react-native-purchases`
+- [x] 建立 `revenueCatService.ts` 購買服務
+  - `configure()` 初始化 SDK
+  - `getOfferings()` 取得商品列表
+  - `purchase()` 執行購買
+  - `restorePurchases()` 恢復購買
+
+**任務 7：純 APP 端調整**
+- [x] 首頁活動區塊已存在（Flash Events、Local Activities）
+- [x] 首頁每日任務卡片導航至 `/economy`
+- [x] 更新 `HomeScreen.tsx` 實際載入每日任務進度 API
+
+### 新增的檔案
+
+| 檔案 | 說明 |
+|------|------|
+| `src/services/pushNotificationService.ts` | Expo 推播通知服務 |
+| `src/services/revenueCatService.ts` | RevenueCat IAP 購買服務 |
+
+### 修改的檔案
+
+| 檔案 | 變更 |
+|------|------|
+| `app.json` | 新增 expo-notifications plugin |
+| `package.json` | 新增 expo-notifications、expo-device、react-native-purchases |
+| `src/context/AppContext.tsx` | 整合推播通知服務 |
+| `src/services/authApi.ts` | Profile API 端點更新 |
+| `src/services/collectionApi.ts` | 新增 sort 參數、markCollectionItemRead |
+| `src/services/api.ts` | 匯出 markCollectionItemRead |
+| `src/types/collection.ts` | 擴充 CollectionItem 欄位 |
+| `src/types/gacha.ts` | 新增 unlockedAchievements 欄位 |
+| `src/modules/traveler/screens/CollectionScreen.tsx` | 未讀標記功能、下拉刷新 |
+| `src/modules/traveler/screens/ReferralScreen.tsx` | G/A 格式說明 |
+| `src/modules/traveler/screens/EconomyScreen.tsx` | 成就進度條 Tab |
+| `src/modules/traveler/screens/GachaScreen.tsx` | 成就解鎖通知 |
+| `src/modules/shared/screens/HomeScreen.tsx` | 每日任務 API 對接 |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-19 #019 補充：UI 調整與設定頁整理
 
 | 項目 | 內容 |

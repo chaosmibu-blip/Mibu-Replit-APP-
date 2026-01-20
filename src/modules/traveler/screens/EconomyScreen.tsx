@@ -218,20 +218,83 @@ export function EconomyScreen() {
           </>
         );
       case 'cumulative':
+        // 成就列表（顯示進度條）
         return (
-          <View style={styles.emptyState}>
-            <Ionicons name="stats-chart-outline" size={48} color={MibuBrand.tan} />
-            <Text style={styles.emptyText}>
-              {isZh ? '累計任務即將推出' : 'Cumulative tasks coming soon'}
-            </Text>
-          </View>
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{isZh ? '成就進度' : 'Achievement Progress'}</Text>
+              <Text style={styles.sectionCount}>{unlockedCount}/{achievements.length} {isZh ? '解鎖' : 'unlocked'}</Text>
+            </View>
+            {achievements.length > 0 ? (
+              <View style={styles.taskGroup}>
+                {achievements.map((achievement, index) => {
+                  const progressPercent = achievement.requirement > 0
+                    ? Math.min((achievement.progress / achievement.requirement) * 100, 100)
+                    : 0;
+                  return (
+                    <View key={achievement.id}>
+                      <View style={styles.achievementItem}>
+                        <View style={[
+                          styles.achievementIconContainer,
+                          achievement.isUnlocked && styles.achievementIconUnlocked,
+                        ]}>
+                          <Ionicons
+                            name={achievement.isUnlocked ? 'trophy' : 'trophy-outline'}
+                            size={20}
+                            color={achievement.isUnlocked ? MibuBrand.warning : MibuBrand.copper}
+                          />
+                        </View>
+                        <View style={styles.achievementContent}>
+                          <View style={styles.achievementHeader}>
+                            <Text style={styles.achievementTitle}>{achievement.title}</Text>
+                            {achievement.isUnlocked && (
+                              <View style={styles.unlockedBadge}>
+                                <Ionicons name="checkmark" size={10} color="#fff" />
+                              </View>
+                            )}
+                          </View>
+                          <Text style={styles.achievementDesc}>{achievement.description}</Text>
+                          <View style={styles.achievementProgressRow}>
+                            <View style={styles.achievementProgressBar}>
+                              <View
+                                style={[
+                                  styles.achievementProgressFill,
+                                  { width: `${progressPercent}%` },
+                                  achievement.isUnlocked && styles.achievementProgressComplete,
+                                ]}
+                              />
+                            </View>
+                            <Text style={styles.achievementProgressText}>
+                              {achievement.progress}/{achievement.requirement}
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={styles.achievementReward}>
+                          <Ionicons name="flash" size={12} color={MibuBrand.warning} />
+                          <Text style={styles.achievementRewardText}>+{achievement.reward.exp}</Text>
+                        </View>
+                      </View>
+                      {index < achievements.length - 1 && <View style={styles.taskDivider} />}
+                    </View>
+                  );
+                })}
+              </View>
+            ) : (
+              <View style={styles.emptyState}>
+                <Ionicons name="trophy-outline" size={48} color={MibuBrand.tan} />
+                <Text style={styles.emptyText}>
+                  {isZh ? '暫無成就資料' : 'No achievements yet'}
+                </Text>
+              </View>
+            )}
+          </>
         );
       case 'level':
         return (
           <View style={styles.emptyState}>
-            <Ionicons name="trophy-outline" size={48} color={MibuBrand.tan} />
+            <Ionicons name="ribbon-outline" size={48} color={MibuBrand.tan} />
             <Text style={styles.emptyText}>
-              {isZh ? '等級任務即將推出' : 'Level tasks coming soon'}
+              {isZh ? '等級獎勵即將推出' : 'Level rewards coming soon'}
             </Text>
           </View>
         );
@@ -752,6 +815,93 @@ const styles = StyleSheet.create({
   },
 
   // Empty State
+  // Achievement Styles
+  achievementItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 14,
+    gap: 12,
+  },
+  achievementIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: MibuBrand.cream,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  achievementIconUnlocked: {
+    backgroundColor: `${MibuBrand.warning}20`,
+  },
+  achievementContent: {
+    flex: 1,
+  },
+  achievementHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  achievementTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+  },
+  unlockedBadge: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: MibuBrand.success,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  achievementDesc: {
+    fontSize: 12,
+    color: MibuBrand.brownLight,
+    marginBottom: 8,
+  },
+  achievementProgressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  achievementProgressBar: {
+    flex: 1,
+    height: 6,
+    backgroundColor: MibuBrand.tanLight,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  achievementProgressFill: {
+    height: '100%',
+    backgroundColor: MibuBrand.brown,
+    borderRadius: 3,
+  },
+  achievementProgressComplete: {
+    backgroundColor: MibuBrand.success,
+  },
+  achievementProgressText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: MibuBrand.copper,
+    minWidth: 40,
+    textAlign: 'right',
+  },
+  achievementReward: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${MibuBrand.warning}15`,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 3,
+  },
+  achievementRewardText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: MibuBrand.warning,
+  },
+
   emptyState: {
     alignItems: 'center',
     paddingVertical: 48,

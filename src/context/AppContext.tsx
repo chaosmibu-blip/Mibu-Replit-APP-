@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 import { AppState, Language, User, GachaItem, GachaResponse, UserRole } from '../types';
 import { TRANSLATIONS, DEFAULT_LEVEL } from '../constants/translations';
 import { apiService } from '../services/api';
+import { pushNotificationService } from '../services/pushNotificationService';
 
 const saveToken = async (token: string): Promise<void> => {
   if (Platform.OS === 'web') {
@@ -105,6 +106,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             updates.isAuthenticated = true;
             // 更新本地快取
             await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(freshUser));
+            // 註冊推播通知
+            pushNotificationService.registerTokenWithBackend(storedToken).catch(console.error);
           } else {
             // Token 無效，清除登入狀態
             await removeToken();
@@ -155,17 +158,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setUser = useCallback(async (user: User | null, token?: string | null) => {
-    setState(prev => ({ 
-      ...prev, 
-      user, 
-      isAuthenticated: !!user 
+    setState(prev => ({
+      ...prev,
+      user,
+      isAuthenticated: !!user
     }));
     if (user) {
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       if (token) {
         await saveToken(token);
+        // 登入成功後註冊推播通知
+        pushNotificationService.registerTokenWithBackend(token).catch(console.error);
       }
     } else {
+      // 登出時取消推播註冊
+      const currentToken = await loadToken();
+      if (currentToken) {
+        pushNotificationService.unregisterToken(currentToken).catch(console.error);
+      }
       await AsyncStorage.removeItem(STORAGE_KEYS.USER);
       await removeToken();
     }

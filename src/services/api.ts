@@ -91,6 +91,7 @@ class ApiService {
   deleteCollection = collectionApi.deleteCollection.bind(collectionApi);
   getCollectionUnreadCount = collectionApi.getUnreadCount.bind(collectionApi);
   markCollectionRead = collectionApi.markCollectionRead.bind(collectionApi);
+  markCollectionItemRead = collectionApi.markCollectionItemRead.bind(collectionApi);
   getPlacePromoFromCollection = collectionApi.getPlacePromo.bind(collectionApi);
   getCollectionStats = collectionApi.getCollectionStats.bind(collectionApi);
 
