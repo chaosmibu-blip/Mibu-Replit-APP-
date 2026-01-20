@@ -7,11 +7,14 @@ import { Pagination } from './common';
 export interface CollectionItem {
   id: number;
   userId: string;
+  placeId?: string;
   placeName: string;
   category: string;
   subcategory?: string;
   district: string;
+  districtDisplay?: string;
   city: string;
+  cityDisplay?: string;
   country: string;
   description?: string;
   /** 是否有商家促銷 */
@@ -24,6 +27,20 @@ export interface CollectionItem {
   /** 收藏時間 */
   collectedAt: string;
   createdAt: string;
+  /** 商家資訊 */
+  merchant?: {
+    id: string;
+    name: string;
+    isPro?: boolean;
+    brandColor?: string;
+  };
+  /** 是否有優惠券 */
+  isCoupon?: boolean;
+  couponData?: {
+    title: string;
+    discount: string;
+    expiresAt?: string;
+  };
 }
 
 export interface CollectionResponse {

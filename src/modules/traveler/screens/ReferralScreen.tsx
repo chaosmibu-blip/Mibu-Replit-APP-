@@ -176,7 +176,7 @@ export function ReferralScreen() {
     try {
       await Share.share({
         message: isZh
-          ? `用我的推薦碼 ${myCode.code} 加入 Mibu，一起探索旅遊新體驗！下載 APP: https://mibu.app`
+          ? `用我的推薦碼 ${myCode.code} 加入 Mibu 旅行扭蛋，一起探索旅遊新體驗！\n\n下載 APP: https://mibu.app`
           : `Use my code ${myCode.code} to join Mibu and discover new travel experiences! Download: https://mibu.app`,
       });
     } catch (error) {
@@ -306,6 +306,11 @@ export function ReferralScreen() {
               {isZh
                 ? `已有 ${myCode.usageCount} 位好友使用此推薦碼`
                 : `${myCode.usageCount} friends used this code`}
+            </Text>
+            <Text style={styles.codeFormatHint}>
+              {isZh
+                ? '推薦碼格式：G 開頭 = Google 登入、A 開頭 = Apple 登入'
+                : 'Code format: G = Google login, A = Apple login'}
             </Text>
           </View>
         ) : (
@@ -774,6 +779,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 13,
     color: 'rgba(255,255,255,0.7)',
+  },
+  codeFormatHint: {
+    textAlign: 'center',
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.5)',
+    marginTop: 8,
   },
   // Generate Code Card (when no code exists)
   generateCodeCard: {
