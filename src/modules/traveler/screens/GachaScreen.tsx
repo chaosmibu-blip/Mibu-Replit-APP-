@@ -128,11 +128,21 @@ export function GachaScreen() {
 
   const loadRegions = async (countryId: number) => {
     setLoadingRegions(true);
+    setRegions([]); // 清空舊資料
     try {
-      const data = await apiService.getRegions(countryId);
+      // 設定 10 秒 timeout 防止卡住
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000);
+      });
+
+      const data = await Promise.race([
+        apiService.getRegions(countryId),
+        timeoutPromise,
+      ]);
       setRegions(data);
     } catch (error) {
       console.error('Failed to load regions:', error);
+      setRegions([]); // 確保 regions 為空，讓 UI 顯示「暫無選項」
     } finally {
       setLoadingRegions(false);
     }
@@ -665,6 +675,39 @@ export function GachaScreen() {
           placeholder={t.selectCountry}
           loading={loadingCountries}
         />
+
+        {/* 國家選擇提示：解鎖更多國家 */}
+        <View style={{
+          backgroundColor: MibuBrand.highlight,
+          borderRadius: 12,
+          padding: 14,
+          marginTop: 4,
+          marginBottom: 8,
+        }}>
+          <Text style={{ fontSize: 13, color: MibuBrand.copper, lineHeight: 20 }}>
+            {state.language === 'zh-TW'
+              ? '🌍 我們正在努力增加更多國家！想解鎖其他國家嗎？'
+              : '🌍 We\'re working on adding more countries! Want to unlock others?'}
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.push('/crowdfunding')}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: 10,
+              backgroundColor: MibuBrand.brown,
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+              borderRadius: 10,
+              alignSelf: 'flex-start',
+            }}
+          >
+            <Ionicons name="globe-outline" size={16} color={MibuBrand.warmWhite} />
+            <Text style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.warmWhite, marginLeft: 6 }}>
+              {state.language === 'zh-TW' ? '解鎖全球地圖' : 'Unlock Global Map'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {selectedCountryId && (
           <View style={{ marginTop: 12 }}>

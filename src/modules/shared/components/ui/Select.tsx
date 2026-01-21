@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MibuBrand } from '../../../../../constants/Colors';
 
@@ -56,9 +56,15 @@ export function Select({ options, value, onChange, placeholder, label, loading }
               </TouchableOpacity>
             </View>
 
-            {options.length === 0 ? (
+            {loading ? (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyText}>載入中...</Text>
+                <ActivityIndicator size="large" color={MibuBrand.brown} />
+                <Text style={[styles.emptyText, { marginTop: 12 }]}>載入中...</Text>
+              </View>
+            ) : options.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="alert-circle-outline" size={40} color={MibuBrand.tan} />
+                <Text style={[styles.emptyText, { marginTop: 12 }]}>暫無選項</Text>
               </View>
             ) : (
               <FlatList
