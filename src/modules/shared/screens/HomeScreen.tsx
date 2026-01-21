@@ -294,7 +294,7 @@ export function HomeScreen() {
         </View>
       </View>
 
-      {/* Event Tabs Navigation */}
+      {/* Event Tabs Navigation - 連接下方內容區 */}
       <View style={styles.eventTabsContainer}>
         <TouchableOpacity
           style={[
@@ -304,11 +304,6 @@ export function HomeScreen() {
           onPress={() => setActiveEventTab('announcements')}
           activeOpacity={0.7}
         >
-          <Ionicons
-            name="megaphone-outline"
-            size={16}
-            color={activeEventTab === 'announcements' ? MibuBrand.warmWhite : MibuBrand.copper}
-          />
           <Text
             style={[
               styles.eventTabText,
@@ -317,17 +312,6 @@ export function HomeScreen() {
           >
             {isZh ? '公告' : 'News'}
           </Text>
-          {events.announcements.length > 0 && (
-            <View style={[
-              styles.eventTabBadge,
-              activeEventTab === 'announcements' && styles.eventTabBadgeActive,
-            ]}>
-              <Text style={[
-                styles.eventTabBadgeText,
-                activeEventTab === 'announcements' && styles.eventTabBadgeTextActive,
-              ]}>{events.announcements.length}</Text>
-            </View>
-          )}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -338,11 +322,6 @@ export function HomeScreen() {
           onPress={() => setActiveEventTab('local')}
           activeOpacity={0.7}
         >
-          <Ionicons
-            name="location-outline"
-            size={16}
-            color={activeEventTab === 'local' ? MibuBrand.warmWhite : MibuBrand.copper}
-          />
           <Text
             style={[
               styles.eventTabText,
@@ -351,17 +330,6 @@ export function HomeScreen() {
           >
             {isZh ? '在地活動' : 'Local'}
           </Text>
-          {events.festivals.length > 0 && (
-            <View style={[
-              styles.eventTabBadge,
-              activeEventTab === 'local' && styles.eventTabBadgeActive,
-            ]}>
-              <Text style={[
-                styles.eventTabBadgeText,
-                activeEventTab === 'local' && styles.eventTabBadgeTextActive,
-              ]}>{events.festivals.length}</Text>
-            </View>
-          )}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -372,11 +340,6 @@ export function HomeScreen() {
           onPress={() => setActiveEventTab('flash')}
           activeOpacity={0.7}
         >
-          <Ionicons
-            name="sparkles"
-            size={16}
-            color={activeEventTab === 'flash' ? MibuBrand.warmWhite : MibuBrand.copper}
-          />
           <Text
             style={[
               styles.eventTabText,
@@ -385,21 +348,10 @@ export function HomeScreen() {
           >
             {isZh ? '限時活動' : 'Flash'}
           </Text>
-          {events.limitedEvents.length > 0 && (
-            <View style={[
-              styles.eventTabBadge,
-              activeEventTab === 'flash' && styles.eventTabBadgeActive,
-            ]}>
-              <Text style={[
-                styles.eventTabBadgeText,
-                activeEventTab === 'flash' && styles.eventTabBadgeTextActive,
-              ]}>{events.limitedEvents.length}</Text>
-            </View>
-          )}
         </TouchableOpacity>
       </View>
 
-      {/* Event Content Based on Active Tab */}
+      {/* Event Content Based on Active Tab - 與 Tab 連接 */}
       <View style={styles.eventContentContainer}>
         {/* Announcements Tab Content */}
         {activeEventTab === 'announcements' && (
@@ -737,66 +689,49 @@ const styles = StyleSheet.create({
   },
   eventTabsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    gap: 8,
+    backgroundColor: MibuBrand.creamLight,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderColor: MibuBrand.tanLight,
+    overflow: 'hidden',
   },
   eventTab: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    backgroundColor: MibuBrand.creamLight,
-    borderWidth: 1,
-    borderColor: MibuBrand.tanLight,
-    gap: 6,
+    paddingVertical: 14,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   eventTabActive: {
-    backgroundColor: MibuBrand.brown,
-    borderColor: MibuBrand.brown,
-  },
-  eventTabText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: MibuBrand.copper,
-  },
-  eventTabTextActive: {
-    color: MibuBrand.warmWhite,
-  },
-  eventTabBadge: {
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: MibuBrand.tan,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 5,
-  },
-  eventTabBadgeActive: {
+    borderBottomColor: MibuBrand.brown,
     backgroundColor: MibuBrand.warmWhite,
   },
-  eventTabBadgeText: {
-    fontSize: 11,
+  eventTabText: {
+    fontSize: 16,
     fontWeight: '700',
-    color: MibuBrand.warmWhite,
+    color: MibuBrand.tan,
   },
-  eventTabBadgeTextActive: {
-    color: MibuBrand.brown,
+  eventTabTextActive: {
+    color: MibuBrand.brownDark,
   },
   eventContentContainer: {
     minHeight: 150,
+    backgroundColor: MibuBrand.warmWhite,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderColor: MibuBrand.tanLight,
+    padding: 16,
+    marginBottom: 16,
   },
   tabEmptyState: {
     alignItems: 'center',
     paddingVertical: 32,
     paddingHorizontal: 20,
-    backgroundColor: MibuBrand.creamLight,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: MibuBrand.tanLight,
   },
   tabEmptyText: {
     fontSize: 15,
@@ -810,7 +745,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 0,
   },
   sectionHeader: {
     flexDirection: 'row',
