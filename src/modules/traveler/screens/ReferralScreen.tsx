@@ -302,16 +302,6 @@ export function ReferralScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.codeUsageText}>
-              {isZh
-                ? `已有 ${myCode.usageCount} 位好友使用此推薦碼`
-                : `${myCode.usageCount} friends used this code`}
-            </Text>
-            <Text style={styles.codeFormatHint}>
-              {isZh
-                ? '推薦碼格式：G 開頭 = Google 登入、A 開頭 = Apple 登入'
-                : 'Code format: G = Google login, A = Apple login'}
-            </Text>
           </View>
         ) : (
           <View style={styles.generateCodeCard}>
@@ -774,17 +764,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#fff',
-  },
-  codeUsageText: {
-    textAlign: 'center',
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.7)',
-  },
-  codeFormatHint: {
-    textAlign: 'center',
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.5)',
-    marginTop: 8,
   },
   // Generate Code Card (when no code exists)
   generateCodeCard: {
