@@ -43,6 +43,7 @@ interface PlaceDetailModalProps {
 }
 
 function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
+  const [showActionMenu, setShowActionMenu] = useState(false);
   const placeName = getPlaceName(item);
   const description = getDescription(item);
   const category = typeof item.category === 'string' ? item.category.toLowerCase() : '';
@@ -61,11 +62,19 @@ function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
   const handleFavorite = () => {
     // TODO: 實作收藏功能
     console.log('Favorite:', item.id);
+    setShowActionMenu(false);
+    onClose();
   };
 
   const handleBlacklist = () => {
     // TODO: 實作黑名單功能
     console.log('Blacklist:', item.id);
+    setShowActionMenu(false);
+    onClose();
+  };
+
+  const handleClosePress = () => {
+    setShowActionMenu(true);
   };
 
   const locationText = [districtDisplay, cityDisplay].filter(Boolean).join(' • ') || cityDisplay;
@@ -82,26 +91,65 @@ function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
           onStartShouldSetResponder={() => true}
         >
           <View style={{ height: 120, position: 'relative', backgroundColor: categoryToken.badge, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}>
-            {/* 三個圓形按鈕：收藏/關閉/黑名單 */}
-            <View style={{ position: 'absolute', top: 16, right: 16, flexDirection: 'row', gap: 10 }}>
+            {/* X 按鈕 */}
+            <View style={{ position: 'absolute', top: 16, right: 16 }}>
               <TouchableOpacity
                 style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
-                onPress={handleFavorite}
-              >
-                <Ionicons name="heart-outline" size={20} color={MibuBrand.tierSP} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
-                onPress={onClose}
+                onPress={handleClosePress}
               >
                 <Ionicons name="close" size={20} color={MibuBrand.dark} />
               </TouchableOpacity>
-              <TouchableOpacity
-                style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
-                onPress={handleBlacklist}
-              >
-                <Ionicons name="ban-outline" size={20} color={MibuBrand.copper} />
-              </TouchableOpacity>
+
+              {/* 彈出選單 */}
+              {showActionMenu && (
+                <View style={{
+                  position: 'absolute',
+                  top: 44,
+                  right: 0,
+                  backgroundColor: MibuBrand.warmWhite,
+                  borderRadius: 12,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 12,
+                  elevation: 8,
+                  minWidth: 160,
+                  overflow: 'hidden',
+                }}>
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingVertical: 14,
+                      paddingHorizontal: 16,
+                      gap: 10,
+                      borderBottomWidth: 1,
+                      borderBottomColor: MibuBrand.tanLight,
+                    }}
+                    onPress={handleFavorite}
+                  >
+                    <Ionicons name="heart-outline" size={18} color={MibuBrand.tierSP} />
+                    <Text style={{ fontSize: 15, color: MibuBrand.dark, fontWeight: '600' }}>
+                      {language === 'zh-TW' ? '加入我的最愛' : 'Add to Favorites'}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingVertical: 14,
+                      paddingHorizontal: 16,
+                      gap: 10,
+                    }}
+                    onPress={handleBlacklist}
+                  >
+                    <Ionicons name="ban-outline" size={18} color={MibuBrand.copper} />
+                    <Text style={{ fontSize: 15, color: MibuBrand.dark, fontWeight: '600' }}>
+                      {language === 'zh-TW' ? '加入黑名單' : 'Add to Blacklist'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
             <View style={{ position: 'absolute', bottom: 16, left: 20, backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 }}>
               <Text style={{ fontSize: 12, fontWeight: '700', color: categoryToken.badgeText }}>
