@@ -1,30 +1,62 @@
 /**
  * Push Notification Service
  * 處理 Expo Push Notifications 的註冊、權限請求和 token 管理
+ *
+ * 注意：此服務需要原生模組，在 Expo Go 或 Web 上可能無法使用
+ * 會優雅降級，不影響其他功能
  */
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import { apiService } from './api';
 
-// 設定通知行為
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// 動態載入的模組引用
+let Notifications: typeof import('expo-notifications') | null = null;
+let Device: typeof import('expo-device') | null = null;
+let isNotificationsAvailable = false;
+
+// 嘗試載入原生模組
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Notifications = require('expo-notifications');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Device = require('expo-device');
+  isNotificationsAvailable = true;
+
+  // 設定通知行為
+  if (Notifications) {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  }
+} catch (error) {
+  console.log('Push notifications not available in this environment');
+  isNotificationsAvailable = false;
+}
 
 class PushNotificationService {
   private expoPushToken: string | null = null;
 
   /**
+   * 檢查推播通知是否可用
+   */
+  isAvailable(): boolean {
+    return isNotificationsAvailable && Notifications !== null && Device !== null;
+  }
+
+  /**
    * 註冊推播通知並取得 Expo Push Token
    */
   async registerForPushNotifications(): Promise<string | null> {
+    if (!this.isAvailable() || !Notifications || !Device) {
+      console.log('Push notifications not available');
+      return null;
+    }
+
     // 只在實體設備上運行
     if (!Device.isDevice) {
       console.log('Push notifications require a physical device');
@@ -76,6 +108,10 @@ class PushNotificationService {
    * 向後端註冊 Push Token
    */
   async registerTokenWithBackend(authToken: string): Promise<boolean> {
+    if (!this.isAvailable()) {
+      return false;
+    }
+
     if (!this.expoPushToken) {
       const token = await this.registerForPushNotifications();
       if (!token) return false;
@@ -85,7 +121,7 @@ class PushNotificationService {
       await apiService.registerPushToken(authToken, {
         token: this.expoPushToken!,
         platform: Platform.OS,
-        deviceName: Device.deviceName || undefined,
+        deviceName: Device?.deviceName || undefined,
       });
       console.log('Push token registered with backend');
       return true;
@@ -98,7 +134,7 @@ class PushNotificationService {
   /**
    * 登出時取消註冊
    */
-  async unregisterToken(authToken: string): Promise<void> {
+  async unregisterToken(_authToken: string): Promise<void> {
     if (!this.expoPushToken) return;
 
     try {
@@ -122,8 +158,9 @@ class PushNotificationService {
    * 監聽收到通知
    */
   addNotificationReceivedListener(
-    callback: (notification: Notifications.Notification) => void
-  ) {
+    callback: (notification: any) => void
+  ): { remove: () => void } | null {
+    if (!this.isAvailable() || !Notifications) return null;
     return Notifications.addNotificationReceivedListener(callback);
   }
 
@@ -131,8 +168,9 @@ class PushNotificationService {
    * 監聯用戶點擊通知
    */
   addNotificationResponseReceivedListener(
-    callback: (response: Notifications.NotificationResponse) => void
-  ) {
+    callback: (response: any) => void
+  ): { remove: () => void } | null {
+    if (!this.isAvailable() || !Notifications) return null;
     return Notifications.addNotificationResponseReceivedListener(callback);
   }
 
@@ -140,6 +178,7 @@ class PushNotificationService {
    * 設定 badge 數量
    */
   async setBadgeCount(count: number): Promise<void> {
+    if (!this.isAvailable() || !Notifications) return;
     try {
       await Notifications.setBadgeCountAsync(count);
     } catch (error) {
@@ -151,6 +190,7 @@ class PushNotificationService {
    * 取得 badge 數量
    */
   async getBadgeCount(): Promise<number> {
+    if (!this.isAvailable() || !Notifications) return 0;
     try {
       return await Notifications.getBadgeCountAsync();
     } catch (error) {
