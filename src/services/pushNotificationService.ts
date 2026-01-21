@@ -80,9 +80,8 @@ class PushNotificationService {
       }
 
       // 取得 Expo Push Token
-      const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: 'mibu-travel', // 與 app.json 的 slug 一致
-      });
+      // 注意：在 Expo Go 中不需要 projectId，只有 EAS Build 才需要
+      const tokenData = await Notifications.getExpoPushTokenAsync();
 
       this.expoPushToken = tokenData.data;
       console.log('Expo Push Token:', this.expoPushToken);
