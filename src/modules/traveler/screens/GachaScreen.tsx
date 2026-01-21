@@ -678,8 +678,8 @@ export function GachaScreen() {
             <View style={{ alignItems: 'center', paddingTop: 16 }}>
               <Text style={{ fontSize: 13, color: MibuBrand.copper, lineHeight: 20, textAlign: 'center' }}>
                 {state.language === 'zh-TW'
-                  ? '🌍 我們正在努力增加更多國家！'
-                  : '🌍 We\'re working on adding more countries!'}
+                  ? '我們正在努力增加更多國家！'
+                  : 'We\'re working on adding more countries!'}
               </Text>
               <TouchableOpacity
                 onPress={() => router.push('/crowdfunding')}
