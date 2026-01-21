@@ -117,6 +117,12 @@ class PushNotificationService {
     }
 
     try {
+      // 檢查 API 方法是否存在（避免未導出時報錯）
+      if (typeof apiService.registerPushToken !== 'function') {
+        console.log('registerPushToken API not available yet');
+        return false;
+      }
+
       await apiService.registerPushToken(authToken, {
         pushToken: this.expoPushToken!,
         platform: Platform.OS as 'ios' | 'android',
@@ -124,7 +130,8 @@ class PushNotificationService {
       console.log('Push token registered with backend');
       return true;
     } catch (error) {
-      console.error('Failed to register push token with backend:', error);
+      // 靜默處理錯誤，不影響用戶體驗
+      console.log('Push token registration skipped:', error);
       return false;
     }
   }

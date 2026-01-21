@@ -69,7 +69,7 @@ class AuthApiService extends ApiBase {
   }
 
   async updateProfile(token: string, params: UpdateProfileParams): Promise<ProfileResponse> {
-    return this.request<ProfileResponse>('/api/account/profile', {
+    return this.request<ProfileResponse>('/api/profile', {
       method: 'PATCH',
       headers: this.authHeaders(token),
       body: JSON.stringify(params),
