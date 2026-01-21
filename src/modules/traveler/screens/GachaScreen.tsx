@@ -674,40 +674,33 @@ export function GachaScreen() {
           }}
           placeholder={t.selectCountry}
           loading={loadingCountries}
+          footerContent={
+            <View style={{ alignItems: 'center', paddingTop: 16 }}>
+              <Text style={{ fontSize: 13, color: MibuBrand.copper, lineHeight: 20, textAlign: 'center' }}>
+                {state.language === 'zh-TW'
+                  ? '🌍 我們正在努力增加更多國家！'
+                  : '🌍 We\'re working on adding more countries!'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push('/crowdfunding')}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginTop: 12,
+                  backgroundColor: MibuBrand.brown,
+                  paddingVertical: 10,
+                  paddingHorizontal: 14,
+                  borderRadius: 10,
+                }}
+              >
+                <Ionicons name="globe-outline" size={16} color={MibuBrand.warmWhite} />
+                <Text style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.warmWhite, marginLeft: 6 }}>
+                  {state.language === 'zh-TW' ? '解鎖全球地圖' : 'Unlock Global Map'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          }
         />
-
-        {/* 國家選擇提示：解鎖更多國家 */}
-        <View style={{
-          backgroundColor: MibuBrand.highlight,
-          borderRadius: 12,
-          padding: 14,
-          marginTop: 4,
-          marginBottom: 8,
-        }}>
-          <Text style={{ fontSize: 13, color: MibuBrand.copper, lineHeight: 20 }}>
-            {state.language === 'zh-TW'
-              ? '🌍 我們正在努力增加更多國家！想解鎖其他國家嗎？'
-              : '🌍 We\'re working on adding more countries! Want to unlock others?'}
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.push('/crowdfunding')}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginTop: 10,
-              backgroundColor: MibuBrand.brown,
-              paddingVertical: 10,
-              paddingHorizontal: 14,
-              borderRadius: 10,
-              alignSelf: 'flex-start',
-            }}
-          >
-            <Ionicons name="globe-outline" size={16} color={MibuBrand.warmWhite} />
-            <Text style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.warmWhite, marginLeft: 6 }}>
-              {state.language === 'zh-TW' ? '解鎖全球地圖' : 'Unlock Global Map'}
-            </Text>
-          </TouchableOpacity>
-        </View>
 
         {selectedCountryId && (
           <View style={{ marginTop: 12 }}>
