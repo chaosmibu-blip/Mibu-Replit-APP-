@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, ReactNode } from 'react';
 import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MibuBrand } from '../../../../../constants/Colors';
@@ -15,9 +15,10 @@ interface SelectProps {
   placeholder: string;
   label?: string;
   loading?: boolean;
+  footerContent?: ReactNode;
 }
 
-export function Select({ options, value, onChange, placeholder, label, loading }: SelectProps) {
+export function Select({ options, value, onChange, placeholder, label, loading, footerContent }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const selectedOption = options.find(opt => opt.value === value);
@@ -92,6 +93,7 @@ export function Select({ options, value, onChange, placeholder, label, loading }
                   </TouchableOpacity>
                 )}
                 style={styles.optionsList}
+                ListFooterComponent={footerContent ? <View style={styles.footerContainer}>{footerContent}</View> : null}
               />
             )}
           </View>
@@ -139,7 +141,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '60%',
+    maxHeight: '65%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -185,5 +187,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: MibuBrand.tan,
+  },
+  footerContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    alignItems: 'center',
   },
 });
