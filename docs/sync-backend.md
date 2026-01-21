@@ -6,6 +6,126 @@
 
 ## 最新回報
 
+### 2026-01-21 #024：Google 原生登入
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #024 |
+| 收到時間 | 2026-01-21 |
+| 完成時間 | 2026-01-21 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+
+**Google 原生登入實作**
+- [x] 安裝 `expo-auth-session`, `expo-crypto`, `expo-web-browser`
+- [x] 更新 `app.json` 加入 `CFBundleURLSchemes`（iOS Client ID 反轉格式）
+- [x] 建立 `hooks/useGoogleAuth.ts` Hook
+- [x] 更新 `app/login.tsx` 登入邏輯
+  - iOS/Android：使用原生 Google 登入
+  - Web：保留 Replit OAuth
+- [x] 後端 `/api/auth/mobile` 已支援 Google idToken 驗證
+
+### 新增的檔案
+
+| 檔案 | 說明 |
+|------|------|
+| `hooks/useGoogleAuth.ts` | Google 原生登入 Hook |
+
+### 修改的檔案
+
+| 檔案 | 變更 |
+|------|------|
+| `app.json` | 新增 CFBundleURLTypes |
+| `app/login.tsx` | 新增 handleGoogleNativeLogin、平台判斷 |
+| `package.json` | 新增 expo-auth-session, expo-crypto, expo-web-browser |
+
+### 注意事項
+- ⚠️ 需要重新 build APP 才能測試（Expo Go 無法使用原生登入）
+- Android Client ID 暫緩，等上架時再設定
+
+### 異常回報
+（無）
+
+---
+
+### 2026-01-21 #023：後端修復 - 登入 API 回傳用戶姓名
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #023（後端任務） |
+| 收到時間 | 2026-01-21 |
+| 完成時間 | 2026-01-21 |
+| 狀態 | ✅ 後端已修復，APP 端已對應 |
+
+### 後端修復內容
+- [x] `/api/auth/mobile` 改用 `generateJwtToken`
+- [x] JWT Token 現在包含 `firstName`, `lastName`, `profileImageUrl`
+- [x] 登入回傳新增 `firstName`, `lastName`, `profileImageUrl` 欄位
+
+### APP 端對應
+- [x] `app/login.tsx` 已從 `response.user.firstName` 取得姓名
+- [x] 用戶資料已持久化到 AsyncStorage
+
+### 異常回報
+（無）
+
+---
+
+### 2026-01-21 #022：Profile API 回傳格式說明
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #022（說明文件） |
+| 收到時間 | 2026-01-21 |
+| 完成時間 | 2026-01-21 |
+| 狀態 | ✅ APP 端已對齊 |
+
+### 確認項目
+- [x] APP 使用 `GET /api/profile`（扁平格式，非 `/api/account/profile`）
+- [x] `authApi.getProfile()` 端點正確
+- [x] `authApi.updateProfile()` 端點正確
+
+### 異常回報
+（無）
+
+---
+
+### 2026-01-21 #021：Push Token API + 個人資料修復
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #021 |
+| 收到時間 | 2026-01-21 |
+| 完成時間 | 2026-01-21 |
+| 狀態 | ✅ 完成 |
+
+### 完成項目
+
+**1. Push Token 註冊 API**
+- [x] `commonApi.registerPushToken()` 已實作
+- [x] 參數格式：`{ token, platform, deviceId? }`
+- [x] `api.ts` 已匯出 `registerPushToken`
+- [x] `pushNotificationService.ts` 已加入防禦性檢查
+
+**2. Profile API 端點**
+- [x] 使用 `GET /api/profile`（扁平格式）
+- [x] 使用 `PATCH /api/profile` 更新
+
+### 修改的檔案
+
+| 檔案 | 變更 |
+|------|------|
+| `src/services/api.ts` | 新增 registerPushToken 綁定 |
+| `src/services/commonApi.ts` | registerPushToken 參數格式修正 |
+| `src/services/pushNotificationService.ts` | 新增防禦性檢查、改用 console.log |
+| `src/services/authApi.ts` | Profile 端點統一為 /api/profile |
+
+### 異常回報
+（無）
+
+---
+
 ### 2026-01-20 #020：Phase 2 後端完成 - APP 對接任務
 
 | 項目 | 內容 |

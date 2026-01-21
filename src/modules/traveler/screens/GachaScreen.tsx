@@ -712,19 +712,7 @@ export function GachaScreen() {
             flexDirection: 'row',
             alignItems: 'center',
           }}>
-            <View style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              backgroundColor: MibuBrand.brown,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.warmWhite }}>
-                {pullCount}
-              </Text>
-            </View>
-            <View style={{ flex: 1, marginHorizontal: 12 }}>
+            <View style={{ flex: 1 }}>
               <Slider
                 style={{ width: '100%', height: 40 }}
                 minimumValue={5}
@@ -738,6 +726,7 @@ export function GachaScreen() {
               />
             </View>
           </View>
+
 
           {/* 範圍標籤 */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, paddingHorizontal: 4 }}>

@@ -16,6 +16,7 @@ import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { useApp } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
 import { UserRole } from '../src/types';
@@ -78,6 +79,9 @@ export default function LoginScreen() {
   const [selectedPortal, setSelectedPortal] = useState<PortalType>('traveler');
   const [showPortalMenu, setShowPortalMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+
+  // Google 原生登入 Hook（僅 iOS/Android 使用）
+  const { signInWithGoogle, isReady: isGoogleReady } = useGoogleAuth();
 
   const redirectUri = Linking.createURL('auth/callback');
   const portals = PORTAL_CONFIGS[state.language] || PORTAL_CONFIGS['zh-TW'];
@@ -273,118 +277,118 @@ export default function LoginScreen() {
     };
   }, [handleDeepLink]);
 
+  // Google 原生登入（iOS/Android）
+  const handleGoogleNativeLogin = async () => {
+    try {
+      setLoading(true);
+      console.log('[Google Native] Starting Google Sign In...');
+
+      // 1. 取得 Google idToken（原生方式）
+      const idToken = await signInWithGoogle();
+      console.log('[Google Native] Got idToken:', idToken?.substring(0, 50) + '...');
+
+      // 2. 傳送到後端驗證
+      const apiUrl = `${API_BASE_URL}/api/auth/mobile`;
+      const requestBody = {
+        provider: 'google',
+        idToken: idToken,
+        targetPortal: selectedPortal,
+      };
+
+      console.log('[Google Native] Sending request to:', apiUrl);
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log('[Google Native] Response status:', response.status);
+      const data = await response.json();
+
+      if (data.token && data.user) {
+        const userRole = data.user.role as UserRole || 'traveler';
+        const finalActiveRole = data.user.activeRole as UserRole || userRole;
+
+        await setUser({
+          id: data.user.id,
+          name: data.user.name || 'User',
+          email: data.user.email || null,
+          avatar: data.user.avatar || null,
+          firstName: data.user.firstName || data.user.name?.split(' ')[0] || 'User',
+          role: userRole,
+          activeRole: finalActiveRole,
+          isApproved: data.user.isApproved,
+          isSuperAdmin: data.user.isSuperAdmin || false,
+          accessibleRoles: data.user.accessibleRoles || [],
+          provider: 'google',
+          providerId: data.user.id,
+        }, data.token);
+
+        navigateAfterLogin(userRole, data.user.isApproved, data.user.isSuperAdmin, selectedPortal);
+      } else {
+        Alert.alert(
+          state.language === 'zh-TW' ? '登入失敗' : 'Login Failed',
+          data.error || (state.language === 'zh-TW' ? '請稍後再試' : 'Please try again later')
+        );
+      }
+    } catch (error: any) {
+      console.error('[Google Native] Error:', error);
+      if (error.message === '使用者取消登入') {
+        console.log('[Google Native] User canceled');
+      } else {
+        Alert.alert(
+          state.language === 'zh-TW' ? '登入錯誤' : 'Login Error',
+          state.language === 'zh-TW' ? '無法完成 Google 登入' : 'Could not complete Google Sign In'
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google OAuth 登入（Web 平台使用 Replit OAuth）
   const handleLogin = async () => {
+    // iOS/Android 使用原生登入
+    if (Platform.OS !== 'web') {
+      return handleGoogleNativeLogin();
+    }
+
+    // Web 平台繼續使用 Replit OAuth
     setLoading(true);
     try {
       // *** 關鍵修改：在發起登入前，儲存使用者選擇的入口 ***
       await AsyncStorage.setItem('post_login_portal', selectedPortal);
-      
-      // Use /api/login with portal parameter - OAuth 使用開發環境 URL
+
+      // Use /api/login with portal parameter - OAuth 使用開發環境 URL（僅 Web 平台）
       const authUrl = `${OAUTH_BASE_URL}/api/login?portal=${selectedPortal}&redirect_uri=${encodeURIComponent(redirectUri)}`;
-      
-      if (Platform.OS === 'web') {
-        const width = 500;
-        const height = 600;
-        const left = (window.screenX || 0) + ((window.outerWidth || 800) - width) / 2;
-        const top = (window.screenY || 0) + ((window.outerHeight || 600) - height) / 2;
-        
-        const authWindow = window.open(
-          authUrl,
-          'auth',
-          `width=${width},height=${height},left=${left},top=${top}`
-        );
 
-        const checkInterval = setInterval(async () => {
-          try {
-            if (authWindow?.closed) {
-              clearInterval(checkInterval);
-              await fetchUserAfterAuth();
-              setLoading(false);
-            }
-          } catch (e) {
-          }
-        }, 500);
+      const width = 500;
+      const height = 600;
+      const left = (window.screenX || 0) + ((window.outerWidth || 800) - width) / 2;
+      const top = (window.screenY || 0) + ((window.outerHeight || 600) - height) / 2;
 
-        setTimeout(() => {
-          clearInterval(checkInterval);
-          setLoading(false);
-        }, 120000);
-      } else {
-        const handleAuthCallback = async (event: { url: string }) => {
-          const parsed = Linking.parse(event.url);
-          
-          if (event.url.includes('auth/callback') || event.url.includes('token=') || event.url.includes('error=')) {
-            subscription.remove();
-            
-            await WebBrowser.dismissBrowser();
-            
-            // Handle error codes from callback
-            if (parsed.queryParams?.error) {
-              setLoading(false);
-              const errorCode = parsed.queryParams?.error as string;
-              const errorMessage = parsed.queryParams?.message as string;
-              const isZh = state.language === 'zh-TW';
-              
-              switch (errorCode) {
-                case 'NO_MERCHANT_DATA':
-                  Alert.alert(
-                    isZh ? '尚未註冊商家' : 'Not a Merchant',
-                    isZh ? '您尚未註冊為商家，請先申請商家帳號' : (errorMessage || 'Please register as a merchant first'),
-                    [{ text: isZh ? '確定' : 'OK' }]
-                  );
-                  break;
-                case 'NO_SPECIALIST_DATA':
-                  Alert.alert(
-                    isZh ? '尚未註冊專員' : 'Not a Specialist',
-                    isZh ? '您尚未註冊為專員，請先申請專員帳號' : (errorMessage || 'Please register as a specialist first'),
-                    [{ text: isZh ? '確定' : 'OK' }]
-                  );
-                  break;
-                case 'WRONG_PORTAL':
-                  Alert.alert(
-                    isZh ? '入口錯誤' : 'Wrong Portal',
-                    isZh ? '請切換至正確的入口登入' : (errorMessage || 'Please switch to the correct portal'),
-                    [{ text: isZh ? '確定' : 'OK' }]
-                  );
-                  break;
-                case 'PERMISSION_DENIED':
-                  Alert.alert(
-                    isZh ? '權限不足' : 'Permission Denied',
-                    isZh ? '您沒有權限存取此功能' : (errorMessage || 'You do not have permission to access this feature'),
-                    [{ text: isZh ? '確定' : 'OK' }]
-                  );
-                  break;
-                default:
-                  Alert.alert(
-                    isZh ? '登入失敗' : 'Login Failed',
-                    errorMessage || (isZh ? '請稍後再試' : 'Please try again'),
-                    [{ text: isZh ? '確定' : 'OK' }]
-                  );
-              }
-              return;
-            }
-            
-            if (parsed.queryParams?.token) {
-              await fetchUserWithToken(parsed.queryParams.token as string);
-            } else {
-              console.error('Auth callback received but no token found');
-              setLoading(false);
-            }
+      const authWindow = window.open(
+        authUrl,
+        'auth',
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
+
+      const checkInterval = setInterval(async () => {
+        try {
+          if (authWindow?.closed) {
+            clearInterval(checkInterval);
+            await fetchUserAfterAuth();
+            setLoading(false);
           }
-        };
-        
-        const subscription = Linking.addEventListener('url', handleAuthCallback);
-        
-        await WebBrowser.openBrowserAsync(authUrl, {
-          showInRecents: true,
-          dismissButtonStyle: 'close',
-        });
-        
-        setTimeout(() => {
-          subscription.remove();
-          setLoading(false);
-        }, 120000);
-      }
+        } catch (e) {
+        }
+      }, 500);
+
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        setLoading(false);
+      }, 120000);
     } catch (error) {
       console.error('Auth error:', error);
       // 清理可能殘留的存儲
