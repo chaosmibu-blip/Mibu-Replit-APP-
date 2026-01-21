@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Modal, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
@@ -7,6 +7,18 @@ import { apiService } from '../../../services/api';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
+
+// 預設頭像選項
+const AVATAR_PRESETS = [
+  { id: 'default', icon: 'person', color: MibuBrand.brown },
+  { id: 'cat', icon: 'paw', color: '#F59E0B' },
+  { id: 'star', icon: 'star', color: '#8B5CF6' },
+  { id: 'heart', icon: 'heart', color: '#EF4444' },
+  { id: 'leaf', icon: 'leaf', color: '#10B981' },
+  { id: 'compass', icon: 'compass', color: '#3B82F6' },
+  { id: 'flame', icon: 'flame', color: '#F97316' },
+  { id: 'diamond', icon: 'diamond', color: '#EC4899' },
+];
 
 const GENDER_OPTIONS: { value: Gender; labelZh: string; labelEn: string }[] = [
   { value: 'male', labelZh: '男', labelEn: 'Male' },
@@ -43,6 +55,8 @@ export function ProfileScreen() {
   const [emergencyContactRelation, setEmergencyContactRelation] = useState('');
   const [showGenderPicker, setShowGenderPicker] = useState(false);
   const [showRelationPicker, setShowRelationPicker] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('default');
 
   useEffect(() => {
     loadProfile();
@@ -175,17 +189,20 @@ export function ProfileScreen() {
         <View style={styles.avatarSection}>
           <TouchableOpacity
             style={styles.avatarContainer}
-            onPress={() => {
-              Alert.alert(
-                isZh ? '更換頭像' : 'Change Avatar',
-                isZh ? '此功能即將開放' : 'Coming soon'
-              );
-            }}
+            onPress={() => setShowAvatarModal(true)}
           >
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {firstName?.charAt(0) || profile?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
-              </Text>
+            <View style={[styles.avatar, { backgroundColor: AVATAR_PRESETS.find(a => a.id === selectedAvatar)?.color || MibuBrand.brown }]}>
+              {selectedAvatar === 'default' ? (
+                <Text style={styles.avatarText}>
+                  {firstName?.charAt(0) || profile?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
+                </Text>
+              ) : (
+                <Ionicons
+                  name={AVATAR_PRESETS.find(a => a.id === selectedAvatar)?.icon as any || 'person'}
+                  size={44}
+                  color="#ffffff"
+                />
+              )}
             </View>
             <View style={styles.avatarEditBadge}>
               <Ionicons name="camera" size={14} color="#ffffff" />
@@ -369,6 +386,73 @@ export function ProfileScreen() {
 
         <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* 頭像選擇 Modal */}
+      <Modal
+        visible={showAvatarModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowAvatarModal(false)}
+      >
+        <TouchableOpacity
+          style={styles.avatarModalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowAvatarModal(false)}
+        >
+          <View style={styles.avatarModalContent} onStartShouldSetResponder={() => true}>
+            <Text style={styles.avatarModalTitle}>
+              {isZh ? '選擇頭像' : 'Choose Avatar'}
+            </Text>
+
+            <View style={styles.avatarGrid}>
+              {AVATAR_PRESETS.map((preset) => (
+                <TouchableOpacity
+                  key={preset.id}
+                  style={[
+                    styles.avatarOption,
+                    selectedAvatar === preset.id && styles.avatarOptionSelected,
+                  ]}
+                  onPress={() => {
+                    setSelectedAvatar(preset.id);
+                    setShowAvatarModal(false);
+                  }}
+                >
+                  <View style={[styles.avatarOptionCircle, { backgroundColor: preset.color }]}>
+                    {preset.id === 'default' ? (
+                      <Text style={styles.avatarOptionText}>
+                        {firstName?.charAt(0) || '?'}
+                      </Text>
+                    ) : (
+                      <Ionicons name={preset.icon as any} size={28} color="#ffffff" />
+                    )}
+                  </View>
+                  {selectedAvatar === preset.id && (
+                    <View style={styles.avatarCheckmark}>
+                      <Ionicons name="checkmark" size={14} color="#ffffff" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={styles.avatarUploadButton}
+              onPress={() => {
+                setShowAvatarModal(false);
+                Alert.alert(
+                  isZh ? '上傳頭像' : 'Upload Avatar',
+                  isZh ? '自訂頭像功能即將開放' : 'Custom avatar upload coming soon'
+                );
+              }}
+            >
+              <Ionicons name="cloud-upload-outline" size={20} color={MibuBrand.brown} />
+              <Text style={styles.avatarUploadText}>
+                {isZh ? '上傳自訂頭像' : 'Upload Custom Avatar'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -555,5 +639,84 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: MibuBrand.brown,
     marginBottom: 16,
+  },
+  avatarModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  avatarModalContent: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: 24,
+    padding: 24,
+    width: '100%',
+    maxWidth: 340,
+  },
+  avatarModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  avatarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 16,
+    marginBottom: 24,
+  },
+  avatarOption: {
+    position: 'relative',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    padding: 3,
+    backgroundColor: 'transparent',
+    borderWidth: 3,
+    borderColor: 'transparent',
+  },
+  avatarOptionSelected: {
+    borderColor: MibuBrand.brown,
+  },
+  avatarOptionCircle: {
+    flex: 1,
+    borderRadius: 29,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarOptionText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  avatarCheckmark: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: MibuBrand.brown,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: MibuBrand.warmWhite,
+  },
+  avatarUploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 16,
+    backgroundColor: MibuBrand.highlight,
+  },
+  avatarUploadText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: MibuBrand.brown,
   },
 });

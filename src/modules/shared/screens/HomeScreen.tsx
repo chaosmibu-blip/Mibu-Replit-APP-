@@ -47,6 +47,7 @@ export function HomeScreen() {
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeEventTab, setActiveEventTab] = useState<'announcements' | 'local' | 'flash'>('announcements');
 
   // State
   const [userLevel, setUserLevel] = useState<UserLevelData>({
@@ -293,116 +294,230 @@ export function HomeScreen() {
         </View>
       </View>
 
-      {/* Announcements Section */}
-      {events.announcements.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="megaphone-outline" size={20} color={MibuBrand.brown} />
-            <Text style={styles.sectionTitle}>
-              {isZh ? '最新公告' : 'Announcements'}
-            </Text>
-          </View>
-          {events.announcements.map(event => (
-            <TouchableOpacity
-              key={event.id}
-              style={styles.announcementCard}
-              onPress={() => router.push(`/event/${event.id}`)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.announcementIcon}>
-                <Ionicons name="megaphone-outline" size={18} color={MibuBrand.brown} />
-              </View>
-              <View style={styles.announcementContent}>
-                <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
-                <Text style={styles.announcementDesc} numberOfLines={2}>
-                  {getLocalizedDesc(event)}
-                </Text>
-                <Text style={styles.announcementDate}>
-                  {formatDate(event.startDate || event.createdAt)}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+      {/* Event Tabs Navigation */}
+      <View style={styles.eventTabsContainer}>
+        <TouchableOpacity
+          style={[
+            styles.eventTab,
+            activeEventTab === 'announcements' && styles.eventTabActive,
+          ]}
+          onPress={() => setActiveEventTab('announcements')}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="megaphone-outline"
+            size={16}
+            color={activeEventTab === 'announcements' ? MibuBrand.warmWhite : MibuBrand.copper}
+          />
+          <Text
+            style={[
+              styles.eventTabText,
+              activeEventTab === 'announcements' && styles.eventTabTextActive,
+            ]}
+          >
+            {isZh ? '公告' : 'News'}
+          </Text>
+          {events.announcements.length > 0 && (
+            <View style={[
+              styles.eventTabBadge,
+              activeEventTab === 'announcements' && styles.eventTabBadgeActive,
+            ]}>
+              <Text style={[
+                styles.eventTabBadgeText,
+                activeEventTab === 'announcements' && styles.eventTabBadgeTextActive,
+              ]}>{events.announcements.length}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
 
-      {/* Flash Events Section */}
-      {events.limitedEvents.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="sparkles" size={20} color={MibuBrand.brown} />
-            <Text style={styles.sectionTitle}>
-              {isZh ? '快閃活動' : 'Flash Events'}
-            </Text>
-          </View>
-          {events.limitedEvents.map(event => (
-            <TouchableOpacity
-              key={event.id}
-              style={[styles.announcementCard, styles.flashEventCard]}
-              onPress={() => router.push(`/event/${event.id}`)}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.announcementIcon, { backgroundColor: SemanticColors.warningLight }]}>
-                <Ionicons name="sparkles" size={18} color={SemanticColors.warningDark} />
-              </View>
-              <View style={styles.announcementContent}>
-                <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
-                <Text style={styles.announcementDesc} numberOfLines={2}>
-                  {getLocalizedDesc(event)}
-                </Text>
-                <Text style={[styles.announcementDate, { color: SemanticColors.warningDark }]}>
-                  {formatDate(event.startDate || event.createdAt)}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+        <TouchableOpacity
+          style={[
+            styles.eventTab,
+            activeEventTab === 'local' && styles.eventTabActive,
+          ]}
+          onPress={() => setActiveEventTab('local')}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="location-outline"
+            size={16}
+            color={activeEventTab === 'local' ? MibuBrand.warmWhite : MibuBrand.copper}
+          />
+          <Text
+            style={[
+              styles.eventTabText,
+              activeEventTab === 'local' && styles.eventTabTextActive,
+            ]}
+          >
+            {isZh ? '在地活動' : 'Local'}
+          </Text>
+          {events.festivals.length > 0 && (
+            <View style={[
+              styles.eventTabBadge,
+              activeEventTab === 'local' && styles.eventTabBadgeActive,
+            ]}>
+              <Text style={[
+                styles.eventTabBadgeText,
+                activeEventTab === 'local' && styles.eventTabBadgeTextActive,
+              ]}>{events.festivals.length}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
 
-      {/* Local Activities Section */}
-      {events.festivals.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="location-outline" size={20} color={MibuBrand.brown} />
-            <Text style={styles.sectionTitle}>
-              {isZh ? '在地活動' : 'Local Activities'}
-            </Text>
-          </View>
-          {events.festivals.map(event => (
-            <TouchableOpacity
-              key={event.id}
-              style={[styles.announcementCard, styles.localActivityCard]}
-              onPress={() => router.push(`/event/${event.id}`)}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.announcementIcon, { backgroundColor: SemanticColors.infoLight }]}>
-                <Ionicons name="location-outline" size={18} color={SemanticColors.infoDark} />
-              </View>
-              <View style={styles.announcementContent}>
-                <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
-                <Text style={styles.announcementDesc} numberOfLines={2}>
-                  {getLocalizedDesc(event)}
-                </Text>
-                <Text style={[styles.announcementDate, { color: SemanticColors.infoDark }]}>
-                  {formatDate(event.startDate || event.createdAt)}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+        <TouchableOpacity
+          style={[
+            styles.eventTab,
+            activeEventTab === 'flash' && styles.eventTabActive,
+          ]}
+          onPress={() => setActiveEventTab('flash')}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="sparkles"
+            size={16}
+            color={activeEventTab === 'flash' ? MibuBrand.warmWhite : MibuBrand.copper}
+          />
+          <Text
+            style={[
+              styles.eventTabText,
+              activeEventTab === 'flash' && styles.eventTabTextActive,
+            ]}
+          >
+            {isZh ? '限時活動' : 'Flash'}
+          </Text>
+          {events.limitedEvents.length > 0 && (
+            <View style={[
+              styles.eventTabBadge,
+              activeEventTab === 'flash' && styles.eventTabBadgeActive,
+            ]}>
+              <Text style={[
+                styles.eventTabBadgeText,
+                activeEventTab === 'flash' && styles.eventTabBadgeTextActive,
+              ]}>{events.limitedEvents.length}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
 
-      {/* Empty State */}
-      {events.announcements.length === 0 &&
-        events.limitedEvents.length === 0 &&
-        events.festivals.length === 0 && (
-          <View style={styles.emptyState}>
-            <Ionicons name="sunny-outline" size={48} color={MibuBrand.tan} />
-            <Text style={styles.emptyText}>
-              {isZh ? '今天風和日麗，適合探索！' : 'Great day for exploring!'}
-            </Text>
+      {/* Event Content Based on Active Tab */}
+      <View style={styles.eventContentContainer}>
+        {/* Announcements Tab Content */}
+        {activeEventTab === 'announcements' && (
+          <View style={styles.section}>
+            {events.announcements.length > 0 ? (
+              events.announcements.map(event => (
+                <TouchableOpacity
+                  key={event.id}
+                  style={styles.announcementCard}
+                  onPress={() => router.push(`/event/${event.id}`)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.announcementIcon}>
+                    <Ionicons name="megaphone-outline" size={18} color={MibuBrand.brown} />
+                  </View>
+                  <View style={styles.announcementContent}>
+                    <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
+                    <Text style={styles.announcementDesc} numberOfLines={2}>
+                      {getLocalizedDesc(event)}
+                    </Text>
+                    <Text style={styles.announcementDate}>
+                      {formatDate(event.startDate || event.createdAt)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View style={styles.tabEmptyState}>
+                <Ionicons name="megaphone-outline" size={40} color={MibuBrand.tan} />
+                <Text style={styles.tabEmptyText}>
+                  {isZh ? '目前沒有公告' : 'No announcements'}
+                </Text>
+                <Text style={styles.tabEmptySubtext}>
+                  {isZh ? '敬請期待最新消息！' : 'Stay tuned for updates!'}
+                </Text>
+              </View>
+            )}
           </View>
         )}
+
+        {/* Local Activities Tab Content */}
+        {activeEventTab === 'local' && (
+          <View style={styles.section}>
+            {events.festivals.length > 0 ? (
+              events.festivals.map(event => (
+                <TouchableOpacity
+                  key={event.id}
+                  style={[styles.announcementCard, styles.localActivityCard]}
+                  onPress={() => router.push(`/event/${event.id}`)}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.announcementIcon, { backgroundColor: SemanticColors.infoLight }]}>
+                    <Ionicons name="location-outline" size={18} color={SemanticColors.infoDark} />
+                  </View>
+                  <View style={styles.announcementContent}>
+                    <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
+                    <Text style={styles.announcementDesc} numberOfLines={2}>
+                      {getLocalizedDesc(event)}
+                    </Text>
+                    <Text style={[styles.announcementDate, { color: SemanticColors.infoDark }]}>
+                      {formatDate(event.startDate || event.createdAt)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View style={styles.tabEmptyState}>
+                <Ionicons name="location-outline" size={40} color={MibuBrand.tan} />
+                <Text style={styles.tabEmptyText}>
+                  {isZh ? '目前沒有在地活動' : 'No local activities'}
+                </Text>
+                <Text style={styles.tabEmptySubtext}>
+                  {isZh ? '探索附近的精彩活動！' : 'Discover events near you!'}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Flash Events Tab Content */}
+        {activeEventTab === 'flash' && (
+          <View style={styles.section}>
+            {events.limitedEvents.length > 0 ? (
+              events.limitedEvents.map(event => (
+                <TouchableOpacity
+                  key={event.id}
+                  style={[styles.announcementCard, styles.flashEventCard]}
+                  onPress={() => router.push(`/event/${event.id}`)}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.announcementIcon, { backgroundColor: SemanticColors.warningLight }]}>
+                    <Ionicons name="sparkles" size={18} color={SemanticColors.warningDark} />
+                  </View>
+                  <View style={styles.announcementContent}>
+                    <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
+                    <Text style={styles.announcementDesc} numberOfLines={2}>
+                      {getLocalizedDesc(event)}
+                    </Text>
+                    <Text style={[styles.announcementDate, { color: SemanticColors.warningDark }]}>
+                      {formatDate(event.startDate || event.createdAt)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View style={styles.tabEmptyState}>
+                <Ionicons name="sparkles" size={40} color={MibuBrand.tan} />
+                <Text style={styles.tabEmptyText}>
+                  {isZh ? '目前沒有限時活動' : 'No flash events'}
+                </Text>
+                <Text style={styles.tabEmptySubtext}>
+                  {isZh ? '限時優惠即將到來！' : 'Limited offers coming soon!'}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+      </View>
 
       <View style={styles.bottomSpacer} />
     </ScrollView>
@@ -619,6 +734,80 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: MibuBrand.brown,
     borderRadius: 3,
+  },
+  eventTabsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    gap: 8,
+  },
+  eventTab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: MibuBrand.creamLight,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+    gap: 6,
+  },
+  eventTabActive: {
+    backgroundColor: MibuBrand.brown,
+    borderColor: MibuBrand.brown,
+  },
+  eventTabText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: MibuBrand.copper,
+  },
+  eventTabTextActive: {
+    color: MibuBrand.warmWhite,
+  },
+  eventTabBadge: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: MibuBrand.tan,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 5,
+  },
+  eventTabBadgeActive: {
+    backgroundColor: MibuBrand.warmWhite,
+  },
+  eventTabBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: MibuBrand.warmWhite,
+  },
+  eventTabBadgeTextActive: {
+    color: MibuBrand.brown,
+  },
+  eventContentContainer: {
+    minHeight: 150,
+  },
+  tabEmptyState: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    paddingHorizontal: 20,
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+  },
+  tabEmptyText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: MibuBrand.copper,
+    marginTop: 12,
+  },
+  tabEmptySubtext: {
+    fontSize: 13,
+    color: MibuBrand.tan,
+    marginTop: 4,
   },
   section: {
     marginBottom: 24,

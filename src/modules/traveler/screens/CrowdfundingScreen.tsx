@@ -211,7 +211,7 @@ export function CrowdfundingScreen() {
         <View style={styles.headerCenter}>
           <Ionicons name="globe-outline" size={24} color={MibuBrand.brownDark} />
           <Text style={styles.headerTitle}>
-            {isZh ? '全球探索地圖' : 'Global Explorer Map'}
+            {isZh ? '解鎖全球地圖' : 'Unlock World Map'}
           </Text>
         </View>
         <View style={styles.headerPlaceholder} />
