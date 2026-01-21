@@ -595,7 +595,7 @@ export function ReferralScreen() {
                 placeholder={isZh ? '輸入推薦碼' : 'Enter code'}
                 placeholderTextColor={MibuBrand.tan}
                 autoCapitalize="characters"
-                maxLength={8}
+                maxLength={12}
               />
               <TouchableOpacity
                 style={[
