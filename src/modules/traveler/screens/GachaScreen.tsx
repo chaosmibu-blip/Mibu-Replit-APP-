@@ -128,11 +128,21 @@ export function GachaScreen() {
 
   const loadRegions = async (countryId: number) => {
     setLoadingRegions(true);
+    setRegions([]); // 清空舊資料
     try {
-      const data = await apiService.getRegions(countryId);
+      // 設定 10 秒 timeout 防止卡住
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000);
+      });
+
+      const data = await Promise.race([
+        apiService.getRegions(countryId),
+        timeoutPromise,
+      ]);
       setRegions(data);
     } catch (error) {
       console.error('Failed to load regions:', error);
+      setRegions([]); // 確保 regions 為空，讓 UI 顯示「暫無選項」
     } finally {
       setLoadingRegions(false);
     }
@@ -666,6 +676,39 @@ export function GachaScreen() {
           loading={loadingCountries}
         />
 
+        {/* 國家選擇提示：解鎖更多國家 */}
+        <View style={{
+          backgroundColor: MibuBrand.highlight,
+          borderRadius: 12,
+          padding: 14,
+          marginTop: 4,
+          marginBottom: 8,
+        }}>
+          <Text style={{ fontSize: 13, color: MibuBrand.copper, lineHeight: 20 }}>
+            {state.language === 'zh-TW'
+              ? '🌍 我們正在努力增加更多國家！想解鎖其他國家嗎？'
+              : '🌍 We\'re working on adding more countries! Want to unlock others?'}
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.push('/crowdfunding')}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: 10,
+              backgroundColor: MibuBrand.brown,
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+              borderRadius: 10,
+              alignSelf: 'flex-start',
+            }}
+          >
+            <Ionicons name="globe-outline" size={16} color={MibuBrand.warmWhite} />
+            <Text style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.warmWhite, marginLeft: 6 }}>
+              {state.language === 'zh-TW' ? '解鎖全球地圖' : 'Unlock Global Map'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {selectedCountryId && (
           <View style={{ marginTop: 12 }}>
             <Select
@@ -697,11 +740,35 @@ export function GachaScreen() {
           shadowRadius: 12,
           elevation: 4,
         }}>
-          {/* 標題行：扭蛋次數 + 數字顯示 */}
+          {/* 標題行：扭蛋次數 + 說明按鈕 + 數字顯示 */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-            <Text style={{ fontSize: 15, fontWeight: '600', color: MibuBrand.copper }}>
-              {state.language === 'zh-TW' ? '扭蛋次數' : 'Pull Count'}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 15, fontWeight: '600', color: MibuBrand.copper }}>
+                {state.language === 'zh-TW' ? '扭蛋次數' : 'Pull Count'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  Alert.alert(
+                    state.language === 'zh-TW' ? '扭蛋說明' : 'Gacha Info',
+                    state.language === 'zh-TW'
+                      ? '每次扭蛋都會消耗 Token，因此每天的扭蛋限額為 36 張。\n\n請善用每日額度，探索更多精彩景點！'
+                      : 'Each gacha pull consumes tokens. Daily limit is 36 pulls.\n\nMake the most of your daily quota to explore more amazing places!',
+                    [{ text: state.language === 'zh-TW' ? '了解' : 'Got it' }]
+                  );
+                }}
+                style={{
+                  marginLeft: 6,
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  backgroundColor: MibuBrand.tan,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '800', color: MibuBrand.warmWhite }}>!</Text>
+              </TouchableOpacity>
+            </View>
             <Text style={{ fontSize: 28, fontWeight: '800', color: MibuBrand.brownDark }}>
               {pullCount} <Text style={{ fontSize: 16, fontWeight: '600' }}>{state.language === 'zh-TW' ? '次' : 'pulls'}</Text>
             </Text>
@@ -830,24 +897,6 @@ export function GachaScreen() {
             : (state.language === 'zh-TW' ? '開始扭蛋！' : 'Start Gacha!')}
         </Text>
       </TouchableOpacity>
-
-      {/* 已選擇區域顯示 */}
-      {selectedRegionId && (
-        <View style={{
-          backgroundColor: MibuBrand.cream,
-          borderRadius: 16,
-          paddingVertical: 14,
-          paddingHorizontal: 20,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Ionicons name="location" size={18} color={MibuBrand.copper} />
-          <Text style={{ fontSize: 15, color: MibuBrand.brown, marginLeft: 10, fontWeight: '600' }}>
-            {countryName} · {regionName}
-          </Text>
-        </View>
-      )}
 
 {/* TODO: 商家端開放後取消註解顯示機率說明按鈕
         <TouchableOpacity

@@ -206,12 +206,8 @@ export function HomeScreen() {
         </View>
       </View>
 
-      {/* User Level Card */}
-      <TouchableOpacity
-        style={styles.levelCard}
-        onPress={() => router.push('/economy')}
-        activeOpacity={0.8}
-      >
+      {/* User Level Card - 純顯示，不可點擊 */}
+      <View style={styles.levelCard}>
         <View style={styles.levelHeader}>
           {/* Circular Avatar with Level Badge */}
           <View style={styles.avatarWithBadge}>
@@ -238,7 +234,6 @@ export function HomeScreen() {
               <Text style={styles.loginStreakNumber}>{userLevel.loginStreak} {isZh ? '天' : 'd'}</Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
         </View>
 
         <View style={styles.xpSection}>
@@ -259,7 +254,7 @@ export function HomeScreen() {
               : `${userLevel.nextLevelXp - userLevel.currentXp} XP to level up`}
           </Text>
         </View>
-      </TouchableOpacity>
+      </View>
 
       {/* Daily Task Card */}
       <TouchableOpacity
