@@ -118,9 +118,8 @@ class PushNotificationService {
 
     try {
       await apiService.registerPushToken(authToken, {
-        token: this.expoPushToken!,
-        platform: Platform.OS,
-        deviceName: Device?.deviceName || undefined,
+        pushToken: this.expoPushToken!,
+        platform: Platform.OS as 'ios' | 'android',
       });
       console.log('Push token registered with backend');
       return true;

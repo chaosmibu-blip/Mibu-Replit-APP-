@@ -156,6 +156,7 @@ class ApiService {
   getSosAlerts = commonApi.getSosAlerts.bind(commonApi);
   cancelSosAlert = commonApi.cancelSosAlert.bind(commonApi);
   getSosLink = commonApi.getSosLink.bind(commonApi);
+  registerPushToken = commonApi.registerPushToken.bind(commonApi);
 
   // ========== Economy (Phase 5) ==========
   getLevelInfo = economyApi.getLevelInfo.bind(economyApi);
