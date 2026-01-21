@@ -91,62 +91,34 @@ function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
           onStartShouldSetResponder={() => true}
         >
           <View style={{ height: 120, position: 'relative', backgroundColor: categoryToken.badge, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}>
-            {/* X 按鈕 */}
+            {/* X 按鈕 / 彈出按鈕組 */}
             <View style={{ position: 'absolute', top: 16, right: 16 }}>
-              <TouchableOpacity
-                style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
-                onPress={handleClosePress}
-              >
-                <Ionicons name="close" size={20} color={MibuBrand.dark} />
-              </TouchableOpacity>
-
-              {/* 彈出選單 */}
-              {showActionMenu && (
-                <View style={{
-                  position: 'absolute',
-                  top: 44,
-                  right: 0,
-                  backgroundColor: MibuBrand.warmWhite,
-                  borderRadius: 12,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 12,
-                  elevation: 8,
-                  minWidth: 160,
-                  overflow: 'hidden',
-                }}>
+              {!showActionMenu ? (
+                <TouchableOpacity
+                  style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
+                  onPress={handleClosePress}
+                >
+                  <Ionicons name="close" size={20} color={MibuBrand.dark} />
+                </TouchableOpacity>
+              ) : (
+                <View style={{ flexDirection: 'row', gap: 10 }}>
                   <TouchableOpacity
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      paddingVertical: 14,
-                      paddingHorizontal: 16,
-                      gap: 10,
-                      borderBottomWidth: 1,
-                      borderBottomColor: MibuBrand.tanLight,
-                    }}
+                    style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
                     onPress={handleFavorite}
                   >
-                    <Ionicons name="heart-outline" size={18} color={MibuBrand.tierSP} />
-                    <Text style={{ fontSize: 15, color: MibuBrand.dark, fontWeight: '600' }}>
-                      {language === 'zh-TW' ? '加入我的最愛' : 'Add to Favorites'}
-                    </Text>
+                    <Ionicons name="heart-outline" size={20} color={MibuBrand.tierSP} />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      paddingVertical: 14,
-                      paddingHorizontal: 16,
-                      gap: 10,
-                    }}
+                    style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
+                    onPress={onClose}
+                  >
+                    <Ionicons name="close" size={20} color={MibuBrand.dark} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
                     onPress={handleBlacklist}
                   >
-                    <Ionicons name="ban-outline" size={18} color={MibuBrand.copper} />
-                    <Text style={{ fontSize: 15, color: MibuBrand.dark, fontWeight: '600' }}>
-                      {language === 'zh-TW' ? '加入黑名單' : 'Add to Blacklist'}
-                    </Text>
+                    <Ionicons name="ban-outline" size={20} color={MibuBrand.copper} />
                   </TouchableOpacity>
                 </View>
               )}
