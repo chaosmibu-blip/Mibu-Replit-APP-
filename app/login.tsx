@@ -863,14 +863,8 @@ export default function LoginScreen() {
             />
           )}
 
-          {currentPortal.guestAllowed && (
-            <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
-              <Text style={styles.guestButtonText}>{texts.guest}</Text>
-            </TouchableOpacity>
-          )}
-
           <Text style={styles.note}>
-            {currentPortal.guestAllowed ? texts.guestNote : currentPortal.subtitle}
+            {currentPortal.subtitle}
           </Text>
         </View>
       </View>
