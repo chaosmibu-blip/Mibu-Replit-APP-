@@ -740,11 +740,35 @@ export function GachaScreen() {
           shadowRadius: 12,
           elevation: 4,
         }}>
-          {/* 標題行：扭蛋次數 + 數字顯示 */}
+          {/* 標題行：扭蛋次數 + 說明按鈕 + 數字顯示 */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-            <Text style={{ fontSize: 15, fontWeight: '600', color: MibuBrand.copper }}>
-              {state.language === 'zh-TW' ? '扭蛋次數' : 'Pull Count'}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 15, fontWeight: '600', color: MibuBrand.copper }}>
+                {state.language === 'zh-TW' ? '扭蛋次數' : 'Pull Count'}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  Alert.alert(
+                    state.language === 'zh-TW' ? '扭蛋說明' : 'Gacha Info',
+                    state.language === 'zh-TW'
+                      ? '每次扭蛋都會消耗 Token，因此每天的扭蛋限額為 36 張。\n\n請善用每日額度，探索更多精彩景點！'
+                      : 'Each gacha pull consumes tokens. Daily limit is 36 pulls.\n\nMake the most of your daily quota to explore more amazing places!',
+                    [{ text: state.language === 'zh-TW' ? '了解' : 'Got it' }]
+                  );
+                }}
+                style={{
+                  marginLeft: 6,
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  backgroundColor: MibuBrand.tan,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '800', color: MibuBrand.warmWhite }}>!</Text>
+              </TouchableOpacity>
+            </View>
             <Text style={{ fontSize: 28, fontWeight: '800', color: MibuBrand.brownDark }}>
               {pullCount} <Text style={{ fontSize: 16, fontWeight: '600' }}>{state.language === 'zh-TW' ? '次' : 'pulls'}</Text>
             </Text>
