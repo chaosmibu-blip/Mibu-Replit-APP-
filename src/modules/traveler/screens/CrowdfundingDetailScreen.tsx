@@ -21,6 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { crowdfundingApi } from '../../../services/crowdfundingApi';
+import { revenueCatService } from '../../../services/revenueCatService';
 import { MibuBrand } from '../../../../constants/Colors';
 import { CampaignDetail, CampaignReward, CampaignUpdate } from '../../../types/crowdfunding';
 
@@ -32,6 +33,7 @@ export function CrowdfundingDetailScreen() {
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
   const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
   const [selectedTier, setSelectedTier] = useState<CampaignReward | null>(null);
 
@@ -92,11 +94,99 @@ export function CrowdfundingDetailScreen() {
       return;
     }
 
-    // IAP flow would be implemented here
-    Alert.alert(
-      isZh ? '功能開發中' : 'Coming Soon',
-      isZh ? 'In-App Purchase 功能即將推出' : 'In-App Purchase feature coming soon'
-    );
+    try {
+      setPurchasing(true);
+
+      // 1. 初始化 RevenueCat（如果尚未初始化）
+      await revenueCatService.configure(state.user?.id);
+
+      // 2. 取得可購買的商品列表
+      const offerings = await revenueCatService.getOfferings();
+
+      if (offerings.length === 0) {
+        // 開發模式：顯示模擬購買流程
+        Alert.alert(
+          isZh ? '測試模式' : 'Test Mode',
+          isZh
+            ? `您選擇了「${selectedTier.tier}」方案（${formatCurrency(selectedTier.minAmount)}）\n\n正式上線後將啟用真實購買功能。`
+            : `You selected "${selectedTier.tier}" tier (${formatCurrency(selectedTier.minAmount)})\n\nReal purchase will be enabled after launch.`,
+          [
+            { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+            {
+              text: isZh ? '模擬購買成功' : 'Simulate Success',
+              onPress: async () => {
+                // 模擬購買成功後通知後端
+                try {
+                  const token = await getToken();
+                  if (token && campaign) {
+                    await crowdfundingApi.contribute(token, {
+                      campaignId: campaign.id,
+                      amount: selectedTier.minAmount,
+                      rewardTier: selectedTier.tier,
+                      // 測試模式使用假的交易 ID
+                      transactionId: `test_${Date.now()}`,
+                    });
+
+                    Alert.alert(
+                      isZh ? '贊助成功！' : 'Thank you!',
+                      isZh ? '感謝您的支持！' : 'Thank you for your support!',
+                      [{ text: 'OK', onPress: () => loadData() }]
+                    );
+                  }
+                } catch (error) {
+                  console.error('Failed to record contribution:', error);
+                }
+              },
+            },
+          ]
+        );
+        return;
+      }
+
+      // 3. 找到對應價格的商品（根據 tier 名稱或金額匹配）
+      const matchingPackage = offerings.find(pkg => {
+        // 可以根據商品 ID 或價格來匹配
+        return pkg.product.price === selectedTier.minAmount;
+      }) || offerings[0]; // fallback 到第一個商品
+
+      // 4. 執行購買
+      const result = await revenueCatService.purchase(matchingPackage);
+
+      if (result.success) {
+        // 5. 購買成功，通知後端記錄
+        const token = await getToken();
+        if (token && campaign) {
+          await crowdfundingApi.contribute(token, {
+            campaignId: campaign.id,
+            amount: selectedTier.minAmount,
+            rewardTier: selectedTier.tier,
+            // RevenueCat 會自動通過 Webhook 通知後端
+          });
+        }
+
+        Alert.alert(
+          isZh ? '贊助成功！' : 'Thank you!',
+          isZh ? '感謝您的支持！您的贊助已成功處理。' : 'Thank you for your support! Your contribution has been processed.',
+          [{ text: 'OK', onPress: () => loadData() }]
+        );
+      } else if (result.error === 'USER_CANCELLED') {
+        // 用戶取消，不顯示錯誤
+        console.log('User cancelled purchase');
+      } else {
+        Alert.alert(
+          isZh ? '購買失敗' : 'Purchase Failed',
+          isZh ? '無法完成購買，請稍後再試。' : 'Could not complete purchase. Please try again.',
+        );
+      }
+    } catch (error) {
+      console.error('IAP error:', error);
+      Alert.alert(
+        isZh ? '錯誤' : 'Error',
+        isZh ? '購買過程發生錯誤，請稍後再試。' : 'An error occurred during purchase. Please try again.',
+      );
+    } finally {
+      setPurchasing(false);
+    }
   };
 
   const renderRewardTier = (reward: CampaignReward, index: number) => {
@@ -295,14 +385,24 @@ export function CrowdfundingDetailScreen() {
       {isActive && (
         <View style={styles.bottomAction}>
           <TouchableOpacity
-            style={[styles.contributeButton, !selectedTier && styles.contributeButtonDisabled]}
+            style={[
+              styles.contributeButton,
+              (!selectedTier || purchasing) && styles.contributeButtonDisabled
+            ]}
             onPress={handleContribute}
+            disabled={!selectedTier || purchasing}
           >
-            <Ionicons name="heart" size={20} color={MibuBrand.warmWhite} />
+            {purchasing ? (
+              <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
+            ) : (
+              <Ionicons name="heart" size={20} color={MibuBrand.warmWhite} />
+            )}
             <Text style={styles.contributeButtonText}>
-              {selectedTier
-                ? (isZh ? `贊助 ${formatCurrency(selectedTier.minAmount)}` : `Back ${formatCurrency(selectedTier.minAmount)}`)
-                : (isZh ? '選擇贊助方案' : 'Select a Tier')}
+              {purchasing
+                ? (isZh ? '處理中...' : 'Processing...')
+                : selectedTier
+                  ? (isZh ? `贊助 ${formatCurrency(selectedTier.minAmount)}` : `Back ${formatCurrency(selectedTier.minAmount)}`)
+                  : (isZh ? '選擇贊助方案' : 'Select a Tier')}
             </Text>
           </TouchableOpacity>
         </View>
