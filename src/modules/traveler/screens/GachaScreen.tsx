@@ -898,24 +898,6 @@ export function GachaScreen() {
         </Text>
       </TouchableOpacity>
 
-      {/* 已選擇區域顯示 */}
-      {selectedRegionId && (
-        <View style={{
-          backgroundColor: MibuBrand.cream,
-          borderRadius: 16,
-          paddingVertical: 14,
-          paddingHorizontal: 20,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Ionicons name="location" size={18} color={MibuBrand.copper} />
-          <Text style={{ fontSize: 15, color: MibuBrand.brown, marginLeft: 10, fontWeight: '600' }}>
-            {countryName} · {regionName}
-          </Text>
-        </View>
-      )}
-
 {/* TODO: 商家端開放後取消註解顯示機率說明按鈕
         <TouchableOpacity
           onPress={handleViewRarity}
