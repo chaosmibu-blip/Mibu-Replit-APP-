@@ -133,8 +133,8 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '80%',
-    minHeight: '50%',
+    maxHeight: '90%',
+    minHeight: '70%',
   },
   modalHeader: {
     flexDirection: 'row',

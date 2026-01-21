@@ -147,7 +147,7 @@ export function SettingsScreen() {
       items: [
         {
           icon: 'map-outline',
-          label: isZh ? '全球地圖' : 'World Map',
+          label: isZh ? '解鎖全球地圖' : 'Unlock World Map',
           action: () => router.push('/map' as any),
           hasArrow: true,
           badge: isZh ? '1 已解鎖' : '1 Unlocked',

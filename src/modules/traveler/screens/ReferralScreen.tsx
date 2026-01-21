@@ -41,10 +41,10 @@ interface RewardTier {
 }
 
 const REWARD_TIERS: RewardTier[] = [
-  { count: 1, reward: '50 XP', icon: 'star', color: '#D97706' },
-  { count: 3, reward: '200 XP', icon: 'star', color: '#6366f1' },
+  { count: 1, reward: '雙方各得 50 XP', icon: 'star', color: '#D97706' },
+  { count: 3, reward: '額外獎勵 200 XP', icon: 'star', color: '#6366f1' },
   { count: 5, reward: '免費扭蛋券 x3', icon: 'ticket', color: '#059669' },
-  { count: 10, reward: 'NT$ 100 現金回饋', icon: 'cash', color: '#DC2626' },
+  { count: 10, reward: '專屬優惠券禮包', icon: 'gift', color: '#DC2626' },
 ];
 
 
