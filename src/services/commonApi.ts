@@ -191,12 +191,12 @@ class CommonApiService extends ApiBase {
    * POST /api/notifications/register-token
    */
   async registerPushToken(
-    token: string,
-    params: { pushToken: string; platform: 'ios' | 'android' }
-  ): Promise<{ success: boolean }> {
-    return this.request<{ success: boolean }>('/api/notifications/register-token', {
+    authToken: string,
+    params: { token: string; platform: 'ios' | 'android'; deviceId?: string }
+  ): Promise<{ success: boolean; tokenId?: number }> {
+    return this.request<{ success: boolean; tokenId?: number }>('/api/notifications/register-token', {
       method: 'POST',
-      headers: this.authHeaders(token),
+      headers: this.authHeaders(authToken),
       body: JSON.stringify(params),
     });
   }
