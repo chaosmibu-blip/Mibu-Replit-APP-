@@ -169,13 +169,21 @@ export function SettingsScreen() {
       title: isZh ? '偏好設定' : 'Preferences',
       items: [
         {
+          icon: 'heart-outline',
+          label: isZh ? '我的最愛/黑名單' : 'Favorites & Blacklist',
+          action: () => router.push('/favorites-management' as any),
+          hasArrow: true,
+          iconBg: '#FEE2E2',
+          iconColor: MibuBrand.tierSP,
+        },
+        {
           icon: 'notifications-outline',
           label: isZh ? '推播通知' : 'Push Notifications',
           toggle: true,
           checked: notifications,
           onChange: setNotifications,
-          iconBg: '#FEE2E2',
-          iconColor: '#EF4444',
+          iconBg: '#FFF7ED',
+          iconColor: '#EA580C',
         },
       ],
     },
