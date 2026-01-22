@@ -4,7 +4,7 @@
 - **App 名稱**: Mibu
 - **Bundle ID**: com.chaos.mibu
 - **版本**: 1.0.0
-- **Build Number**: 5
+- **Build Number**: 7
 - **目標設備**: iPhone（iPad 以 2x 縮放模式運行）
 
 ---
