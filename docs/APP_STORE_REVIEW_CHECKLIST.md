@@ -18,7 +18,7 @@
 
 2. 「開始扭蛋」功能使用 AI 生成行程，處理時間約需 1-2 分鐘，請耐心等候。畫面上會顯示進度提示和預估時間。
 
-3. 測試帳號：可使用「訪客登入」或 Apple 登入進行測試。
+3. 測試方式：請使用 Apple 登入進行測試，無需測試帳號。
 
 ---
 
@@ -26,7 +26,7 @@
 
 2. The "Start Gacha" feature uses AI to generate itineraries and may take 1-2 minutes. Progress indicators and estimated time are displayed on screen.
 
-3. Test account: Use "Guest Login" or Apple Sign In for testing.
+3. Testing: Please use Apple Sign In to test. No test account required.
 ```
 
 ---
