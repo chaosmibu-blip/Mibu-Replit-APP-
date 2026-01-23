@@ -1,5 +1,13 @@
 # Memory: Assets (資源管理)
 
+> **TL;DR**
+> - **主要功能**：圖片、字體、多語系、圖示資源管理
+> - **關鍵檔案**：`assets/images/`、`src/constants/translations.ts`
+> - **多語系**：zh-TW、en、ja、ko（用 `t.xxx` 取用）
+> - **圖示套件**：`@expo/vector-icons`（Ionicons 為主）
+
+---
+
 > **跨端對應**
 > - 後端：（無直接對應，前端專屬）
 

@@ -1,5 +1,13 @@
 # Memory: API Client (API 串接)
 
+> **TL;DR**
+> - **主要功能**：API 端點對照、請求/回應格式、錯誤處理
+> - **關鍵檔案**：`src/services/*Api.ts`（16 個）、`src/types/*.ts`（19 個）
+> - **核心 API**：`POST /api/gacha/itinerary/v3`（扭蛋）、`POST /api/auth/mobile`（登入）
+> - **重要數值**：每日 36 抽、背包 30 格、JWT 7 天
+
+---
+
 > **跨端對應**
 > - 後端：`docs/contracts/APP.md`
 

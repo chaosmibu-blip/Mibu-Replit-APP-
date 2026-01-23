@@ -1,5 +1,13 @@
 # Memory: Components (元件庫)
 
+> **TL;DR**
+> - **主要功能**：共用 UI 元件、Mibu Brand 色彩/字體/間距規範
+> - **關鍵檔案**：`src/components/ui/`、`src/modules/shared/components/`
+> - **色彩系統**：`MibuBrand.primary=#7A5230`、`background=#F5E6D3`
+> - **常見任務**：調整樣式、新增元件、統一設計語言
+
+---
+
 > **跨端對應**
 > - 後端：（無直接對應，前端專屬）
 

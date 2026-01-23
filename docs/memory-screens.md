@@ -1,5 +1,13 @@
 # Memory: Screens (畫面結構)
 
+> **TL;DR**
+> - **主要功能**：Expo Router 路由設定、39 個 Screen 元件對應表
+> - **關鍵檔案**：`app/` 路由、`src/modules/*/screens/`
+> - **相關 API**：`GET /api/announcements`（首頁公告）
+> - **常見任務**：新增頁面、修改導航、調整 Tab
+
+---
+
 > **跨端對應**
 > - 後端：`docs/memory-travel-gacha.md`（扭蛋畫面）、`docs/memory-merchant.md`（商家畫面）
 

@@ -2,6 +2,35 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+## 🎯 角色定位
+
+> **本專案是「契約執行者」**
+> - 依照後端 `docs/contracts/APP.md` 契約實作 UI
+> - 專注 UI/UX，不處理商業邏輯（後端負責）
+> - 發現 API 不一致時，回報後端確認
+
+---
+
+## 🔍 快速路由表
+
+找資訊時，先看這個表：
+
+| 關鍵字 | 對應文件 |
+|--------|----------|
+| 登入、Apple、Google、Token、JWT | `docs/memory-auth-flow.md` |
+| 扭蛋、抽卡、額度、景點 | `docs/memory-api-client.md` |
+| 頁面、路由、導航、Screen | `docs/memory-screens.md` |
+| 元件、UI、顏色、樣式 | `docs/memory-components.md` |
+| Context、狀態、useApp | `docs/memory-state.md` |
+| 圖片、字體、翻譯、i18n | `docs/memory-assets.md` |
+| 後端同步、任務進度 | `docs/sync-backend.md` |
+| API 規格、端點、型別 | 後端 `docs/contracts/APP.md` |
+| 設計稿、Lovable | `docs/design-spec-lovable.md` |
+
+---
+
 ## 溝通風格
 
 - 用口語化的繁體中文，像朋友聊天一樣
