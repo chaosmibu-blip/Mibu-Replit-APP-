@@ -1,5 +1,13 @@
 # Memory: State Management (狀態管理)
 
+> **TL;DR**
+> - **主要功能**：React Context 全域狀態、AsyncStorage 持久化
+> - **關鍵檔案**：`src/context/AppContext.tsx`
+> - **核心 Hook**：`useApp()` → `state`, `t`, `setUser`, `getToken`
+> - **常見任務**：存取用戶狀態、切換語言、管理 Token
+
+---
+
 > **跨端對應**
 > - 後端：（無直接對應，前端專屬）
 

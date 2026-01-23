@@ -1,5 +1,13 @@
 # Memory: Auth Flow (認證流程)
 
+> **TL;DR**
+> - **主要功能**：Apple/Google 登入、JWT Token 管理、角色權限
+> - **關鍵檔案**：`src/context/AppContext.tsx`、`hooks/useGoogleAuth.ts`
+> - **相關 API**：`POST /api/auth/mobile`、`GET /api/auth/user`
+> - **Token 儲存**：iOS/Android 用 SecureStore、Web 用 AsyncStorage
+
+---
+
 > **跨端對應**
 > - 後端：`docs/memory-auth.md`
 
