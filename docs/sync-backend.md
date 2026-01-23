@@ -6,6 +6,31 @@
 
 ## 最新回報
 
+### 2026-01-23 #025：APP 改善計劃全面實作
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #025 |
+| 狀態 | ✅ 完成 |
+
+**11 個功能全部完成**（多語言切換暫緩除外）
+
+| # | 功能 | 實作位置 |
+|---|------|----------|
+| 1 | 首頁活動區塊 | `HomeScreen.tsx` 整合 `eventApi` |
+| 2 | 成就觸發 | `GachaScreen.tsx` 成就解鎖彈窗 |
+| 3 | 扭蛋頁面 UI | 純前端已完成 |
+| 4 | 圖鑑未讀 | `collectionApi.ts` `sort=unread` + `markCollectionItemRead` |
+| 5 | Profile 更新 | `authApi.ts` `GET/PATCH /api/profile` |
+| 6 | 推薦碼 G/A 格式 | `ReferralScreen.tsx` 已使用新格式 |
+| 7 | 多語言切換 | ⏸️ 暫緩 |
+| 8 | RevenueCat 募資 | `revenueCatService.ts` |
+| 9 | 每日任務導航 | `economyApi.ts` |
+| 10 | 推播通知 | `pushNotificationService.ts` |
+| 11 | 社群貢獻 | `contributionApi.ts` |
+
+---
+
 ### 2026-01-21 #024：Google 原生登入
 
 | 項目 | 內容 |
@@ -52,6 +77,10 @@
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 025 | 01-23 | APP 改善計劃全面實作（11 功能） | ✅ |
+| 024 | 01-21 | Google 原生登入 | ✅ |
+| 023 | 01-21 | 登入 API 回傳用戶姓名 | ✅ |
+| 021-022 | 01-21 | Push Token API + Profile API | ✅ |
 | 020 | 01-20 | Phase 2 後端完成（推播、圖鑑未讀、成就、RevenueCat） | ✅ |
 | 019 | 01-19 | UI 調整（背景/卡片顏色調換、設定頁整理） | ✅ |
 | 018 | 01-19 | Lovable 設計系統實作（FilterChips、SearchInput 等 4 元件） | ✅ |
