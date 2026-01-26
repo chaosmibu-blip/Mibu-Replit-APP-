@@ -89,7 +89,19 @@ class ItineraryApi extends ApiBase {
     } catch (error) {
       console.error('[ItineraryApi] createItinerary error:', error);
       // 提取伺服器回傳的錯誤訊息
-      const serverMessage = error instanceof ApiError ? error.serverMessage : undefined;
+      let serverMessage: string | undefined;
+      if (error instanceof ApiError) {
+        serverMessage = error.serverMessage;
+        console.log('[ItineraryApi] ApiError details:', {
+          status: error.status,
+          message: error.message,
+          serverMessage: error.serverMessage,
+          code: error.code,
+        });
+      } else if (error instanceof Error) {
+        serverMessage = error.message;
+        console.log('[ItineraryApi] Generic error:', error.message);
+      }
       return {
         success: false,
         itinerary: {
@@ -102,7 +114,7 @@ class ItineraryApi extends ApiBase {
           createdAt: '',
           updatedAt: '',
         },
-        message: serverMessage || 'Failed to create itinerary',
+        message: serverMessage || '建立行程失敗',
       };
     }
   }
@@ -124,6 +136,12 @@ class ItineraryApi extends ApiBase {
       });
     } catch (error) {
       console.error('[ItineraryApi] updateItinerary error:', error);
+      let serverMessage: string | undefined;
+      if (error instanceof ApiError) {
+        serverMessage = error.serverMessage;
+      } else if (error instanceof Error) {
+        serverMessage = error.message;
+      }
       return {
         success: false,
         itinerary: {
@@ -136,7 +154,7 @@ class ItineraryApi extends ApiBase {
           createdAt: '',
           updatedAt: '',
         },
-        message: 'Failed to update itinerary',
+        message: serverMessage || '更新行程失敗',
       };
     }
   }
@@ -153,7 +171,13 @@ class ItineraryApi extends ApiBase {
       });
     } catch (error) {
       console.error('[ItineraryApi] deleteItinerary error:', error);
-      return { success: false, message: 'Failed to delete itinerary' };
+      let serverMessage: string | undefined;
+      if (error instanceof ApiError) {
+        serverMessage = error.serverMessage;
+      } else if (error instanceof Error) {
+        serverMessage = error.message;
+      }
+      return { success: false, message: serverMessage || '刪除行程失敗' };
     }
   }
 
