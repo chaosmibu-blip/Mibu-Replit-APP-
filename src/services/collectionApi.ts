@@ -202,8 +202,8 @@ class CollectionApiService extends ApiBase {
       return await this.request<PromoUpdatesResponse>('/api/collections/promo-updates', {
         headers: this.authHeaders(token),
       });
-    } catch (error) {
-      console.error('[CollectionApi] getPromoUpdates error:', error);
+    } catch {
+      // 靜默處理：後端可能尚未實現此端點
       return { success: false, unreadCount: 0, unreadCollectionIds: [] };
     }
   }
