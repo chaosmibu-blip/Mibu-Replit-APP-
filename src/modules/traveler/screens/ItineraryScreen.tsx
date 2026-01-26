@@ -21,7 +21,6 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { MibuBrand, getCategoryToken } from '../../../../constants/Colors';
@@ -256,7 +255,6 @@ export function ItineraryScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.emptyState}>
-          <Ionicons name="calendar-outline" size={64} color={MibuBrand.copper} />
           <Text style={styles.emptyTitle}>
             {isZh ? '登入以管理行程' : 'Login to manage itineraries'}
           </Text>
@@ -278,7 +276,7 @@ export function ItineraryScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>{isZh ? '行程規劃' : 'Trip Planner'}</Text>
         <TouchableOpacity style={styles.addButton} onPress={() => setShowCreateModal(true)}>
-          <Ionicons name="add" size={24} color="#fff" />
+          <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
       </View>
 
@@ -286,7 +284,6 @@ export function ItineraryScreen() {
         <ActivityIndicator size="large" color={MibuBrand.brown} style={{ marginTop: 40 }} />
       ) : itineraries.length === 0 ? (
         <View style={styles.emptyCard}>
-          <Ionicons name="map-outline" size={48} color={MibuBrand.copper} />
           <Text style={styles.emptyCardTitle}>
             {isZh ? '還沒有行程' : 'No itineraries yet'}
           </Text>
@@ -305,7 +302,7 @@ export function ItineraryScreen() {
             }}
           >
             <View style={styles.itineraryCardIcon}>
-              <Ionicons name="airplane" size={24} color={MibuBrand.brown} />
+              <Text style={styles.itineraryCardIconText}>✈</Text>
             </View>
             <View style={styles.itineraryCardInfo}>
               <Text style={styles.itineraryCardTitle}>{item.title || `${item.city} ${isZh ? '之旅' : 'Trip'}`}</Text>
@@ -316,7 +313,7 @@ export function ItineraryScreen() {
                 {item.placeCount} {isZh ? '個景點' : 'places'}
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
+            <Text style={styles.chevronText}>›</Text>
           </TouchableOpacity>
         ))
       )}
@@ -330,31 +327,24 @@ export function ItineraryScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setViewMode('list')} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={MibuBrand.brown} />
+            <Text style={styles.backButtonText}>‹</Text>
           </TouchableOpacity>
           <Text style={styles.title} numberOfLines={1}>
             {currentItinerary.title || `${currentItinerary.city} ${isZh ? '之旅' : 'Trip'}`}
           </Text>
           <TouchableOpacity onPress={() => handleDelete(currentItinerary.id)}>
-            <Ionicons name="trash-outline" size={22} color={MibuBrand.error} />
+            <Text style={styles.deleteButtonText}>{isZh ? '刪除' : 'Delete'}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.detailMeta}>
-          <View style={styles.metaItem}>
-            <Ionicons name="calendar-outline" size={16} color={MibuBrand.copper} />
-            <Text style={styles.metaText}>{currentItinerary.date}</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="location-outline" size={16} color={MibuBrand.copper} />
-            <Text style={styles.metaText}>{currentItinerary.city}, {currentItinerary.country}</Text>
-          </View>
+          <Text style={styles.metaText}>{currentItinerary.date}</Text>
+          <Text style={styles.metaText}>{currentItinerary.city}, {currentItinerary.country}</Text>
         </View>
 
         <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.actionBtn} onPress={openAddPlaces}>
-            <Ionicons name="add-circle-outline" size={20} color={MibuBrand.brown} />
-            <Text style={styles.actionBtnText}>{isZh ? '加入景點' : 'Add Places'}</Text>
+            <Text style={styles.actionBtnText}>{isZh ? '+ 加入景點' : '+ Add Places'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionBtn, styles.aiBtn]}
@@ -364,7 +354,6 @@ export function ItineraryScreen() {
               setViewMode('ai-chat');
             }}
           >
-            <Ionicons name="sparkles" size={20} color="#fff" />
             <Text style={styles.aiBtnText}>{isZh ? 'AI 助手' : 'AI Assistant'}</Text>
           </TouchableOpacity>
         </View>
@@ -375,7 +364,6 @@ export function ItineraryScreen() {
 
         {currentItinerary.places.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Ionicons name="compass-outline" size={40} color={MibuBrand.copper} />
             <Text style={styles.emptyCardTitle}>
               {isZh ? '尚無景點' : 'No places yet'}
             </Text>
@@ -397,8 +385,8 @@ export function ItineraryScreen() {
                   </Text>
                 </View>
               </View>
-              <TouchableOpacity onPress={() => handleRemovePlace(place.id)}>
-                <Ionicons name="close-circle" size={24} color={MibuBrand.error} />
+              <TouchableOpacity onPress={() => handleRemovePlace(place.id)} style={styles.removePlaceButton}>
+                <Text style={styles.removePlaceText}>×</Text>
               </TouchableOpacity>
             </View>
           ))
@@ -412,7 +400,7 @@ export function ItineraryScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingHorizontal: 20, paddingTop: 60 }]}>
         <TouchableOpacity onPress={() => setViewMode('detail')} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={MibuBrand.brown} />
+          <Text style={styles.backButtonText}>‹</Text>
         </TouchableOpacity>
         <Text style={styles.title}>{isZh ? '選擇景點' : 'Select Places'}</Text>
         <TouchableOpacity
@@ -433,7 +421,6 @@ export function ItineraryScreen() {
       <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 0 }}>
         {availablePlaces.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Ionicons name="albums-outline" size={40} color={MibuBrand.copper} />
             <Text style={styles.emptyCardTitle}>
               {isZh ? '圖鑑是空的' : 'Collection is empty'}
             </Text>
@@ -456,11 +443,9 @@ export function ItineraryScreen() {
                     <View style={styles.selectablePlaceInfo}>
                       <Text style={styles.selectablePlaceName}>{place.name}</Text>
                     </View>
-                    <Ionicons
-                      name={isSelected ? 'checkbox' : 'square-outline'}
-                      size={24}
-                      color={isSelected ? MibuBrand.brown : MibuBrand.copper}
-                    />
+                    <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                      {isSelected && <Text style={styles.checkboxText}>✓</Text>}
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -479,7 +464,7 @@ export function ItineraryScreen() {
     >
       <View style={[styles.header, { paddingHorizontal: 20, paddingTop: 60 }]}>
         <TouchableOpacity onPress={() => setViewMode('detail')} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={MibuBrand.brown} />
+          <Text style={styles.backButtonText}>‹</Text>
         </TouchableOpacity>
         <Text style={styles.title}>{isZh ? 'AI 行程助手' : 'AI Assistant'}</Text>
         <View style={{ width: 24 }} />
@@ -488,7 +473,6 @@ export function ItineraryScreen() {
       <ScrollView style={styles.chatContainer} contentContainerStyle={{ padding: 20 }}>
         {aiMessages.length === 0 && (
           <View style={styles.aiWelcome}>
-            <Ionicons name="sparkles" size={40} color={MibuBrand.brown} />
             <Text style={styles.aiWelcomeTitle}>
               {isZh ? '嗨！我是你的行程助手' : "Hi! I'm your trip assistant"}
             </Text>
@@ -557,7 +541,7 @@ export function ItineraryScreen() {
           onPress={sendAiMessage}
           disabled={!aiInput.trim() || aiLoading}
         >
-          <Ionicons name="send" size={20} color="#fff" />
+          <Text style={styles.sendButtonText}>{isZh ? '送出' : 'Send'}</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -1002,9 +986,9 @@ const styles = StyleSheet.create({
     maxHeight: 100,
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
     backgroundColor: MibuBrand.brown,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1076,5 +1060,67 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#fff',
+  },
+  // 新增：Icon 移除後的文字樣式
+  addButtonText: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  itineraryCardIconText: {
+    fontSize: 20,
+    color: MibuBrand.brown,
+  },
+  chevronText: {
+    fontSize: 24,
+    color: MibuBrand.copper,
+    fontWeight: '300',
+  },
+  backButtonText: {
+    fontSize: 28,
+    color: MibuBrand.brown,
+    fontWeight: '300',
+  },
+  deleteButtonText: {
+    fontSize: 14,
+    color: MibuBrand.error,
+    fontWeight: '600',
+  },
+  removePlaceButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: MibuBrand.error,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removePlaceText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: '600',
+    lineHeight: 20,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: MibuBrand.copper,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxSelected: {
+    backgroundColor: MibuBrand.brown,
+    borderColor: MibuBrand.brown,
+  },
+  checkboxText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  sendButtonText: {
+    fontSize: 13,
+    color: '#fff',
+    fontWeight: '600',
   },
 });
