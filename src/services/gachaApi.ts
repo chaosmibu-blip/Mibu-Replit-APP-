@@ -82,11 +82,18 @@ class GachaApiService extends ApiBase {
     return data;
   }
 
+  /**
+   * 取得扭蛋獎池
+   * GET /api/gacha/pool
+   *
+   * #030: 後端回傳 { pool }，沒有 success 欄位
+   */
   async getGachaPool(city: string): Promise<GachaPoolResponse> {
     try {
       const params = new URLSearchParams({ city });
-      const data = await this.request<GachaPoolResponse>(`/api/gacha/pool?${params}`);
-      return data;
+      const data = await this.request<{ pool: GachaPoolResponse['pool'] }>(`/api/gacha/pool?${params}`);
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return { success: true, pool: data.pool };
     } catch (error) {
       console.error('Failed to get gacha pool:', error);
       throw error;
@@ -107,8 +114,24 @@ class GachaApiService extends ApiBase {
     }
   }
 
+  /**
+   * 取得獎池優惠券列表
+   * GET /api/gacha/prize-pool
+   *
+   * #030: 後端回傳 { coupons, region }，沒有 success 欄位
+   */
   async getPrizePool(regionId: number): Promise<PrizePoolResponse> {
-    return this.request<PrizePoolResponse>(`/api/gacha/prize-pool?regionId=${regionId}`);
+    try {
+      const data = await this.request<{
+        coupons: PrizePoolResponse['coupons'];
+        region: PrizePoolResponse['region'];
+      }>(`/api/gacha/prize-pool?regionId=${regionId}`);
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return { success: true, coupons: data.coupons || [], region: data.region };
+    } catch (error) {
+      console.error('[GachaApi] getPrizePool error:', error);
+      return { success: false, coupons: [], region: { id: 0, name: '' } };
+    }
   }
 
   async excludePlace(params: {

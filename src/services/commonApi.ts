@@ -14,6 +14,7 @@ import {
   SosSendResponse,
   SosAlertsResponse,
   SosAlert,
+  SOSContact,
   SOSContactsResponse,
   SOSContactResponse,
   CreateSOSContactParams,
@@ -132,11 +133,20 @@ class CommonApiService extends ApiBase {
   /**
    * 取得緊急聯絡人列表
    * GET /api/sos/contacts
+   *
+   * #030: 後端回傳 { contacts }，沒有 success 欄位
    */
   async getSOSContacts(token: string): Promise<SOSContactsResponse> {
-    return this.request<SOSContactsResponse>('/api/sos/contacts', {
-      headers: this.authHeaders(token),
-    });
+    try {
+      const data = await this.request<{ contacts: SOSContact[] }>('/api/sos/contacts', {
+        headers: this.authHeaders(token),
+      });
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return { success: true, contacts: data.contacts || [] };
+    } catch (error) {
+      console.error('[CommonApi] getSOSContacts error:', error);
+      return { success: false, contacts: [] };
+    }
   }
 
   /**

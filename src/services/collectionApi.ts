@@ -9,6 +9,7 @@ import {
   CollectionResponse,
   PaginationParams,
   FavoritesResponse,
+  FavoriteItem,
   FavoriteStatusResponse,
   AddFavoriteResponse,
   RemoveFavoriteResponse,
@@ -140,6 +141,8 @@ class CollectionApiService extends ApiBase {
   /**
    * 取得我的最愛列表
    * GET /api/collections/favorites
+   *
+   * #030: 後端回傳 { favorites, total }，沒有 success 欄位
    */
   async getFavorites(
     token: string,
@@ -152,9 +155,16 @@ class CollectionApiService extends ApiBase {
     const queryString = query.toString();
     const endpoint = `/api/collections/favorites${queryString ? `?${queryString}` : ''}`;
 
-    return this.request<FavoritesResponse>(endpoint, {
-      headers: this.authHeaders(token),
-    });
+    try {
+      const data = await this.request<{ favorites: FavoriteItem[]; total: number }>(endpoint, {
+        headers: this.authHeaders(token),
+      });
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return { success: true, favorites: data.favorites || [], total: data.total || 0 };
+    } catch (error) {
+      console.error('[CollectionApi] getFavorites error:', error);
+      return { success: false, favorites: [], total: 0 };
+    }
   }
 
   /**
@@ -196,12 +206,20 @@ class CollectionApiService extends ApiBase {
    * GET /api/collections/promo-updates
    *
    * 當商家更新優惠時，持有該景點卡片的用戶會收到紅點提醒
+   * #030: 後端回傳 { unreadCount, unreadCollectionIds }，沒有 success 欄位
    */
   async getPromoUpdates(token: string): Promise<PromoUpdatesResponse> {
     try {
-      return await this.request<PromoUpdatesResponse>('/api/collections/promo-updates', {
-        headers: this.authHeaders(token),
-      });
+      const data = await this.request<{ unreadCount: number; unreadCollectionIds: number[] }>(
+        '/api/collections/promo-updates',
+        { headers: this.authHeaders(token) }
+      );
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return {
+        success: true,
+        unreadCount: data.unreadCount || 0,
+        unreadCollectionIds: data.unreadCollectionIds || [],
+      };
     } catch {
       // 靜默處理：後端可能尚未實現此端點
       return { success: false, unreadCount: 0, unreadCollectionIds: [] };

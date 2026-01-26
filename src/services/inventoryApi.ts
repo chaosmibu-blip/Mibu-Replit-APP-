@@ -29,6 +29,8 @@ class InventoryApiService extends ApiBase {
   /**
    * 獲取背包列表
    * GET /api/inventory
+   *
+   * #030: 後端回傳 { items, slotCount, maxSlots, isFull, pagination }，沒有 success 欄位
    */
   async getInventory(token: string, params?: InventoryQueryParams): Promise<InventoryResponse> {
     const queryParams = new URLSearchParams();
@@ -40,9 +42,35 @@ class InventoryApiService extends ApiBase {
     const query = queryParams.toString();
     const url = `/api/inventory${query ? `?${query}` : ''}`;
 
-    return this.request<InventoryResponse>(url, {
-      headers: this.authHeaders(token),
-    });
+    try {
+      const data = await this.request<{
+        items: InventoryItem[];
+        slotCount: number;
+        maxSlots: number;
+        isFull: boolean;
+        pagination?: { page: number; limit: number; total: number; totalPages: number };
+      }>(url, {
+        headers: this.authHeaders(token),
+      });
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return {
+        success: true,
+        items: data.items || [],
+        slotCount: data.slotCount || 0,
+        maxSlots: data.maxSlots || 30,
+        isFull: data.isFull || false,
+        pagination: data.pagination,
+      };
+    } catch (error) {
+      console.error('[InventoryApi] getInventory error:', error);
+      return {
+        success: false,
+        items: [],
+        slotCount: 0,
+        maxSlots: 30,
+        isFull: false,
+      };
+    }
   }
 
   /**

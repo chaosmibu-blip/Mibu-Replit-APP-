@@ -47,19 +47,47 @@ class ConfigApiService extends ApiBase {
   /**
    * 取得 App 設定
    * GET /api/config/app
+   *
+   * #030: 後端回傳 { config }，沒有 success 欄位
    */
   async getAppConfig(): Promise<AppConfigResponse> {
-    return this.request<AppConfigResponse>('/api/config/app');
+    try {
+      const data = await this.request<{ config: AppConfig }>('/api/config/app');
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return { success: true, config: data.config };
+    } catch (error) {
+      console.error('[ConfigApi] getAppConfig error:', error);
+      return {
+        success: false,
+        config: {
+          version: '1.0.0',
+          minVersion: '1.0.0',
+          forceUpdate: false,
+          maintenance: false,
+          features: { gacha: true, planner: true, crowdfunding: true, referral: true },
+          limits: { dailyGachaLimit: 36, inventoryCapacity: 30, maxSOSContacts: 5 },
+        },
+      };
+    }
   }
 
   /**
    * 取得 Mapbox Token
    * GET /api/config/mapbox
+   *
+   * #030: 後端回傳 { mapbox }，沒有 success 欄位
    */
   async getMapboxConfig(token: string): Promise<MapboxConfigResponse> {
-    return this.request<MapboxConfigResponse>('/api/config/mapbox', {
-      headers: this.authHeaders(token),
-    });
+    try {
+      const data = await this.request<{ mapbox: MapboxConfig }>('/api/config/mapbox', {
+        headers: this.authHeaders(token),
+      });
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return { success: true, mapbox: data.mapbox };
+    } catch (error) {
+      console.error('[ConfigApi] getMapboxConfig error:', error);
+      return { success: false, mapbox: { accessToken: '' } };
+    }
   }
 }
 

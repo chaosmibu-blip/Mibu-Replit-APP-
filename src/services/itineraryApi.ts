@@ -19,25 +19,32 @@ import {
   ItineraryMutationResponse,
   DeleteItineraryResponse,
   AvailablePlacesResponse,
+  AvailablePlacesByCategory,
   AddPlacesResponse,
   RemovePlaceResponse,
   ReorderPlacesResponse,
   AiChatResponse,
   AiAddPlacesResponse,
   Itinerary,
+  ItinerarySummary,
+  ItineraryPlaceItem,
 } from '../types/itinerary';
 
 class ItineraryApi extends ApiBase {
   /**
    * 取得行程列表
    * GET /api/itinerary
+   *
+   * #030: 後端回傳 { itineraries: [...] }，沒有 success 欄位
    */
   async getItineraries(token: string): Promise<ItineraryListResponse> {
     try {
-      return await this.request<ItineraryListResponse>('/api/itinerary', {
+      const data = await this.request<{ itineraries: ItinerarySummary[] }>('/api/itinerary', {
         method: 'GET',
         headers: this.authHeaders(token),
       });
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return { success: true, itineraries: data.itineraries || [] };
     } catch (error) {
       console.error('[ItineraryApi] getItineraries error:', error);
       return { success: false, itineraries: [] };
@@ -47,13 +54,17 @@ class ItineraryApi extends ApiBase {
   /**
    * 取得行程詳情
    * GET /api/itinerary/:id
+   *
+   * #030: 後端直接回傳 Itinerary 物件，沒有 success 欄位
    */
   async getItinerary(id: number, token: string): Promise<ItineraryDetailResponse> {
     try {
-      return await this.request<ItineraryDetailResponse>(`/api/itinerary/${id}`, {
+      const itinerary = await this.request<Itinerary>(`/api/itinerary/${id}`, {
         method: 'GET',
         headers: this.authHeaders(token),
       });
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return { success: true, itinerary };
     } catch (error) {
       console.error('[ItineraryApi] getItinerary error:', error);
       return {
@@ -196,16 +207,21 @@ class ItineraryApi extends ApiBase {
    * GET /api/itinerary/:id/available-places
    *
    * V2 變更: 回傳 collectionId + placeId
+   * #030: 後端回傳 { categories: [...] }，沒有 success 欄位
    */
   async getAvailablePlaces(id: number, token: string): Promise<AvailablePlacesResponse> {
     try {
-      return await this.request<AvailablePlacesResponse>(
+      const data = await this.request<{ categories: AvailablePlacesByCategory[] }>(
         `/api/itinerary/${id}/available-places`,
         {
           method: 'GET',
           headers: this.authHeaders(token),
         }
       );
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      const categories = data.categories || [];
+      const totalCount = categories.reduce((sum, cat) => sum + cat.places.length, 0);
+      return { success: true, categories, totalCount };
     } catch (error) {
       console.error('[ItineraryApi] getAvailablePlaces error:', error);
       return { success: false, categories: [], totalCount: 0 };
@@ -217,6 +233,7 @@ class ItineraryApi extends ApiBase {
    * POST /api/itinerary/:id/places
    *
    * V2 變更: 使用 collectionIds 而非 placeIds
+   * #030: 後端回傳 { added: [...], count }，沒有 success 欄位
    */
   async addPlaces(
     id: number,
@@ -224,11 +241,20 @@ class ItineraryApi extends ApiBase {
     token: string
   ): Promise<AddPlacesResponse> {
     try {
-      return await this.request<AddPlacesResponse>(`/api/itinerary/${id}/places`, {
-        method: 'POST',
-        headers: this.authHeaders(token),
-        body: JSON.stringify(data),
-      });
+      const result = await this.request<{ added: ItineraryPlaceItem[]; count: number }>(
+        `/api/itinerary/${id}/places`,
+        {
+          method: 'POST',
+          headers: this.authHeaders(token),
+          body: JSON.stringify(data),
+        }
+      );
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return {
+        success: true,
+        addedCount: result.count || result.added?.length || 0,
+        places: result.added || [],
+      };
     } catch (error) {
       console.error('[ItineraryApi] addPlaces error:', error);
       return { success: false, addedCount: 0, places: [], message: 'Failed to add places' };
@@ -314,7 +340,7 @@ class ItineraryApi extends ApiBase {
         success: true,
         response: result.response,
         suggestions: result.suggestions || [],
-        conversationId: data.conversationId || '',
+        conversationId: '',
       };
     } catch (error) {
       console.error('[ItineraryApi] aiChat error:', error);

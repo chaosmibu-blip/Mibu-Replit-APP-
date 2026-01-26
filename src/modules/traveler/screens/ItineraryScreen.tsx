@@ -21,6 +21,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { MibuBrand, getCategoryToken } from '../../../../constants/Colors';
@@ -49,9 +50,13 @@ interface District {
 
 type ViewMode = 'list' | 'detail' | 'add-places' | 'ai-chat';
 
+// Tab Bar 高度常數
+const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 88 : 64;
+
 export function ItineraryScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const isZh = state.language === 'zh-TW';
 
   // States
@@ -612,7 +617,7 @@ export function ItineraryScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? TAB_BAR_HEIGHT : 0}
     >
       <View style={[styles.header, { paddingHorizontal: 20, paddingTop: 60 }]}>
         <TouchableOpacity onPress={() => setViewMode('detail')} style={styles.backButton}>
@@ -679,7 +684,7 @@ export function ItineraryScreen() {
         )}
       </ScrollView>
 
-      <View style={styles.chatInputContainer}>
+      <View style={[styles.chatInputContainer, { paddingBottom: TAB_BAR_HEIGHT + 12 }]}>
         <TextInput
           style={styles.chatInput}
           placeholder={isZh ? '例如：我想要美食之旅...' : 'e.g. I want a food tour...'}
@@ -1186,7 +1191,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: 12,
-    paddingBottom: 32,
     backgroundColor: MibuBrand.creamLight,
     borderTopWidth: 1,
     borderTopColor: MibuBrand.tanLight,

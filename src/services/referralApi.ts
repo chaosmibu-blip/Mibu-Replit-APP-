@@ -18,6 +18,7 @@ import {
   WithdrawParams,
   WithdrawResponse,
   LeaderboardPeriod,
+  LeaderboardEntry,
   LeaderboardResponse,
   MyRankResponse,
 } from '../types/referral';
@@ -147,6 +148,8 @@ class ReferralApiService extends ApiBase {
   /**
    * 取得推薦排行榜
    * GET /api/referral/leaderboard
+   *
+   * #030: 後端回傳 { leaderboard, period }，沒有 success 欄位
    */
   async getLeaderboard(
     token: string,
@@ -158,9 +161,21 @@ class ReferralApiService extends ApiBase {
     const queryString = query.toString();
     const endpoint = `/api/referral/leaderboard${queryString ? `?${queryString}` : ''}`;
 
-    return this.request<LeaderboardResponse>(endpoint, {
-      headers: this.authHeaders(token),
-    });
+    try {
+      const data = await this.request<{ leaderboard: LeaderboardEntry[]; period: LeaderboardPeriod }>(
+        endpoint,
+        { headers: this.authHeaders(token) }
+      );
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return {
+        success: true,
+        leaderboard: data.leaderboard || [],
+        period: data.period || 'weekly',
+      };
+    } catch (error) {
+      console.error('[ReferralApi] getLeaderboard error:', error);
+      return { success: false, leaderboard: [], period: 'weekly' };
+    }
   }
 
   /**

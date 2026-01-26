@@ -202,6 +202,14 @@ import { Spacing, Radius, FontSize, Shadow, CommonStyles } from '@/theme/designT
 - **原因**：沒先確認契約，假設後端已經做好了
 - **以後**：改 API 服務前，先 grep 後端 repo 確認 endpoint 存在
 
+### #002 假設所有 API 都回傳 `{ success: true, ... }`
+- **日期**：2026-01-26
+- **問題**：行程列表顯示為空，但資料庫有 65 筆資料
+- **原因**：前端檢查 `res.success`，但後端很多 API 不回傳 `success` 欄位
+- **根本原因**：沒按照 API 契約實作，自己假設格式
+- **解法**：在 API 服務層統一包裝，HTTP 200 視為成功，catch 視為失敗
+- **以後**：看契約！後端 #030 已整理哪些 API 有/沒有 `success`
+
 ---
 
 ## 三端協作

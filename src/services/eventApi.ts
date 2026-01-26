@@ -15,6 +15,8 @@ class EventApiService extends ApiBase {
   /**
    * 取得活動列表
    * GET /api/events
+   *
+   * #030: 後端回傳 { events, pagination }，沒有 success 欄位
    */
   async getEvents(params?: EventListParams): Promise<EventListResponse> {
     const searchParams = new URLSearchParams();
@@ -29,7 +31,16 @@ class EventApiService extends ApiBase {
     const url = queryString ? `/api/events?${queryString}` : '/api/events';
 
     try {
-      return await this.request<EventListResponse>(url);
+      const data = await this.request<{
+        events: Event[];
+        pagination: EventListResponse['pagination'];
+      }>(url);
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return {
+        success: true,
+        events: data.events || [],
+        pagination: data.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 },
+      };
     } catch (error) {
       console.error('[EventApi] Failed to fetch events:', error);
       return {
@@ -43,10 +54,14 @@ class EventApiService extends ApiBase {
   /**
    * 取得活動詳情
    * GET /api/events/:id
+   *
+   * #030: 後端回傳 { event }，沒有 success 欄位
    */
   async getEventById(id: number): Promise<EventDetailResponse | null> {
     try {
-      return await this.request<EventDetailResponse>(`/api/events/${id}`);
+      const data = await this.request<{ event: Event }>(`/api/events/${id}`);
+      // 後端沒有 success 欄位，HTTP 200 就是成功
+      return { success: true, event: data.event };
     } catch (error) {
       console.error('[EventApi] Failed to fetch event detail:', error);
       return null;
