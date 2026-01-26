@@ -12,6 +12,8 @@ import {
   FavoriteStatusResponse,
   AddFavoriteResponse,
   RemoveFavoriteResponse,
+  PromoUpdatesResponse,
+  MarkPromoReadResponse,
 } from '../types';
 
 export interface PlacePromoResponse {
@@ -185,6 +187,43 @@ class CollectionApiService extends ApiBase {
     return this.request<FavoriteStatusResponse>(`/api/collections/${placeId}/favorite/status`, {
       headers: this.authHeaders(token),
     });
+  }
+
+  // ========== #028 圖鑑優惠更新通知 ==========
+
+  /**
+   * 取得優惠更新通知
+   * GET /api/collections/promo-updates
+   *
+   * 當商家更新優惠時，持有該景點卡片的用戶會收到紅點提醒
+   */
+  async getPromoUpdates(token: string): Promise<PromoUpdatesResponse> {
+    try {
+      return await this.request<PromoUpdatesResponse>('/api/collections/promo-updates', {
+        headers: this.authHeaders(token),
+      });
+    } catch (error) {
+      console.error('[CollectionApi] getPromoUpdates error:', error);
+      return { success: false, unreadCount: 0, unreadCollectionIds: [] };
+    }
+  }
+
+  /**
+   * 標記優惠已讀
+   * PATCH /api/collections/:id/promo-read
+   *
+   * 用戶查看卡片詳情時呼叫
+   */
+  async markPromoRead(token: string, collectionId: number): Promise<MarkPromoReadResponse> {
+    try {
+      return await this.request<MarkPromoReadResponse>(`/api/collections/${collectionId}/promo-read`, {
+        method: 'PATCH',
+        headers: this.authHeaders(token),
+      });
+    } catch (error) {
+      console.error('[CollectionApi] markPromoRead error:', error);
+      return { success: false };
+    }
   }
 }
 

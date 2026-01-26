@@ -47,7 +47,7 @@ export interface ExperienceHistoryResponse {
 
 export type AchievementCategory =
   | 'collector'   // 收藏家
-  | 'investor'    // 投資者
+  | 'sponsor'     // 贊助者 (#029 統一用詞)
   | 'promoter'    // 推廣者
   | 'business'    // 商業
   | 'specialist'; // 策劃師

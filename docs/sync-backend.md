@@ -6,6 +6,36 @@
 
 ## 最新回報
 
+### 2026-01-26 #026-#029：行程規劃 + AI 助手 + 優惠通知 + 用詞統一
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #026-#029 |
+| 狀態 | ✅ 完成 |
+
+**#026 行程安排 API V2 Breaking Change**
+- [x] 建立 `src/types/itinerary.ts` - 行程相關型別定義
+- [x] 建立 `src/services/itineraryApi.ts` - 行程管理 API 服務
+- [x] 更新 `ItineraryScreen.tsx` - 使用 `collectionIds` 而非 `placeIds`
+- [x] 刪除/排序使用 `itemId` (itinerary_places.id)
+
+**#027 AI 對話式排程**
+- [x] 實作 `POST /api/itinerary/:id/ai-chat` - AI 對話推薦
+- [x] 實作 `POST /api/itinerary/:id/ai-add-places` - 加入 AI 建議
+- [x] `ItineraryScreen.tsx` 新增 AI 助手對話介面
+
+**#028 圖鑑優惠更新通知**
+- [x] 新增 `PromoUpdatesResponse` 型別
+- [x] 實作 `GET /api/collections/promo-updates`
+- [x] 實作 `PATCH /api/collections/:id/promo-read`
+- [x] `CollectionScreen.tsx` 顯示「優惠更新」紅點標籤
+
+**#029 用詞統一**
+- [x] `AchievementCategory`: `investor` → `sponsor`
+- [x] 註解更新：投資者 → 贊助者
+
+---
+
 ### 2026-01-23 #025：APP 改善計劃全面實作
 
 | 項目 | 內容 |
@@ -77,6 +107,7 @@
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 026-029 | 01-26 | 行程規劃 V2 + AI 助手 + 優惠通知 + 用詞統一 | ✅ |
 | 025 | 01-23 | APP 改善計劃全面實作（11 功能） | ✅ |
 | 024 | 01-21 | Google 原生登入 | ✅ |
 | 023 | 01-21 | 登入 API 回傳用戶姓名 | ✅ |

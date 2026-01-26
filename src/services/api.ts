@@ -19,6 +19,7 @@ import { crowdfundingApi } from './crowdfundingApi';
 import { referralApi } from './referralApi';
 import { contributionApi } from './contributionApi';
 import { eventApi } from './eventApi';
+import { itineraryApi } from './itineraryApi';
 
 // Re-export 所有模組化的 API
 export { authApi } from './authApi';
@@ -40,6 +41,9 @@ export { contributionApi } from './contributionApi';
 
 // Phase 7 - 活動系統 (sync-app #006)
 export { eventApi } from './eventApi';
+
+// Itinerary - 行程規劃 (sync-app #026, #027)
+export { itineraryApi } from './itineraryApi';
 
 /**
  * 統一 API Service（向後兼容）
@@ -94,6 +98,8 @@ class ApiService {
   markCollectionItemRead = collectionApi.markCollectionItemRead.bind(collectionApi);
   getPlacePromoFromCollection = collectionApi.getPlacePromo.bind(collectionApi);
   getCollectionStats = collectionApi.getCollectionStats.bind(collectionApi);
+  getPromoUpdates = collectionApi.getPromoUpdates.bind(collectionApi);
+  markPromoRead = collectionApi.markPromoRead.bind(collectionApi);
 
   // ========== Merchant ==========
   getMerchantMe = merchantApi.getMerchantMe.bind(merchantApi);
@@ -204,6 +210,19 @@ class ApiService {
   getEvents = eventApi.getEvents.bind(eventApi);
   getEventById = eventApi.getEventById.bind(eventApi);
   getHomeEvents = eventApi.getHomeEvents.bind(eventApi);
+
+  // ========== Itinerary (sync-app #026, #027) ==========
+  getItineraries = itineraryApi.getItineraries.bind(itineraryApi);
+  getItinerary = itineraryApi.getItinerary.bind(itineraryApi);
+  createItinerary = itineraryApi.createItinerary.bind(itineraryApi);
+  updateItinerary = itineraryApi.updateItinerary.bind(itineraryApi);
+  deleteItinerary = itineraryApi.deleteItinerary.bind(itineraryApi);
+  getAvailablePlaces = itineraryApi.getAvailablePlaces.bind(itineraryApi);
+  addPlacesToItinerary = itineraryApi.addPlaces.bind(itineraryApi);
+  removePlaceFromItinerary = itineraryApi.removePlace.bind(itineraryApi);
+  reorderItineraryPlaces = itineraryApi.reorderPlaces.bind(itineraryApi);
+  itineraryAiChat = itineraryApi.aiChat.bind(itineraryApi);
+  itineraryAiAddPlaces = itineraryApi.aiAddPlaces.bind(itineraryApi);
 }
 
 export const apiService = new ApiService();
