@@ -81,6 +81,7 @@ class ItineraryApi extends ApiBase {
   ): Promise<ItineraryMutationResponse> {
     try {
       console.log('[ItineraryApi] createItinerary request:', JSON.stringify(data));
+      console.log('[ItineraryApi] token check:', token ? `Bearer ${token.substring(0, 20)}...` : 'NO TOKEN');
       return await this.request<ItineraryMutationResponse>('/api/itinerary', {
         method: 'POST',
         headers: this.authHeaders(token),
