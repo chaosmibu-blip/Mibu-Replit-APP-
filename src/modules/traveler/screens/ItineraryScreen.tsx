@@ -25,6 +25,9 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { MibuBrand, getCategoryToken } from '../../../../constants/Colors';
 import { itineraryApi } from '../../../services/itineraryApi';
+import { locationApi } from '../../../services/locationApi';
+import { Select } from '../../shared/components/ui/Select';
+import type { Country, Region } from '../../../types';
 import type {
   ItinerarySummary,
   Itinerary,
@@ -34,6 +37,15 @@ import type {
   AiSuggestedPlace,
   AiChatMessage,
 } from '../../../types/itinerary';
+
+interface District {
+  id: number;
+  name: string;
+  nameZh?: string;
+  nameEn?: string;
+  nameJa?: string;
+  nameKo?: string;
+}
 
 type ViewMode = 'list' | 'detail' | 'add-places' | 'ai-chat';
 
@@ -57,9 +69,21 @@ export function ItineraryScreen() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newItinerary, setNewItinerary] = useState({
     date: new Date().toISOString().split('T')[0],
-    country: '',
-    city: '',
+    countryId: null as number | null,
+    countryName: '',
+    regionId: null as number | null,
+    regionName: '',
+    districtId: null as number | null,
+    districtName: '',
   });
+
+  // Location data
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingRegions, setLoadingRegions] = useState(false);
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
 
   // AI Chat
   const [aiMessages, setAiMessages] = useState<AiChatMessage[]>([]);
@@ -101,11 +125,102 @@ export function ItineraryScreen() {
     }
   }, [getToken]);
 
+  // 載入國家列表
+  const loadCountries = useCallback(async () => {
+    setLoadingCountries(true);
+    try {
+      const data = await locationApi.getCountries();
+      setCountries(data);
+    } catch (error) {
+      console.error('Failed to load countries:', error);
+    } finally {
+      setLoadingCountries(false);
+    }
+  }, []);
+
+  // 載入城市列表
+  const loadRegions = useCallback(async (countryId: number) => {
+    setLoadingRegions(true);
+    setRegions([]);
+    setDistricts([]);
+    setNewItinerary(prev => ({
+      ...prev,
+      regionId: null,
+      regionName: '',
+      districtId: null,
+      districtName: '',
+    }));
+    try {
+      const data = await locationApi.getRegions(countryId);
+      setRegions(data);
+    } catch (error) {
+      console.error('Failed to load regions:', error);
+    } finally {
+      setLoadingRegions(false);
+    }
+  }, []);
+
+  // 載入子行政區列表
+  const loadDistricts = useCallback(async (regionId: number) => {
+    setLoadingDistricts(true);
+    setDistricts([]);
+    setNewItinerary(prev => ({
+      ...prev,
+      districtId: null,
+      districtName: '',
+    }));
+    try {
+      const data = await locationApi.getDistricts(regionId);
+      setDistricts(data.districts);
+    } catch (error) {
+      console.error('Failed to load districts:', error);
+    } finally {
+      setLoadingDistricts(false);
+    }
+  }, []);
+
+  // 取得本地化名稱
+  const getLocalizedName = useCallback((item: Country | Region | District): string => {
+    // District 有必需的 name 屬性
+    if ('name' in item && typeof item.name === 'string') {
+      if (isZh && item.nameZh) return item.nameZh;
+      if (item.nameEn) return item.nameEn;
+      return item.name;
+    }
+    // Country/Region 有 nameZh 和 nameEn
+    if ('nameZh' in item && 'nameEn' in item) {
+      if (isZh) return item.nameZh || item.nameEn || '';
+      return item.nameEn || item.nameZh || '';
+    }
+    return '';
+  }, [isZh]);
+
   useEffect(() => {
     if (state.isAuthenticated) {
       fetchItineraries();
     }
   }, [state.isAuthenticated, fetchItineraries]);
+
+  // 當 Modal 打開時載入國家列表
+  useEffect(() => {
+    if (showCreateModal && countries.length === 0) {
+      loadCountries();
+    }
+  }, [showCreateModal, countries.length, loadCountries]);
+
+  // 當選擇國家時載入城市
+  useEffect(() => {
+    if (newItinerary.countryId) {
+      loadRegions(newItinerary.countryId);
+    }
+  }, [newItinerary.countryId, loadRegions]);
+
+  // 當選擇城市時載入子行政區
+  useEffect(() => {
+    if (newItinerary.regionId) {
+      loadDistricts(newItinerary.regionId);
+    }
+  }, [newItinerary.regionId, loadDistricts]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -115,26 +230,62 @@ export function ItineraryScreen() {
 
   // Create new itinerary
   const handleCreate = async () => {
-    if (!newItinerary.country || !newItinerary.city) {
+    if (!newItinerary.countryName || !newItinerary.regionName) {
       Alert.alert(
         isZh ? '請填寫完整' : 'Incomplete',
-        isZh ? '請輸入國家和城市' : 'Please enter country and city'
+        isZh ? '請選擇國家和城市' : 'Please select country and city'
       );
       return;
     }
     const token = await getToken();
-    if (!token) return;
-    setLoading(true);
-    const res = await itineraryApi.createItinerary(newItinerary, token);
-    if (res.success) {
-      setShowCreateModal(false);
-      setNewItinerary({ date: new Date().toISOString().split('T')[0], country: '', city: '' });
-      await fetchItineraries();
-      // Open the new itinerary
-      setCurrentItinerary(res.itinerary);
-      setViewMode('detail');
+    if (!token) {
+      Alert.alert(
+        isZh ? '請先登入' : 'Please login',
+        isZh ? '需要登入才能建立行程' : 'You need to login to create itinerary'
+      );
+      return;
     }
-    setLoading(false);
+    setLoading(true);
+    try {
+      const res = await itineraryApi.createItinerary({
+        date: newItinerary.date,
+        country: newItinerary.countryName,
+        city: newItinerary.regionName,
+        district: newItinerary.districtName || undefined,
+      }, token);
+      if (res.success) {
+        setShowCreateModal(false);
+        setNewItinerary({
+          date: new Date().toISOString().split('T')[0],
+          countryId: null,
+          countryName: '',
+          regionId: null,
+          regionName: '',
+          districtId: null,
+          districtName: '',
+        });
+        // 清空選單資料
+        setRegions([]);
+        setDistricts([]);
+        await fetchItineraries();
+        // Open the new itinerary
+        setCurrentItinerary(res.itinerary);
+        setViewMode('detail');
+      } else {
+        Alert.alert(
+          isZh ? '建立失敗' : 'Create failed',
+          res.message || (isZh ? '請稍後再試' : 'Please try again later')
+        );
+      }
+    } catch (error) {
+      console.error('Create itinerary error:', error);
+      Alert.alert(
+        isZh ? '建立失敗' : 'Create failed',
+        isZh ? '網路錯誤，請稍後再試' : 'Network error, please try again later'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Delete itinerary
@@ -557,58 +708,122 @@ export function ItineraryScreen() {
       {/* Create Itinerary Modal */}
       <Modal visible={showCreateModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {isZh ? '建立新行程' : 'Create New Itinerary'}
-            </Text>
+          <ScrollView
+            style={styles.modalScrollView}
+            contentContainerStyle={styles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                {isZh ? '建立新行程' : 'Create New Itinerary'}
+              </Text>
 
-            <Text style={styles.inputLabel}>{isZh ? '日期' : 'Date'}</Text>
-            <TextInput
-              style={styles.input}
-              value={newItinerary.date}
-              onChangeText={text => setNewItinerary(prev => ({ ...prev, date: text }))}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={MibuBrand.copper}
-            />
+              <Text style={styles.inputLabel}>{isZh ? '日期' : 'Date'}</Text>
+              <TextInput
+                style={styles.input}
+                value={newItinerary.date}
+                onChangeText={text => setNewItinerary(prev => ({ ...prev, date: text }))}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={MibuBrand.copper}
+              />
 
-            <Text style={styles.inputLabel}>{isZh ? '國家' : 'Country'}</Text>
-            <TextInput
-              style={styles.input}
-              value={newItinerary.country}
-              onChangeText={text => setNewItinerary(prev => ({ ...prev, country: text }))}
-              placeholder={isZh ? '例如：台灣' : 'e.g. Taiwan'}
-              placeholderTextColor={MibuBrand.copper}
-            />
+              <Select
+                label={isZh ? '國家' : 'Country'}
+                placeholder={isZh ? '選擇國家' : 'Select Country'}
+                options={countries.map(c => ({
+                  label: getLocalizedName(c),
+                  value: c.id,
+                }))}
+                value={newItinerary.countryId}
+                onChange={(value) => {
+                  const country = countries.find(c => c.id === value);
+                  setNewItinerary(prev => ({
+                    ...prev,
+                    countryId: value as number,
+                    countryName: country ? getLocalizedName(country) : '',
+                  }));
+                }}
+                loading={loadingCountries}
+              />
 
-            <Text style={styles.inputLabel}>{isZh ? '城市' : 'City'}</Text>
-            <TextInput
-              style={styles.input}
-              value={newItinerary.city}
-              onChangeText={text => setNewItinerary(prev => ({ ...prev, city: text }))}
-              placeholder={isZh ? '例如：台北' : 'e.g. Taipei'}
-              placeholderTextColor={MibuBrand.copper}
-            />
+              <Select
+                label={isZh ? '城市' : 'City'}
+                placeholder={isZh ? '選擇城市' : 'Select City'}
+                options={regions.map(r => ({
+                  label: getLocalizedName(r),
+                  value: r.id,
+                }))}
+                value={newItinerary.regionId}
+                onChange={(value) => {
+                  const region = regions.find(r => r.id === value);
+                  setNewItinerary(prev => ({
+                    ...prev,
+                    regionId: value as number,
+                    regionName: region ? getLocalizedName(region) : '',
+                  }));
+                }}
+                loading={loadingRegions}
+              />
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalCancelButton}
-                onPress={() => setShowCreateModal(false)}
-              >
-                <Text style={styles.modalCancelText}>{isZh ? '取消' : 'Cancel'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalConfirmButton}
-                onPress={handleCreate}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.modalConfirmText}>{isZh ? '建立' : 'Create'}</Text>
-                )}
-              </TouchableOpacity>
+              {districts.length > 0 && (
+                <Select
+                  label={isZh ? '區域' : 'District'}
+                  placeholder={isZh ? '選擇區域（選填）' : 'Select District (Optional)'}
+                  options={districts.map(d => ({
+                    label: getLocalizedName(d),
+                    value: d.id,
+                  }))}
+                  value={newItinerary.districtId}
+                  onChange={(value) => {
+                    const district = districts.find(d => d.id === value);
+                    setNewItinerary(prev => ({
+                      ...prev,
+                      districtId: value as number,
+                      districtName: district ? getLocalizedName(district) : '',
+                    }));
+                  }}
+                  loading={loadingDistricts}
+                />
+              )}
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalCancelButton}
+                  onPress={() => {
+                    setShowCreateModal(false);
+                    // 重置表單
+                    setNewItinerary({
+                      date: new Date().toISOString().split('T')[0],
+                      countryId: null,
+                      countryName: '',
+                      regionId: null,
+                      regionName: '',
+                      districtId: null,
+                      districtName: '',
+                    });
+                    setRegions([]);
+                    setDistricts([]);
+                  }}
+                >
+                  <Text style={styles.modalCancelText}>{isZh ? '取消' : 'Cancel'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.modalConfirmButton,
+                    (!newItinerary.countryId || !newItinerary.regionId) && styles.modalConfirmButtonDisabled,
+                  ]}
+                  onPress={handleCreate}
+                  disabled={loading || !newItinerary.countryId || !newItinerary.regionId}
+                >
+                  {loading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.modalConfirmText}>{isZh ? '建立' : 'Create'}</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     </View>
@@ -1003,12 +1218,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  modalScrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  modalScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
   modalContent: {
     backgroundColor: MibuBrand.creamLight,
     borderRadius: 24,
     padding: 24,
-    width: '85%',
+    width: '100%',
     maxWidth: 340,
+  },
+  modalConfirmButtonDisabled: {
+    backgroundColor: MibuBrand.tan,
   },
   modalTitle: {
     fontSize: 20,
