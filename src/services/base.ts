@@ -3,6 +3,27 @@
  */
 import { API_BASE_URL } from '../constants/translations';
 
+export interface ApiErrorResponse {
+  success: false;
+  message?: string;
+  error?: string;
+  code?: string;
+}
+
+export class ApiError extends Error {
+  status: number;
+  serverMessage?: string;
+  code?: string;
+
+  constructor(status: number, message: string, serverMessage?: string, code?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.serverMessage = serverMessage;
+    this.code = code;
+  }
+}
+
 export class ApiBase {
   protected baseUrl = API_BASE_URL;
 
@@ -17,11 +38,31 @@ export class ApiBase {
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
+    // 嘗試解析 JSON 回應
+    let data: T | ApiErrorResponse;
+    try {
+      data = await response.json();
+    } catch {
+      // 無法解析 JSON
+      if (!response.ok) {
+        throw new ApiError(response.status, `API Error: ${response.status}`);
+      }
+      throw new Error('Invalid JSON response');
     }
 
-    return response.json();
+    // 檢查 HTTP 狀態碼
+    if (!response.ok) {
+      const errorData = data as ApiErrorResponse;
+      const serverMessage = errorData.message || errorData.error;
+      throw new ApiError(
+        response.status,
+        `API Error: ${response.status}`,
+        serverMessage,
+        errorData.code
+      );
+    }
+
+    return data as T;
   }
 
   protected authHeaders(token: string): Record<string, string> {

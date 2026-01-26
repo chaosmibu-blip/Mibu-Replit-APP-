@@ -6,7 +6,7 @@
  * #027 AI 對話式排程功能
  */
 
-import { ApiBase } from './base';
+import { ApiBase, ApiError } from './base';
 import {
   CreateItineraryRequest,
   UpdateItineraryRequest,
@@ -80,6 +80,7 @@ class ItineraryApi extends ApiBase {
     token: string
   ): Promise<ItineraryMutationResponse> {
     try {
+      console.log('[ItineraryApi] createItinerary request:', JSON.stringify(data));
       return await this.request<ItineraryMutationResponse>('/api/itinerary', {
         method: 'POST',
         headers: this.authHeaders(token),
@@ -87,6 +88,8 @@ class ItineraryApi extends ApiBase {
       });
     } catch (error) {
       console.error('[ItineraryApi] createItinerary error:', error);
+      // 提取伺服器回傳的錯誤訊息
+      const serverMessage = error instanceof ApiError ? error.serverMessage : undefined;
       return {
         success: false,
         itinerary: {
@@ -99,7 +102,7 @@ class ItineraryApi extends ApiBase {
           createdAt: '',
           updatedAt: '',
         },
-        message: 'Failed to create itinerary',
+        message: serverMessage || 'Failed to create itinerary',
       };
     }
   }
