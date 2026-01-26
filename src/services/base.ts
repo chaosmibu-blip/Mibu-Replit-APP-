@@ -8,6 +8,8 @@ export interface ApiErrorResponse {
   message?: string;
   error?: string;
   code?: string;
+  detail?: string;
+  reason?: string;
 }
 
 export class ApiError extends Error {
@@ -53,7 +55,9 @@ export class ApiBase {
     // 檢查 HTTP 狀態碼
     if (!response.ok) {
       const errorData = data as ApiErrorResponse;
-      const serverMessage = errorData.message || errorData.error;
+      // 嘗試從多個可能的欄位提取錯誤訊息
+      const serverMessage = errorData.message || errorData.error || errorData.detail || errorData.reason;
+      console.log('[ApiBase] HTTP error response:', JSON.stringify(errorData));
       throw new ApiError(
         response.status,
         `API Error: ${response.status}`,
