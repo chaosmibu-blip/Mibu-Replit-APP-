@@ -61,3 +61,6 @@ export * from './contribution';
 
 // Event (Phase 7 - sync-app #006)
 export * from './event';
+
+// Itinerary (sync-app #026, #027)
+export * from './itinerary';

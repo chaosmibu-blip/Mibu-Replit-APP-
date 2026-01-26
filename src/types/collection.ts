@@ -99,3 +99,23 @@ export interface RemoveFavoriteResponse {
   success: boolean;
   message: string;
 }
+
+// ========== #028 圖鑑優惠更新通知 ==========
+
+/**
+ * 優惠更新通知回應
+ * GET /api/collections/promo-updates
+ */
+export interface PromoUpdatesResponse {
+  success: boolean;
+  unreadCount: number;
+  unreadCollectionIds: number[];
+}
+
+/**
+ * 標記優惠已讀回應
+ * PATCH /api/collections/:id/promo-read
+ */
+export interface MarkPromoReadResponse {
+  success: boolean;
+}
