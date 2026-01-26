@@ -24,6 +24,7 @@ import {
   ReorderPlacesResponse,
   AiChatResponse,
   AiAddPlacesResponse,
+  Itinerary,
 } from '../types/itinerary';
 
 class ItineraryApi extends ApiBase {
@@ -74,6 +75,8 @@ class ItineraryApi extends ApiBase {
   /**
    * 建立新行程
    * POST /api/itinerary
+   *
+   * 注意：後端直接回傳 Itinerary 物件，需要包裝成 ItineraryMutationResponse
    */
   async createItinerary(
     data: CreateItineraryRequest,
@@ -82,11 +85,17 @@ class ItineraryApi extends ApiBase {
     try {
       console.log('[ItineraryApi] createItinerary request:', JSON.stringify(data));
       console.log('[ItineraryApi] token check:', token ? `Bearer ${token.substring(0, 20)}...` : 'NO TOKEN');
-      return await this.request<ItineraryMutationResponse>('/api/itinerary', {
+      // 後端直接回傳 Itinerary 物件（HTTP 201）
+      const itinerary = await this.request<Itinerary>('/api/itinerary', {
         method: 'POST',
         headers: this.authHeaders(token),
         body: JSON.stringify(data),
       });
+      // 包裝成 APP 期望的格式
+      return {
+        success: true,
+        itinerary,
+      };
     } catch (error) {
       console.error('[ItineraryApi] createItinerary error:', error);
       // 提取伺服器回傳的錯誤訊息
