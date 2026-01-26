@@ -109,13 +109,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="collection"
+        name="planner"
         options={{
           href: null,
         }}
       />
       <Tabs.Screen
-        name="planner"
+        name="collection"
         options={{
           href: null,
         }}
