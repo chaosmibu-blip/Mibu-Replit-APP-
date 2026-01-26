@@ -300,11 +300,22 @@ class ItineraryApi extends ApiBase {
     token: string
   ): Promise<AiChatResponse> {
     try {
-      return await this.request<AiChatResponse>(`/api/itinerary/${id}/ai-chat`, {
+      const result = await this.request<{
+        message: string;
+        response: string;
+        suggestions: AiChatResponse['suggestions'];
+      }>(`/api/itinerary/${id}/ai-chat`, {
         method: 'POST',
         headers: this.authHeaders(token),
         body: JSON.stringify(data),
       });
+      // 後端直接回傳資料，包裝成 APP 期望的格式
+      return {
+        success: true,
+        response: result.response,
+        suggestions: result.suggestions || [],
+        conversationId: data.conversationId || '',
+      };
     } catch (error) {
       console.error('[ItineraryApi] aiChat error:', error);
       return {
