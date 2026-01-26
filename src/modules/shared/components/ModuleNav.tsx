@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Language } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
 
-export type GachaSubView = 'gacha' | 'collection' | 'itembox';
+export type GachaSubView = 'gacha' | 'collection' | 'itinerary' | 'itembox';
 
 interface GachaTopNavProps {
   currentTab: GachaSubView;
@@ -26,6 +26,12 @@ const TAB_LABELS: Record<GachaSubView, Record<Language, string>> = {
     'ja': '図鑑',
     'ko': '도감',
   },
+  itinerary: {
+    'zh-TW': '行程',
+    'en': 'Itinerary',
+    'ja': '旅程',
+    'ko': '여정',
+  },
   itembox: {
     'zh-TW': '道具箱',
     'en': 'Item Box',
@@ -44,6 +50,7 @@ export function GachaTopNav({
   const tabs: { key: GachaSubView; hasNew: boolean }[] = [
     { key: 'gacha', hasNew: false },
     { key: 'collection', hasNew: hasNewCollection },
+    { key: 'itinerary', hasNew: false },
   ];
 
   return (
