@@ -109,15 +109,21 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="collection"
+        name="planner"
         options={{
-          href: null,
+          title: t.navPlanner,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'map' : 'map-outline'} size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="planner"
+        name="collection"
         options={{
-          href: null,
+          title: t.navCollection,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'book' : 'book-outline'} size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
