@@ -31,6 +31,8 @@ export class ApiBase {
 
   protected async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    console.log('[ApiBase] Full URL:', url);
+    console.log('[ApiBase] Authorization:', options.headers && 'Authorization' in options.headers ? 'Bearer ***' : 'none');
     const response = await fetch(url, {
       ...options,
       headers: {
