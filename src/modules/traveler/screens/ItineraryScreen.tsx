@@ -713,11 +713,13 @@ export function ItineraryScreen() {
   );
 
   // Render AI chat view
+  // Tab bar 高度約 50，加上底部安全區域
+  const tabBarHeight = 50;
   const renderAiChatView = () => (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? TAB_BAR_HEIGHT : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? tabBarHeight + insets.bottom : 0}
     >
       <View style={[styles.header, { paddingHorizontal: 20, paddingTop: 60 }]}>
         <TouchableOpacity onPress={() => setViewMode('detail')} style={styles.backButton}>
@@ -784,7 +786,7 @@ export function ItineraryScreen() {
         )}
       </ScrollView>
 
-      <View style={[styles.chatInputContainer, { paddingBottom: TAB_BAR_HEIGHT + 12 }]}>
+      <View style={[styles.chatInputContainer, { paddingBottom: 8 }]}>
         <TextInput
           style={styles.chatInput}
           placeholder={isZh ? '例如：我想要美食之旅...' : 'e.g. I want a food tour...'}
