@@ -1348,6 +1348,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     padding: 12,
+    paddingBottom: 12,
     backgroundColor: MibuBrand.creamLight,
     borderTopWidth: 1,
     borderTopColor: MibuBrand.tanLight,
