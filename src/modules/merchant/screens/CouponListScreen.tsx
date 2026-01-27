@@ -21,11 +21,11 @@ import { MerchantCoupon, MerchantCouponTier } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
 
 const TIER_COLORS: Record<MerchantCouponTier, { bg: string; text: string; border: string }> = {
-  SP: { bg: '#fef3c7', text: '#b45309', border: '#fbbf24' },
-  SSR: { bg: '#fce7f3', text: '#be185d', border: '#f472b6' },
-  SR: { bg: '#dbeafe', text: '#1d4ed8', border: '#60a5fa' },
-  S: { bg: '#dcfce7', text: '#16a34a', border: '#4ade80' },
-  R: { bg: '#f1f5f9', text: '#475569', border: '#94a3b8' },
+  SP: { bg: MibuBrand.tierSPBg, text: MibuBrand.tierSP, border: MibuBrand.tierSP },
+  SSR: { bg: MibuBrand.tierSSRBg, text: MibuBrand.tierSSR, border: MibuBrand.tierSSR },
+  SR: { bg: MibuBrand.tierSRBg, text: MibuBrand.tierSR, border: MibuBrand.tierSR },
+  S: { bg: MibuBrand.tierSBg, text: MibuBrand.tierS, border: MibuBrand.tierS },
+  R: { bg: MibuBrand.tierRBg, text: MibuBrand.tierR, border: MibuBrand.tierR },
 };
 
 const TIER_PROBABILITY: Record<MerchantCouponTier, string> = {

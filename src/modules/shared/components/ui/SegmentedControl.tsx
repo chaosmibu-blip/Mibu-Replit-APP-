@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { MibuBrand } from '@/constants/Colors';
+import { Spacing, Radius, FontSize, Shadow } from '@/theme/designTokens';
 
 interface Segment {
   key: string;
@@ -37,35 +39,31 @@ export function SegmentedControl({ segments, selectedKey, onSelect }: SegmentedC
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
-    borderRadius: 12,
-    padding: 4,
-    marginHorizontal: 16,
-    marginVertical: 8,
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: Radius.md,
+    padding: Spacing.xs,
+    marginHorizontal: Spacing.lg,
+    marginVertical: Spacing.sm,
   },
   segment: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: Spacing.sm + 2,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
   segmentSelected: {
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: MibuBrand.warmWhite,
+    ...Shadow.sm,
   },
   label: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '500',
-    color: '#64748b',
+    color: MibuBrand.brownLight,
   },
   labelSelected: {
-    color: '#6366f1',
+    color: MibuBrand.brown,
     fontWeight: '600',
   },
 });

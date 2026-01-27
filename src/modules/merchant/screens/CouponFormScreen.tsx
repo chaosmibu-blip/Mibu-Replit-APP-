@@ -19,13 +19,14 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantCoupon, MerchantCouponTier } from '../../../types';
+import { MibuBrand } from '../../../../constants/Colors';
 
 const TIERS: { id: MerchantCouponTier; label: string; prob: string; color: string }[] = [
-  { id: 'SP', label: 'SP', prob: '0.1%', color: '#b45309' },
-  { id: 'SSR', label: 'SSR', prob: '0.9%', color: '#be185d' },
-  { id: 'SR', label: 'SR', prob: '4%', color: '#1d4ed8' },
-  { id: 'S', label: 'S', prob: '15%', color: '#16a34a' },
-  { id: 'R', label: 'R', prob: '80%', color: '#475569' },
+  { id: 'SP', label: 'SP', prob: '0.1%', color: MibuBrand.tierSP },
+  { id: 'SSR', label: 'SSR', prob: '0.9%', color: MibuBrand.tierSSR },
+  { id: 'SR', label: 'SR', prob: '4%', color: MibuBrand.tierSR },
+  { id: 'S', label: 'S', prob: '15%', color: MibuBrand.tierS },
+  { id: 'R', label: 'R', prob: '80%', color: MibuBrand.tierR },
 ];
 
 export default function CouponFormScreen() {

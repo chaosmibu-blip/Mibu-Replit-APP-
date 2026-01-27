@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { MibuBrand } from '@/constants/Colors';
+import { Spacing, Radius, FontSize, Shadow, SemanticColors } from '@/theme/designTokens';
 
 interface InfoToastProps {
   visible: boolean;
@@ -62,7 +64,7 @@ export function InfoToast({ visible, message, duration = 3000, onHide }: InfoToa
       ]}
     >
       <View style={styles.toast}>
-        <Ionicons name="information-circle" size={20} color="#854d0e" style={styles.icon} />
+        <Ionicons name="information-circle" size={20} color={SemanticColors.warning.dark} style={styles.icon} />
         <Text style={styles.message}>{message}</Text>
       </View>
     </Animated.View>
@@ -73,33 +75,29 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: 100,
-    left: 16,
-    right: 16,
+    left: Spacing.lg,
+    right: Spacing.lg,
     alignItems: 'center',
     zIndex: 1000,
   },
   toast: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fef9c3',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
+    backgroundColor: SemanticColors.warning.light,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.md,
     borderWidth: 1,
-    borderColor: '#fde047',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderColor: MibuBrand.warning,
+    ...Shadow.md,
   },
   icon: {
-    marginRight: 10,
+    marginRight: Spacing.sm + 2,
   },
   message: {
     flex: 1,
-    fontSize: 14,
-    color: '#854d0e',
+    fontSize: FontSize.md,
+    color: SemanticColors.warning.dark,
     fontWeight: '500',
     lineHeight: 20,
   },
