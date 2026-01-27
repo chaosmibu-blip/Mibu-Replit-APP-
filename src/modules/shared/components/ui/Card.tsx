@@ -1,5 +1,7 @@
 import React, { ReactNode } from 'react';
 import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
+import { MibuBrand } from '../../../../../constants/Colors';
+import { Spacing, Radius, Shadow } from '@/theme/designTokens';
 
 interface CardProps {
   children: ReactNode;
@@ -30,13 +32,9 @@ export function Card({ children, style, onPress, borderColor, backgroundColor }:
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
+    ...Shadow.md,
   },
 });

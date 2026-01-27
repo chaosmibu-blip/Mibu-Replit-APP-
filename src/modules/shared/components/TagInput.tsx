@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { MibuBrand } from '@/constants/Colors';
+import { Spacing, Radius, FontSize } from '@/theme/designTokens';
 
 interface TagInputProps {
   value: string[];
@@ -30,7 +32,7 @@ export function TagInput({ value, onChange, placeholder }: TagInputProps) {
           <View key={idx} style={styles.tag}>
             <Text style={styles.tagText}>{tag}</Text>
             <TouchableOpacity onPress={() => removeTag(idx)} style={styles.removeButton}>
-              <Ionicons name="close-circle" size={16} color="#94a3b8" />
+              <Ionicons name="close-circle" size={16} color={MibuBrand.brownLight} />
             </TouchableOpacity>
           </View>
         ))}
@@ -40,13 +42,13 @@ export function TagInput({ value, onChange, placeholder }: TagInputProps) {
           value={inputValue}
           onChangeText={setInputValue}
           placeholder={placeholder}
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor={MibuBrand.brownLight}
           onSubmitEditing={addTag}
           style={styles.input}
           returnKeyType="done"
         />
         <TouchableOpacity onPress={addTag} style={styles.addButton}>
-          <Ionicons name="add" size={20} color="#ffffff" />
+          <Ionicons name="add" size={20} color={MibuBrand.warmWhite} />
         </TouchableOpacity>
       </View>
     </View>
@@ -55,30 +57,30 @@ export function TagInput({ value, onChange, placeholder }: TagInputProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   tagList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 8,
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
   },
   tag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.cream,
     paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    gap: 4,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.lg,
+    gap: Spacing.xs,
   },
   tagText: {
-    fontSize: 14,
-    color: '#334155',
+    fontSize: FontSize.md,
+    color: MibuBrand.dark,
   },
   removeButton: {
     marginLeft: 2,
@@ -86,22 +88,22 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
   },
   input: {
     flex: 1,
-    fontSize: 14,
-    color: '#1e293b',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
+    fontSize: FontSize.md,
+    color: MibuBrand.dark,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: Radius.sm,
   },
   addButton: {
     width: 36,
     height: 36,
-    backgroundColor: '#6366f1',
-    borderRadius: 18,
+    backgroundColor: MibuBrand.brown,
+    borderRadius: Radius.full,
     justifyContent: 'center',
     alignItems: 'center',
   },
