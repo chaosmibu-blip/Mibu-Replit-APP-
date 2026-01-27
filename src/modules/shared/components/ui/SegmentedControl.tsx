@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MibuBrand } from '@/constants/Colors';
-import { Spacing, Radius, FontSize, Shadow } from '@/theme/designTokens';
+import { Spacing, Radius, FontSize, Shadow } from '@/src/theme/designTokens';
 
 interface Segment {
   key: string;

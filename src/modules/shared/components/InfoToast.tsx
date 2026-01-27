@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MibuBrand } from '@/constants/Colors';
-import { Spacing, Radius, FontSize, Shadow, SemanticColors } from '@/theme/designTokens';
+import { Spacing, Radius, FontSize, Shadow, SemanticColors } from '@/src/theme/designTokens';
 
 interface InfoToastProps {
   visible: boolean;

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MibuBrand } from '@/constants/Colors';
-import { Spacing, Radius, FontSize } from '@/theme/designTokens';
+import { Spacing, Radius, FontSize } from '@/src/theme/designTokens';
 
 interface TagInputProps {
   value: string[];

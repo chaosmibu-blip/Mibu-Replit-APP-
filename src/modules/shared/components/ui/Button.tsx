@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
 import { MibuBrand } from '../../../../../constants/Colors';
-import { Spacing, Radius, FontSize } from '@/theme/designTokens';
+import { Spacing, Radius, FontSize } from '@/src/theme/designTokens';
 
 interface ButtonProps {
   title: string;

@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
 import { MibuBrand } from '../../../../../constants/Colors';
-import { Spacing, Radius, Shadow } from '@/theme/designTokens';
+import { Spacing, Radius, Shadow } from '@/src/theme/designTokens';
 
 interface CardProps {
   children: ReactNode;
