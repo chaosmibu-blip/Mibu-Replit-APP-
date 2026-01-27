@@ -20,6 +20,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -417,6 +418,9 @@ export function ItineraryScreen() {
     if (!currentItinerary || !aiInput.trim()) return;
     const token = await getToken();
     if (!token) return;
+
+    // 收起鍵盤
+    Keyboard.dismiss();
 
     const userMessage: AiChatMessage = { role: 'user', content: aiInput.trim() };
     setAiMessages(prev => [...prev, userMessage]);
