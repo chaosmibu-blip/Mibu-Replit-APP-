@@ -64,6 +64,10 @@ export function ItineraryScreen() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
+  // 選擇刪除模式
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedItineraryIds, setSelectedItineraryIds] = useState<number[]>([]);
+
   // Data
   const [itineraries, setItineraries] = useState<ItinerarySummary[]>([]);
   const [currentItinerary, setCurrentItinerary] = useState<Itinerary | null>(null);
@@ -318,6 +322,50 @@ export function ItineraryScreen() {
     );
   };
 
+  // 切換行程選擇
+  const toggleItinerarySelection = (id: number) => {
+    setSelectedItineraryIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  // 退出選擇模式
+  const exitSelectMode = () => {
+    setIsSelectMode(false);
+    setSelectedItineraryIds([]);
+  };
+
+  // 批量刪除
+  const handleBatchDelete = async () => {
+    if (selectedItineraryIds.length === 0) return;
+
+    Alert.alert(
+      isZh ? '刪除行程' : 'Delete Itineraries',
+      isZh
+        ? `確定要刪除這 ${selectedItineraryIds.length} 個行程嗎？`
+        : `Are you sure you want to delete ${selectedItineraryIds.length} itineraries?`,
+      [
+        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        {
+          text: isZh ? '刪除' : 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const token = await getToken();
+            if (!token) return;
+            setLoading(true);
+            // 逐一刪除選中的行程
+            for (const id of selectedItineraryIds) {
+              await itineraryApi.deleteItinerary(id, token);
+            }
+            exitSelectMode();
+            await fetchItineraries();
+            setLoading(false);
+          },
+        },
+      ]
+    );
+  };
+
   // Open add places modal
   const openAddPlaces = async () => {
     if (!currentItinerary) return;
@@ -430,10 +478,44 @@ export function ItineraryScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>{isZh ? '行程規劃' : 'Trip Planner'}</Text>
-        <TouchableOpacity style={styles.addButton} onPress={() => setShowCreateModal(true)}>
-          <Text style={styles.addButtonText}>+</Text>
-        </TouchableOpacity>
+        {isSelectMode ? (
+          <>
+            <TouchableOpacity onPress={exitSelectMode} style={styles.selectModeButton}>
+              <Text style={styles.selectModeCancelText}>{isZh ? '取消' : 'Cancel'}</Text>
+            </TouchableOpacity>
+            <Text style={styles.title}>
+              {isZh ? `已選 ${selectedItineraryIds.length} 個` : `${selectedItineraryIds.length} selected`}
+            </Text>
+            <TouchableOpacity
+              style={[styles.deleteButton, selectedItineraryIds.length === 0 && styles.deleteButtonDisabled]}
+              onPress={handleBatchDelete}
+              disabled={selectedItineraryIds.length === 0 || loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.deleteButtonTextWhite}>{isZh ? '刪除' : 'Delete'}</Text>
+              )}
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <Text style={styles.title}>{isZh ? '行程規劃' : 'Trip Planner'}</Text>
+            <View style={styles.headerButtons}>
+              {itineraries.length > 0 && (
+                <TouchableOpacity
+                  style={styles.selectButton}
+                  onPress={() => setIsSelectMode(true)}
+                >
+                  <Text style={styles.selectButtonText}>{isZh ? '選擇' : 'Select'}</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity style={styles.addButton} onPress={() => setShowCreateModal(true)}>
+                <Text style={styles.addButtonText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </View>
 
       {loading && itineraries.length === 0 ? (
@@ -448,30 +530,48 @@ export function ItineraryScreen() {
           </Text>
         </View>
       ) : (
-        itineraries.map(item => (
-          <TouchableOpacity
-            key={item.id}
-            style={styles.itineraryCard}
-            onPress={async () => {
-              await fetchItineraryDetail(item.id);
-              setViewMode('detail');
-            }}
-          >
-            <View style={styles.itineraryCardIcon}>
-              <Text style={styles.itineraryCardIconText}>✈</Text>
-            </View>
-            <View style={styles.itineraryCardInfo}>
-              <Text style={styles.itineraryCardTitle}>{item.title || `${item.city} ${isZh ? '之旅' : 'Trip'}`}</Text>
-              <Text style={styles.itineraryCardMeta}>
-                {item.date} | {item.city}, {item.country}
-              </Text>
-              <Text style={styles.itineraryCardPlaces}>
-                {item.placeCount} {isZh ? '個景點' : 'places'}
-              </Text>
-            </View>
-            <Text style={styles.chevronText}>›</Text>
-          </TouchableOpacity>
-        ))
+        itineraries.map(item => {
+          const isSelected = selectedItineraryIds.includes(item.id);
+          return (
+            <TouchableOpacity
+              key={item.id}
+              style={[styles.itineraryCard, isSelectMode && isSelected && styles.itineraryCardSelected]}
+              onPress={async () => {
+                if (isSelectMode) {
+                  toggleItinerarySelection(item.id);
+                } else {
+                  await fetchItineraryDetail(item.id);
+                  setViewMode('detail');
+                }
+              }}
+              onLongPress={() => {
+                if (!isSelectMode) {
+                  setIsSelectMode(true);
+                  setSelectedItineraryIds([item.id]);
+                }
+              }}
+            >
+              {isSelectMode && (
+                <View style={[styles.itineraryCheckbox, isSelected && styles.itineraryCheckboxSelected]}>
+                  {isSelected && <Text style={styles.checkboxText}>✓</Text>}
+                </View>
+              )}
+              <View style={styles.itineraryCardIcon}>
+                <Text style={styles.itineraryCardIconText}>✈</Text>
+              </View>
+              <View style={styles.itineraryCardInfo}>
+                <Text style={styles.itineraryCardTitle}>{item.title || `${item.city} ${isZh ? '之旅' : 'Trip'}`}</Text>
+                <Text style={styles.itineraryCardMeta}>
+                  {item.date} | {item.city}, {item.country}
+                </Text>
+                <Text style={styles.itineraryCardPlaces}>
+                  {item.placeCount} {isZh ? '個景點' : 'places'}
+                </Text>
+              </View>
+              {!isSelectMode && <Text style={styles.chevronText}>›</Text>}
+            </TouchableOpacity>
+          );
+        })
       )}
     </ScrollView>
   );
@@ -870,6 +970,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  selectButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  selectButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: MibuBrand.brown,
+  },
+  selectModeButton: {
+    paddingVertical: 8,
+  },
+  selectModeCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: MibuBrand.brown,
+  },
+  deleteButton: {
+    backgroundColor: MibuBrand.error,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    minWidth: 60,
+    alignItems: 'center',
+  },
+  deleteButtonDisabled: {
+    backgroundColor: MibuBrand.tan,
+  },
+  deleteButtonTextWhite: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
   emptyState: {
     flex: 1,
     alignItems: 'center',
@@ -919,6 +1057,25 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
+  },
+  itineraryCardSelected: {
+    borderWidth: 2,
+    borderColor: MibuBrand.brown,
+    backgroundColor: MibuBrand.highlight,
+  },
+  itineraryCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: MibuBrand.copper,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  itineraryCheckboxSelected: {
+    backgroundColor: MibuBrand.brown,
+    borderColor: MibuBrand.brown,
   },
   itineraryCardIcon: {
     width: 48,
