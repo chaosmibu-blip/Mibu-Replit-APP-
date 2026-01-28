@@ -790,7 +790,7 @@ export function ItineraryScreen() {
         )}
       </ScrollView>
 
-      <View style={[styles.chatInputContainer, { paddingBottom: 8 }]}>
+      <View style={[styles.chatInputContainer, { paddingBottom: TAB_BAR_HEIGHT + insets.bottom }]}>
         <TextInput
           style={styles.chatInput}
           placeholder={isZh ? '例如：我想要美食之旅...' : 'e.g. I want a food tour...'}
