@@ -260,6 +260,12 @@ export function ItineraryScreen() {
     }
     setLoading(true);
     try {
+      console.log('[ItineraryScreen] Creating itinerary with:', {
+        date: newItinerary.date,
+        country: newItinerary.countryName,
+        city: newItinerary.regionName,
+        district: newItinerary.districtName,
+      });
       const res = await itineraryApi.createItinerary({
         date: newItinerary.date,
         country: newItinerary.countryName,
