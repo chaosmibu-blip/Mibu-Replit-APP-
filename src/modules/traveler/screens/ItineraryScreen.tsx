@@ -894,7 +894,8 @@ export function ItineraryScreen() {
                   setNewItinerary(prev => ({
                     ...prev,
                     regionId: value as number,
-                    regionName: region ? getLocalizedName(region) : '',
+                    // 固定使用 nameZh 傳給後端，確保和圖鑑收藏的 city 格式一致
+                    regionName: region?.nameZh || '',
                   }));
                 }}
                 loading={loadingRegions}
@@ -914,7 +915,8 @@ export function ItineraryScreen() {
                     setNewItinerary(prev => ({
                       ...prev,
                       districtId: value as number,
-                      districtName: district ? getLocalizedName(district) : '',
+                      // 固定使用 nameZh 傳給後端，確保和圖鑑收藏的 district 格式一致
+                      districtName: district?.nameZh || district?.name || '',
                     }));
                   }}
                   loading={loadingDistricts}
