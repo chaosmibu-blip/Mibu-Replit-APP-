@@ -20,6 +20,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -418,6 +419,9 @@ export function ItineraryScreen() {
     const token = await getToken();
     if (!token) return;
 
+    // 收起鍵盤
+    Keyboard.dismiss();
+
     const userMessage: AiChatMessage = { role: 'user', content: aiInput.trim() };
     setAiMessages(prev => [...prev, userMessage]);
     setAiInput('');
@@ -786,7 +790,7 @@ export function ItineraryScreen() {
         )}
       </ScrollView>
 
-      <View style={[styles.chatInputContainer, { paddingBottom: 8 }]}>
+      <View style={[styles.chatInputContainer, { paddingBottom: TAB_BAR_HEIGHT + insets.bottom }]}>
         <TextInput
           style={styles.chatInput}
           placeholder={isZh ? '例如：我想要美食之旅...' : 'e.g. I want a food tour...'}
