@@ -38,6 +38,7 @@ import type {
   AvailablePlaceItem,
   AiSuggestedPlace,
   AiChatMessage,
+  AiChatContext,
 } from '../../../types/itinerary';
 
 interface District {
@@ -96,10 +97,12 @@ export function ItineraryScreen() {
   const [loadingDistricts, setLoadingDistricts] = useState(false);
 
   // AI Chat
+  // v2.1.0: 改用 context 累積篩選條件
   const [aiMessages, setAiMessages] = useState<AiChatMessage[]>([]);
   const [aiInput, setAiInput] = useState('');
   const [aiSuggestions, setAiSuggestions] = useState<AiSuggestedPlace[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiContext, setAiContext] = useState<AiChatContext | undefined>(undefined);
 
   // Fetch itineraries list
   const fetchItineraries = useCallback(async () => {
@@ -414,6 +417,7 @@ export function ItineraryScreen() {
   };
 
   // AI Chat
+  // v2.1.0: 改用 context 累積篩選條件
   const sendAiMessage = async () => {
     if (!currentItinerary || !aiInput.trim()) return;
     const token = await getToken();
@@ -427,15 +431,33 @@ export function ItineraryScreen() {
     setAiInput('');
     setAiLoading(true);
 
+    // v2.1.0: 使用 context 傳遞篩選條件
     const res = await itineraryApi.aiChat(
       currentItinerary.id,
-      { message: userMessage.content, previousMessages: aiMessages },
+      {
+        message: userMessage.content,
+        context: aiContext ? {
+          currentFilters: aiContext.currentFilters,
+          excludedPlaces: aiContext.excludedPlaces,
+        } : undefined,
+      },
       token
     );
 
     if (res.success) {
       setAiMessages(prev => [...prev, { role: 'assistant', content: res.response }]);
       setAiSuggestions(res.suggestions);
+      // 保存從回應中提取的篩選條件，用於下一輪對話
+      if (res.extractedFilters) {
+        setAiContext(prev => ({
+          ...prev,
+          currentFilters: res.extractedFilters,
+        }));
+      }
+      // 如果行程有更新，重新載入行程詳情
+      if (res.itineraryUpdated) {
+        await fetchItineraryDetail(currentItinerary.id);
+      }
     }
     setAiLoading(false);
   };
@@ -611,6 +633,7 @@ export function ItineraryScreen() {
             onPress={() => {
               setAiMessages([]);
               setAiSuggestions([]);
+              setAiContext(undefined);  // v2.1.0: 重置對話上下文
               setViewMode('ai-chat');
             }}
           >
@@ -773,7 +796,7 @@ export function ItineraryScreen() {
             {aiSuggestions.map(s => (
               <View key={s.collectionId} style={styles.suggestionItem}>
                 <View style={styles.suggestionInfo}>
-                  <Text style={styles.suggestionName}>{s.name}</Text>
+                  <Text style={styles.suggestionName}>{s.placeName || s.name}</Text>
                   <Text style={styles.suggestionReason}>{s.reason}</Text>
                 </View>
               </View>

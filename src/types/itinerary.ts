@@ -100,9 +100,32 @@ export interface ReorderPlacesRequest {
 }
 
 // POST /api/itinerary/:id/ai-chat - AI 對話
+// v2.1.0 更新：改用 context 取代 previousMessages
 export interface AiChatRequest {
   message: string;
-  previousMessages?: AiChatMessage[];
+  context?: AiChatContext;
+}
+
+export interface AiChatContext {
+  // 前一輪對話提取的篩選條件（累積傳遞）
+  currentFilters?: {
+    categories?: string[];      // 大分類
+    subcategories?: string[];   // 子分類
+    districts?: string[];       // 區域
+    keywords?: string[];        // 關鍵字
+    constraints?: {
+      hasVehicle?: boolean | null;
+      withKids?: boolean | null;
+      kidsAge?: number | null;
+      withElderly?: boolean | null;
+      maxHours?: number | null;
+      preferHighRating?: boolean | null;
+    };
+  };
+  itineraryChanged?: boolean;
+  changeType?: 'added' | 'removed' | 'reordered';
+  changedItem?: { name: string };
+  excludedPlaces?: number[];
 }
 
 export interface AiChatMessage {
@@ -170,19 +193,49 @@ export interface ReorderPlacesResponse {
 }
 
 // AI 建議的景點
+// v2.1.0 更新：新增 placeName, district, locationLat, locationLng
 export interface AiSuggestedPlace {
   collectionId: number;
-  name: string;
-  category?: PlaceCategory;
-  reason: string;  // AI 推薦理由
+  name?: string;              // 向後兼容
+  placeName?: string;         // v2.1.0 新增
+  category?: PlaceCategory | string | null;
+  district?: string | null;
+  reason: string;             // AI 推薦理由
+  locationLat?: number | null;
+  locationLng?: number | null;
 }
 
 // AI 對話回應
+// v2.1.0 更新：新增 extractedFilters 和 remainingCount
 export interface AiChatResponse {
   success: boolean;
-  response: string;
+  message?: string;           // 原訊息
+  response: string;           // AI 回覆
   suggestions: AiSuggestedPlace[];
-  conversationId: string;
+  extractedFilters?: {        // 從本輪對話提取的篩選條件
+    categories: string[];
+    subcategories: string[];
+    districts: string[];
+    keywords: string[];
+    constraints: {
+      hasVehicle: boolean | null;
+      withKids: boolean | null;
+      kidsAge: number | null;
+      withElderly: boolean | null;
+      maxHours: number | null;
+      preferHighRating: boolean | null;
+    };
+  };
+  remainingCount?: number;    // 篩選後剩餘的候選景點數量
+  itineraryUpdated?: boolean; // 行程表是否有更新
+  updatedItinerary?: Array<{
+    id: number;
+    collectionId: number;
+    placeName: string;
+    district: string | null;
+    category: string | null;
+    sortOrder: number;
+  }> | null;
 }
 
 // AI 加入景點回應

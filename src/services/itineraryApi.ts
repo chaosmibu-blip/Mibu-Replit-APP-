@@ -318,6 +318,7 @@ class ItineraryApi extends ApiBase {
    * AI 對話式排程
    * POST /api/itinerary/:id/ai-chat
    *
+   * v2.1.0 更新：改用 context 取代 previousMessages
    * AI 會根據使用者訊息推薦圖鑑中的景點
    */
   async aiChat(
@@ -326,21 +327,31 @@ class ItineraryApi extends ApiBase {
     token: string
   ): Promise<AiChatResponse> {
     try {
+      console.log('[ItineraryApi] aiChat request:', JSON.stringify(data));
       const result = await this.request<{
         message: string;
         response: string;
         suggestions: AiChatResponse['suggestions'];
+        extractedFilters?: AiChatResponse['extractedFilters'];
+        remainingCount?: number;
+        itineraryUpdated?: boolean;
+        updatedItinerary?: AiChatResponse['updatedItinerary'];
       }>(`/api/itinerary/${id}/ai-chat`, {
         method: 'POST',
         headers: this.authHeaders(token),
         body: JSON.stringify(data),
       });
+      console.log('[ItineraryApi] aiChat response:', JSON.stringify(result));
       // 後端直接回傳資料，包裝成 APP 期望的格式
       return {
         success: true,
+        message: result.message,
         response: result.response,
         suggestions: result.suggestions || [],
-        conversationId: '',
+        extractedFilters: result.extractedFilters,
+        remainingCount: result.remainingCount,
+        itineraryUpdated: result.itineraryUpdated,
+        updatedItinerary: result.updatedItinerary,
       };
     } catch (error) {
       console.error('[ItineraryApi] aiChat error:', error);
@@ -348,7 +359,6 @@ class ItineraryApi extends ApiBase {
         success: false,
         response: '',
         suggestions: [],
-        conversationId: '',
       };
     }
   }
