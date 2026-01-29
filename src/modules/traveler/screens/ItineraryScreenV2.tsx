@@ -765,22 +765,7 @@ export function ItineraryScreenV2() {
           </View>
         )}
 
-        {/* AI 建議的景點 */}
-        {aiSuggestions.length > 0 && (
-          <View style={styles.suggestionsContainer}>
-            <Text style={styles.suggestionsTitle}>
-              {isZh ? '推薦加入行程：' : 'Suggested places:'}
-            </Text>
-            {aiSuggestions.map((suggestion, idx) => (
-              <View key={idx} style={styles.suggestionCard}>
-                <Text style={styles.suggestionName}>
-                  {suggestion.placeName || suggestion.name}
-                </Text>
-                <Text style={styles.suggestionReason}>{suggestion.reason}</Text>
-              </View>
-            ))}
-          </View>
-        )}
+        {/* AI 建議的景點 - 已移除，用戶直接在行程表查看 */}
       </ScrollView>
 
       {/* Input Area */}
@@ -1555,35 +1540,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.warmWhite,
   },
 
-  // ===== AI Suggestions =====
-  suggestionsContainer: {
-    backgroundColor: MibuBrand.highlight,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
-    marginTop: Spacing.md,
-  },
-  suggestionsTitle: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: MibuBrand.brown,
-    marginBottom: Spacing.md,
-  },
-  suggestionCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: Radius.md,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-  },
-  suggestionName: {
-    fontSize: FontSize.md,
-    fontWeight: '600',
-    color: MibuBrand.brownDark,
-  },
-  suggestionReason: {
-    fontSize: FontSize.sm,
-    color: MibuBrand.copper,
-    marginTop: Spacing.xs,
-  },
+  // ===== AI Suggestions (已移除 UI，保留樣式供未來使用) =====
 
   // ===== Input Area =====
   inputArea: {

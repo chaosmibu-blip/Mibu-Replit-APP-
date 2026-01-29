@@ -323,47 +323,81 @@ class ItineraryApi extends ApiBase {
    *
    * v2.1.0 更新：改用 context 取代 previousMessages
    * AI 會根據使用者訊息推薦圖鑑中的景點
+   *
+   * 加入重試機制：網路錯誤時最多重試 2 次
    */
   async aiChat(
     id: number,
     data: AiChatRequest,
     token: string
   ): Promise<AiChatResponse> {
-    try {
-      console.log('[ItineraryApi] aiChat request:', JSON.stringify(data));
-      const result = await this.request<{
-        message: string;
-        response: string;
-        suggestions: AiChatResponse['suggestions'];
-        extractedFilters?: AiChatResponse['extractedFilters'];
-        remainingCount?: number;
-        itineraryUpdated?: boolean;
-        updatedItinerary?: AiChatResponse['updatedItinerary'];
-      }>(`/api/itinerary/${id}/ai-chat`, {
-        method: 'POST',
-        headers: this.authHeaders(token),
-        body: JSON.stringify(data),
-      });
-      console.log('[ItineraryApi] aiChat response:', JSON.stringify(result));
-      // 後端直接回傳資料，包裝成 APP 期望的格式
-      return {
-        success: true,
-        message: result.message,
-        response: result.response,
-        suggestions: result.suggestions || [],
-        extractedFilters: result.extractedFilters,
-        remainingCount: result.remainingCount,
-        itineraryUpdated: result.itineraryUpdated,
-        updatedItinerary: result.updatedItinerary,
-      };
-    } catch (error) {
-      console.error('[ItineraryApi] aiChat error:', error);
-      return {
-        success: false,
-        response: '',
-        suggestions: [],
-      };
+    const MAX_RETRIES = 2;
+    const RETRY_DELAY = 1500; // 1.5 秒後重試
+
+    const isNetworkError = (error: unknown): boolean => {
+      if (error instanceof TypeError && error.message.includes('Network request failed')) {
+        return true;
+      }
+      if (error instanceof Error && error.message.includes('Network')) {
+        return true;
+      }
+      return false;
+    };
+
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.log(`[ItineraryApi] aiChat retry attempt ${attempt}/${MAX_RETRIES}`);
+          await delay(RETRY_DELAY);
+        }
+
+        console.log('[ItineraryApi] aiChat request:', JSON.stringify(data));
+        const result = await this.request<{
+          message: string;
+          response: string;
+          suggestions: AiChatResponse['suggestions'];
+          extractedFilters?: AiChatResponse['extractedFilters'];
+          remainingCount?: number;
+          itineraryUpdated?: boolean;
+          updatedItinerary?: AiChatResponse['updatedItinerary'];
+        }>(`/api/itinerary/${id}/ai-chat`, {
+          method: 'POST',
+          headers: this.authHeaders(token),
+          body: JSON.stringify(data),
+        });
+        console.log('[ItineraryApi] aiChat response:', JSON.stringify(result));
+        // 後端直接回傳資料，包裝成 APP 期望的格式
+        return {
+          success: true,
+          message: result.message,
+          response: result.response,
+          suggestions: result.suggestions || [],
+          extractedFilters: result.extractedFilters,
+          remainingCount: result.remainingCount,
+          itineraryUpdated: result.itineraryUpdated,
+          updatedItinerary: result.updatedItinerary,
+        };
+      } catch (error) {
+        lastError = error;
+        console.error(`[ItineraryApi] aiChat error (attempt ${attempt + 1}):`, error);
+
+        // 只有網路錯誤才重試
+        if (!isNetworkError(error) || attempt === MAX_RETRIES) {
+          break;
+        }
+      }
     }
+
+    console.error('[ItineraryApi] aiChat failed after retries:', lastError);
+    return {
+      success: false,
+      response: '',
+      suggestions: [],
+    };
   }
 
   /**
