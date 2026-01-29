@@ -20,6 +20,7 @@ import { Select } from '../../shared/components/ui/Select';
 import { LoadingAdScreen } from '../../shared/components/LoadingAdScreen';
 import { TutorialOverlay, GACHA_TUTORIAL_STEPS } from '../../shared/components/TutorialOverlay';
 import { apiService } from '../../../services/api';
+import { getDeviceId } from '../../../services/gachaApi';
 import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse, ItineraryItemRaw, LocalizedContent, GachaMeta, CouponWon } from '../../../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../../../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -302,9 +303,14 @@ export function GachaScreen() {
       const selectedRegion = regions.find(r => r.id === selectedRegionId);
       console.log('🎰 [GachaScreen] Starting gacha pull:', { regionId: selectedRegionId, pullCount });
 
+      // #031: 取得裝置識別碼用於防刷機制
+      const deviceId = await getDeviceId();
+      console.log('🎰 [GachaScreen] Device ID:', deviceId ? `${deviceId.substring(0, 8)}...` : 'none');
+
       const response = await apiService.generateItinerary({
         regionId: selectedRegionId,
         itemCount: pullCount,
+        deviceId,
       }, token);
 
       console.log('🎰 [GachaScreen] API response received:', {
@@ -323,9 +329,8 @@ export function GachaScreen() {
         console.warn('🎰 [GachaScreen] API returned error:', { errorCode, errorMsg });
         setShowLoadingAd(false);
 
-        // 處理認證錯誤：使用 isAuthError helper 或檢查舊格式字串
-        const legacyAuthErrors = ['UNAUTHORIZED', 'INVALID_TOKEN', 'USER_NOT_FOUND'];
-        if (isAuthError(errorCode) || legacyAuthErrors.includes(errorCode)) {
+        // 處理認證錯誤：使用 isAuthError helper（已包含舊格式檢查）
+        if (isAuthError(errorCode)) {
           setUser(null);
           Alert.alert(
             state.language === 'zh-TW' ? '登入已過期' : 'Session Expired',
@@ -352,10 +357,19 @@ export function GachaScreen() {
           return;
         }
 
-        if (errorCode === 'DAILY_LIMIT_EXCEEDED' || errorCode === ErrorCode.GACHA_DAILY_LIMIT) {
+        if (errorCode === 'DAILY_LIMIT_EXCEEDED' || errorCode === ErrorCode.GACHA_RATE_LIMITED || errorCode === ErrorCode.DAILY_LIMIT_REACHED) {
           Alert.alert(
             state.language === 'zh-TW' ? '今日額度已用完' : 'Daily Limit Reached',
             state.language === 'zh-TW' ? '請明天再來抽卡！' : 'Please come back tomorrow!'
+          );
+          return;
+        }
+
+        // #031: 裝置額度用完
+        if (errorCode === 'DEVICE_LIMIT_EXCEEDED' || errorCode === 'DEVICE_DAILY_LIMIT') {
+          Alert.alert(
+            state.language === 'zh-TW' ? '裝置額度已達上限' : 'Device Limit Reached',
+            state.language === 'zh-TW' ? '此裝置今日抽卡次數已達上限' : 'This device has reached its daily pull limit'
           );
           return;
         }

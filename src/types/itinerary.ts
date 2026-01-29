@@ -4,19 +4,17 @@
  *
  * #026 Breaking Change: 使用 collectionIds 而非 placeIds
  * #027 AI 對話式排程功能
+ * #034: 統一使用 @shared 的型別定義
  */
 
-// 七大景點分類
-export type PlaceCategory =
-  | 'nature'      // 自然風景
-  | 'culture'     // 文化古蹟
-  | 'food'        // 美食餐廳
-  | 'shopping'    // 購物商圈
-  | 'nightlife'   // 夜生活
-  | 'outdoor'     // 戶外活動
-  | 'other';      // 其他
+import type { MibuCategory } from '@shared';
+
+// #034: 使用 @shared 的 MibuCategory（中文分類名稱）
+// 向後兼容：保留 PlaceCategory 別名
+export type PlaceCategory = MibuCategory | string;
 
 // 行程中的景點項目
+// #033: 新增 description, locationLat, locationLng 欄位
 export interface ItineraryPlaceItem {
   id: number;            // itinerary_places.id (V2: 用於刪除/排序)
   collectionId: number;  // collections.id (V2: 圖鑑收藏 ID)
@@ -26,8 +24,21 @@ export interface ItineraryPlaceItem {
   category: PlaceCategory;
   address?: string;
   imageUrl?: string;
+  description?: string | null;   // #033: 景點描述
+  locationLat?: number | null;   // #033: 緯度
+  locationLng?: number | null;   // #033: 經度
   sortOrder: number;
   addedAt: string;       // ISO 8601
+  note?: string;         // 用戶備註
+  // #033: 支援後端新結構（place 巢狀物件）
+  place?: {
+    name: string;
+    category: string | null;
+    address?: string | null;
+    description?: string | null;
+    locationLat?: number | null;
+    locationLng?: number | null;
+  } | null;
 }
 
 // 行程基本資訊

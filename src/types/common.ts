@@ -1,8 +1,32 @@
 /**
  * 通用基礎類型
  * 依據後端合約 COMMON.md 定義
+ *
+ * #034: 優先使用 @shared 的定義，此處 re-export 保持向後兼容
  */
 
+// ====== 從 @shared 統一匯入 ======
+export {
+  SEVEN_CATEGORIES,
+  SEVEN_CATEGORIES as MIBU_CATEGORIES, // 向後兼容別名
+  GACHA_CONFIG,
+  PAGINATION_DEFAULTS,
+  COUPON_RARITIES,
+  ACHIEVEMENT_CATEGORIES,
+  USER_ROLES,
+  ORDER_STATUSES,
+  SOS_STATUSES,
+  type MibuCategory,
+  type CouponRarity as SharedCouponRarity,
+  type AchievementCategory,
+  type UserRole as SharedUserRole,
+  type OrderStatus,
+  type SosStatus,
+} from '@shared';
+
+// ====== 本地型別（向後兼容，未來考慮移除）======
+
+/** @deprecated 使用 MibuCategory from @shared */
 export enum Category {
   Food = 'Food',
   Stay = 'Stay',
@@ -11,9 +35,6 @@ export enum Category {
   Scenery = 'Scenery',
   Shopping = 'Shopping',
 }
-
-export const MIBU_CATEGORIES = ['美食', '住宿', '景點', '購物', '娛樂設施', '生態文化教育', '遊程體驗'] as const;
-export type MibuCategory = typeof MIBU_CATEGORIES[number];
 
 export type Language = 'zh-TW' | 'en' | 'ja' | 'ko';
 export type LocalizedContent = string | { [key in Language]?: string };

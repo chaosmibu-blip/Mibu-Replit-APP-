@@ -1,7 +1,23 @@
 /**
  * API 錯誤碼定義
  * 依據後端合約 COMMON.md 定義
+ *
+ * #034: 新增 @shared 的統一錯誤碼匯出
  */
+
+// ====== 從 @shared 統一匯入新錯誤碼系統 ======
+export {
+  ErrorCode as SharedErrorCode,
+  ErrorMessages,
+  createErrorResponse,
+  getErrorMessage as getSharedErrorMessage,
+  isAuthError,
+  isServerError,
+  type ApiErrorResponse as SharedApiErrorResponse,
+  type ApiSuccessResponse as SharedApiSuccessResponse,
+} from '@shared';
+
+// ====== 本地錯誤碼定義（向後兼容）======
 
 // E1xxx: 認證相關錯誤
 export const AUTH_ERRORS = {

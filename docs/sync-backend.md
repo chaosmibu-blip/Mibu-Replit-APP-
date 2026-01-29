@@ -6,6 +6,45 @@
 
 ## 最新回報
 
+### 2026-01-29 #034：共用型別套件
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #034 |
+| 狀態 | ✅ 完成 |
+
+**實作內容**
+- [x] 建立 `shared/` 資料夾（從後端複製）
+- [x] `shared/index.ts` - 主入口，匯出所有模組
+- [x] `shared/errors.ts` - 100+ 錯誤碼定義 + ErrorMessages + helper functions
+- [x] `shared/constants.ts` - 七大分類、扭蛋配額、成就類別等共用常數
+- [x] `shared/response.ts` - API 回應格式規範 + `API_RESPONSE_FORMAT` 對照表
+- [x] `shared/id-conventions.ts` - ID 命名規範（placeId vs collectionId vs itemId）
+- [x] `shared/api-types.ts` - 所有 API 的 Request/Response 型別定義
+- [x] 更新 `tsconfig.json` 加入 `@shared/*` 和 `@shared` 路徑映射
+
+**使用方式**
+```typescript
+import {
+  ErrorCode, isAuthError,
+  SEVEN_CATEGORIES, GACHA_CONFIG,
+  API_RESPONSE_FORMAT, isApiError,
+  CollectionId, ItineraryItemId,
+  V2GachaPullResponse, ItineraryDetailResponse,
+} from '@shared';
+```
+
+**型別一致性修正**
+- [x] `src/types/common.ts` - re-export from `@shared`，保持向後兼容
+- [x] `src/types/itinerary.ts` - `PlaceCategory` 改為使用 `MibuCategory`
+- [x] `src/types/errors.ts` - 新增 `@shared` 錯誤碼匯出
+- [x] `src/shared/errors.ts` - 完全改為 re-export from `@shared`
+- [x] `GachaScreen.tsx` - 修正 `GACHA_DAILY_LIMIT` → `GACHA_RATE_LIMITED`
+- [x] 新增 `LEGACY_ERROR_MAPPING` 映射舊英文錯誤碼到新格式
+- [x] `isAuthError()` 向後兼容，接受 `string | undefined`
+
+---
+
 ### 2026-01-28 🐛 BUG：行程「選擇景點」顯示空（圖鑑有資料）
 
 | 項目 | 內容 |
@@ -51,6 +90,73 @@ const availablePlaces = await db
 方案 B：標準化城市名稱
 - 在存入 `collections` 時，統一使用 `regions.nameZh` 格式
 - 或在查詢時做模糊比較
+
+---
+
+### 2026-01-28 #033：行程詳情新增景點座標與描述欄位 + V2 API 串接
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #033 |
+| 狀態 | ✅ 完成 |
+
+**#033 實作內容**
+- [x] `types/itinerary.ts` 新增 `description`, `locationLat`, `locationLng` 欄位
+- [x] 支援後端新結構（`place` 巢狀物件）
+- [x] `ItineraryScreenV2.tsx` 新增 `openInMaps()` 函數
+- [x] 地圖按鈕：有座標時開啟原生地圖導航（iOS/Android/Web）
+- [x] 無座標時按鈕顯示為禁用狀態
+
+**ItineraryScreenV2 完整 API 串接**
+- [x] 載入行程列表 `GET /api/itinerary`
+- [x] 載入行程詳情 `GET /api/itinerary/:id`
+- [x] AI 對話 `POST /api/itinerary/:id/ai-chat`
+- [x] 移除景點 `DELETE /api/itinerary/:id/places/:itemId`
+- [x] 排序景點 `PUT /api/itinerary/:id/places/reorder`
+- [x] 加入景點 `POST /api/itinerary/:id/places`
+- [x] 取得可用景點 `GET /api/itinerary/:id/available-places`
+- [x] 行程切換（左側邊欄）
+- [x] 未登入/載入中/無行程狀態處理
+- [x] AI 建議景點顯示
+- [x] 多語言支援（中/英）
+
+**新增 UI 功能**
+- [x] 上/下箭頭排序景點（右側行程表）
+- [x] 從圖鑑加入景點 Modal（多選、分類顯示）
+
+---
+
+### 2026-01-28 #030-#032：API 回應格式修正 + 扭蛋防刷 + 契約對齊
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #030-#032 |
+| 狀態 | ✅ 完成 |
+
+**#030 API 回應格式自檢與修正**
+- [x] `itineraryApi.ts` - 所有方法已包裝 `success: true/false`
+- [x] `collectionApi.ts` - `getFavorites`, `getPromoUpdates` 已包裝
+- [x] `inventoryApi.ts` - `getInventory` 已包裝
+- [x] `referralApi.ts` - `getLeaderboard` 已包裝
+- [x] 確認其他 API（referral, contribution, inventory）類型定義有 `success`
+
+**#031 扭蛋 API 新增 deviceId 參數**
+- [x] 安裝 `expo-application` 套件
+- [x] `gachaApi.ts` 新增 `getDeviceId()` helper function
+- [x] `generateItinerary()` 參數新增 `deviceId`
+- [x] `GachaScreen.tsx` 呼叫時帶入 `deviceId`
+- [x] 新增 `DEVICE_LIMIT_EXCEEDED` 錯誤處理
+
+**#032 全面契約對齊檢查**
+- [x] 系統性驗證 22 個 API 服務檔案
+- [x] 端點覆蓋率：100%
+- [x] HTTP 方法一致性：99%
+- [x] 認證處理：100% 正確
+- [x] Success 欄位處理：100%（#030 問題已完全解決）
+
+**#032 發現的輕微問題（不影響功能）**
+- 地點促銷 API 端點有兩個版本（`/api/place/promo` vs `/api/collections/place/promo`）
+- `PUT /api/itinerary/:id` 回傳格式在契約中未定義（需與後端確認）
 
 ---
 
@@ -155,7 +261,10 @@ const availablePlaces = await db
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 034 | 01-29 | 共用型別套件（@shared 模組） | ✅ |
 | BUG | 01-28 | 行程「選擇景點」顯示空 | 🔴 待後端修復 |
+| 033 | 01-28 | 行程詳情新增景點座標與描述 + V2 完整功能 | ✅ |
+| 030-032 | 01-28 | API 回應格式修正 + 扭蛋防刷 + 契約對齊 | ✅ |
 | 026-029 | 01-26 | 行程規劃 V2 + AI 助手 + 優惠通知 + 用詞統一 | ✅ |
 | 025 | 01-23 | APP 改善計劃全面實作（11 功能） | ✅ |
 | 024 | 01-21 | Google 原生登入 | ✅ |
