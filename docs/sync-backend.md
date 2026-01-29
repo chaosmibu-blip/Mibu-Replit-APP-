@@ -6,6 +6,54 @@
 
 ## 最新回報
 
+### 2026-01-28 🐛 BUG：行程「選擇景點」顯示空（圖鑑有資料）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | APP 端發現 |
+| 狀態 | 🔴 待後端修復 |
+| 嚴重度 | 高（影響核心功能） |
+
+**問題描述**
+- 用戶圖鑑有 1023 個景點（11 個城市）
+- 但在行程「選擇景點」頁面顯示「圖鑑是空的」
+
+**問題根源**
+後端 `GET /api/itinerary/:id/available-places` 使用城市名稱**精確比較**：
+```typescript
+const cityCondition = eq(collections.city, itinerary.city as string);
+```
+
+但 `collections.city`（來自 `places.city`）和 `itinerary.city`（來自 `regions.nameZh`）格式可能不一致：
+- 例如：`places.city = "台北"` vs `itinerary.city = "台北市"`
+
+**後端診斷日誌**
+後端已有診斷日誌，可查看 server logs 確認問題：
+```
+[available-places] 行程 city: "XXX", district: "XXX"
+[available-places] 用戶圖鑑城市分布: ...
+```
+
+**建議修復方案**
+
+方案 A（推薦）：直接返回用戶所有圖鑑收藏，不做城市篩選
+```typescript
+// 移除城市條件，讓用戶可以從所有圖鑑收藏中選擇
+const availablePlaces = await db
+  .select(...)
+  .from(collections)
+  .where(and(
+    eq(collections.userId, userId),
+    or(eq(collections.isCoupon, false), isNull(collections.isCoupon))
+  ));
+```
+
+方案 B：標準化城市名稱
+- 在存入 `collections` 時，統一使用 `regions.nameZh` 格式
+- 或在查詢時做模糊比較
+
+---
+
 ### 2026-01-26 #026-#029：行程規劃 + AI 助手 + 優惠通知 + 用詞統一
 
 | 項目 | 內容 |
@@ -107,6 +155,7 @@
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| BUG | 01-28 | 行程「選擇景點」顯示空 | 🔴 待後端修復 |
 | 026-029 | 01-26 | 行程規劃 V2 + AI 助手 + 優惠通知 + 用詞統一 | ✅ |
 | 025 | 01-23 | APP 改善計劃全面實作（11 功能） | ✅ |
 | 024 | 01-21 | Google 原生登入 | ✅ |

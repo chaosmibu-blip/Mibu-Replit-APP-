@@ -379,8 +379,15 @@ export function ItineraryScreen() {
   // Open add places modal
   const openAddPlaces = async () => {
     if (!currentItinerary) return;
+    console.log('[ItineraryScreen] openAddPlaces - current itinerary:', {
+      id: currentItinerary.id,
+      city: currentItinerary.city,
+      district: currentItinerary.district,
+      country: currentItinerary.country,
+    });
     setSelectedPlaces([]);
     await fetchAvailablePlaces(currentItinerary.id);
+    console.log('[ItineraryScreen] openAddPlaces - availablePlaces count:', availablePlaces.length);
     setViewMode('add-places');
   };
 

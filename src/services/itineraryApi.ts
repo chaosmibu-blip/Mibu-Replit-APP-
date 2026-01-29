@@ -211,6 +211,7 @@ class ItineraryApi extends ApiBase {
    */
   async getAvailablePlaces(id: number, token: string): Promise<AvailablePlacesResponse> {
     try {
+      console.log('[ItineraryApi] getAvailablePlaces called for itinerary:', id);
       const data = await this.request<{ categories: AvailablePlacesByCategory[] }>(
         `/api/itinerary/${id}/available-places`,
         {
@@ -218,9 +219,11 @@ class ItineraryApi extends ApiBase {
           headers: this.authHeaders(token),
         }
       );
+      console.log('[ItineraryApi] getAvailablePlaces raw response:', JSON.stringify(data));
       // 後端沒有 success 欄位，HTTP 200 就是成功
       const categories = data.categories || [];
       const totalCount = categories.reduce((sum, cat) => sum + cat.places.length, 0);
+      console.log('[ItineraryApi] getAvailablePlaces parsed:', { categoriesCount: categories.length, totalCount });
       return { success: true, categories, totalCount };
     } catch (error) {
       console.error('[ItineraryApi] getAvailablePlaces error:', error);
