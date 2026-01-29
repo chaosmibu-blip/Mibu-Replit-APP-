@@ -45,39 +45,60 @@ import {
 
 ---
 
-### 2026-01-28 🐛 BUG：行程「選擇景點」顯示空（圖鑑有資料）
+### 2026-01-29 🐛 BUG：行程「選擇景點」顯示空（圖鑑有資料）【持續追蹤】
 
 | 項目 | 內容 |
 |------|------|
 | 來源 | APP 端發現 |
 | 狀態 | 🔴 待後端修復 |
-| 嚴重度 | 高（影響核心功能） |
+| 嚴重度 | **緊急**（核心功能完全失效） |
+| 更新 | 2026-01-29 補充技術細節 |
 
 **問題描述**
-- 用戶圖鑑有 1023 個景點（11 個城市）
-- 但在行程「選擇景點」頁面顯示「圖鑑是空的」
+- 用戶圖鑑有 **1023 個景點**（宜蘭縣 442、台北市 367、高雄市 112、新北市 35...）
+- 但在行程「從圖鑑加入景點」Modal 顯示「圖鑑中沒有可加入的景點」
 
-**問題根源**
-後端 `GET /api/itinerary/:id/available-places` 使用城市名稱**精確比較**：
+**根本原因（已確認）**
+
+資料流程不一致：
+```
+places.city (原始資料) → collections.city (抽卡複製)
+                              ↓
+                         精確比對 eq()
+                              ↓
+itinerary.city (建立行程) ← regions.nameZh (選擇器)
+```
+
+問題出在 `places.city` 和 `regions.nameZh` 是**兩個獨立的資料來源**，格式可能不一致：
+- `collections.city`（來自 `places.city`）：可能是 "台北"、"Taipei"、"臺北市"
+- `itinerary.city`（來自 `regions.nameZh`）：可能是 "台北市"
+
+後端 `available-places` 使用**精確匹配**：
 ```typescript
 const cityCondition = eq(collections.city, itinerary.city as string);
 ```
 
-但 `collections.city`（來自 `places.city`）和 `itinerary.city`（來自 `regions.nameZh`）格式可能不一致：
-- 例如：`places.city = "台北"` vs `itinerary.city = "台北市"`
+兩邊名稱不一致 → 查詢結果永遠為空
 
-**後端診斷日誌**
-後端已有診斷日誌，可查看 server logs 確認問題：
+**Schema 確認**
+```typescript
+// collections 表
+city: text("city").notNull(),  // 無外鍵，直接存文字
+
+// places 表
+city: text("city").notNull(),  // 無外鍵，直接存文字
+
+// regions 表
+nameZh: text("name_zh").notNull(),  // 用於 UI 選擇器
 ```
-[available-places] 行程 city: "XXX", district: "XXX"
-[available-places] 用戶圖鑑城市分布: ...
-```
+
+三個表的 city 都是獨立的 text 欄位，沒有關聯約束，導致格式不一致。
 
 **建議修復方案**
 
-方案 A（推薦）：直接返回用戶所有圖鑑收藏，不做城市篩選
+**方案 A（推薦，最快）**：移除城市篩選
 ```typescript
-// 移除城市條件，讓用戶可以從所有圖鑑收藏中選擇
+// 讓用戶可以從所有圖鑑收藏中選擇，不限城市
 const availablePlaces = await db
   .select(...)
   .from(collections)
@@ -86,10 +107,17 @@ const availablePlaces = await db
     or(eq(collections.isCoupon, false), isNull(collections.isCoupon))
   ));
 ```
+理由：用戶可能想把別的城市景點加入行程（例如一日遊跨城市）
 
-方案 B：標準化城市名稱
-- 在存入 `collections` 時，統一使用 `regions.nameZh` 格式
-- 或在查詢時做模糊比較
+**方案 B**：模糊匹配
+```typescript
+// 使用 LIKE 或 ILIKE 做模糊比對
+const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
+```
+
+**方案 C（長期）**：資料標準化
+- `collections.city` 改為外鍵關聯 `regions.id`
+- 或在存入時統一轉換為 `regions.nameZh` 格式
 
 ---
 
@@ -262,7 +290,7 @@ const availablePlaces = await db
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
 | 034 | 01-29 | 共用型別套件（@shared 模組） | ✅ |
-| BUG | 01-28 | 行程「選擇景點」顯示空 | 🔴 待後端修復 |
+| BUG | 01-29 | 行程「選擇景點」顯示空（城市名稱不一致） | 🔴 **緊急** |
 | 033 | 01-28 | 行程詳情新增景點座標與描述 + V2 完整功能 | ✅ |
 | 030-032 | 01-28 | API 回應格式修正 + 扭蛋防刷 + 契約對齊 | ✅ |
 | 026-029 | 01-26 | 行程規劃 V2 + AI 助手 + 優惠通知 + 用詞統一 | ✅ |
