@@ -12,6 +12,43 @@ import {
   DeleteAccountResponse
 } from '../types';
 
+// ========== #036 帳號合併型別 ==========
+
+/** 帳號合併結果摘要 */
+export interface MergeSummary {
+  collections: number;
+  itineraries: number;
+  favorites: number;
+  achievements: number;
+  notifications: number;
+  expMerged: number;
+  balanceMerged: number;
+}
+
+/** 帳號合併回應 */
+export interface MergeAccountResponse {
+  success: boolean;
+  mergeId?: number;
+  summary?: MergeSummary;
+  message?: string;
+  code?: string;
+}
+
+/** 合併歷史記錄 */
+export interface MergeHistoryItem {
+  id: number;
+  secondaryUserId: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  mergedTables: Record<string, number> | null;
+  initiatedAt: string;
+  completedAt: string | null;
+}
+
+/** 合併歷史回應 */
+export interface MergeHistoryResponse {
+  merges: MergeHistoryItem[];
+}
+
 class AuthApiService extends ApiBase {
   async register(params: {
     username: string;
@@ -154,6 +191,55 @@ class AuthApiService extends ApiBase {
       },
     });
     return response.json();
+  }
+
+  // ========== #036 帳號合併 ==========
+
+  /**
+   * 執行帳號合併
+   * POST /api/auth/merge
+   *
+   * 將副帳號的資料合併到主帳號（當前登入的帳號）
+   * 合併後副帳號將無法登入
+   */
+  async mergeAccount(
+    token: string,
+    secondaryToken: string
+  ): Promise<MergeAccountResponse> {
+    try {
+      const result = await this.request<{
+        success: boolean;
+        mergeId: number;
+        summary: MergeSummary;
+        message: string;
+      }>('/api/auth/merge', {
+        method: 'POST',
+        headers: this.authHeaders(token),
+        body: JSON.stringify({ secondaryToken }),
+      });
+      return result;
+    } catch (error) {
+      // 處理錯誤回應
+      if (error instanceof Error) {
+        const apiError = error as any;
+        return {
+          success: false,
+          message: apiError.serverMessage || apiError.message || '合併失敗',
+          code: apiError.code,
+        };
+      }
+      return { success: false, message: '合併失敗，請稍後再試' };
+    }
+  }
+
+  /**
+   * 查詢合併歷史
+   * GET /api/auth/merge-history
+   */
+  async getMergeHistory(token: string): Promise<MergeHistoryResponse> {
+    return this.request<MergeHistoryResponse>('/api/auth/merge-history', {
+      headers: this.authHeaders(token),
+    });
   }
 }
 

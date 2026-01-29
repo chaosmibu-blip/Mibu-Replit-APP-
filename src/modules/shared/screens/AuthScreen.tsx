@@ -20,6 +20,12 @@ import { MibuBrand } from '../../../../constants/Colors';
 interface AuthScreenProps {
   visible: boolean;
   onClose: () => void;
+  /** 嵌入模式：不顯示 Modal 外殼，直接渲染內容 */
+  embedded?: boolean;
+  /** 登入成功時的 callback，傳回 token（用於帳號合併流程） */
+  onLoginSuccess?: (token: string) => void;
+  /** 自訂標題 */
+  title?: string;
 }
 
 type AuthMode = 'login' | 'register';
@@ -30,7 +36,7 @@ const ROLE_OPTIONS: { value: UserRole; labelZh: string; labelEn: string; icon: s
   { value: 'specialist', labelZh: '專員', labelEn: 'Specialist', icon: 'shield-checkmark-outline' },
 ];
 
-export function AuthScreen({ visible, onClose }: AuthScreenProps) {
+export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }: AuthScreenProps) {
   const { setUser, state } = useApp();
   const [mode, setMode] = useState<AuthMode>('login');
   const [loading, setLoading] = useState(false);
@@ -78,6 +84,14 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
 
     try {
       const response = await apiService.login(username.trim(), password);
+
+      // #036 帳號合併：如果有 onLoginSuccess callback，只回傳 token 不設定用戶
+      if (onLoginSuccess && response.token) {
+        resetForm();
+        onLoginSuccess(response.token);
+        return;
+      }
+
       setUser(response.user, response.token);
       resetForm();
       onClose();
@@ -136,27 +150,27 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
     onClose();
   };
 
-  return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <KeyboardAvoidingView 
-        style={styles.overlay} 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>
-              {mode === 'login' ? translations.login : translations.register}
-            </Text>
-            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-              <Ionicons name="close" size={24} color={MibuBrand.copper} />
-            </TouchableOpacity>
-          </View>
+  // #036 帳號合併：嵌入模式的內容（不含 Modal 外殼）
+  const renderContent = () => (
+    <View style={embedded ? styles.embeddedContainer : styles.container}>
+      {!embedded && (
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>
+            {title || (mode === 'login' ? translations.login : translations.register)}
+          </Text>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+            <Ionicons name="close" size={24} color={MibuBrand.copper} />
+          </TouchableOpacity>
+        </View>
+      )}
 
-          <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            <View style={styles.content}>
-              <View style={styles.iconContainer}>
-                <Ionicons name="person-circle" size={64} color={MibuBrand.brown} />
-              </View>
+      <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          {!embedded && (
+            <View style={styles.iconContainer}>
+              <Ionicons name="person-circle" size={64} color={MibuBrand.brown} />
+            </View>
+          )}
 
               {error && (
                 <View style={styles.errorContainer}>
@@ -257,21 +271,40 @@ export function AuthScreen({ visible, onClose }: AuthScreenProps) {
                 </Text>
               </TouchableOpacity>
 
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>OR</Text>
-                <View style={styles.dividerLine} />
-              </View>
+              {/* 嵌入模式不顯示訪客登入 */}
+              {!embedded && (
+                <>
+                  <View style={styles.divider}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.dividerText}>OR</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
 
-              <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
-                <Ionicons name="person-outline" size={20} color={MibuBrand.brown} />
-                <Text style={styles.guestButtonText}>{translations.guestLogin}</Text>
-              </TouchableOpacity>
+                  <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
+                    <Ionicons name="person-outline" size={20} color={MibuBrand.brown} />
+                    <Text style={styles.guestButtonText}>{translations.guestLogin}</Text>
+                  </TouchableOpacity>
 
-              <Text style={styles.note}>{translations.guestNote}</Text>
+                  <Text style={styles.note}>{translations.guestNote}</Text>
+                </>
+              )}
             </View>
           </ScrollView>
         </View>
+  );
+
+  // #036 帳號合併：嵌入模式直接返回內容，不包 Modal
+  if (embedded) {
+    return renderContent();
+  }
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent>
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {renderContent()}
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -294,6 +327,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
+  },
+  // #036 帳號合併：嵌入模式容器
+  embeddedContainer: {
+    width: '100%',
+    paddingTop: 8,
   },
   header: {
     flexDirection: 'row',

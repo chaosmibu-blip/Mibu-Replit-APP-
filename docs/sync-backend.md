@@ -6,6 +6,40 @@
 
 ## 最新回報
 
+### 2026-01-29 #036：帳號合併功能
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #036 |
+| 狀態 | ✅ 完成 |
+
+**實作內容**
+- [x] `authApi.ts` 新增帳號合併 API
+  - `mergeAccount(token, secondaryToken)` - 執行帳號合併
+  - `getMergeHistory(token)` - 查詢合併歷史
+- [x] 新增型別定義
+  - `MergeSummary` - 合併結果摘要
+  - `MergeAccountResponse` - 合併回應
+  - `MergeHistoryItem` / `MergeHistoryResponse` - 歷史記錄
+- [x] `SettingsScreen.tsx` 新增「合併帳號」功能
+  - 設定 > 帳號管理 > 合併帳號
+  - 四步驟流程：警告 → 登入副帳號 → 處理中 → 結果
+  - 顯示合併摘要（圖鑑、行程、成就、經驗值等）
+- [x] `AuthScreen.tsx` 支援嵌入模式
+  - 新增 `embedded` prop（不顯示 Modal 外殼）
+  - 新增 `onLoginSuccess` callback（回傳 token）
+  - 新增 `title` prop（自訂標題）
+
+**錯誤碼處理**
+| 錯誤碼 | 說明 |
+|--------|------|
+| E15001 | 副帳號 token 無效 |
+| E15002 | 不能合併同一個帳號 |
+| E15003 | 副帳號已被合併過 |
+| E15004 | 合併過程錯誤 |
+
+---
+
 ### 2026-01-29 #034：共用型別套件
 
 | 項目 | 內容 |
@@ -289,6 +323,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 036 | 01-29 | 帳號合併功能 | ✅ |
 | 034 | 01-29 | 共用型別套件（@shared 模組） | ✅ |
 | BUG | 01-29 | 行程「選擇景點」顯示空（城市名稱不一致） | 🔴 **緊急** |
 | 033 | 01-28 | 行程詳情新增景點座標與描述 + V2 完整功能 | ✅ |
