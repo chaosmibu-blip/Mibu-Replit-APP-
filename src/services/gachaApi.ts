@@ -1,5 +1,7 @@
 /**
  * 扭蛋相關 API - 抽獎、行程生成、獎池
+ *
+ * #031: 新增 deviceId 參數防刷機制
  */
 import { ApiBase, API_BASE } from './base';
 import {
@@ -12,6 +14,27 @@ import {
   GachaQuotaResponse,
   SubmitTripResponse,
 } from '../types';
+import * as Application from 'expo-application';
+import { Platform } from 'react-native';
+
+/**
+ * 取得裝置識別碼
+ * #031: 用於防刷機制，同一裝置每日限抽 36 次
+ */
+export const getDeviceId = async (): Promise<string> => {
+  try {
+    if (Platform.OS === 'ios') {
+      return await Application.getIosIdForVendorAsync() || '';
+    } else if (Platform.OS === 'android') {
+      return Application.androidId || '';
+    }
+    // Web 平台沒有 deviceId，回傳空字串
+    return '';
+  } catch (error) {
+    console.warn('[GachaApi] Failed to get deviceId:', error);
+    return '';
+  }
+};
 
 class GachaApiService extends ApiBase {
   async generateItinerary(params: {
@@ -20,6 +43,7 @@ class GachaApiService extends ApiBase {
     itemCount?: number;
     pace?: 'relaxed' | 'moderate' | 'packed';
     language?: string;
+    deviceId?: string;  // #031: 裝置識別碼
   }, token?: string): Promise<ItineraryGenerateResponse> {
     const url = `${this.baseUrl}/api/gacha/itinerary/v3`;
     const headers: Record<string, string> = {

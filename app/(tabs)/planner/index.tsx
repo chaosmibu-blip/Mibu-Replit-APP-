@@ -3,7 +3,7 @@ import { View, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SegmentedControl } from '../../../src/components/ui/SegmentedControl';
 import { LocationScreen } from '../../../src/screens/LocationScreen';
-import { ItineraryScreen } from '../../../src/screens/ItineraryScreen';
+import { ItineraryScreenV2 } from '../../../src/modules/traveler/screens/ItineraryScreenV2';
 import { ChatScreen } from '../../../src/screens/ChatScreen';
 import { useApp } from '../../../src/context/AppContext';
 
@@ -25,7 +25,7 @@ export default function PlannerScreen() {
       case 'location':
         return <LocationScreen />;
       case 'itinerary':
-        return <ItineraryScreen />;
+        return <ItineraryScreenV2 />;
       case 'chat':
         return <ChatScreen />;
       default:

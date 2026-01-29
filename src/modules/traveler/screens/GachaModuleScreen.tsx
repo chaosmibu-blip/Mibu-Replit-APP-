@@ -4,7 +4,7 @@ import { useApp } from '../../../context/AppContext';
 import { GachaTopNav, GachaSubView } from '../../shared/components/ModuleNav';
 import { GachaScreen } from './GachaScreen';
 import { CollectionScreen } from './CollectionScreen';
-import { ItineraryScreen } from './ItineraryScreen';
+import { ItineraryScreenV2 } from './ItineraryScreenV2';
 import { ItemBoxScreen } from './ItemBoxScreen';
 import { MibuBrand } from '../../../../constants/Colors';
 
@@ -19,7 +19,7 @@ export function GachaModuleScreen() {
       case 'collection':
         return <CollectionScreen />;
       case 'itinerary':
-        return <ItineraryScreen />;
+        return <ItineraryScreenV2 />;
       case 'itembox':
         return <ItemBoxScreen />;
       case 'gacha':

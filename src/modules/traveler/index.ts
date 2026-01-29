@@ -8,7 +8,7 @@ export { default as GachaModuleScreen } from './screens/GachaModuleScreen';
 export { default as ItemBoxScreen } from './screens/ItemBoxScreen';
 export { default as ItemsScreen } from './screens/ItemsScreen';
 export { default as CollectionScreen } from './screens/CollectionScreen';
-export { default as ItineraryScreen } from './screens/ItineraryScreen';
+export { ItineraryScreenV2 as ItineraryScreen } from './screens/ItineraryScreenV2';
 export { default as PlannerScreen } from './screens/PlannerScreen';
 export { EconomyScreen } from './screens/EconomyScreen';
 export { CrowdfundingScreen } from './screens/CrowdfundingScreen';

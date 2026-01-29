@@ -14,7 +14,7 @@ export { GachaModuleScreen } from '../modules/traveler/screens/GachaModuleScreen
 export { ItemBoxScreen } from '../modules/traveler/screens/ItemBoxScreen';
 export { ItemsScreen } from '../modules/traveler/screens/ItemsScreen';
 export { CollectionScreen } from '../modules/traveler/screens/CollectionScreen';
-export { ItineraryScreen } from '../modules/traveler/screens/ItineraryScreen';
+export { ItineraryScreenV2 as ItineraryScreen } from '../modules/traveler/screens/ItineraryScreenV2';
 export { PlannerScreen } from '../modules/traveler/screens/PlannerScreen';
 
 // ========== Merchant ==========
