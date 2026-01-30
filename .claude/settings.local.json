@@ -17,7 +17,18 @@
       "Bash(git rebase:*)",
       "Bash(git restore:*)",
       "Bash(git checkout:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(npx expo start:*)",
+      "Bash(lsof:*)",
+      "Bash(wc:*)",
+      "Bash(test:*)",
+      "Bash(tree:*)",
+      "Bash(while read f)",
+      "Bash(do grep -l \"//.*中文\\\\|/\\\\*.*中文\" $f)",
+      "Bash(done)",
+      "Bash(sort:*)",
+      "Bash(xargs find:*)"
     ]
   }
 }
