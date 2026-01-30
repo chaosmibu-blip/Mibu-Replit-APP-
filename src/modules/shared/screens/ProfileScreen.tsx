@@ -14,8 +14,8 @@
  *
  * @see 後端合約: contracts/APP.md Phase 2
  */
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Modal, Image } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Modal, Image, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
@@ -26,8 +26,23 @@ import { MibuBrand } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
 
-/** 預設頭像選項 */
-const AVATAR_PRESETS = [
+/**
+ * 頭像選項型別
+ * 【截圖 19-21】準備支援動態載入頭像
+ */
+interface AvatarPreset {
+  id: string;
+  icon?: string;      // Ionicons 圖示名稱（預設頭像用）
+  imageUrl?: string;  // 圖片網址（自訂頭像用）
+  color: string;
+}
+
+/**
+ * 預設頭像選項（fallback）
+ * 【截圖 19-21】之後會從 API 載入，這裡作為備用
+ * TODO: 改為從 GET /api/avatars 載入可用頭像列表
+ */
+const DEFAULT_AVATAR_PRESETS: AvatarPreset[] = [
   { id: 'default', icon: 'person', color: MibuBrand.brown },
   { id: 'cat', icon: 'paw', color: '#F59E0B' },
   { id: 'star', icon: 'star', color: '#8B5CF6' },
@@ -102,6 +117,39 @@ export function ProfileScreen() {
   const [showRelationPicker, setShowRelationPicker] = useState(false); // 顯示關係選擇器
   const [showAvatarModal, setShowAvatarModal] = useState(false); // 顯示頭像選擇 Modal
   const [selectedAvatar, setSelectedAvatar] = useState<string>('default'); // 選中的頭像
+
+  // 【截圖 19-21】頭像選項（支援動態載入）
+  const [avatarPresets, setAvatarPresets] = useState<AvatarPreset[]>(DEFAULT_AVATAR_PRESETS);
+
+  // 【截圖 19】Toast 訊息（取代彈窗）
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const toastOpacity = useRef(new Animated.Value(0)).current;
+
+  /**
+   * 【截圖 19】顯示 Toast 訊息，淡入淡出 3 秒
+   */
+  const showToastMessage = useCallback((message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+    // 淡入
+    Animated.timing(toastOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      // 3 秒後淡出
+      setTimeout(() => {
+        Animated.timing(toastOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowToast(false);
+        });
+      }, 3000);
+    });
+  }, [toastOpacity]);
 
   // ============ 生命週期 ============
 
@@ -205,10 +253,8 @@ export function ProfileScreen() {
         }
       }
 
-      Alert.alert(
-        isZh ? '成功' : 'Success',
-        isZh ? '個人資料已更新' : 'Profile updated successfully'
-      );
+      // 【截圖 19】改用 Toast 取代彈窗
+      showToastMessage(isZh ? '個人資料已更新' : 'Profile updated successfully');
     } catch (error) {
       console.error('Failed to save profile:', error);
       Alert.alert(
@@ -260,14 +306,14 @@ export function ProfileScreen() {
             style={styles.avatarContainer}
             onPress={() => setShowAvatarModal(true)}
           >
-            <View style={[styles.avatar, { backgroundColor: AVATAR_PRESETS.find(a => a.id === selectedAvatar)?.color || MibuBrand.brown }]}>
+            <View style={[styles.avatar, { backgroundColor: avatarPresets.find(a => a.id === selectedAvatar)?.color || MibuBrand.brown }]}>
               {selectedAvatar === 'default' ? (
                 <Text style={styles.avatarText}>
                   {firstName?.charAt(0) || profile?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
                 </Text>
               ) : (
                 <Ionicons
-                  name={AVATAR_PRESETS.find(a => a.id === selectedAvatar)?.icon as any || 'person'}
+                  name={avatarPresets.find(a => a.id === selectedAvatar)?.icon as any || 'person'}
                   size={44}
                   color="#ffffff"
                 />
@@ -498,7 +544,7 @@ export function ProfileScreen() {
 
             {/* 頭像選項網格 */}
             <View style={styles.avatarGrid}>
-              {AVATAR_PRESETS.map((preset) => (
+              {avatarPresets.map((preset) => (
                 <TouchableOpacity
                   key={preset.id}
                   style={[
@@ -528,15 +574,16 @@ export function ProfileScreen() {
               ))}
             </View>
 
-            {/* 上傳自訂頭像按鈕（功能尚未實作） */}
+            {/* 【截圖 20】上傳自訂頭像按鈕（功能尚未實作，改用 Toast） */}
             <TouchableOpacity
               style={styles.avatarUploadButton}
               onPress={() => {
                 setShowAvatarModal(false);
-                Alert.alert(
-                  isZh ? '上傳頭像' : 'Upload Avatar',
-                  isZh ? '自訂頭像功能即將開放' : 'Custom avatar upload coming soon'
-                );
+                // TODO: 實作圖片選擇和上傳功能
+                // 1. 使用 expo-image-picker 選擇圖片
+                // 2. 上傳到後端 POST /api/avatar/upload
+                // 3. 更新 avatarPresets 或 selectedAvatar
+                showToastMessage(isZh ? '自訂頭像功能即將開放' : 'Custom avatar upload coming soon');
               }}
             >
               <Ionicons name="cloud-upload-outline" size={20} color={MibuBrand.brown} />
@@ -547,6 +594,19 @@ export function ProfileScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* 【截圖 19】Toast 訊息 - 淡入淡出 3 秒 */}
+      {showToast && (
+        <Animated.View
+          style={[
+            styles.toast,
+            { opacity: toastOpacity },
+          ]}
+          pointerEvents="none"
+        >
+          <Text style={styles.toastText}>{toastMessage}</Text>
+        </Animated.View>
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -828,5 +888,29 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: MibuBrand.brown,
+  },
+  // 【截圖 19】Toast 樣式
+  toast: {
+    position: 'absolute',
+    bottom: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: MibuBrand.brownDark,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  toastText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#ffffff',
+    textAlign: 'center',
   },
 });
