@@ -28,7 +28,8 @@
       "Bash(do grep -l \"//.*中文\\\\|/\\\\*.*中文\" $f)",
       "Bash(done)",
       "Bash(sort:*)",
-      "Bash(xargs find:*)"
+      "Bash(xargs find:*)",
+      "Bash(git push:*)"
     ]
   }
 }
