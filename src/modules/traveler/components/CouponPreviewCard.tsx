@@ -1,7 +1,17 @@
 /**
  * CouponPreviewCard - 優惠券預覽卡片
  *
- * 用於在結果列表或物品箱中顯示優惠券資訊
+ * 功能：
+ * - 以票券樣式顯示優惠券資訊
+ * - 左側顯示稀有度 badge 和機率
+ * - 右側顯示優惠券名稱、內容、商家、有效期
+ * - 支援緊湊模式（isCompact）
+ * - 可點擊觸發回調
+ *
+ * 使用場景：
+ * - 扭蛋結果列表
+ * - 道具箱優惠券列表
+ * - 優惠券詳情預覽
  */
 import React from 'react';
 import {
@@ -13,17 +23,32 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { CouponTier } from '../../../types';
 
+// ============================================================
+// Props 介面定義
+// ============================================================
+
 interface CouponPreviewCardProps {
-  tier: CouponTier;
-  name: string;
-  content: string;
-  placeName: string;
-  validUntil?: string;
-  onPress?: () => void;
-  isCompact?: boolean;
-  language?: 'zh-TW' | 'en';
+  tier: CouponTier;          // 稀有度等級
+  name: string;              // 優惠券名稱
+  content: string;           // 優惠券內容描述
+  placeName: string;         // 商家名稱
+  validUntil?: string;       // 有效期限（ISO 字串）
+  onPress?: () => void;      // 點擊回調
+  isCompact?: boolean;       // 是否為緊湊模式
+  language?: 'zh-TW' | 'en'; // 語言設定
 }
 
+// ============================================================
+// 常數定義
+// ============================================================
+
+/**
+ * 稀有度樣式配置
+ * - bg: 背景色
+ * - border: 邊框色
+ * - text: 文字色
+ * - badge: 稀有度標籤背景色
+ */
 const TIER_STYLES: Record<CouponTier, {
   bg: string;
   border: string;
@@ -62,6 +87,9 @@ const TIER_STYLES: Record<CouponTier, {
   },
 };
 
+/**
+ * 稀有度對應機率（顯示用）
+ */
 const TIER_PROBABILITY: Record<CouponTier, string> = {
   SP: '0.1%',
   SSR: '0.9%',
@@ -69,6 +97,10 @@ const TIER_PROBABILITY: Record<CouponTier, string> = {
   S: '15%',
   R: '80%',
 };
+
+// ============================================================
+// 主元件
+// ============================================================
 
 export default function CouponPreviewCard({
   tier,
@@ -80,9 +112,17 @@ export default function CouponPreviewCard({
   isCompact = false,
   language = 'zh-TW',
 }: CouponPreviewCardProps) {
+  // 根據稀有度和緊湊模式生成樣式
   const styles = createStyles(TIER_STYLES[tier], isCompact);
+
+  // 語言判斷
   const isZh = language === 'zh-TW';
 
+  /**
+   * 格式化有效期限
+   * @param dateStr ISO 日期字串
+   * @returns 格式化後的日期字串
+   */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return isZh
@@ -90,7 +130,12 @@ export default function CouponPreviewCard({
       : `Exp: ${date.getMonth() + 1}/${date.getDate()}`;
   };
 
+  // 可點擊時使用 TouchableOpacity，否則使用 View
   const CardWrapper = onPress ? TouchableOpacity : View;
+
+  // ============================================================
+  // 渲染
+  // ============================================================
 
   return (
     <CardWrapper
@@ -98,38 +143,47 @@ export default function CouponPreviewCard({
       onPress={onPress}
       activeOpacity={0.8}
     >
-      {/* Left: Tier badge */}
+      {/* ========== 左側：稀有度區塊 ========== */}
       <View style={styles.tierSection}>
+        {/* 稀有度 badge */}
         <View style={styles.tierBadge}>
           <Text style={styles.tierText}>{tier}</Text>
         </View>
+        {/* 機率顯示 */}
         <Text style={styles.tierProb}>{TIER_PROBABILITY[tier]}</Text>
       </View>
 
-      {/* Dashed separator */}
+      {/* ========== 虛線分隔（票券撕裂效果） ========== */}
       <View style={styles.separator}>
         <View style={styles.separatorLine} />
+        {/* 上方半圓缺口 */}
         <View style={styles.separatorCircleTop} />
+        {/* 下方半圓缺口 */}
         <View style={styles.separatorCircleBottom} />
       </View>
 
-      {/* Right: Coupon info */}
+      {/* ========== 右側：優惠券資訊 ========== */}
       <View style={styles.infoSection}>
+        {/* 優惠券名稱 */}
         <Text style={styles.couponName} numberOfLines={1}>
           {name}
         </Text>
+        {/* 優惠券內容（非緊湊模式才顯示） */}
         {!isCompact && (
           <Text style={styles.couponContent} numberOfLines={2}>
             {content}
           </Text>
         )}
+        {/* 元資訊列：商家 + 有效期 */}
         <View style={styles.metaRow}>
+          {/* 商家名稱 */}
           <View style={styles.metaItem}>
             <Ionicons name="location-outline" size={12} color="#64748b" />
             <Text style={styles.metaText} numberOfLines={1}>
               {placeName}
             </Text>
           </View>
+          {/* 有效期限 */}
           {validUntil && (
             <View style={styles.metaItem}>
               <Ionicons name="time-outline" size={12} color="#64748b" />
@@ -139,7 +193,7 @@ export default function CouponPreviewCard({
         </View>
       </View>
 
-      {/* Arrow for clickable cards */}
+      {/* ========== 右側箭頭（可點擊時顯示） ========== */}
       {onPress && (
         <View style={styles.arrowSection}>
           <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
@@ -149,6 +203,15 @@ export default function CouponPreviewCard({
   );
 }
 
+// ============================================================
+// 樣式工廠函數
+// ============================================================
+
+/**
+ * 根據稀有度樣式和緊湊模式動態生成樣式
+ * @param tierStyle 稀有度樣式配置
+ * @param isCompact 是否為緊湊模式
+ */
 const createStyles = (tierStyle: typeof TIER_STYLES.SP, isCompact: boolean) =>
   StyleSheet.create({
     container: {

@@ -1,42 +1,96 @@
+/**
+ * 多語系翻譯與應用程式配置
+ *
+ * 定義：
+ * - 應用程式常數（等級上限、每日生成次數等）
+ * - API 基礎 URL
+ * - 分類顏色對應
+ * - 四國語系翻譯（繁體中文、英文、日文、韓文）
+ *
+ * 使用方式：
+ * import { TRANSLATIONS, getCategoryLabel } from '@/constants/translations';
+ *
+ * @example
+ * const label = TRANSLATIONS['zh-TW'].appTitle; // '行程扭蛋'
+ */
+
 import { Language } from '../types';
 
+// ========== 應用程式常數 ==========
+
+/** 最高等級上限 */
 export const MAX_LEVEL = 12;
+
+/** 預設等級 */
 export const DEFAULT_LEVEL = 5;
+
+/** 每日最大行程生成次數 */
 export const MAX_DAILY_GENERATIONS = 3;
 
+/** API 基礎 URL（從環境變數讀取，有預設值） */
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://gacha-travel--s8869420.replit.app';
 
+/**
+ * 景點分類對應的顏色
+ * 用於分類標籤、圖標等 UI 元素
+ */
 export const CATEGORY_COLORS: Record<string, string> = {
+  /** 美食 - 橘色 */
   food: '#ea580c',
+  /** 住宿 - 青色 */
   stay: '#0891b2',
+  /** 教育 - 紫色 */
   education: '#7c3aed',
+  /** 娛樂 - 粉紅色 */
   entertainment: '#db2777',
+  /** 景點 - 綠色 */
   scenery: '#10b981',
+  /** 購物 - 金色 */
   shopping: '#f59e0b',
+  /** 體驗 - 金色 */
   experience: '#f59e0b',
+  /** 活動 - 金色 */
   activity: '#f59e0b',
 };
 
+/**
+ * 多語系翻譯字典
+ * 支援語系：繁體中文(zh-TW)、英文(en)、日文(ja)、韓文(ko)
+ */
 export const TRANSLATIONS: Record<Language, Record<string, string>> = {
+  // ========== 繁體中文 ==========
   'zh-TW': {
+    // 每日限制
     dailyLimitReached: '今日額度已達上限',
     dailyLimitReachedDesc: '每日最多生成 3 次行程。請明天再來！',
+
+    // 應用程式標題
     appTitle: '行程扭蛋',
     appSubtitle: '今天去哪玩?老天說了算',
+
+    // 目的地選擇
     destination: '目的地',
     selectDestination: '選擇目的地',
     city: '城市',
     selectCity: '選擇城市',
+
+    // 扭蛋操作
     startGacha: '開始扭蛋',
     generating: '生成中...',
     findingGems: '正在尋找隱藏景點',
     tripLevel: 'Lv.{level} 之旅',
     spotsCount: '{count} 個景點',
+
+    // 優惠券
     couponUnlocked: '獲得優惠券',
     specialPromo: '特惠活動',
+
+    // 收藏
     noCollection: '尚未有收藏',
     startToCollect: '開始扭蛋來收集景點！',
     noCoupons: '尚未有優惠券',
+
+    // 導航
     navHome: '首頁',
     navGacha: '扭蛋',
     navGachaModule: '行程扭蛋',
@@ -50,13 +104,19 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     navItinerary: '行程',
     navChat: '聊天',
     navService: '服務',
+
+    // 通用操作
     back: '返回',
     loading: '載入中...',
+
+    // 登入
     login: '登入',
     signInReplit: '使用 Replit 登入',
     guestLogin: '訪客登入',
     welcomeBack: '歡迎回來',
     backToHome: '返回首頁',
+
+    // 景點分類
     catFood: '美食',
     catStay: '住宿',
     catScenery: '景點',
@@ -64,10 +124,16 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     catEntertainment: '娛樂設施',
     catEducation: '生態文化教育',
     catExperience: '遊程體驗',
+
+    // 行程節奏
     relaxed: '悠閒',
     packed: '充實',
+
+    // 地區選擇
     selectCountry: '請選擇國家',
     selectRegion: '請選擇城市/地區',
+
+    // 行程資訊
     itineraryPace: '行程節奏',
     stops: '站',
     viewOnMap: '在 Google 地圖中查看',
@@ -75,28 +141,40 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     places: '個地點',
     myCollection: '我的圖鑑',
     spots: '個地點',
+
+    // 公告與活動
     announcements: '公告',
     flashEvents: '快閃活動',
     explore: '探索',
+
+    // 位置相關
     shareLocationToPlanner: '分享位置給策劃師',
     yourLocation: '你的位置',
     planner: '策劃師',
+
+    // 安全中心
     safetyCenter: '安全中心',
     safetyCenterDesc: '設定緊急求救功能，確保旅途安全',
     safety: '安全',
     setupEmergencySOS: '設定緊急求救功能',
+
+    // iOS 捷徑整合
     iosShortcutsIntegration: 'iOS 捷徑整合',
     iosShortcutsDesc: '將以下連結加入 iOS 捷徑 App，即可透過 Siri 或自動化快速觸發求救訊號',
     webhookUrl: 'Webhook URL (POST)',
     notAvailable: '尚未取得連結',
     copyLink: '複製連結',
     copied: '已複製',
+
+    // 設定步驟
     setupSteps: '設定步驟：',
     step1: '1. 開啟 iOS 捷徑 App',
     step2: '2. 建立新捷徑，加入「取得 URL 內容」動作',
     step3: '3. 貼上上方 Webhook URL',
     step4: '4. 將方法設為「POST」',
     step5: '5. 設定 Siri 語音指令或自動化觸發',
+
+    // 緊急求救
     emergencyNow: '立即求救',
     emergencyNowDesc: '按下按鈕立即發送求救訊號，通知您的緊急聯絡人',
     sosButton: 'SOS 求救',
@@ -108,11 +186,15 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     sosSuccess: 'SOS 求救訊號已成功發送',
     sendFailed: '發送失敗',
     tryAgainLater: '請稍後再試',
+
+    // 錯誤訊息
     networkError: '網路連線錯誤，請檢查網路',
     gettingLocation: '正在取得位置...',
     locationPermissionRequired: '需要位置權限才能使用此功能',
     unableToGetLocation: '無法取得位置',
     retry: '重試',
+
+    // 獎池
     viewPool: '查看獎池',
     poolPreview: '獎池預覽',
     pullCount: '抽取張數',
@@ -122,11 +204,17 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     closeModal: '關閉',
     pulls: '張',
     loadingPool: '載入獎池中...',
+
+    // 商家
     merchant: '特約商家',
+
+    // 生成行程
     generatingItinerary: '正在生成行程...',
     sponsorAd: '贊助商廣告 (模擬)',
     pleaseWait: '請稍候',
     almostReady: '即將完成',
+
+    // 扭蛋結果
     gachaResults: '扭蛋結果',
     addToBackpack: '加入背包',
     addedToBackpack: '已加入背包',
@@ -138,11 +226,15 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     viewResults: '查看結果',
     exploring: '正在探索',
     reGacha: '重新扭蛋',
+
+    // 道具箱
     emptyItemBox: '道具箱是空的',
     collectItemsFirst: '先去扭蛋收集一些景點吧！',
     totalItems: '共',
     itemsCount: '個道具',
   },
+
+  // ========== 英文 ==========
   'en': {
     dailyLimitReached: 'Daily Limit Reached',
     dailyLimitReachedDesc: 'You can generate up to 3 itineraries per day. Come back tomorrow!',
@@ -268,6 +360,8 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     totalItems: 'Total',
     itemsCount: 'items',
   },
+
+  // ========== 日文 ==========
   'ja': {
     dailyLimitReached: '本日の上限に達しました',
     dailyLimitReachedDesc: '1日3回まで生成可能です。また明日お越しください！',
@@ -387,6 +481,8 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     tryGachaFirst: 'まずガチャを回してみよう！',
     viewResults: '結果を見る',
   },
+
+  // ========== 韓文 ==========
   'ko': {
     dailyLimitReached: '일일 한도 도달',
     dailyLimitReachedDesc: '하루에 최대 3개의 여행 일정을 생성할 수 있습니다. 내일 다시 와주세요!',
@@ -508,6 +604,18 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
   },
 };
 
+/**
+ * 取得分類的多語系標籤
+ *
+ * @param category - 分類名稱（如 'food', 'stay' 等）
+ * @param language - 目標語系
+ * @returns 該分類在指定語系的標籤文字
+ *
+ * @example
+ * getCategoryLabel('food', 'zh-TW'); // '美食'
+ * getCategoryLabel('food', 'en');    // 'Food'
+ * getCategoryLabel('food', 'ja');    // 'グルメ'
+ */
 export const getCategoryLabel = (category: string, language: Language): string => {
   const labels: Record<string, Record<Language, string>> = {
     food: { 'zh-TW': '美食', en: 'Food', ja: 'グルメ', ko: '맛집' },
@@ -523,6 +631,15 @@ export const getCategoryLabel = (category: string, language: Language): string =
   return labels[categoryKey]?.[language] || labels[categoryKey]?.['zh-TW'] || category || '';
 };
 
+/**
+ * 取得分類的對應顏色
+ *
+ * @param category - 分類名稱
+ * @returns 該分類的 HEX 色碼，若找不到則回傳預設紫色
+ *
+ * @example
+ * getCategoryColor('food'); // '#ea580c'
+ */
 export const getCategoryColor = (category: string): string => {
   return CATEGORY_COLORS[category?.toLowerCase()] || '#6366f1';
 };

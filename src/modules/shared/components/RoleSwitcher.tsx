@@ -1,3 +1,20 @@
+/**
+ * RoleSwitcher - 身份切換器元件
+ *
+ * 讓超級管理員在不同身份間切換（旅客、商家、專員、管理員）。
+ * 僅對 isSuperAdmin 且有多個 accessibleRoles 的用戶顯示。
+ *
+ * 提供兩種模式：
+ * - 預設模式：顯示完整按鈕和下拉選單
+ * - 精簡模式（compact）：僅顯示圖示按鈕，點擊彈出 Modal
+ *
+ * @example
+ * // 預設模式（用於設定頁面）
+ * <RoleSwitcher />
+ *
+ * // 精簡模式（用於導航列）
+ * <RoleSwitcher compact />
+ */
 import React, { useState } from 'react';
 import {
   View,
@@ -12,10 +29,22 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { UserRole } from '../../../types';
 
+// ============ Props 介面定義 ============
+
+/**
+ * RoleSwitcher 元件的 Props 介面
+ */
 interface RoleSwitcherProps {
+  /** 是否使用精簡模式（預設 false） */
   compact?: boolean;
 }
 
+// ============ 常數配置 ============
+
+/**
+ * 各角色的配置資料
+ * 包含標籤、顏色、圖示和對應路由
+ */
 const ROLE_CONFIG: Record<UserRole, { label: { zh: string; en: string }; color: string; icon: string; route: string }> = {
   traveler: { label: { zh: '旅客', en: 'Traveler' }, color: '#6366f1', icon: 'airplane-outline', route: '/(tabs)' },
   merchant: { label: { zh: '商家端', en: 'Merchant' }, color: '#10b981', icon: 'storefront-outline', route: '/merchant-dashboard' },
@@ -23,22 +52,42 @@ const ROLE_CONFIG: Record<UserRole, { label: { zh: string; en: string }; color: 
   admin: { label: { zh: '管理端', en: 'Admin' }, color: '#f59e0b', icon: 'settings-outline', route: '/admin-dashboard' },
 };
 
+// ============ 主元件 ============
+
+/**
+ * 身份切換器元件
+ *
+ * 顯示條件：
+ * - 用戶必須是超級管理員（isSuperAdmin）
+ * - 用戶必須有超過一個可訪問的角色
+ */
 export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
   const { state, switchRole } = useApp();
   const router = useRouter();
+  // 控制選單/Modal 顯示狀態
   const [showMenu, setShowMenu] = useState(false);
+  // 切換中的載入狀態
   const [switching, setSwitching] = useState(false);
 
   const user = state.user;
+
+  // 檢查是否應該顯示切換器
   if (!user?.isSuperAdmin || !user?.accessibleRoles || user.accessibleRoles.length <= 1) {
     return null;
   }
 
+  // 判斷語言
   const isZh = state.language === 'zh-TW';
+  // 取得目前角色（優先使用 activeRole，否則使用 role，預設 traveler）
   const currentRole = (user.activeRole || user.role || 'traveler') as UserRole;
   const currentConfig = ROLE_CONFIG[currentRole];
 
+  /**
+   * 處理角色切換
+   * 切換成功後導航到對應路由
+   */
   const handleSwitchRole = async (role: UserRole) => {
+    // 若選擇的是目前角色，直接關閉選單
     if (role === currentRole) {
       setShowMenu(false);
       return;
@@ -49,19 +98,23 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
     setSwitching(false);
     setShowMenu(false);
 
+    // 切換成功後導航到對應頁面
     if (success) {
       const targetRoute = ROLE_CONFIG[role].route;
       router.replace(targetRoute as any);
     }
   };
 
-  const accessibleRoles = user.accessibleRoles.filter(r => 
+  // 過濾出有效的可訪問角色
+  const accessibleRoles = user.accessibleRoles.filter(r =>
     ['traveler', 'merchant', 'specialist', 'admin'].includes(r)
   ) as UserRole[];
 
+  // ============ 精簡模式渲染 ============
   if (compact) {
     return (
       <>
+        {/* 精簡按鈕：僅顯示圖示 */}
         <TouchableOpacity
           style={[styles.compactButton, { backgroundColor: currentConfig.color + '20' }]}
           onPress={() => setShowMenu(true)}
@@ -70,6 +123,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
           <Ionicons name="chevron-down" size={14} color={currentConfig.color} />
         </TouchableOpacity>
 
+        {/* 角色選擇 Modal */}
         <Modal
           visible={showMenu}
           transparent
@@ -113,6 +167,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
                       >
                         {isZh ? config.label.zh : config.label.en}
                       </Text>
+                      {/* 目前角色顯示勾選圖示 */}
                       {isActive && (
                         <Ionicons name="checkmark" size={18} color={config.color} />
                       )}
@@ -127,8 +182,10 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
     );
   }
 
+  // ============ 預設模式渲染 ============
   return (
     <View style={styles.container}>
+      {/* 切換按鈕 */}
       <TouchableOpacity
         style={[styles.button, { borderColor: currentConfig.color }]}
         onPress={() => setShowMenu(!showMenu)}
@@ -144,6 +201,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
         />
       </TouchableOpacity>
 
+      {/* 下拉選單 */}
       {showMenu && (
         <View style={styles.dropdown}>
           {switching ? (
@@ -184,11 +242,15 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
   );
 }
 
+// ============ 樣式定義 ============
+
 const styles = StyleSheet.create({
+  /** 容器：設定相對定位以支援下拉選單 */
   container: {
     position: 'relative',
     zIndex: 100,
   },
+  /** 切換按鈕：橫向排列、圓角邊框 */
   button: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -199,10 +261,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     backgroundColor: '#ffffff',
   },
+  /** 按鈕文字 */
   buttonText: {
     fontSize: 14,
     fontWeight: '600',
   },
+  /** 下拉選單：絕對定位在按鈕下方 */
   dropdown: {
     position: 'absolute',
     top: 44,
@@ -217,6 +281,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
+  /** 下拉選單項目 */
   dropdownItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -224,10 +289,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
+  /** 下拉選單文字 */
   dropdownText: {
     fontSize: 15,
     color: '#334155',
   },
+  /** 精簡模式按鈕 */
   compactButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -236,12 +303,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 16,
   },
+  /** Modal 背景遮罩 */
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  /** Modal 選單容器 */
   menuContainer: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
@@ -250,6 +319,7 @@ const styles = StyleSheet.create({
     minWidth: 200,
     maxWidth: 280,
   },
+  /** Modal 標題 */
   menuTitle: {
     fontSize: 16,
     fontWeight: '700',
@@ -258,6 +328,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 16,
   },
+  /** Modal 選單項目 */
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -267,11 +338,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 4,
   },
+  /** Modal 選單項目文字 */
   menuItemText: {
     flex: 1,
     fontSize: 16,
     color: '#334155',
   },
+  /** 載入指示器容器 */
   loader: {
     paddingVertical: 20,
   },

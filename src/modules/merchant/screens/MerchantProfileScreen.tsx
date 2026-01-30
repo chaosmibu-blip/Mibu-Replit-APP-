@@ -1,3 +1,14 @@
+/**
+ * MerchantProfileScreen - 商家資料
+ *
+ * 功能說明：
+ * - 顯示商家基本資訊（名稱、信箱、狀態、餘額、方案等）
+ * - 提供刪除帳號功能
+ *
+ * 串接的 API：
+ * - GET /merchant/me - 取得商家個人資料
+ * - DELETE /auth/account - 刪除帳號
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -16,14 +27,22 @@ import { authApi } from '../../../services/authApi';
 import { MerchantMe } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
 
+// ============ 主元件 ============
 export function MerchantProfileScreen() {
+  // ============ Hooks ============
   const { state, getToken, setUser } = useApp();
   const router = useRouter();
+
+  // ============ 狀態變數 ============
+  // merchant: 商家資料
   const [merchant, setMerchant] = useState<MerchantMe | null>(null);
+  // loading: 資料載入狀態
   const [loading, setLoading] = useState(true);
 
+  // isZh: 判斷是否為中文語系
   const isZh = state.language === 'zh-TW';
 
+  // ============ 多語系翻譯 ============
   const translations = {
     title: isZh ? '商家資料' : 'Merchant Profile',
     businessName: isZh ? '商家名稱' : 'Business Name',
@@ -51,10 +70,17 @@ export function MerchantProfileScreen() {
     deleteFailed: isZh ? '刪除失敗，請稍後再試' : 'Delete failed, please try again later',
   };
 
+  // ============ Effect Hooks ============
+  // 元件載入時取得商家資料
   useEffect(() => {
     loadMerchant();
   }, []);
 
+  // ============ 資料載入函數 ============
+
+  /**
+   * loadMerchant - 載入商家資料
+   */
   const loadMerchant = async () => {
     try {
       setLoading(true);
@@ -69,6 +95,13 @@ export function MerchantProfileScreen() {
     }
   };
 
+  // ============ 工具函數 ============
+
+  /**
+   * formatDate - 格式化日期
+   * @param dateStr - ISO 日期字串
+   * @returns 格式化後的日期字串
+   */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString(isZh ? 'zh-TW' : 'en-US', {
@@ -78,6 +111,11 @@ export function MerchantProfileScreen() {
     });
   };
 
+  /**
+   * getPlanLabel - 取得方案名稱
+   * @param plan - 方案代碼
+   * @returns 方案顯示名稱
+   */
   const getPlanLabel = (plan?: string) => {
     switch (plan) {
       case 'partner': return translations.partner;
@@ -86,6 +124,12 @@ export function MerchantProfileScreen() {
     }
   };
 
+  // ============ 事件處理函數 ============
+
+  /**
+   * handleDeleteAccount - 處理刪除帳號
+   * 顯示確認對話框，確認後呼叫 API 刪除帳號
+   */
   const handleDeleteAccount = () => {
     Alert.alert(
       translations.deleteConfirmTitle,
@@ -112,6 +156,7 @@ export function MerchantProfileScreen() {
     );
   };
 
+  // ============ 載入中畫面 ============
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -121,22 +166,29 @@ export function MerchantProfileScreen() {
     );
   }
 
+  // ============ 主要 JSX 渲染 ============
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
+        {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
       </View>
 
+      {/* ============ 頭像區塊 ============ */}
       <View style={styles.avatarSection}>
+        {/* 商家頭像 */}
         <View style={styles.avatar}>
           <Ionicons name="storefront" size={48} color={MibuBrand.brown} />
         </View>
+        {/* 商家名稱 */}
         <Text style={styles.businessName}>
           {merchant?.businessName || merchant?.name || '-'}
         </Text>
+        {/* 審核狀態標籤 */}
         <View style={[
           styles.statusBadge,
           merchant?.isApproved ? styles.approvedBadge : styles.pendingBadge
@@ -150,7 +202,9 @@ export function MerchantProfileScreen() {
         </View>
       </View>
 
+      {/* ============ 資訊卡片 ============ */}
       <View style={styles.infoCard}>
+        {/* 聯絡信箱 */}
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
             <Ionicons name="mail-outline" size={20} color={MibuBrand.brown} />
@@ -165,6 +219,7 @@ export function MerchantProfileScreen() {
 
         <View style={styles.divider} />
 
+        {/* 點數餘額 */}
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
             <Ionicons name="wallet-outline" size={20} color={MibuBrand.brown} />
@@ -179,6 +234,7 @@ export function MerchantProfileScreen() {
 
         <View style={styles.divider} />
 
+        {/* 訂閱方案 */}
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
             <Ionicons name="ribbon-outline" size={20} color={MibuBrand.brown} />
@@ -193,6 +249,7 @@ export function MerchantProfileScreen() {
 
         <View style={styles.divider} />
 
+        {/* 加入時間 */}
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
             <Ionicons name="calendar-outline" size={20} color={MibuBrand.brown} />
@@ -206,9 +263,10 @@ export function MerchantProfileScreen() {
         </View>
       </View>
 
-      {/* Danger Zone */}
+      {/* ============ 危險區域 ============ */}
       <View style={styles.dangerCard}>
         <Text style={styles.dangerTitle}>{translations.dangerZone}</Text>
+        {/* 刪除帳號按鈕 */}
         <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
           <Ionicons name="trash-outline" size={20} color="#ffffff" />
           <Text style={styles.deleteButtonText}>{translations.deleteAccount}</Text>
@@ -218,32 +276,39 @@ export function MerchantProfileScreen() {
   );
 }
 
+// ============ 樣式定義 ============
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.creamLight,
   },
+  // 內容區
   content: {
     padding: 20,
     paddingTop: 60,
     paddingBottom: 100,
   },
+  // 載入中容器
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // 載入中文字
   loadingText: {
     marginTop: 12,
     color: MibuBrand.copper,
     fontSize: 16,
   },
+  // 頂部標題區
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
     gap: 12,
   },
+  // 返回按鈕
   backButton: {
     width: 40,
     height: 40,
@@ -254,15 +319,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
+  // 頁面標題
   title: {
     fontSize: 24,
     fontWeight: '900',
     color: MibuBrand.brownDark,
   },
+  // 頭像區塊
   avatarSection: {
     alignItems: 'center',
     marginBottom: 32,
   },
+  // 頭像容器
   avatar: {
     width: 100,
     height: 100,
@@ -274,33 +342,41 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: MibuBrand.tan,
   },
+  // 商家名稱
   businessName: {
     fontSize: 24,
     fontWeight: '800',
     color: MibuBrand.brownDark,
     marginBottom: 12,
   },
+  // 狀態標籤
   statusBadge: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
+  // 已核准標籤
   approvedBadge: {
     backgroundColor: '#dcfce7',
   },
+  // 待審核標籤
   pendingBadge: {
     backgroundColor: '#fef3c7',
   },
+  // 狀態文字
   statusText: {
     fontSize: 14,
     fontWeight: '600',
   },
+  // 已核准文字
   approvedText: {
     color: '#16a34a',
   },
+  // 待審核文字
   pendingText: {
     color: '#d97706',
   },
+  // 資訊卡片
   infoCard: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
@@ -308,11 +384,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
+  // 資訊列
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
   },
+  // 資訊圖示容器
   infoIcon: {
     width: 40,
     height: 40,
@@ -322,25 +400,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 16,
   },
+  // 資訊內容區
   infoContent: {
     flex: 1,
   },
+  // 資訊標籤
   infoLabel: {
     fontSize: 13,
     color: MibuBrand.copper,
     marginBottom: 4,
   },
+  // 資訊數值
   infoValue: {
     fontSize: 16,
     fontWeight: '600',
     color: MibuBrand.brownDark,
   },
+  // 分隔線
   divider: {
     height: 1,
     backgroundColor: MibuBrand.tanLight,
     marginVertical: 4,
   },
-  // Danger Zone styles
+  // 危險區域卡片
   dangerCard: {
     backgroundColor: '#fef2f2',
     borderRadius: 20,
@@ -349,12 +431,14 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fecaca',
   },
+  // 危險區域標題
   dangerTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#dc2626',
     marginBottom: 16,
   },
+  // 刪除按鈕
   deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -365,6 +449,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
   },
+  // 刪除按鈕文字
   deleteButtonText: {
     color: '#ffffff',
     fontSize: 16,

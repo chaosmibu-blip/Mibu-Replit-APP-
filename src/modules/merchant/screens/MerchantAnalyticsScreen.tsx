@@ -1,3 +1,16 @@
+/**
+ * MerchantAnalyticsScreen - 商家分析
+ *
+ * 功能說明：
+ * - 顯示商家數據分析總覽
+ * - 支援時間區間篩選（7天/30天/90天/全部）
+ * - 支援依店家篩選
+ * - 顯示曝光次數、收錄人數、優惠券發放/核銷等統計
+ *
+ * 串接的 API：
+ * - GET /merchant/places - 取得商家店家列表
+ * - GET /merchant/analytics - 取得分析數據
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -19,19 +32,31 @@ import {
   AnalyticsPeriod,
 } from '../../../types';
 
+// ============ 主元件 ============
 export function MerchantAnalyticsScreen() {
+  // ============ Hooks ============
   const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
+  // ============ 狀態變數 ============
+  // loading: 初始載入狀態
   const [loading, setLoading] = useState(true);
+  // refreshing: 下拉刷新狀態
   const [refreshing, setRefreshing] = useState(false);
+  // analytics: 分析數據
   const [analytics, setAnalytics] = useState<MerchantAnalytics | null>(null);
+  // places: 店家列表（用於篩選）
   const [places, setPlaces] = useState<MerchantPlace[]>([]);
+  // selectedPeriod: 選中的時間區間
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod>('30d');
+  // selectedPlaceId: 選中的店家 ID（null 表示全部）
   const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
+  // showPlaceDropdown: 是否顯示店家下拉選單
   const [showPlaceDropdown, setShowPlaceDropdown] = useState(false);
 
+  // ============ 常數定義 ============
+  // 時間區間選項
   const periods: { value: AnalyticsPeriod; label: string }[] = [
     { value: '7d', label: isZh ? '7 天' : '7 Days' },
     { value: '30d', label: isZh ? '30 天' : '30 Days' },
@@ -39,6 +64,7 @@ export function MerchantAnalyticsScreen() {
     { value: 'all', label: isZh ? '全部' : 'All' },
   ];
 
+  // ============ 多語系翻譯 ============
   const translations = {
     title: isZh ? '數據分析' : 'Analytics',
     loading: isZh ? '載入中...' : 'Loading...',
@@ -60,14 +86,23 @@ export function MerchantAnalyticsScreen() {
     collectionCount: isZh ? '收錄數' : 'Collections',
   };
 
+  // ============ Effect Hooks ============
+  // 元件載入時取得初始資料
   useEffect(() => {
     loadInitialData();
   }, []);
 
+  // 時間區間或店家篩選變更時重新載入分析數據
   useEffect(() => {
     loadAnalytics();
   }, [selectedPeriod, selectedPlaceId]);
 
+  // ============ 資料載入函數 ============
+
+  /**
+   * loadInitialData - 載入初始資料
+   * 同時取得店家列表和分析數據
+   */
   const loadInitialData = async () => {
     try {
       const token = await getToken();
@@ -84,6 +119,10 @@ export function MerchantAnalyticsScreen() {
     }
   };
 
+  /**
+   * loadAnalytics - 載入分析數據
+   * 根據選中的時間區間和店家取得數據
+   */
   const loadAnalytics = async () => {
     try {
       const token = await getToken();
@@ -105,26 +144,44 @@ export function MerchantAnalyticsScreen() {
     }
   };
 
+  // ============ 事件處理函數 ============
+
+  /**
+   * handleRefresh - 處理下拉刷新
+   */
   const handleRefresh = () => {
     setRefreshing(true);
     loadAnalytics();
   };
 
+  /**
+   * handlePeriodChange - 處理時間區間變更
+   * @param period - 選中的時間區間
+   */
   const handlePeriodChange = (period: AnalyticsPeriod) => {
     setSelectedPeriod(period);
   };
 
+  /**
+   * handlePlaceSelect - 處理店家選擇
+   * @param placeId - 選中的店家 ID（null 表示全部）
+   */
   const handlePlaceSelect = (placeId: number | null) => {
     setSelectedPlaceId(placeId);
     setShowPlaceDropdown(false);
   };
 
+  /**
+   * getSelectedPlaceName - 取得選中店家的名稱
+   * @returns 店家名稱或「全部店家」
+   */
   const getSelectedPlaceName = () => {
     if (!selectedPlaceId) return translations.allPlaces;
     const place = places.find(p => p.id === selectedPlaceId);
     return place?.placeName || translations.allPlaces;
   };
 
+  // ============ 載入中畫面 ============
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -134,6 +191,15 @@ export function MerchantAnalyticsScreen() {
     );
   }
 
+  // ============ 子元件：統計卡片 ============
+  /**
+   * StatCard - 統計數據卡片
+   * @param icon - 圖示名稱
+   * @param label - 標籤文字
+   * @param value - 數值
+   * @param unit - 單位
+   * @param color - 主題色
+   */
   const StatCard = ({
     icon,
     label,
@@ -148,10 +214,13 @@ export function MerchantAnalyticsScreen() {
     color?: string;
   }) => (
     <View style={styles.statCard}>
+      {/* 圖示區 */}
       <View style={[styles.statIcon, { backgroundColor: `${color}15` }]}>
         <Ionicons name={icon as any} size={24} color={color} />
       </View>
+      {/* 標籤 */}
       <Text style={styles.statLabel}>{label}</Text>
+      {/* 數值 */}
       <Text style={styles.statValue}>
         {value !== undefined ? value : '-'}
         {unit && <Text style={styles.statUnit}> {unit}</Text>}
@@ -159,9 +228,12 @@ export function MerchantAnalyticsScreen() {
     </View>
   );
 
+  // ============ 主要 JSX 渲染 ============
   return (
     <View style={styles.container}>
+      {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
+        {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
@@ -169,9 +241,9 @@ export function MerchantAnalyticsScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      {/* 篩選器 */}
+      {/* ============ 篩選器區塊 ============ */}
       <View style={styles.filtersContainer}>
-        {/* 時間區間選擇 */}
+        {/* 時間區間選擇器 */}
         <View style={styles.periodSelector}>
           {periods.map(period => (
             <TouchableOpacity
@@ -194,9 +266,10 @@ export function MerchantAnalyticsScreen() {
           ))}
         </View>
 
-        {/* 店家篩選 */}
+        {/* 店家篩選下拉選單 */}
         {places.length > 0 && (
           <View style={styles.placeFilterContainer}>
+            {/* 觸發按鈕 */}
             <TouchableOpacity
               style={styles.placeFilterButton}
               onPress={() => setShowPlaceDropdown(!showPlaceDropdown)}
@@ -212,8 +285,10 @@ export function MerchantAnalyticsScreen() {
               />
             </TouchableOpacity>
 
+            {/* 下拉選項列表 */}
             {showPlaceDropdown && (
               <View style={styles.placeDropdown}>
+                {/* 全部店家選項 */}
                 <TouchableOpacity
                   style={[
                     styles.placeDropdownItem,
@@ -230,6 +305,7 @@ export function MerchantAnalyticsScreen() {
                     {translations.allPlaces}
                   </Text>
                 </TouchableOpacity>
+                {/* 各店家選項 */}
                 {places.map(place => (
                   <TouchableOpacity
                     key={place.id}
@@ -256,6 +332,7 @@ export function MerchantAnalyticsScreen() {
         )}
       </View>
 
+      {/* ============ 主要內容區 ============ */}
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
@@ -263,9 +340,10 @@ export function MerchantAnalyticsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
-        {/* 總覽 */}
+        {/* ============ 總覽區塊 ============ */}
         <Text style={styles.sectionTitle}>{translations.overview}</Text>
         <View style={styles.statsGrid}>
+          {/* 總曝光次數 */}
           <StatCard
             icon="eye-outline"
             label={translations.totalExposures}
@@ -273,6 +351,7 @@ export function MerchantAnalyticsScreen() {
             unit={translations.times}
             color={MibuBrand.info}
           />
+          {/* 圖鑑收錄人數 */}
           <StatCard
             icon="people-outline"
             label={translations.totalCollectors}
@@ -280,12 +359,14 @@ export function MerchantAnalyticsScreen() {
             unit={translations.people}
             color={MibuBrand.brown}
           />
+          {/* 優惠券發放數 */}
           <StatCard
             icon="pricetag-outline"
             label={translations.couponIssued}
             value={analytics?.overview?.couponIssued}
             color={MibuBrand.success}
           />
+          {/* 優惠券核銷數 */}
           <StatCard
             icon="checkmark-circle-outline"
             label={translations.couponRedeemed}
@@ -294,7 +375,7 @@ export function MerchantAnalyticsScreen() {
           />
         </View>
 
-        {/* 核銷率 */}
+        {/* ============ 核銷率卡片 ============ */}
         <View style={styles.rateCard}>
           <View style={styles.rateHeader}>
             <Ionicons name="trending-up-outline" size={24} color={MibuBrand.brown} />
@@ -307,16 +388,18 @@ export function MerchantAnalyticsScreen() {
           </Text>
         </View>
 
-        {/* 熱門優惠券 */}
+        {/* ============ 熱門優惠券列表 ============ */}
         {analytics?.topCoupons && analytics.topCoupons.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>{translations.topCoupons}</Text>
             <View style={styles.listContainer}>
               {analytics.topCoupons.map((coupon, index) => (
                 <View key={coupon.couponId} style={styles.listItem}>
+                  {/* 排名 */}
                   <View style={styles.listRank}>
                     <Text style={styles.listRankText}>{index + 1}</Text>
                   </View>
+                  {/* 優惠券資訊 */}
                   <View style={styles.listContent}>
                     <Text style={styles.listTitle} numberOfLines={1}>
                       {coupon.title}
@@ -339,7 +422,7 @@ export function MerchantAnalyticsScreen() {
           </>
         )}
 
-        {/* 各店數據 */}
+        {/* ============ 各店數據列表 ============ */}
         {analytics?.placeBreakdown && analytics.placeBreakdown.length > 0 && !selectedPlaceId && (
           <>
             <Text style={styles.sectionTitle}>{translations.placeBreakdown}</Text>
@@ -350,9 +433,11 @@ export function MerchantAnalyticsScreen() {
                   style={styles.listItem}
                   onPress={() => handlePlaceSelect(place.placeId)}
                 >
+                  {/* 店家圖示 */}
                   <View style={[styles.listRank, { backgroundColor: `${MibuBrand.brown}15` }]}>
                     <Ionicons name="storefront" size={16} color={MibuBrand.brown} />
                   </View>
+                  {/* 店家資訊 */}
                   <View style={styles.listContent}>
                     <Text style={styles.listTitle} numberOfLines={1}>
                       {place.placeName}
@@ -372,22 +457,27 @@ export function MerchantAnalyticsScreen() {
   );
 }
 
+// ============ 樣式定義 ============
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.creamLight,
   },
+  // 載入中容器
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: MibuBrand.creamLight,
   },
+  // 載入中文字
   loadingText: {
     marginTop: 12,
     fontSize: 14,
     color: MibuBrand.copper,
   },
+  // 頂部標題區
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -399,17 +489,21 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
   },
+  // 返回按鈕
   backButton: {
     padding: 8,
   },
+  // 頁面標題
   title: {
     fontSize: 18,
     fontWeight: '600',
     color: MibuBrand.dark,
   },
+  // 佔位元素（保持標題置中）
   placeholder: {
     width: 40,
   },
+  // 篩選器容器
   filtersContainer: {
     backgroundColor: MibuBrand.warmWhite,
     paddingHorizontal: 16,
@@ -418,18 +512,21 @@ const styles = StyleSheet.create({
     borderBottomColor: MibuBrand.tanLight,
     zIndex: 100,
   },
+  // 時間區間選擇器
   periodSelector: {
     flexDirection: 'row',
     backgroundColor: MibuBrand.tanLight,
     borderRadius: 12,
     padding: 4,
   },
+  // 時間區間按鈕
   periodButton: {
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
     borderRadius: 10,
   },
+  // 時間區間按鈕（選中狀態）
   periodButtonActive: {
     backgroundColor: MibuBrand.brown,
     shadowColor: '#000',
@@ -438,20 +535,24 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  // 時間區間按鈕文字
   periodButtonText: {
     fontSize: 14,
     fontWeight: '500',
     color: MibuBrand.copper,
   },
+  // 時間區間按鈕文字（選中狀態）
   periodButtonTextActive: {
     color: MibuBrand.warmWhite,
     fontWeight: '600',
   },
+  // 店家篩選容器
   placeFilterContainer: {
     marginTop: 12,
     position: 'relative',
     zIndex: 200,
   },
+  // 店家篩選按鈕
   placeFilterButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -463,11 +564,13 @@ const styles = StyleSheet.create({
     borderColor: MibuBrand.tanLight,
     gap: 8,
   },
+  // 店家篩選文字
   placeFilterText: {
     flex: 1,
     fontSize: 14,
     color: MibuBrand.brownDark,
   },
+  // 店家下拉選單
   placeDropdown: {
     position: 'absolute',
     top: '100%',
@@ -485,30 +588,37 @@ const styles = StyleSheet.create({
     elevation: 4,
     maxHeight: 200,
   },
+  // 店家下拉選項
   placeDropdownItem: {
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
   },
+  // 店家下拉選項（選中狀態）
   placeDropdownItemActive: {
     backgroundColor: `${MibuBrand.brown}15`,
   },
+  // 店家下拉選項文字
   placeDropdownText: {
     fontSize: 14,
     color: MibuBrand.brownDark,
   },
+  // 店家下拉選項文字（選中狀態）
   placeDropdownTextActive: {
     color: MibuBrand.brown,
     fontWeight: '600',
   },
+  // 內容區
   content: {
     flex: 1,
   },
+  // 捲動內容區
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
   },
+  // 區塊標題
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
@@ -516,12 +626,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginTop: 8,
   },
+  // 統計卡片網格
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
     marginBottom: 16,
   },
+  // 統計卡片
   statCard: {
     width: '47%',
     backgroundColor: MibuBrand.warmWhite,
@@ -530,6 +642,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
   },
+  // 統計卡片圖示容器
   statIcon: {
     width: 44,
     height: 44,
@@ -538,21 +651,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 12,
   },
+  // 統計卡片標籤
   statLabel: {
     fontSize: 13,
     color: MibuBrand.copper,
     marginBottom: 4,
   },
+  // 統計卡片數值
   statValue: {
     fontSize: 24,
     fontWeight: '700',
     color: MibuBrand.dark,
   },
+  // 統計卡片單位
   statUnit: {
     fontSize: 14,
     fontWeight: '400',
     color: MibuBrand.tan,
   },
+  // 核銷率卡片
   rateCard: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
@@ -564,21 +681,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  // 核銷率標題區
   rateHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
+  // 核銷率標籤
   rateLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: MibuBrand.dark,
   },
+  // 核銷率數值
   rateValue: {
     fontSize: 28,
     fontWeight: '700',
     color: MibuBrand.brown,
   },
+  // 列表容器
   listContainer: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
@@ -587,6 +708,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: 'hidden',
   },
+  // 列表項目
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -595,6 +717,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
   },
+  // 列表排名
   listRank: {
     width: 32,
     height: 32,
@@ -604,29 +727,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
+  // 列表排名文字
   listRankText: {
     fontSize: 14,
     fontWeight: '700',
     color: SemanticColors.warningDark,
   },
+  // 列表內容區
   listContent: {
     flex: 1,
   },
+  // 列表標題
   listTitle: {
     fontSize: 15,
     fontWeight: '600',
     color: MibuBrand.brownDark,
     marginBottom: 4,
   },
+  // 列表統計區
   listStats: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
+  // 列表統計文字
   listStatText: {
     fontSize: 12,
     color: MibuBrand.copper,
   },
+  // 列表核銷率
   listStatRate: {
     fontSize: 12,
     fontWeight: '600',

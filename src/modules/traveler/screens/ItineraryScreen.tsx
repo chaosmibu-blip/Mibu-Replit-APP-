@@ -1,10 +1,27 @@
 /**
- * 行程規劃頁面
+ * ItineraryScreen - 行程規劃畫面
  *
- * #026 Breaking Change: 使用 collectionIds 而非 placeIds
- * #027 AI 對話式排程功能
+ * 功能：
+ * - 行程列表管理（新增、編輯、刪除）
+ * - 行程詳情查看（景點列表、時間安排）
+ * - 新增景點到行程（從圖鑑選擇）
+ * - AI 對話式排程（智能建議）
+ * - 多選刪除模式
+ *
+ * 串接 API：
+ * - itineraryApi.getItineraries() - 取得行程列表
+ * - itineraryApi.getItinerary() - 取得行程詳情
+ * - itineraryApi.createItinerary() - 建立行程
+ * - itineraryApi.updateItinerary() - 更新行程
+ * - itineraryApi.deleteItinerary() - 刪除行程
+ * - itineraryApi.getAvailablePlaces() - 取得可加入景點
+ * - itineraryApi.aiChat() - AI 對話
+ * - locationApi.getCountries/Regions - 取得地區資料
+ *
+ * 重要變更：
+ * - #026 Breaking Change: 使用 collectionIds 而非 placeIds
+ * - #027 AI 對話式排程功能
  */
-
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -41,6 +58,13 @@ import type {
   AiChatContext,
 } from '../../../types/itinerary';
 
+// ============================================================
+// 型別定義
+// ============================================================
+
+/**
+ * 區域資料結構
+ */
 interface District {
   id: number;
   name: string;
@@ -50,10 +74,25 @@ interface District {
   nameKo?: string;
 }
 
+/**
+ * 畫面模式
+ * - list: 行程列表
+ * - detail: 行程詳情
+ * - add-places: 新增景點
+ * - ai-chat: AI 對話
+ */
 type ViewMode = 'list' | 'detail' | 'add-places' | 'ai-chat';
 
-// Tab Bar 高度常數
+// ============================================================
+// 常數定義
+// ============================================================
+
+// Tab Bar 高度（用於底部邊距計算）
 const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 88 : 64;
+
+// ============================================================
+// 主元件
+// ============================================================
 
 export function ItineraryScreen() {
   const { state, getToken } = useApp();

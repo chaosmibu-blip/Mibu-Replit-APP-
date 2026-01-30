@@ -1,3 +1,21 @@
+/**
+ * @fileoverview 管理排除名單畫面
+ *
+ * 功能說明：
+ * - 顯示全域排除的景點列表
+ * - 新增排除景點（需填寫景點名稱、區域、城市）
+ * - 移除排除項目
+ * - 支援多國語系（繁中、英文、日文、韓文）
+ *
+ * 串接的 API：
+ * - GET /exclusions - 取得全域排除名單
+ * - POST /exclusions - 新增排除項目
+ * - DELETE /exclusions/:id - 移除排除項目
+ *
+ * 權限控制：
+ * - 僅限 admin 角色可存取此畫面
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -15,20 +33,51 @@ import { useApp } from '../../../context/AppContext';
 import { GlobalExclusion } from '../../../types';
 import { apiService } from '../../../services/api';
 
+// ============ 主元件 ============
+
+/**
+ * 管理排除名單畫面元件
+ * 提供全域排除景點的新增與移除功能
+ */
 export function AdminExclusionsScreen() {
+  // ============ Hooks & Context ============
   const router = useRouter();
   const { state } = useApp();
+
+  // ============ 狀態管理 ============
+
+  /** 全域排除名單 */
   const [exclusions, setExclusions] = useState<GlobalExclusion[]>([]);
+
+  /** 資料載入中狀態 */
   const [loading, setLoading] = useState(true);
+
+  /** 新增排除項目中狀態 */
   const [adding, setAdding] = useState(false);
+
+  /** 是否顯示新增表單 */
   const [showAddForm, setShowAddForm] = useState(false);
+
+  /** 表單欄位：景點名稱 */
   const [placeName, setPlaceName] = useState('');
+
+  /** 表單欄位：區域 */
   const [district, setDistrict] = useState('');
+
+  /** 表單欄位：城市 */
   const [city, setCity] = useState('');
 
+  // ============ 權限檢查 ============
+
+  /** 判斷當前用戶是否為管理員 */
   const isAdmin = state.user?.role === 'admin';
+
+  /** Token（用於 API 請求） */
   const token = state.user?.id || '';
 
+  // ============ 多國語系 ============
+
+  /** 翻譯文字對照表（支援繁中、英文、日文、韓文） */
   const translations = {
     'zh-TW': {
       title: '全域排除管理',
@@ -100,12 +149,22 @@ export function AdminExclusionsScreen() {
     },
   };
 
+  /** 根據當前語言取得翻譯文字 */
   const t = translations[state.language] || translations['zh-TW'];
 
+  // ============ 副作用 ============
+
+  /** 元件掛載時載入排除名單 */
   useEffect(() => {
     loadExclusions();
   }, []);
 
+  // ============ 資料載入函數 ============
+
+  /**
+   * 載入全域排除名單
+   * 呼叫 API 取得所有排除項目
+   */
   const loadExclusions = async () => {
     try {
       setLoading(true);
@@ -118,7 +177,14 @@ export function AdminExclusionsScreen() {
     }
   };
 
+  // ============ CRUD 操作 ============
+
+  /**
+   * 處理新增排除項目
+   * 驗證必填欄位後呼叫 API 新增
+   */
   const handleAdd = async () => {
+    // 驗證必填欄位
     if (!placeName.trim() || !city.trim()) {
       Alert.alert('Error', 'Place name and city are required');
       return;
@@ -126,12 +192,17 @@ export function AdminExclusionsScreen() {
 
     try {
       setAdding(true);
+      // 呼叫 API 新增排除項目
       const newExclusion = await apiService.addGlobalExclusion(token, {
         placeName: placeName.trim(),
         district: district.trim(),
         city: city.trim(),
       });
+
+      // 將新項目加入列表頂部
       setExclusions([newExclusion, ...exclusions]);
+
+      // 重置表單
       setPlaceName('');
       setDistrict('');
       setCity('');
@@ -144,6 +215,11 @@ export function AdminExclusionsScreen() {
     }
   };
 
+  /**
+   * 處理移除排除項目
+   * 顯示確認對話框後執行移除
+   * @param exclusion - 要移除的排除項目
+   */
   const handleRemove = (exclusion: GlobalExclusion) => {
     Alert.alert(t.confirmRemove, t.confirmRemoveMsg, [
       { text: t.cancel, style: 'cancel' },
@@ -152,7 +228,9 @@ export function AdminExclusionsScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
+            // 呼叫 API 移除排除項目
             await apiService.removeGlobalExclusion(token, exclusion.id);
+            // 從列表中移除該項目
             setExclusions(exclusions.filter(e => e.id !== exclusion.id));
           } catch (error) {
             console.error('Failed to remove exclusion:', error);
@@ -163,15 +241,20 @@ export function AdminExclusionsScreen() {
     ]);
   };
 
+  // ============ 權限不足畫面 ============
+
+  /** 非管理員顯示無權限提示 */
   if (!isAdmin) {
     return (
       <View style={styles.container}>
+        {/* 頂部標題列 */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#1e293b" />
           </TouchableOpacity>
           <Text style={styles.title}>{t.title}</Text>
         </View>
+        {/* 無權限提示 */}
         <View style={styles.emptyContainer}>
           <Ionicons name="lock-closed-outline" size={64} color="#94a3b8" />
           <Text style={styles.emptyText}>{t.noPermission}</Text>
@@ -180,20 +263,28 @@ export function AdminExclusionsScreen() {
     );
   }
 
+  // ============ 主渲染 ============
+
   return (
     <View style={styles.container}>
+      {/* 頂部標題列 */}
       <View style={styles.header}>
+        {/* 返回按鈕 */}
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
+        {/* 標題與副標題 */}
         <View style={styles.headerText}>
           <Text style={styles.title}>{t.title}</Text>
           <Text style={styles.subtitle}>{t.subtitle}</Text>
         </View>
       </View>
 
+      {/* 新增表單區塊 */}
       {showAddForm ? (
+        // 顯示新增表單
         <View style={styles.addForm}>
+          {/* 景點名稱輸入 */}
           <TextInput
             style={styles.input}
             placeholder={t.placeName}
@@ -201,6 +292,7 @@ export function AdminExclusionsScreen() {
             onChangeText={setPlaceName}
             placeholderTextColor="#94a3b8"
           />
+          {/* 區域輸入 */}
           <TextInput
             style={styles.input}
             placeholder={t.district}
@@ -208,6 +300,7 @@ export function AdminExclusionsScreen() {
             onChangeText={setDistrict}
             placeholderTextColor="#94a3b8"
           />
+          {/* 城市輸入 */}
           <TextInput
             style={styles.input}
             placeholder={t.city}
@@ -215,13 +308,16 @@ export function AdminExclusionsScreen() {
             onChangeText={setCity}
             placeholderTextColor="#94a3b8"
           />
+          {/* 表單按鈕 */}
           <View style={styles.formButtons}>
+            {/* 取消按鈕 */}
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setShowAddForm(false)}
             >
               <Text style={styles.cancelButtonText}>{t.cancel}</Text>
             </TouchableOpacity>
+            {/* 新增按鈕 */}
             <TouchableOpacity
               style={[styles.addButton, adding && styles.addButtonDisabled]}
               onPress={handleAdd}
@@ -236,6 +332,7 @@ export function AdminExclusionsScreen() {
           </View>
         </View>
       ) : (
+        // 顯示新增按鈕（虛線邊框樣式）
         <TouchableOpacity
           style={styles.addNewButton}
           onPress={() => setShowAddForm(true)}
@@ -245,29 +342,38 @@ export function AdminExclusionsScreen() {
         </TouchableOpacity>
       )}
 
+      {/* 排除名單內容區 */}
       {loading ? (
+        // 載入中狀態
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#6366f1" />
           <Text style={styles.loadingText}>{t.loading}</Text>
         </View>
       ) : exclusions.length === 0 ? (
+        // 空狀態
         <View style={styles.emptyContainer}>
           <Ionicons name="ban-outline" size={64} color="#94a3b8" />
           <Text style={styles.emptyText}>{t.empty}</Text>
         </View>
       ) : (
+        // 排除項目列表
         <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
           {exclusions.map(exclusion => (
             <View key={exclusion.id} style={styles.exclusionCard}>
+              {/* 排除項目資訊 */}
               <View style={styles.exclusionInfo}>
+                {/* 景點名稱 */}
                 <Text style={styles.exclusionName}>{exclusion.placeName}</Text>
+                {/* 地點（區域、城市） */}
                 <Text style={styles.exclusionLocation}>
                   {exclusion.district && `${exclusion.district}, `}{exclusion.city}
                 </Text>
+                {/* 建立日期 */}
                 <Text style={styles.exclusionDate}>
                   {new Date(exclusion.createdAt).toLocaleDateString()}
                 </Text>
               </View>
+              {/* 移除按鈕 */}
               <TouchableOpacity
                 style={styles.removeButton}
                 onPress={() => handleRemove(exclusion)}
@@ -282,11 +388,16 @@ export function AdminExclusionsScreen() {
   );
 }
 
+// ============ 樣式定義 ============
+
 const styles = StyleSheet.create({
+  // 容器樣式
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
   },
+
+  // 頂部標題列樣式
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -314,6 +425,8 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 4,
   },
+
+  // 新增按鈕樣式（虛線邊框）
   addNewButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -333,6 +446,8 @@ const styles = StyleSheet.create({
     color: '#6366f1',
     marginLeft: 8,
   },
+
+  // 新增表單樣式
   addForm: {
     backgroundColor: '#ffffff',
     marginHorizontal: 20,
@@ -384,6 +499,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
   },
+
+  // 載入中樣式
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
@@ -394,6 +511,8 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 12,
   },
+
+  // 空狀態樣式
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
@@ -404,6 +523,8 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 16,
   },
+
+  // 列表樣式
   list: {
     flex: 1,
   },
@@ -411,6 +532,8 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 100,
   },
+
+  // 排除項目卡片樣式
   exclusionCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
@@ -419,7 +542,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#fecaca',
+    borderColor: '#fecaca',  // 紅色邊框表示排除
   },
   exclusionInfo: {
     flex: 1,
@@ -439,6 +562,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#94a3b8',
   },
+
+  // 移除按鈕樣式
   removeButton: {
     width: 44,
     height: 44,

@@ -1,6 +1,18 @@
 /**
- * FavoritesScreen - 我的最愛 (React Native Paper 版本)
- * 顯示用戶收藏的景點列表
+ * FavoritesScreen - 我的最愛畫面 (React Native Paper 版本)
+ *
+ * 功能：
+ * - 顯示用戶收藏的景點列表
+ * - 下拉重新整理
+ * - 點擊愛心可移除收藏
+ * - 顯示景點分類、評分、位置、加入時間
+ * - 空狀態提示
+ *
+ * 串接 API：
+ * - collectionApi.getFavorites() - 取得收藏列表
+ * - collectionApi.removeFavorite() - 移除收藏
+ *
+ * UI 框架：React Native Paper
  *
  * @see 後端合約: contracts/APP.md
  */
@@ -29,17 +41,39 @@ import { collectionApi } from '../../../services/collectionApi';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { FavoriteItem } from '../../../types/collection';
 
+// ============================================================
+// 主元件
+// ============================================================
+
 export function FavoritesScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
   const theme = useTheme();
+
+  // 語言判斷
   const isZh = state.language === 'zh-TW';
 
+  // ============================================================
+  // 狀態管理
+  // ============================================================
+
+  // 載入狀態
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // 收藏列表
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+
+  // 總數量
   const [total, setTotal] = useState(0);
 
+  // ============================================================
+  // API 呼叫
+  // ============================================================
+
+  /**
+   * 載入收藏列表
+   */
   const loadData = useCallback(async () => {
     try {
       const token = await getToken();
@@ -61,15 +95,27 @@ export function FavoritesScreen() {
     }
   }, [getToken, router]);
 
+  // 初始載入
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  /**
+   * 下拉重新整理
+   */
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadData();
   }, [loadData]);
 
+  // ============================================================
+  // 事件處理
+  // ============================================================
+
+  /**
+   * 移除收藏
+   * 顯示確認對話框，確認後呼叫 API 移除
+   */
   const handleRemoveFavorite = async (placeId: string, placeName: string) => {
     Alert.alert(
       isZh ? '移除最愛' : 'Remove Favorite',
@@ -104,6 +150,13 @@ export function FavoritesScreen() {
     );
   };
 
+  // ============================================================
+  // 輔助函數
+  // ============================================================
+
+  /**
+   * 根據分類取得對應 icon
+   */
   const getCategoryIcon = (category: string): keyof typeof Ionicons.glyphMap => {
     const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
       '餐廳': 'restaurant',
@@ -116,6 +169,13 @@ export function FavoritesScreen() {
     return iconMap[category] || 'location';
   };
 
+  // ============================================================
+  // 渲染項目
+  // ============================================================
+
+  /**
+   * 渲染單一收藏項目
+   */
   const renderItem = ({ item }: { item: FavoriteItem }) => (
     <Card style={styles.itemCard} mode="elevated">
       <Card.Content style={styles.cardContent}>
@@ -178,6 +238,10 @@ export function FavoritesScreen() {
     </Card>
   );
 
+  // ============================================================
+  // 載入中狀態
+  // ============================================================
+
   if (loading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
@@ -185,6 +249,10 @@ export function FavoritesScreen() {
       </View>
     );
   }
+
+  // ============================================================
+  // 主畫面渲染
+  // ============================================================
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -245,7 +313,12 @@ export function FavoritesScreen() {
   );
 }
 
+// ============================================================
+// 樣式定義
+// ============================================================
+
 const styles = StyleSheet.create({
+  // 容器樣式
   container: {
     flex: 1,
   },

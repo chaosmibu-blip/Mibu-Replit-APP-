@@ -1,3 +1,19 @@
+/**
+ * ProfileScreen - 個人資料畫面
+ *
+ * 功能說明：
+ * - 顯示並編輯用戶個人資料
+ * - 包含基本資訊（姓名、性別、生日、電話）
+ * - 健康資訊（飲食禁忌、疾病史）
+ * - 緊急聯絡人設定
+ * - 頭像選擇功能
+ *
+ * 串接的 API：
+ * - GET /api/user/profile - 取得個人資料
+ * - PUT /api/user/profile - 更新個人資料
+ *
+ * @see 後端合約: contracts/APP.md Phase 2
+ */
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Modal, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,7 +24,9 @@ import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
 
-// 預設頭像選項
+// ============ 常數定義 ============
+
+/** 預設頭像選項 */
 const AVATAR_PRESETS = [
   { id: 'default', icon: 'person', color: MibuBrand.brown },
   { id: 'cat', icon: 'paw', color: '#F59E0B' },
@@ -20,12 +38,14 @@ const AVATAR_PRESETS = [
   { id: 'diamond', icon: 'diamond', color: '#EC4899' },
 ];
 
+/** 性別選項 */
 const GENDER_OPTIONS: { value: Gender; labelZh: string; labelEn: string }[] = [
   { value: 'male', labelZh: '男', labelEn: 'Male' },
   { value: 'female', labelZh: '女', labelEn: 'Female' },
   { value: 'other', labelZh: '其他', labelEn: 'Other' },
 ];
 
+/** 關係選項（緊急聯絡人） */
 const RELATION_OPTIONS = [
   { value: 'spouse', labelZh: '配偶', labelEn: 'Spouse' },
   { value: 'parent', labelZh: '父母', labelEn: 'Parent' },
@@ -34,34 +54,53 @@ const RELATION_OPTIONS = [
   { value: 'other', labelZh: '其他', labelEn: 'Other' },
 ];
 
+// ============ 元件本體 ============
+
 export function ProfileScreen() {
   const { state, getToken, setUser } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  // ============ 狀態管理 ============
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [gender, setGender] = useState<Gender | null>(null);
-  const [birthDate, setBirthDate] = useState('');
-  const [phone, setPhone] = useState('');
-  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
-  const [medicalHistory, setMedicalHistory] = useState<string[]>([]);
-  const [emergencyContactName, setEmergencyContactName] = useState('');
-  const [emergencyContactPhone, setEmergencyContactPhone] = useState('');
-  const [emergencyContactRelation, setEmergencyContactRelation] = useState('');
-  const [showGenderPicker, setShowGenderPicker] = useState(false);
-  const [showRelationPicker, setShowRelationPicker] = useState(false);
-  const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState<string>('default');
+  const [loading, setLoading] = useState(true); // 頁面載入中
+  const [saving, setSaving] = useState(false); // 儲存中
+  const [profile, setProfile] = useState<UserProfile | null>(null); // 完整的 profile 資料
+
+  // 基本資訊欄位
+  const [firstName, setFirstName] = useState(''); // 名
+  const [lastName, setLastName] = useState(''); // 姓
+  const [gender, setGender] = useState<Gender | null>(null); // 性別
+  const [birthDate, setBirthDate] = useState(''); // 出生日期
+  const [phone, setPhone] = useState(''); // 手機號碼
+
+  // 健康資訊欄位
+  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]); // 飲食禁忌
+  const [medicalHistory, setMedicalHistory] = useState<string[]>([]); // 疾病史
+
+  // 緊急聯絡人欄位
+  const [emergencyContactName, setEmergencyContactName] = useState(''); // 聯絡人姓名
+  const [emergencyContactPhone, setEmergencyContactPhone] = useState(''); // 聯絡人電話
+  const [emergencyContactRelation, setEmergencyContactRelation] = useState(''); // 聯絡人關係
+
+  // UI 控制狀態
+  const [showGenderPicker, setShowGenderPicker] = useState(false); // 顯示性別選擇器
+  const [showRelationPicker, setShowRelationPicker] = useState(false); // 顯示關係選擇器
+  const [showAvatarModal, setShowAvatarModal] = useState(false); // 顯示頭像選擇 Modal
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('default'); // 選中的頭像
+
+  // ============ 生命週期 ============
 
   useEffect(() => {
     loadProfile();
   }, []);
 
+  // ============ 資料載入 ============
+
+  /**
+   * 載入個人資料
+   * 從後端 API 取得用戶 profile 並填入表單
+   */
   const loadProfile = async () => {
     try {
       const token = await getToken();
@@ -72,6 +111,8 @@ export function ProfileScreen() {
 
       const data = await apiService.getProfile(token);
       setProfile(data);
+
+      // 將資料填入各欄位
       setFirstName(data.firstName || '');
       setLastName(data.lastName || '');
       setGender(data.gender);
@@ -93,6 +134,12 @@ export function ProfileScreen() {
     }
   };
 
+  // ============ 事件處理 ============
+
+  /**
+   * 處理儲存
+   * 將表單資料送到後端更新
+   */
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -156,6 +203,8 @@ export function ProfileScreen() {
     }
   };
 
+  // ============ 載入狀態 ============
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -164,12 +213,15 @@ export function ProfileScreen() {
     );
   }
 
+  // ============ 主要渲染 ============
+
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={100}
     >
+      {/* ===== 頂部導航列 ===== */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#1e293b" />
@@ -185,7 +237,7 @@ export function ProfileScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        {/* 頭像區塊 */}
+        {/* ===== 頭像區塊 ===== */}
         <View style={styles.avatarSection}>
           <TouchableOpacity
             style={styles.avatarContainer}
@@ -213,6 +265,7 @@ export function ProfileScreen() {
           </Text>
         </View>
 
+        {/* ===== 唯讀欄位：用戶 ID ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '用戶 ID' : 'User ID'}</Text>
           <View style={styles.readOnlyField}>
@@ -220,6 +273,7 @@ export function ProfileScreen() {
           </View>
         </View>
 
+        {/* ===== 唯讀欄位：Email ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Email</Text>
           <View style={styles.readOnlyField}>
@@ -227,6 +281,7 @@ export function ProfileScreen() {
           </View>
         </View>
 
+        {/* ===== 姓名欄位 ===== */}
         <View style={styles.row}>
           <View style={[styles.section, { flex: 1 }]}>
             <Text style={styles.sectionTitle}>{isZh ? '姓' : 'Last Name'}</Text>
@@ -250,19 +305,21 @@ export function ProfileScreen() {
           </View>
         </View>
 
+        {/* ===== 性別欄位 ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '性別' : 'Gender'}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.pickerButton}
             onPress={() => setShowGenderPicker(!showGenderPicker)}
           >
             <Text style={gender ? styles.pickerText : styles.pickerPlaceholder}>
-              {gender 
+              {gender
                 ? GENDER_OPTIONS.find(g => g.value === gender)?.[isZh ? 'labelZh' : 'labelEn'] || gender
                 : isZh ? '請選擇' : 'Select'}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#64748b" />
           </TouchableOpacity>
+          {/* 性別選項下拉 */}
           {showGenderPicker && (
             <View style={styles.pickerOptions}>
               {GENDER_OPTIONS.map(option => (
@@ -283,6 +340,7 @@ export function ProfileScreen() {
           )}
         </View>
 
+        {/* ===== 出生日期欄位 ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '出生年月日' : 'Birth Date'}</Text>
           <TextInput
@@ -294,6 +352,7 @@ export function ProfileScreen() {
           />
         </View>
 
+        {/* ===== 手機欄位 ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '手機' : 'Phone'}</Text>
           <TextInput
@@ -306,6 +365,7 @@ export function ProfileScreen() {
           />
         </View>
 
+        {/* ===== 飲食禁忌欄位 ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '飲食禁忌' : 'Dietary Restrictions'}</Text>
           <TagInput
@@ -315,6 +375,7 @@ export function ProfileScreen() {
           />
         </View>
 
+        {/* ===== 疾病史欄位 ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '疾病史' : 'Medical History'}</Text>
           <TagInput
@@ -324,10 +385,13 @@ export function ProfileScreen() {
           />
         </View>
 
+        {/* ===== 分隔線 ===== */}
         <View style={styles.divider} />
 
+        {/* ===== 緊急聯絡人區塊 ===== */}
         <Text style={styles.groupTitle}>{isZh ? '緊急聯絡人' : 'Emergency Contact'}</Text>
 
+        {/* 緊急聯絡人姓名 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '姓名' : 'Name'}</Text>
           <TextInput
@@ -339,6 +403,7 @@ export function ProfileScreen() {
           />
         </View>
 
+        {/* 緊急聯絡人電話 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '電話' : 'Phone'}</Text>
           <TextInput
@@ -351,19 +416,21 @@ export function ProfileScreen() {
           />
         </View>
 
+        {/* 緊急聯絡人關係 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '關係' : 'Relationship'}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.pickerButton}
             onPress={() => setShowRelationPicker(!showRelationPicker)}
           >
             <Text style={emergencyContactRelation ? styles.pickerText : styles.pickerPlaceholder}>
-              {emergencyContactRelation 
+              {emergencyContactRelation
                 ? RELATION_OPTIONS.find(r => r.value === emergencyContactRelation)?.[isZh ? 'labelZh' : 'labelEn'] || emergencyContactRelation
                 : isZh ? '請選擇' : 'Select'}
             </Text>
             <Ionicons name="chevron-down" size={20} color="#64748b" />
           </TouchableOpacity>
+          {/* 關係選項下拉 */}
           {showRelationPicker && (
             <View style={styles.pickerOptions}>
               {RELATION_OPTIONS.map(option => (
@@ -384,10 +451,11 @@ export function ProfileScreen() {
           )}
         </View>
 
+        {/* 底部留白 */}
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* 頭像選擇 Modal */}
+      {/* ===== 頭像選擇 Modal ===== */}
       <Modal
         visible={showAvatarModal}
         transparent={true}
@@ -404,6 +472,7 @@ export function ProfileScreen() {
               {isZh ? '選擇頭像' : 'Choose Avatar'}
             </Text>
 
+            {/* 頭像選項網格 */}
             <View style={styles.avatarGrid}>
               {AVATAR_PRESETS.map((preset) => (
                 <TouchableOpacity
@@ -435,6 +504,7 @@ export function ProfileScreen() {
               ))}
             </View>
 
+            {/* 上傳自訂頭像按鈕（功能尚未實作） */}
             <TouchableOpacity
               style={styles.avatarUploadButton}
               onPress={() => {
@@ -457,17 +527,22 @@ export function ProfileScreen() {
   );
 }
 
+// ============ 樣式定義 ============
+
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.warmWhite,
   },
+  // 載入狀態容器
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: MibuBrand.warmWhite,
   },
+  // 頭像區塊
   avatarSection: {
     alignItems: 'center',
     marginBottom: 24,
@@ -513,6 +588,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: MibuBrand.copper,
   },
+  // 頂部導航列
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -544,10 +620,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: MibuBrand.brown,
   },
+  // 內容區
   content: {
     flex: 1,
     padding: 20,
   },
+  // 欄位區塊
   section: {
     marginBottom: 20,
   },
@@ -558,6 +636,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textTransform: 'uppercase',
   },
+  // 輸入框
   input: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
@@ -567,6 +646,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
   },
+  // 唯讀欄位
   readOnlyField: {
     backgroundColor: MibuBrand.cream,
     borderRadius: 20,
@@ -581,9 +661,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: MibuBrand.brownLight,
   },
+  // 橫向排列
   row: {
     flexDirection: 'row',
   },
+  // 選擇器按鈕
   pickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -602,6 +684,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: MibuBrand.tan,
   },
+  // 選擇器選項
   pickerOptions: {
     marginTop: 8,
     backgroundColor: MibuBrand.warmWhite,
@@ -629,17 +712,20 @@ const styles = StyleSheet.create({
     color: MibuBrand.brown,
     fontWeight: '600',
   },
+  // 分隔線
   divider: {
     height: 1,
     backgroundColor: MibuBrand.cream,
     marginVertical: 24,
   },
+  // 群組標題
   groupTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: MibuBrand.brown,
     marginBottom: 16,
   },
+  // 頭像 Modal 樣式
   avatarModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

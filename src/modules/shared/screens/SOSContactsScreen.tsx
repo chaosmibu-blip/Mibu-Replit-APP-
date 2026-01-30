@@ -1,8 +1,20 @@
 /**
- * SOSContactsScreen - 緊急聯絡人管理
- * 新增、編輯、刪除緊急聯絡人
+ * SOSContactsScreen - SOS 緊急聯絡人管理畫面
  *
- * @see 後端合約: contracts/APP.md
+ * 功能說明：
+ * - 顯示緊急聯絡人列表（最多 3 位）
+ * - 新增緊急聯絡人
+ * - 編輯現有聯絡人
+ * - 刪除聯絡人
+ * - 支援下拉刷新
+ *
+ * 串接的 API：
+ * - GET /api/sos/contacts - 取得緊急聯絡人列表
+ * - POST /api/sos/contacts - 新增緊急聯絡人
+ * - PUT /api/sos/contacts/:id - 更新緊急聯絡人
+ * - DELETE /api/sos/contacts/:id - 刪除緊急聯絡人
+ *
+ * @see 後端合約: contracts/APP.md Phase 5
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -26,8 +38,12 @@ import { commonApi } from '../../../services/commonApi';
 import { MibuBrand } from '../../../../constants/Colors';
 import { SOSContact, CreateSOSContactParams } from '../../../types/sos';
 
+// ============ 常數定義 ============
+
+/** 最大聯絡人數量 */
 const MAX_CONTACTS = 3;
 
+/** 關係選項 */
 const RELATIONSHIP_OPTIONS = [
   { value: 'family', label: { zh: '家人', en: 'Family' } },
   { value: 'friend', label: { zh: '朋友', en: 'Friend' } },
@@ -35,23 +51,32 @@ const RELATIONSHIP_OPTIONS = [
   { value: 'other', label: { zh: '其他', en: 'Other' } },
 ];
 
+// ============ 元件本體 ============
+
 export function SOSContactsScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [contacts, setContacts] = useState<SOSContact[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingContact, setEditingContact] = useState<SOSContact | null>(null);
-  const [saving, setSaving] = useState(false);
+  // ============ 狀態管理 ============
 
-  // Form state
-  const [formName, setFormName] = useState('');
-  const [formPhone, setFormPhone] = useState('');
-  const [formRelationship, setFormRelationship] = useState('family');
+  const [loading, setLoading] = useState(true); // 頁面載入中
+  const [refreshing, setRefreshing] = useState(false); // 下拉刷新中
+  const [contacts, setContacts] = useState<SOSContact[]>([]); // 聯絡人列表
+  const [modalVisible, setModalVisible] = useState(false); // 新增/編輯 Modal 是否顯示
+  const [editingContact, setEditingContact] = useState<SOSContact | null>(null); // 正在編輯的聯絡人
+  const [saving, setSaving] = useState(false); // 儲存中
 
+  // 表單欄位狀態
+  const [formName, setFormName] = useState(''); // 姓名
+  const [formPhone, setFormPhone] = useState(''); // 電話
+  const [formRelationship, setFormRelationship] = useState('family'); // 關係
+
+  // ============ 資料載入 ============
+
+  /**
+   * 載入緊急聯絡人列表
+   */
   const loadData = useCallback(async () => {
     try {
       const token = await getToken();
@@ -76,11 +101,20 @@ export function SOSContactsScreen() {
     loadData();
   }, [loadData]);
 
+  /**
+   * 下拉刷新處理
+   */
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadData();
   }, [loadData]);
 
+  // ============ 事件處理 ============
+
+  /**
+   * 開啟新增 Modal
+   * 檢查是否已達上限
+   */
   const openAddModal = () => {
     if (contacts.length >= MAX_CONTACTS) {
       Alert.alert(
@@ -91,6 +125,7 @@ export function SOSContactsScreen() {
       );
       return;
     }
+    // 重置表單
     setEditingContact(null);
     setFormName('');
     setFormPhone('');
@@ -98,6 +133,10 @@ export function SOSContactsScreen() {
     setModalVisible(true);
   };
 
+  /**
+   * 開啟編輯 Modal
+   * 填入現有資料
+   */
   const openEditModal = (contact: SOSContact) => {
     setEditingContact(contact);
     setFormName(contact.name);
@@ -106,7 +145,11 @@ export function SOSContactsScreen() {
     setModalVisible(true);
   };
 
+  /**
+   * 處理儲存（新增或更新）
+   */
   const handleSave = async () => {
+    // 驗證必填欄位
     if (!formName.trim() || !formPhone.trim()) {
       Alert.alert(
         isZh ? '請填寫完整' : 'Incomplete',
@@ -127,7 +170,7 @@ export function SOSContactsScreen() {
       };
 
       if (editingContact) {
-        // 更新
+        // 更新現有聯絡人
         const result = await commonApi.updateSOSContact(token, editingContact.id, params);
         if (result.success) {
           setContacts(prev =>
@@ -135,7 +178,7 @@ export function SOSContactsScreen() {
           );
         }
       } else {
-        // 新增
+        // 新增聯絡人
         const result = await commonApi.addSOSContact(token, params);
         if (result.success) {
           setContacts(prev => [...prev, result.contact]);
@@ -154,6 +197,9 @@ export function SOSContactsScreen() {
     }
   };
 
+  /**
+   * 處理刪除聯絡人
+   */
   const handleDelete = (contact: SOSContact) => {
     Alert.alert(
       isZh ? '刪除聯絡人' : 'Delete Contact',
@@ -187,22 +233,36 @@ export function SOSContactsScreen() {
     );
   };
 
+  // ============ 輔助函數 ============
+
+  /**
+   * 取得關係的顯示文字
+   */
   const getRelationshipLabel = (value?: string) => {
     const option = RELATIONSHIP_OPTIONS.find(o => o.value === value);
     return option ? option.label[isZh ? 'zh' : 'en'] : value;
   };
 
+  // ============ 列表項目渲染 ============
+
+  /**
+   * 渲染單一聯絡人卡片
+   */
   const renderItem = ({ item }: { item: SOSContact }) => (
     <View style={styles.contactCard}>
+      {/* 聯絡人頭像 */}
       <View style={styles.contactIcon}>
         <Ionicons name="person" size={24} color={MibuBrand.brown} />
       </View>
+
+      {/* 聯絡人資訊 */}
       <View style={styles.contactInfo}>
         <Text style={styles.contactName}>{item.name}</Text>
         <View style={styles.contactDetails}>
           <Ionicons name="call-outline" size={14} color={MibuBrand.tan} />
           <Text style={styles.contactPhone}>{item.phone}</Text>
         </View>
+        {/* 關係標籤 */}
         {item.relationship && (
           <View style={styles.relationshipBadge}>
             <Text style={styles.relationshipText}>
@@ -211,6 +271,8 @@ export function SOSContactsScreen() {
           </View>
         )}
       </View>
+
+      {/* 操作按鈕 */}
       <View style={styles.contactActions}>
         <TouchableOpacity
           style={styles.actionBtn}
@@ -228,6 +290,8 @@ export function SOSContactsScreen() {
     </View>
   );
 
+  // ============ 載入狀態 ============
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -236,9 +300,11 @@ export function SOSContactsScreen() {
     );
   }
 
+  // ============ 主要渲染 ============
+
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* ===== 頂部導航列 ===== */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
@@ -254,7 +320,7 @@ export function SOSContactsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Info Banner */}
+      {/* ===== 說明橫幅 ===== */}
       <View style={styles.infoBanner}>
         <Ionicons name="information-circle" size={20} color={MibuBrand.copper} />
         <Text style={styles.infoText}>
@@ -264,7 +330,7 @@ export function SOSContactsScreen() {
         </Text>
       </View>
 
-      {/* List */}
+      {/* ===== 聯絡人列表 / 空狀態 ===== */}
       {contacts.length > 0 ? (
         <FlatList
           data={contacts}
@@ -281,6 +347,7 @@ export function SOSContactsScreen() {
           showsVerticalScrollIndicator={false}
         />
       ) : (
+        // 空狀態
         <View style={styles.emptyContainer}>
           <Ionicons name="people-outline" size={64} color={MibuBrand.tan} />
           <Text style={styles.emptyTitle}>
@@ -300,7 +367,7 @@ export function SOSContactsScreen() {
         </View>
       )}
 
-      {/* Add/Edit Modal */}
+      {/* ===== 新增/編輯 Modal ===== */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -312,6 +379,7 @@ export function SOSContactsScreen() {
           style={styles.modalOverlay}
         >
           <View style={styles.modalContent}>
+            {/* Modal 標題 */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
                 {editingContact
@@ -323,6 +391,7 @@ export function SOSContactsScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* 姓名欄位 */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>{isZh ? '姓名' : 'Name'}</Text>
               <TextInput
@@ -334,6 +403,7 @@ export function SOSContactsScreen() {
               />
             </View>
 
+            {/* 電話欄位 */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>{isZh ? '電話' : 'Phone'}</Text>
               <TextInput
@@ -346,6 +416,7 @@ export function SOSContactsScreen() {
               />
             </View>
 
+            {/* 關係選擇 */}
             <View style={styles.formGroup}>
               <Text style={styles.formLabel}>{isZh ? '關係' : 'Relationship'}</Text>
               <View style={styles.relationshipOptions}>
@@ -371,6 +442,7 @@ export function SOSContactsScreen() {
               </View>
             </View>
 
+            {/* 儲存按鈕 */}
             <TouchableOpacity
               style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
               onPress={handleSave}
@@ -391,17 +463,22 @@ export function SOSContactsScreen() {
   );
 }
 
+// ============ 樣式定義 ============
+
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.creamLight,
   },
+  // 載入狀態
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: MibuBrand.creamLight,
   },
+  // 頂部導航列
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -435,6 +512,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // 說明橫幅
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -451,10 +529,12 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
     lineHeight: 18,
   },
+  // 列表內容
   listContent: {
     padding: 16,
     paddingBottom: 100,
   },
+  // 聯絡人卡片
   contactCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -517,6 +597,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // 空狀態
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -550,6 +631,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  // Modal 樣式
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -573,6 +655,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
+  // 表單
   formGroup: {
     marginBottom: 16,
   },
@@ -592,6 +675,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
   },
+  // 關係選項
   relationshipOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -617,6 +701,7 @@ const styles = StyleSheet.create({
   relationshipOptionTextActive: {
     color: '#fff',
   },
+  // 儲存按鈕
   saveBtn: {
     backgroundColor: MibuBrand.brown,
     borderRadius: 12,

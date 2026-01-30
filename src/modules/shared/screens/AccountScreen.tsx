@@ -1,6 +1,16 @@
 /**
  * AccountScreen - 帳號綁定畫面
- * 顯示並管理已連結的 OAuth 身份（Apple/Google）
+ *
+ * 功能說明：
+ * - 顯示已連結的 OAuth 身份（Apple/Google）
+ * - 新增綁定 Apple/Google 帳號
+ * - 解除非主要帳號的綁定
+ * - 支援下拉刷新
+ *
+ * 串接的 API：
+ * - GET /api/auth/identities - 取得已綁定的身份列表
+ * - POST /api/auth/bind - 綁定新身份
+ * - DELETE /api/auth/identities/:id - 解除身份綁定
  *
  * @see 後端合約: contracts/APP.md Phase 6
  */
@@ -23,6 +33,9 @@ import { useApp } from '../../../context/AppContext';
 import { authApi, LinkedIdentity } from '../../../services/authApi';
 import { MibuBrand } from '../../../../constants/Colors';
 
+// ============ 常數定義 ============
+
+/** OAuth 提供者資訊 */
 const PROVIDER_INFO: Record<string, { icon: string; label: { zh: string; en: string }; color: string }> = {
   apple: {
     icon: 'logo-apple',
@@ -36,25 +49,37 @@ const PROVIDER_INFO: Record<string, { icon: string; label: { zh: string; en: str
   },
 };
 
+// ============ 元件本體 ============
+
 export function AccountScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [identities, setIdentities] = useState<LinkedIdentity[]>([]);
-  const [primaryId, setPrimaryId] = useState<string>('');
-  const [bindingProvider, setBindingProvider] = useState<string | null>(null);
-  const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
-  const [appleAvailable, setAppleAvailable] = useState(false);
+  // ============ 狀態管理 ============
 
+  const [loading, setLoading] = useState(true); // 頁面載入中
+  const [refreshing, setRefreshing] = useState(false); // 下拉刷新中
+  const [identities, setIdentities] = useState<LinkedIdentity[]>([]); // 已綁定的身份列表
+  const [primaryId, setPrimaryId] = useState<string>(''); // 主要身份 ID
+  const [bindingProvider, setBindingProvider] = useState<string | null>(null); // 正在綁定的提供者
+  const [unlinkingId, setUnlinkingId] = useState<string | null>(null); // 正在解除綁定的 ID
+  const [appleAvailable, setAppleAvailable] = useState(false); // Apple Sign-In 是否可用
+
+  // ============ 生命週期 ============
+
+  /** 檢查 Apple Sign-In 是否可用（僅 iOS） */
   useEffect(() => {
     if (Platform.OS === 'ios') {
       AppleAuthentication.isAvailableAsync().then(setAppleAvailable);
     }
   }, []);
 
+  // ============ 資料載入 ============
+
+  /**
+   * 載入已綁定的身份列表
+   */
   const loadIdentities = useCallback(async () => {
     try {
       const token = await getToken();
@@ -78,16 +103,26 @@ export function AccountScreen() {
     loadIdentities();
   }, [loadIdentities]);
 
+  /**
+   * 下拉刷新處理
+   */
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadIdentities();
   }, [loadIdentities]);
 
+  // ============ 事件處理 ============
+
+  /**
+   * 處理綁定 Apple 帳號
+   * 呼叫 Apple Sign-In 取得憑證後送到後端綁定
+   */
   const handleBindApple = async () => {
     if (bindingProvider) return;
     setBindingProvider('apple');
 
     try {
+      // 呼叫 Apple Sign-In
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
@@ -102,6 +137,7 @@ export function AccountScreen() {
       const token = await getToken();
       if (!token) return;
 
+      // 送到後端綁定
       const result = await authApi.bindIdentity(token, {
         provider: 'apple',
         identityToken: credential.identityToken,
@@ -115,6 +151,7 @@ export function AccountScreen() {
         );
       }
     } catch (error: any) {
+      // 用戶取消不顯示錯誤
       if (error.code !== 'ERR_REQUEST_CANCELED') {
         console.error('Apple binding failed:', error);
         Alert.alert(
@@ -127,18 +164,25 @@ export function AccountScreen() {
     }
   };
 
+  /**
+   * 處理綁定 Google 帳號
+   * TODO: 使用 expo-auth-session 實作 Google Sign-In
+   */
   const handleBindGoogle = async () => {
-    // Google Sign-In would be implemented here with expo-auth-session
     Alert.alert(
       isZh ? '功能開發中' : 'Coming Soon',
       isZh ? 'Google 綁定功能即將推出' : 'Google linking will be available soon'
     );
   };
 
+  /**
+   * 處理解除綁定
+   * 檢查限制條件後確認並執行解除
+   */
   const handleUnlink = async (identity: LinkedIdentity) => {
     if (unlinkingId) return;
 
-    // Check if this is the only identity
+    // 檢查是否為唯一身份
     if (identities.length <= 1) {
       Alert.alert(
         isZh ? '無法解除綁定' : 'Cannot Unlink',
@@ -147,7 +191,7 @@ export function AccountScreen() {
       return;
     }
 
-    // Check if this is the primary identity
+    // 檢查是否為主要身份
     if (identity.isPrimary) {
       Alert.alert(
         isZh ? '無法解除綁定' : 'Cannot Unlink',
@@ -156,6 +200,7 @@ export function AccountScreen() {
       return;
     }
 
+    // 確認對話框
     Alert.alert(
       isZh ? '確認解除綁定' : 'Confirm Unlink',
       isZh
@@ -198,8 +243,15 @@ export function AccountScreen() {
     );
   };
 
+  // ============ 輔助函數 ============
+
+  /**
+   * 檢查是否已綁定某提供者
+   */
   const hasProvider = (provider: string) =>
     identities.some(i => i.provider === provider);
+
+  // ============ 載入狀態 ============
 
   if (loading) {
     return (
@@ -209,8 +261,11 @@ export function AccountScreen() {
     );
   }
 
+  // ============ 主要渲染 ============
+
   return (
     <View style={styles.container}>
+      {/* ===== 頂部導航列 ===== */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
@@ -236,7 +291,7 @@ export function AccountScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Info Card */}
+        {/* ===== 說明卡片 ===== */}
         <View style={styles.infoCard}>
           <Ionicons name="information-circle" size={24} color={MibuBrand.info} />
           <Text style={styles.infoText}>
@@ -246,13 +301,14 @@ export function AccountScreen() {
           </Text>
         </View>
 
-        {/* Linked Accounts */}
+        {/* ===== 已綁定的帳號列表 ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             {isZh ? '已綁定的帳號' : 'Linked Accounts'}
           </Text>
 
           {identities.length === 0 ? (
+            // 空狀態
             <View style={styles.emptyState}>
               <Ionicons name="link-outline" size={48} color={MibuBrand.tan} />
               <Text style={styles.emptyText}>
@@ -260,11 +316,13 @@ export function AccountScreen() {
               </Text>
             </View>
           ) : (
+            // 身份列表
             <View style={styles.identitiesList}>
               {identities.map(identity => {
                 const provider = PROVIDER_INFO[identity.provider];
                 return (
                   <View key={identity.id} style={styles.identityCard}>
+                    {/* 提供者圖示 */}
                     <View style={[styles.providerIcon, { backgroundColor: provider?.color || MibuBrand.copper }]}>
                       <Ionicons
                         name={(provider?.icon || 'person') as any}
@@ -273,11 +331,13 @@ export function AccountScreen() {
                       />
                     </View>
 
+                    {/* 身份資訊 */}
                     <View style={styles.identityInfo}>
                       <View style={styles.identityHeader}>
                         <Text style={styles.providerName}>
                           {provider?.label[isZh ? 'zh' : 'en'] || identity.provider}
                         </Text>
+                        {/* 主要身份標籤 */}
                         {identity.isPrimary && (
                           <View style={styles.primaryBadge}>
                             <Text style={styles.primaryBadgeText}>
@@ -295,6 +355,7 @@ export function AccountScreen() {
                       </Text>
                     </View>
 
+                    {/* 解除綁定按鈕（非主要且有多個身份時顯示） */}
                     {!identity.isPrimary && identities.length > 1 && (
                       <TouchableOpacity
                         style={styles.unlinkButton}
@@ -315,14 +376,14 @@ export function AccountScreen() {
           )}
         </View>
 
-        {/* Add New Account */}
+        {/* ===== 新增綁定區塊 ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             {isZh ? '新增綁定' : 'Add Account'}
           </Text>
 
           <View style={styles.bindOptions}>
-            {/* Apple */}
+            {/* Apple 綁定按鈕（iOS 且未綁定時顯示） */}
             {Platform.OS === 'ios' && appleAvailable && !hasProvider('apple') && (
               <TouchableOpacity
                 style={styles.bindButton}
@@ -348,7 +409,7 @@ export function AccountScreen() {
               </TouchableOpacity>
             )}
 
-            {/* Google */}
+            {/* Google 綁定按鈕（未綁定時顯示） */}
             {!hasProvider('google') && (
               <TouchableOpacity
                 style={styles.bindButton}
@@ -374,6 +435,7 @@ export function AccountScreen() {
               </TouchableOpacity>
             )}
 
+            {/* 已綁定所有帳號的提示 */}
             {hasProvider('apple') && hasProvider('google') && (
               <View style={styles.allLinkedState}>
                 <Ionicons name="checkmark-circle" size={32} color={MibuBrand.success} />
@@ -385,23 +447,29 @@ export function AccountScreen() {
           </View>
         </View>
 
+        {/* 底部留白 */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
 }
 
+// ============ 樣式定義 ============
+
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.creamLight,
   },
+  // 載入狀態容器
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: MibuBrand.creamLight,
   },
+  // 頂部導航列
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -432,12 +500,14 @@ const styles = StyleSheet.create({
   headerPlaceholder: {
     width: 40,
   },
+  // 內容區
   content: {
     flex: 1,
   },
   contentContainer: {
     padding: 16,
   },
+  // 說明卡片
   infoCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -455,6 +525,7 @@ const styles = StyleSheet.create({
     color: '#1E40AF',
     lineHeight: 20,
   },
+  // 區塊
   section: {
     marginBottom: 24,
   },
@@ -466,6 +537,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 12,
   },
+  // 空狀態
   emptyState: {
     alignItems: 'center',
     paddingVertical: 32,
@@ -479,6 +551,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.tan,
     marginTop: 12,
   },
+  // 身份列表
   identitiesList: {
     gap: 12,
   },
@@ -539,6 +612,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // 綁定選項
   bindOptions: {
     gap: 12,
   },
@@ -572,6 +646,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: MibuBrand.copper,
   },
+  // 全部已綁定狀態
   allLinkedState: {
     alignItems: 'center',
     paddingVertical: 24,
@@ -586,6 +661,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.success,
     fontWeight: '600',
   },
+  // 底部留白
   bottomSpacer: {
     height: 100,
   },

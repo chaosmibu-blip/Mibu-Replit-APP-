@@ -1,6 +1,22 @@
 /**
  * ContributionScreen - 用戶貢獻畫面
- * 回報歇業、建議景點、社群投票
+ *
+ * 功能：
+ * - 三個 Tab：回報、建議、投票
+ * - 回報 Tab：檢舉景點歇業/搬遷/資訊錯誤
+ * - 建議 Tab：建議新增景點
+ * - 投票 Tab：對待審核景點/建議進行投票
+ * - 查看自己的回報/建議記錄
+ * - 獎勵經驗值機制
+ *
+ * 串接 API：
+ * - contributionApi.getMyReports() - 取得我的回報
+ * - contributionApi.getMySuggestions() - 取得我的建議
+ * - contributionApi.getPendingVotes() - 取得待投票景點
+ * - contributionApi.getPendingSuggestions() - 取得待投票建議
+ * - contributionApi.submitReport() - 提交回報
+ * - contributionApi.submitSuggestion() - 提交建議
+ * - contributionApi.submitVote() - 提交投票
  *
  * @see 後端合約: contracts/APP.md Phase 6
  */
@@ -30,8 +46,21 @@ import {
   ReportReason,
 } from '../../../types/contribution';
 
+// ============================================================
+// 常數定義
+// ============================================================
+
+/**
+ * Tab 類型
+ * - report: 回報
+ * - suggest: 建議
+ * - vote: 投票
+ */
 type TabType = 'report' | 'suggest' | 'vote';
 
+/**
+ * 回報原因選項
+ */
 const REPORT_REASONS: { value: ReportReason; label: { zh: string; en: string } }[] = [
   { value: 'closed', label: { zh: '已歇業', en: 'Closed' } },
   { value: 'relocated', label: { zh: '已搬遷', en: 'Relocated' } },
@@ -39,26 +68,46 @@ const REPORT_REASONS: { value: ReportReason; label: { zh: string; en: string } }
   { value: 'other', label: { zh: '其他', en: 'Other' } },
 ];
 
+// ============================================================
+// 主元件
+// ============================================================
+
 export function ContributionScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
+
+  // 語言判斷
   const isZh = state.language === 'zh-TW';
 
+  // ============================================================
+  // 狀態管理
+  // ============================================================
+
+  // 載入狀態
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // 當前選中的 Tab
   const [activeTab, setActiveTab] = useState<TabType>('report');
 
-  // Report tab state
+  // 回報 Tab 狀態
   const [myReports, setMyReports] = useState<MyReport[]>([]);
 
-  // Suggest tab state
+  // 建議 Tab 狀態
   const [mySuggestions, setMySuggestions] = useState<MySuggestion[]>([]);
 
-  // Vote tab state
+  // 投票 Tab 狀態
   const [pendingVotes, setPendingVotes] = useState<PendingVotePlace[]>([]);
   const [pendingSuggestions, setPendingSuggestions] = useState<PendingSuggestion[]>([]);
-  const [votingId, setVotingId] = useState<string | null>(null);
+  const [votingId, setVotingId] = useState<string | null>(null); // 正在投票的項目 ID
 
+  // ============================================================
+  // API 呼叫
+  // ============================================================
+
+  /**
+   * 根據當前 Tab 載入對應資料
+   */
   const loadData = useCallback(async () => {
     try {
       const token = await getToken();
@@ -89,11 +138,15 @@ export function ContributionScreen() {
     }
   }, [getToken, router, activeTab]);
 
+  // 切換 Tab 或初始載入時重新載入資料
   useEffect(() => {
     setLoading(true);
     loadData();
   }, [loadData]);
 
+  /**
+   * 下拉重新整理
+   */
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadData();

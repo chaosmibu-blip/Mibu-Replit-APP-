@@ -1,6 +1,16 @@
 /**
- * CrowdfundingScreen - 全球探索地圖
- * 顯示各地區解鎖狀態、募資進度
+ * CrowdfundingScreen - 全球探索地圖畫面
+ *
+ * 功能：
+ * - 顯示各地區解鎖狀態（已解鎖、募資中、即將開放、敬請期待）
+ * - 各地區募資進度
+ * - 我的贊助記錄
+ * - 點擊募資中地區跳轉至詳情頁
+ * - 統計數據卡片（已解鎖/募資中/即將開放數量）
+ *
+ * 串接 API：
+ * - crowdfundingApi.getCampaigns() - 取得募資活動列表
+ * - crowdfundingApi.getMyContributions() - 取得我的贊助記錄
  *
  * @see 後端合約: contracts/APP.md Phase 5
  */
@@ -22,20 +32,35 @@ import { crowdfundingApi } from '../../../services/crowdfundingApi';
 import { MibuBrand } from '../../../../constants/Colors';
 import { Campaign, MyContribution } from '../../../types/crowdfunding';
 
-// 地區狀態類型
+// ============================================================
+// 常數定義
+// ============================================================
+
+/**
+ * 地區狀態類型
+ * - unlocked: 已解鎖（可使用）
+ * - fundraising: 募資中
+ * - coming_soon: 即將開放
+ * - stay_tuned: 敬請期待
+ */
 type RegionStatus = 'unlocked' | 'fundraising' | 'coming_soon' | 'stay_tuned';
 
-// 地區資料結構
+/**
+ * 地區資料結構
+ */
 interface Region {
-  id: string;
-  name: { zh: string; en: string };
-  flag: string;
-  status: RegionStatus;
-  progress?: number; // 募資進度 0-100
-  campaignId?: string;
+  id: string;                           // 地區 ID
+  name: { zh: string; en: string };     // 地區名稱（中/英）
+  flag: string;                         // 國旗 emoji
+  status: RegionStatus;                 // 狀態
+  progress?: number;                    // 募資進度 0-100
+  campaignId?: string;                  // 關聯的募資活動 ID
 }
 
-// 模擬地區資料（實際應從 API 取得）
+/**
+ * 地區資料（模擬資料）
+ * 注意：實際應從後端 API 取得
+ */
 const REGIONS: Region[] = [
   { id: 'tw', name: { zh: '台灣', en: 'Taiwan' }, flag: '🇹🇼', status: 'unlocked' },
   { id: 'jp', name: { zh: '日本', en: 'Japan' }, flag: '🇯🇵', status: 'fundraising', progress: 68 },
@@ -49,7 +74,13 @@ const REGIONS: Region[] = [
   { id: 'hk', name: { zh: '香港', en: 'Hong Kong' }, flag: '🇭🇰', status: 'stay_tuned' },
 ];
 
-// 狀態配置
+/**
+ * 狀態視覺配置
+ * - label: 狀態標籤（中/英）
+ * - color: 文字色
+ * - bg: 背景色
+ * - icon: 狀態圖示
+ */
 const STATUS_CONFIG: Record<RegionStatus, {
   label: { zh: string; en: string };
   color: string;
@@ -82,18 +113,39 @@ const STATUS_CONFIG: Record<RegionStatus, {
   },
 };
 
+// ============================================================
+// 主元件
+// ============================================================
+
 export function CrowdfundingScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
+
+  // 語言判斷
   const isZh = state.language === 'zh-TW';
 
+  // ============================================================
+  // 狀態管理
+  // ============================================================
+
+  // 載入狀態
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // 地區列表
   const [regions, setRegions] = useState<Region[]>(REGIONS);
+
+  // 募資活動列表
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+
+  // 我的贊助記錄
   const [myContributions, setMyContributions] = useState<MyContribution[]>([]);
 
-  // 統計數據
+  // ============================================================
+  // 計算衍生數據
+  // ============================================================
+
+  // 各狀態地區統計
   const stats = {
     unlocked: regions.filter(r => r.status === 'unlocked').length,
     fundraising: regions.filter(r => r.status === 'fundraising').length,

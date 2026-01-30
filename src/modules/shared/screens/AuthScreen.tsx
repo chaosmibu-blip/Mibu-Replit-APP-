@@ -1,3 +1,18 @@
+/**
+ * AuthScreen - 登入/註冊畫面
+ *
+ * 功能說明：
+ * - 提供帳號密碼登入、註冊功能
+ * - 支援訪客模式快速體驗
+ * - 註冊時可選擇身份（旅客/商家/專員）
+ * - 支援嵌入模式用於帳號合併流程（#036）
+ *
+ * 串接的 API：
+ * - POST /api/auth/login - 帳號密碼登入
+ * - POST /api/auth/register - 註冊新帳號
+ *
+ * @see 後端合約: contracts/APP.md Phase 1
+ */
 import React, { useState } from 'react';
 import {
   View,
@@ -17,6 +32,8 @@ import { apiService } from '../../../services/api';
 import { UserRole } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
 
+// ============ 介面定義 ============
+
 interface AuthScreenProps {
   visible: boolean;
   onClose: () => void;
@@ -28,26 +45,38 @@ interface AuthScreenProps {
   title?: string;
 }
 
+/** 認證模式：登入或註冊 */
 type AuthMode = 'login' | 'register';
 
+// ============ 常數定義 ============
+
+/** 角色選項設定 */
 const ROLE_OPTIONS: { value: UserRole; labelZh: string; labelEn: string; icon: string }[] = [
   { value: 'traveler', labelZh: '旅客', labelEn: 'Traveler', icon: 'airplane-outline' },
   { value: 'merchant', labelZh: '商家', labelEn: 'Merchant', icon: 'storefront-outline' },
   { value: 'specialist', labelZh: '專員', labelEn: 'Specialist', icon: 'shield-checkmark-outline' },
 ];
 
+// ============ 元件本體 ============
+
 export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }: AuthScreenProps) {
   const { setUser, state } = useApp();
-  const [mode, setMode] = useState<AuthMode>('login');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [selectedRole, setSelectedRole] = useState<UserRole>('traveler');
+  // ============ 狀態管理 ============
+
+  const [mode, setMode] = useState<AuthMode>('login'); // 當前模式：登入或註冊
+  const [loading, setLoading] = useState(false); // 是否正在載入（API 請求中）
+  const [error, setError] = useState<string | null>(null); // 錯誤訊息
+
+  // 表單欄位
+  const [username, setUsername] = useState(''); // 帳號（Email）
+  const [password, setPassword] = useState(''); // 密碼
+  const [name, setName] = useState(''); // 姓名（註冊時使用）
+  const [selectedRole, setSelectedRole] = useState<UserRole>('traveler'); // 選擇的身份
 
   const isZh = state.language === 'zh-TW';
+
+  // ============ 多語系翻譯 ============
 
   const translations = {
     login: isZh ? '登入' : 'Sign In',
@@ -62,9 +91,15 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
     guestNote: isZh ? '訪客模式下，資料僅保存在本機裝置' : 'In guest mode, data is only saved locally',
     pendingApproval: isZh ? '商家和專員帳號需管理員審核後才能使用' : 'Merchant and Specialist accounts require admin approval',
     loginFailed: isZh ? '登入失敗，請檢查帳號密碼' : 'Login failed, please check your credentials',
-    registerFailed: isZh ? '註冊失敗，請稍後再試' : 'Registration failed, please try again',
+    registerFailed: isZh ? '註冊失敗，請稀後再試' : 'Registration failed, please try again',
   };
 
+  // ============ 輔助函數 ============
+
+  /**
+   * 重置表單
+   * 清空所有欄位並還原預設值
+   */
   const resetForm = () => {
     setUsername('');
     setPassword('');
@@ -73,7 +108,14 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
     setError(null);
   };
 
+  // ============ 事件處理 ============
+
+  /**
+   * 處理登入
+   * 驗證欄位後呼叫登入 API
+   */
   const handleLogin = async () => {
+    // 驗證必填欄位
     if (!username.trim() || !password.trim()) {
       setError(isZh ? '請填寫帳號和密碼' : 'Please enter username and password');
       return;
@@ -92,6 +134,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
         return;
       }
 
+      // 正常登入流程：設定用戶並關閉 Modal
       setUser(response.user, response.token);
       resetForm();
       onClose();
@@ -103,7 +146,12 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
     }
   };
 
+  /**
+   * 處理註冊
+   * 驗證欄位後呼叫註冊 API
+   */
   const handleRegister = async () => {
+    // 驗證必填欄位
     if (!username.trim() || !password.trim() || !name.trim()) {
       setError(isZh ? '請填寫所有欄位' : 'Please fill in all fields');
       return;
@@ -130,6 +178,10 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
     }
   };
 
+  /**
+   * 處理訪客登入
+   * 建立本地訪客帳號，不需要 API 呼叫
+   */
   const handleGuestLogin = () => {
     setUser({
       id: 'guest',
@@ -145,14 +197,24 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
     onClose();
   };
 
+  /**
+   * 處理關閉
+   * 重置表單並關閉 Modal
+   */
   const handleClose = () => {
     resetForm();
     onClose();
   };
 
-  // #036 帳號合併：嵌入模式的內容（不含 Modal 外殼）
+  // ============ 渲染內容 ============
+
+  /**
+   * 渲染主要內容
+   * #036 帳號合併：抽出共用內容供 Modal 和嵌入模式使用
+   */
   const renderContent = () => (
     <View style={embedded ? styles.embeddedContainer : styles.container}>
+      {/* ===== 標題列（僅 Modal 模式顯示） ===== */}
       {!embedded && (
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
@@ -166,137 +228,148 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
 
       <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
+          {/* ===== 頭像圖示（僅 Modal 模式顯示） ===== */}
           {!embedded && (
             <View style={styles.iconContainer}>
               <Ionicons name="person-circle" size={64} color={MibuBrand.brown} />
             </View>
           )}
 
-              {error && (
-                <View style={styles.errorContainer}>
-                  <Ionicons name="alert-circle" size={20} color="#ef4444" />
-                  <Text style={styles.errorText}>{error}</Text>
-                </View>
-              )}
-
-              {mode === 'register' && (
-                <TextInput
-                  style={styles.input}
-                  placeholder={translations.name}
-                  value={name}
-                  onChangeText={setName}
-                  placeholderTextColor="#94a3b8"
-                  autoCapitalize="words"
-                />
-              )}
-
-              <TextInput
-                style={styles.input}
-                placeholder={translations.username}
-                value={username}
-                onChangeText={setUsername}
-                placeholderTextColor="#94a3b8"
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-
-              <TextInput
-                style={styles.input}
-                placeholder={translations.password}
-                value={password}
-                onChangeText={setPassword}
-                placeholderTextColor="#94a3b8"
-                secureTextEntry
-              />
-
-              {mode === 'register' && (
-                <>
-                  <Text style={styles.roleLabel}>{translations.selectRole}</Text>
-                  <View style={styles.roleGrid}>
-                    {ROLE_OPTIONS.map(role => (
-                      <TouchableOpacity
-                        key={role.value}
-                        style={[
-                          styles.roleCard,
-                          selectedRole === role.value && styles.roleCardActive,
-                        ]}
-                        onPress={() => setSelectedRole(role.value)}
-                      >
-                        <Ionicons
-                          name={role.icon as any}
-                          size={24}
-                          color={selectedRole === role.value ? MibuBrand.brown : MibuBrand.copper}
-                        />
-                        <Text style={[
-                          styles.roleText,
-                          selectedRole === role.value && styles.roleTextActive,
-                        ]}>
-                          {isZh ? role.labelZh : role.labelEn}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                  {selectedRole !== 'traveler' && (
-                    <Text style={styles.approvalNote}>{translations.pendingApproval}</Text>
-                  )}
-                </>
-              )}
-
-              <TouchableOpacity 
-                style={[styles.submitButton, loading && styles.submitButtonDisabled]} 
-                onPress={mode === 'login' ? handleLogin : handleRegister}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#ffffff" />
-                ) : (
-                  <Text style={styles.submitButtonText}>
-                    {mode === 'login' ? translations.login : translations.register}
-                  </Text>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.switchButton}
-                onPress={() => {
-                  setMode(mode === 'login' ? 'register' : 'login');
-                  setError(null);
-                }}
-              >
-                <Text style={styles.switchText}>
-                  {mode === 'login' ? translations.noAccount : translations.hasAccount}
-                  <Text style={styles.switchTextBold}>
-                    {' '}{mode === 'login' ? translations.register : translations.login}
-                  </Text>
-                </Text>
-              </TouchableOpacity>
-
-              {/* 嵌入模式不顯示訪客登入 */}
-              {!embedded && (
-                <>
-                  <View style={styles.divider}>
-                    <View style={styles.dividerLine} />
-                    <Text style={styles.dividerText}>OR</Text>
-                    <View style={styles.dividerLine} />
-                  </View>
-
-                  <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
-                    <Ionicons name="person-outline" size={20} color={MibuBrand.brown} />
-                    <Text style={styles.guestButtonText}>{translations.guestLogin}</Text>
-                  </TouchableOpacity>
-
-                  <Text style={styles.note}>{translations.guestNote}</Text>
-                </>
-              )}
+          {/* ===== 錯誤訊息 ===== */}
+          {error && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={20} color="#ef4444" />
+              <Text style={styles.errorText}>{error}</Text>
             </View>
-          </ScrollView>
+          )}
+
+          {/* ===== 姓名欄位（僅註冊模式） ===== */}
+          {mode === 'register' && (
+            <TextInput
+              style={styles.input}
+              placeholder={translations.name}
+              value={name}
+              onChangeText={setName}
+              placeholderTextColor="#94a3b8"
+              autoCapitalize="words"
+            />
+          )}
+
+          {/* ===== 帳號欄位 ===== */}
+          <TextInput
+            style={styles.input}
+            placeholder={translations.username}
+            value={username}
+            onChangeText={setUsername}
+            placeholderTextColor="#94a3b8"
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+
+          {/* ===== 密碼欄位 ===== */}
+          <TextInput
+            style={styles.input}
+            placeholder={translations.password}
+            value={password}
+            onChangeText={setPassword}
+            placeholderTextColor="#94a3b8"
+            secureTextEntry
+          />
+
+          {/* ===== 身份選擇（僅註冊模式） ===== */}
+          {mode === 'register' && (
+            <>
+              <Text style={styles.roleLabel}>{translations.selectRole}</Text>
+              <View style={styles.roleGrid}>
+                {ROLE_OPTIONS.map(role => (
+                  <TouchableOpacity
+                    key={role.value}
+                    style={[
+                      styles.roleCard,
+                      selectedRole === role.value && styles.roleCardActive,
+                    ]}
+                    onPress={() => setSelectedRole(role.value)}
+                  >
+                    <Ionicons
+                      name={role.icon as any}
+                      size={24}
+                      color={selectedRole === role.value ? MibuBrand.brown : MibuBrand.copper}
+                    />
+                    <Text style={[
+                      styles.roleText,
+                      selectedRole === role.value && styles.roleTextActive,
+                    ]}>
+                      {isZh ? role.labelZh : role.labelEn}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {/* 非旅客身份的審核提示 */}
+              {selectedRole !== 'traveler' && (
+                <Text style={styles.approvalNote}>{translations.pendingApproval}</Text>
+              )}
+            </>
+          )}
+
+          {/* ===== 送出按鈕 ===== */}
+          <TouchableOpacity
+            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+            onPress={mode === 'login' ? handleLogin : handleRegister}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={styles.submitButtonText}>
+                {mode === 'login' ? translations.login : translations.register}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {/* ===== 模式切換按鈕 ===== */}
+          <TouchableOpacity
+            style={styles.switchButton}
+            onPress={() => {
+              setMode(mode === 'login' ? 'register' : 'login');
+              setError(null);
+            }}
+          >
+            <Text style={styles.switchText}>
+              {mode === 'login' ? translations.noAccount : translations.hasAccount}
+              <Text style={styles.switchTextBold}>
+                {' '}{mode === 'login' ? translations.register : translations.login}
+              </Text>
+            </Text>
+          </TouchableOpacity>
+
+          {/* ===== 訪客登入區塊（嵌入模式不顯示） ===== */}
+          {!embedded && (
+            <>
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>OR</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
+                <Ionicons name="person-outline" size={20} color={MibuBrand.brown} />
+                <Text style={styles.guestButtonText}>{translations.guestLogin}</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.note}>{translations.guestNote}</Text>
+            </>
+          )}
         </View>
+      </ScrollView>
+    </View>
   );
 
   // #036 帳號合併：嵌入模式直接返回內容，不包 Modal
   if (embedded) {
     return renderContent();
   }
+
+  // ============ Modal 模式渲染 ============
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -310,7 +383,10 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
   );
 }
 
+// ============ 樣式定義 ============
+
 const styles = StyleSheet.create({
+  // 背景遮罩
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -318,6 +394,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
+  // Modal 容器
   container: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 24,
@@ -333,6 +410,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingTop: 8,
   },
+  // 標題列
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -350,16 +428,19 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 4,
   },
+  // 可捲動內容區
   scrollContent: {
     maxHeight: 600,
   },
   content: {
     padding: 24,
   },
+  // 頭像圖示容器
   iconContainer: {
     alignItems: 'center',
     marginBottom: 16,
   },
+  // 錯誤訊息
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -374,6 +455,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     flex: 1,
   },
+  // 輸入欄位
   input: {
     backgroundColor: MibuBrand.creamLight,
     borderWidth: 2,
@@ -384,6 +466,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
     marginBottom: 12,
   },
+  // 身份選擇
   roleLabel: {
     fontSize: 14,
     fontWeight: '600',
@@ -424,6 +507,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
   },
+  // 送出按鈕
   submitButton: {
     backgroundColor: MibuBrand.brown,
     paddingVertical: 16,
@@ -439,6 +523,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
+  // 模式切換
   switchButton: {
     paddingVertical: 16,
     alignItems: 'center',
@@ -451,6 +536,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: MibuBrand.brown,
   },
+  // 分隔線
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -466,6 +552,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: MibuBrand.tan,
   },
+  // 訪客登入按鈕
   guestButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -481,6 +568,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: MibuBrand.brown,
   },
+  // 底部備註
   note: {
     fontSize: 12,
     color: MibuBrand.tan,

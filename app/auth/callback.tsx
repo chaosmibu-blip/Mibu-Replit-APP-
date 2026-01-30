@@ -1,3 +1,13 @@
+/**
+ * OAuth 回調處理頁面
+ *
+ * 處理 OAuth 登入完成後的回調：
+ * - 從 URL 參數取得 token
+ * - 向後端驗證 token 並取得用戶資料
+ * - 設定用戶狀態並導向對應頁面
+ *
+ * 主要用於 Web 平台的 OAuth 流程
+ */
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';

@@ -1,3 +1,18 @@
+/**
+ * MerchantCouponsScreen - 優惠券管理
+ *
+ * 功能說明：
+ * - 顯示商家所有優惠券列表
+ * - 支援新增、編輯、刪除優惠券
+ * - 支援啟用/停用優惠券
+ * - 顯示各稀有度等級的抽中機率
+ *
+ * 串接的 API：
+ * - GET /merchant/coupons - 取得優惠券列表
+ * - POST /merchant/coupons - 建立優惠券
+ * - PUT /merchant/coupons/:id - 更新優惠券
+ * - DELETE /merchant/coupons/:id - 刪除優惠券
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -21,24 +36,33 @@ import { TierBadge } from '../../shared/components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 
+// ============ 主元件 ============
 export function MerchantCouponsScreen() {
+  // ============ Hooks ============
   const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
+  // ============ 狀態變數 ============
+  // loading: 資料載入狀態
   const [loading, setLoading] = useState(true);
+  // coupons: 優惠券列表
   const [coupons, setCoupons] = useState<MerchantCoupon[]>([]);
+  // showModal: 是否顯示新增/編輯彈窗
   const [showModal, setShowModal] = useState(false);
+  // editingCoupon: 正在編輯的優惠券（null 表示新增模式）
   const [editingCoupon, setEditingCoupon] = useState<MerchantCoupon | null>(null);
+  // saving: 儲存中狀態
   const [saving, setSaving] = useState(false);
 
+  // formData: 表單資料
   const [formData, setFormData] = useState<{
-    name: string;
-    tier: MerchantCouponTier;
-    content: string;
-    terms: string;
-    quantity: string;
-    validUntil: string;
+    name: string;           // 優惠券名稱
+    tier: MerchantCouponTier; // 稀有度等級
+    content: string;        // 優惠內容
+    terms: string;          // 使用條款
+    quantity: string;       // 發放數量
+    validUntil: string;     // 有效期限
   }>({
     name: '',
     tier: 'R',
@@ -48,6 +72,7 @@ export function MerchantCouponsScreen() {
     validUntil: '',
   });
 
+  // ============ 多語系翻譯 ============
   const translations = {
     title: isZh ? '優惠券管理' : 'Coupon Management',
     addCoupon: isZh ? '新增優惠券' : 'Add Coupon',
@@ -70,10 +95,17 @@ export function MerchantCouponsScreen() {
     tierProbability: isZh ? '抽中機率' : 'Draw Probability',
   };
 
+  // ============ Effect Hooks ============
+  // 元件載入時取得優惠券列表
   useEffect(() => {
     loadCoupons();
   }, []);
 
+  // ============ 資料載入函數 ============
+
+  /**
+   * loadCoupons - 載入優惠券列表
+   */
   const loadCoupons = async () => {
     try {
       setLoading(true);
@@ -89,6 +121,11 @@ export function MerchantCouponsScreen() {
     }
   };
 
+  // ============ 彈窗操作函數 ============
+
+  /**
+   * openCreateModal - 開啟新增優惠券彈窗
+   */
   const openCreateModal = () => {
     setEditingCoupon(null);
     setFormData({
@@ -102,6 +139,10 @@ export function MerchantCouponsScreen() {
     setShowModal(true);
   };
 
+  /**
+   * openEditModal - 開啟編輯優惠券彈窗
+   * @param coupon - 要編輯的優惠券
+   */
   const openEditModal = (coupon: MerchantCoupon) => {
     setEditingCoupon(coupon);
     setFormData({
@@ -115,7 +156,14 @@ export function MerchantCouponsScreen() {
     setShowModal(true);
   };
 
+  // ============ 事件處理函數 ============
+
+  /**
+   * handleSave - 處理儲存優惠券
+   * 根據 editingCoupon 判斷是新增還是更新
+   */
   const handleSave = async () => {
+    // 驗證必填欄位
     if (!formData.name.trim() || !formData.content.trim()) {
       Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請填寫必要欄位' : 'Please fill required fields');
       return;
@@ -126,10 +174,12 @@ export function MerchantCouponsScreen() {
       const token = await getToken();
       if (!token) return;
 
+      // 解析數量，預設為 100
       const parsedQuantity = parseInt(formData.quantity, 10);
       const quantity = isNaN(parsedQuantity) || parsedQuantity < 1 ? 100 : parsedQuantity;
 
       if (editingCoupon) {
+        // 更新模式：只傳送有變更的欄位
         const updateParams: UpdateMerchantCouponParams = {};
         if (formData.name.trim() !== editingCoupon.name) {
           updateParams.name = formData.name.trim();
@@ -152,10 +202,12 @@ export function MerchantCouponsScreen() {
           updateParams.validUntil = validUntilVal;
         }
 
+        // 只有有變更才呼叫 API
         if (Object.keys(updateParams).length > 0) {
           await apiService.updateMerchantCoupon(token, editingCoupon.id, updateParams);
         }
       } else {
+        // 新增模式
         const createParams: CreateMerchantCouponParams = {
           name: formData.name.trim(),
           tier: formData.tier,
@@ -178,6 +230,10 @@ export function MerchantCouponsScreen() {
     }
   };
 
+  /**
+   * handleDelete - 處理刪除優惠券
+   * @param couponId - 優惠券 ID
+   */
   const handleDelete = async (couponId: number) => {
     Alert.alert(
       isZh ? '確認刪除' : 'Confirm Delete',
@@ -203,6 +259,10 @@ export function MerchantCouponsScreen() {
     );
   };
 
+  /**
+   * toggleActive - 切換優惠券啟用/停用狀態
+   * @param coupon - 優惠券
+   */
   const toggleActive = async (coupon: MerchantCoupon) => {
     try {
       const token = await getToken();
@@ -215,16 +275,29 @@ export function MerchantCouponsScreen() {
     }
   };
 
+  // ============ 工具函數 ============
+
+  /**
+   * formatDate - 格式化日期
+   * @param dateStr - ISO 日期字串
+   * @returns 格式化後的日期字串
+   */
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString(isZh ? 'zh-TW' : 'en-US');
   };
 
+  /**
+   * isExpired - 檢查是否已過期
+   * @param dateStr - ISO 日期字串
+   * @returns 是否已過期
+   */
   const isExpired = (dateStr: string | null) => {
     if (!dateStr) return false;
     return new Date(dateStr) < new Date();
   };
 
+  // ============ 載入中畫面 ============
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -233,23 +306,29 @@ export function MerchantCouponsScreen() {
     );
   }
 
+  // ============ 主要 JSX 渲染 ============
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={100}
     >
+      {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
+        {/* 返回按鈕 */}
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{translations.title}</Text>
+        {/* 新增按鈕 */}
         <TouchableOpacity onPress={openCreateModal} style={styles.addButton}>
           <Ionicons name="add" size={24} color={MibuBrand.warmWhite} />
         </TouchableOpacity>
       </View>
 
+      {/* ============ 主要內容區 ============ */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        {/* ============ 抽中機率資訊卡 ============ */}
         <View style={styles.probabilityInfo}>
           <Text style={styles.probabilityTitle}>{translations.tierProbability}</Text>
           <View style={styles.probabilityGrid}>
@@ -267,7 +346,9 @@ export function MerchantCouponsScreen() {
           </View>
         </View>
 
+        {/* ============ 優惠券列表 ============ */}
         {coupons.length === 0 ? (
+          // 空狀態
           <View style={styles.emptyState}>
             <Ionicons name="pricetag-outline" size={64} color={MibuBrand.tan} />
             <Text style={styles.emptyText}>{translations.noCoupons}</Text>
@@ -277,6 +358,7 @@ export function MerchantCouponsScreen() {
             </TouchableOpacity>
           </View>
         ) : (
+          // 優惠券卡片列表
           coupons.map(coupon => (
             <TouchableOpacity
               key={coupon.id}
@@ -286,6 +368,7 @@ export function MerchantCouponsScreen() {
               ]}
               onPress={() => openEditModal(coupon)}
             >
+              {/* 卡片頂部：稀有度 + 狀態 */}
               <View style={styles.couponHeader}>
                 <TierBadge tier={coupon.tier} isZh={isZh} />
                 <View style={[
@@ -302,9 +385,11 @@ export function MerchantCouponsScreen() {
                 </View>
               </View>
 
+              {/* 優惠券名稱與內容 */}
               <Text style={styles.couponName}>{coupon.name}</Text>
               <Text style={styles.couponContent}>{coupon.content}</Text>
 
+              {/* 數量與有效期資訊 */}
               <View style={styles.couponMeta}>
                 <View style={styles.metaItem}>
                   <Ionicons name="layers-outline" size={14} color={MibuBrand.copper} />
@@ -320,7 +405,9 @@ export function MerchantCouponsScreen() {
                 )}
               </View>
 
+              {/* 操作按鈕 */}
               <View style={styles.couponActions}>
+                {/* 啟用/停用切換 */}
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => toggleActive(coupon)}
@@ -331,6 +418,7 @@ export function MerchantCouponsScreen() {
                     color={coupon.isActive ? SemanticColors.warningDark : SemanticColors.successDark}
                   />
                 </TouchableOpacity>
+                {/* 刪除按鈕 */}
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => handleDelete(coupon.id)}
@@ -342,15 +430,18 @@ export function MerchantCouponsScreen() {
           ))
         )}
 
+        {/* 底部間距 */}
         <View style={{ height: 100 }} />
       </ScrollView>
 
+      {/* ============ 新增/編輯彈窗 ============ */}
       <Modal visible={showModal} animationType="slide" transparent>
         <KeyboardAvoidingView
           style={styles.modalOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <View style={styles.modalContent}>
+            {/* 彈窗標題 */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
                 {editingCoupon ? translations.editCoupon : translations.addCoupon}
@@ -360,7 +451,9 @@ export function MerchantCouponsScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* 表單內容 */}
             <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              {/* 優惠券名稱 */}
               <Text style={styles.inputLabel}>{translations.name} *</Text>
               <TextInput
                 style={styles.input}
@@ -370,6 +463,7 @@ export function MerchantCouponsScreen() {
                 placeholderTextColor={MibuBrand.tan}
               />
 
+              {/* 稀有度等級選擇 */}
               <Text style={styles.inputLabel}>{translations.tier}</Text>
               <View style={styles.tierGrid}>
                 {TIER_ORDER.map(tier => {
@@ -397,6 +491,7 @@ export function MerchantCouponsScreen() {
                 })}
               </View>
 
+              {/* 優惠內容 */}
               <Text style={styles.inputLabel}>{translations.content} *</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
@@ -408,6 +503,7 @@ export function MerchantCouponsScreen() {
                 numberOfLines={3}
               />
 
+              {/* 使用條款 */}
               <Text style={styles.inputLabel}>{translations.terms}</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
@@ -419,6 +515,7 @@ export function MerchantCouponsScreen() {
                 numberOfLines={2}
               />
 
+              {/* 數量與有效期限 */}
               <View style={styles.inputRow}>
                 <View style={styles.inputHalf}>
                   <Text style={styles.inputLabel}>{translations.quantity}</Text>
@@ -444,6 +541,7 @@ export function MerchantCouponsScreen() {
               </View>
             </ScrollView>
 
+            {/* 彈窗底部按鈕 */}
             <View style={styles.modalFooter}>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -470,17 +568,21 @@ export function MerchantCouponsScreen() {
   );
 }
 
+// ============ 樣式定義 ============
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.creamLight,
   },
+  // 載入中容器
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: MibuBrand.creamLight,
   },
+  // 頂部標題區
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -492,17 +594,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
   },
+  // 返回按鈕
   backButton: {
     width: 40,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // 標題文字
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
+  // 新增按鈕
   addButton: {
     width: 40,
     height: 40,
@@ -511,10 +616,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // 主要內容區
   content: {
     flex: 1,
     padding: 16,
   },
+  // 機率資訊卡
   probabilityInfo: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
@@ -523,36 +630,43 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
   },
+  // 機率資訊標題
   probabilityTitle: {
     fontSize: 14,
     fontWeight: '600',
     color: MibuBrand.copper,
     marginBottom: 12,
   },
+  // 機率網格
   probabilityGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
+  // 機率項目
   probabilityItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
+  // 機率數值
   probabilityValue: {
     fontSize: 12,
     fontWeight: '600',
   },
+  // 空狀態容器
   emptyState: {
     alignItems: 'center',
     paddingVertical: 60,
   },
+  // 空狀態文字
   emptyText: {
     fontSize: 16,
     color: MibuBrand.tan,
     marginTop: 16,
     marginBottom: 24,
   },
+  // 空狀態新增按鈕
   emptyAddButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -562,11 +676,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
   },
+  // 空狀態新增按鈕文字
   emptyAddText: {
     fontSize: 16,
     fontWeight: '600',
     color: MibuBrand.warmWhite,
   },
+  // 優惠券卡片
   couponCard: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
@@ -575,60 +691,73 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
   },
+  // 優惠券卡片（停用狀態）
   couponCardInactive: {
     opacity: 0.6,
   },
+  // 優惠券卡片頂部
   couponHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
   },
+  // 狀態標籤
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
   },
+  // 狀態標籤（啟用中）
   statusActive: {
     backgroundColor: SemanticColors.successLight,
   },
+  // 狀態標籤（已停用）
   statusInactive: {
     backgroundColor: MibuBrand.tanLight,
   },
+  // 狀態標籤（已過期）
   statusExpired: {
     backgroundColor: SemanticColors.errorLight,
   },
+  // 狀態標籤文字
   statusText: {
     fontSize: 11,
     fontWeight: '600',
     color: MibuBrand.brownDark,
   },
+  // 優惠券名稱
   couponName: {
     fontSize: 18,
     fontWeight: '700',
     color: MibuBrand.brownDark,
     marginBottom: 6,
   },
+  // 優惠券內容
   couponContent: {
     fontSize: 14,
     color: MibuBrand.copper,
     lineHeight: 20,
     marginBottom: 12,
   },
+  // 優惠券資訊區
   couponMeta: {
     flexDirection: 'row',
     gap: 16,
     marginBottom: 12,
   },
+  // 資訊項目
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
+  // 資訊文字
   metaText: {
     fontSize: 12,
     color: MibuBrand.copper,
   },
+  // 操作按鈕區
   couponActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -637,20 +766,24 @@ const styles = StyleSheet.create({
     borderTopColor: MibuBrand.tanLight,
     paddingTop: 12,
   },
+  // 操作按鈕
   actionButton: {
     padding: 8,
   },
+  // 彈窗遮罩
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
+  // 彈窗內容
   modalContent: {
     backgroundColor: MibuBrand.warmWhite,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
   },
+  // 彈窗頂部
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -659,20 +792,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
   },
+  // 彈窗標題
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
+  // 彈窗主體
   modalBody: {
     padding: 20,
   },
+  // 輸入標籤
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: MibuBrand.brownDark,
     marginBottom: 8,
   },
+  // 輸入框
   input: {
     backgroundColor: MibuBrand.creamLight,
     borderRadius: 12,
@@ -683,16 +820,19 @@ const styles = StyleSheet.create({
     borderColor: MibuBrand.tanLight,
     marginBottom: 16,
   },
+  // 多行輸入框
   textArea: {
     minHeight: 80,
     textAlignVertical: 'top',
   },
+  // 等級選擇網格
   tierGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
     marginBottom: 16,
   },
+  // 等級選項
   tierOption: {
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -701,17 +841,21 @@ const styles = StyleSheet.create({
     borderColor: MibuBrand.tanLight,
     backgroundColor: MibuBrand.creamLight,
   },
+  // 等級選項文字
   tierOptionText: {
     fontSize: 13,
     color: MibuBrand.copper,
   },
+  // 輸入框並排
   inputRow: {
     flexDirection: 'row',
     gap: 12,
   },
+  // 半寬輸入框
   inputHalf: {
     flex: 1,
   },
+  // 彈窗底部
   modalFooter: {
     flexDirection: 'row',
     gap: 12,
@@ -719,6 +863,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: MibuBrand.tanLight,
   },
+  // 取消按鈕
   cancelButton: {
     flex: 1,
     paddingVertical: 14,
@@ -726,11 +871,13 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.tanLight,
     alignItems: 'center',
   },
+  // 取消按鈕文字
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: MibuBrand.copper,
   },
+  // 儲存按鈕
   saveButton: {
     flex: 1,
     paddingVertical: 14,
@@ -738,9 +885,11 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.brown,
     alignItems: 'center',
   },
+  // 儲存按鈕（停用狀態）
   saveButtonDisabled: {
     opacity: 0.7,
   },
+  // 儲存按鈕文字
   saveButtonText: {
     fontSize: 16,
     fontWeight: '600',

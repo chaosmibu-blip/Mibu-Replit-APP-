@@ -1,6 +1,16 @@
 /**
  * HomeScreen - 首頁
- * 用戶問候、等級卡片、每日任務、公告、活動
+ *
+ * 功能：
+ * - 用戶問候（根據語言顯示不同文字）
+ * - 等級卡片（顯示 Lv、稱號、階段、連續登入、XP 進度）
+ * - 每日任務卡片（點擊跳轉 /economy）
+ * - 活動 Tab 切換（公告 / 在地活動 / 限時活動）
+ *
+ * 串接 API：
+ * - eventApi.getHomeEvents() - 取得首頁活動
+ * - economyApi.getLevelInfo() - 取得用戶等級資料
+ * - economyApi.getDailyTasks() - 取得每日任務進度
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import {
@@ -22,34 +32,58 @@ import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
 
-// 用戶等級資料
+// ============================================================
+// 型別定義
+// ============================================================
+
+/**
+ * 用戶等級資料介面
+ * 用於顯示等級卡片的各項數據
+ */
 interface UserLevelData {
-  level: number;
-  title: string;
-  phase: number;
-  currentXp: number;
-  nextLevelXp: number;
-  totalXp: number;
-  loginStreak: number;
+  level: number;        // 當前等級
+  title: string;        // 等級稱號（如：旅行新手、探索者）
+  phase: number;        // 階段（用於顯示進度）
+  currentXp: number;    // 當前經驗值
+  nextLevelXp: number;  // 升級所需經驗值
+  totalXp: number;      // 總經驗值
+  loginStreak: number;  // 連續登入天數
 }
 
-// 每日任務資料
+/**
+ * 每日任務摘要介面
+ * 用於顯示每日任務卡片
+ */
 interface DailyTaskSummary {
-  completed: number;
-  total: number;
-  earnedXp: number;
+  completed: number;  // 已完成任務數
+  total: number;      // 總任務數
+  earnedXp: number;   // 已獲得經驗值
 }
+
+// ============================================================
+// 主元件
+// ============================================================
 
 export function HomeScreen() {
+  // ============================================================
+  // Hooks & Context
+  // ============================================================
   const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
+  // ============================================================
+  // 狀態管理
+  // ============================================================
+
+  // 載入狀態
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // 活動 Tab 當前選中項（公告/在地/限時）
   const [activeEventTab, setActiveEventTab] = useState<'announcements' | 'local' | 'flash'>('announcements');
 
-  // State
+  // 用戶等級資料（預設值）
   const [userLevel, setUserLevel] = useState<UserLevelData>({
     level: 1,
     title: isZh ? '旅行新手' : 'Newbie',
@@ -59,22 +93,34 @@ export function HomeScreen() {
     totalXp: 0,
     loginStreak: 1,
   });
+
+  // 每日任務資料（預設值）
   const [dailyTask, setDailyTask] = useState<DailyTaskSummary>({
     completed: 0,
     total: 5,
     earnedXp: 0,
   });
+
+  // 活動資料（公告、節日、限時活動）
   const [events, setEvents] = useState<{
     announcements: Event[];
     festivals: Event[];
     limitedEvents: Event[];
   }>({ announcements: [], festivals: [], limitedEvents: [] });
 
+  // ============================================================
+  // 資料載入
+  // ============================================================
+
+  /**
+   * 載入首頁所有資料
+   * 包含：活動列表、用戶等級、每日任務
+   */
   const loadData = useCallback(async () => {
     try {
       const token = await getToken();
 
-      // 載入活動
+      // 載入活動列表（公告、節日、限時活動）
       const eventsRes = await eventApi.getHomeEvents().catch(() => ({
         announcements: [],
         festivals: [],
@@ -82,7 +128,7 @@ export function HomeScreen() {
       }));
       setEvents(eventsRes);
 
-      // 載入用戶等級資料
+      // 載入用戶等級資料（需要登入）
       if (token) {
         try {
           const levelResponse = await economyApi.getLevelInfo(token);
@@ -93,7 +139,14 @@ export function HomeScreen() {
             // 後端返回 currentLevel，前端需要映射
             const userLv = rawLevel?.currentLevel ?? rawLevel?.level ?? 1;
 
-            // 根據等級決定稱號
+            /**
+             * 根據等級決定稱號
+             * Lv 50+ = 傳奇旅者
+             * Lv 30+ = 資深冒險家
+             * Lv 15+ = 旅行達人
+             * Lv 5+  = 探索者
+             * Lv 1+  = 旅行新手
+             */
             const getLevelTitle = (level: number): string => {
               if (level >= 50) return isZh ? '傳奇旅者' : 'Legendary';
               if (level >= 30) return isZh ? '資深冒險家' : 'Expert';
@@ -139,40 +192,64 @@ export function HomeScreen() {
     }
   }, [getToken]);
 
+  // 初始載入
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  /**
+   * 下拉刷新處理
+   */
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadData();
   }, [loadData]);
 
+  // ============================================================
+  // 輔助函數
+  // ============================================================
+
+  /**
+   * 取得活動的在地化標題
+   * 根據當前語言返回對應的標題
+   */
   const getLocalizedTitle = (event: Event): string => {
     if (state.language === 'zh-TW') return event.title;
     if (state.language === 'en' && event.titleEn) return event.titleEn;
     return event.title;
   };
 
+  /**
+   * 取得活動的在地化描述
+   * 根據當前語言返回對應的描述
+   */
   const getLocalizedDesc = (event: Event): string => {
     if (state.language === 'zh-TW') return event.description;
     if (state.language === 'en' && event.descriptionEn) return event.descriptionEn;
     return event.description;
   };
 
+  /**
+   * 格式化日期為 YYYY/MM/DD
+   */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
   };
 
+  // 計算 XP 進度條百分比
   const xpProgress = userLevel.nextLevelXp > 0
     ? (userLevel.currentXp / userLevel.nextLevelXp) * 100
     : 0;
 
+  // 計算任務進度條百分比
   const taskProgress = dailyTask.total > 0
     ? (dailyTask.completed / dailyTask.total) * 100
     : 0;
 
+  // ============================================================
+  // 載入中畫面
+  // ============================================================
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -181,6 +258,9 @@ export function HomeScreen() {
     );
   }
 
+  // ============================================================
+  // 主畫面渲染
+  // ============================================================
   return (
     <ScrollView
       style={styles.container}
@@ -194,7 +274,7 @@ export function HomeScreen() {
       }
       showsVerticalScrollIndicator={false}
     >
-      {/* Header with greeting */}
+      {/* ========== 頂部問候區 ========== */}
       <View style={styles.header}>
         <View style={styles.greeting}>
           <Text style={styles.greetingTitle}>
@@ -206,10 +286,11 @@ export function HomeScreen() {
         </View>
       </View>
 
-      {/* User Level Card - 純顯示，不可點擊 */}
+      {/* ========== 用戶等級卡片（純顯示，不可點擊）========== */}
       <View style={styles.levelCard}>
+        {/* 等級卡片頭部：頭像 + 等級徽章 + 稱號 + 連續登入 */}
         <View style={styles.levelHeader}>
-          {/* Circular Avatar with Level Badge */}
+          {/* 圓形頭像 + 等級徽章 */}
           <View style={styles.avatarWithBadge}>
             <Image
               source={require('../../../../assets/images/icon.png')}
@@ -219,12 +300,16 @@ export function HomeScreen() {
               <Text style={styles.levelBadgeText}>Lv.{userLevel.level}</Text>
             </View>
           </View>
+
+          {/* 等級資訊：稱號 + 階段 */}
           <View style={styles.levelInfo}>
             <Text style={styles.levelTitle}>{userLevel.title}</Text>
             <Text style={styles.levelPhase}>
               {isZh ? `第 ${userLevel.phase} 階段` : `Phase ${userLevel.phase}`}
             </Text>
           </View>
+
+          {/* 連續登入天數 */}
           <View style={styles.loginStreak}>
             <Text style={styles.loginStreakLabel}>
               {isZh ? '連續登入' : 'Streak'}
@@ -236,10 +321,14 @@ export function HomeScreen() {
           </View>
         </View>
 
+        {/* XP 進度區塊 */}
         <View style={styles.xpSection}>
+          {/* XP 進度條 */}
           <View style={styles.xpProgressBg}>
             <View style={[styles.xpProgressFill, { width: `${xpProgress}%` }]} />
           </View>
+
+          {/* XP 數值顯示 */}
           <View style={styles.xpRow}>
             <Text style={styles.xpText}>
               {userLevel.currentXp} / {userLevel.nextLevelXp} XP
@@ -248,6 +337,8 @@ export function HomeScreen() {
               Lv.{userLevel.level} → Lv.{userLevel.level + 1}
             </Text>
           </View>
+
+          {/* 還需多少 XP 升級 */}
           <Text style={styles.xpNeeded}>
             {isZh
               ? `還需 ${userLevel.nextLevelXp - userLevel.currentXp} XP 升級`
@@ -256,12 +347,13 @@ export function HomeScreen() {
         </View>
       </View>
 
-      {/* Daily Task Card */}
+      {/* ========== 每日任務卡片（可點擊，跳轉 /economy）========== */}
       <TouchableOpacity
         style={styles.taskCard}
         onPress={() => router.push('/economy')}
         activeOpacity={0.8}
       >
+        {/* 左側：圖示 + 任務資訊 */}
         <View style={styles.taskLeft}>
           <View style={styles.taskIcon}>
             <Ionicons name="calendar-outline" size={24} color={MibuBrand.brown} />
@@ -275,22 +367,27 @@ export function HomeScreen() {
             </Text>
           </View>
         </View>
+
+        {/* 右側：已獲得 XP */}
         <View style={styles.taskRight}>
           <Text style={styles.taskEarnedLabel}>{isZh ? '已獲得' : 'Earned'}</Text>
           <Text style={styles.taskEarnedXp}>+{dailyTask.earnedXp} XP</Text>
         </View>
+
+        {/* 箭頭圖示 */}
         <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
       </TouchableOpacity>
 
-      {/* Task Progress Bar */}
+      {/* 任務進度條 */}
       <View style={styles.taskProgressContainer}>
         <View style={styles.taskProgressBg}>
           <View style={[styles.taskProgressFill, { width: `${taskProgress}%` }]} />
         </View>
       </View>
 
-      {/* Event Tabs Navigation - 連接下方內容區 */}
+      {/* ========== 活動 Tab 導航（公告/在地/限時）========== */}
       <View style={styles.eventTabsContainer}>
+        {/* 公告 Tab */}
         <TouchableOpacity
           style={[
             styles.eventTab,
@@ -309,6 +406,7 @@ export function HomeScreen() {
           </Text>
         </TouchableOpacity>
 
+        {/* 在地活動 Tab */}
         <TouchableOpacity
           style={[
             styles.eventTab,
@@ -327,6 +425,7 @@ export function HomeScreen() {
           </Text>
         </TouchableOpacity>
 
+        {/* 限時活動 Tab */}
         <TouchableOpacity
           style={[
             styles.eventTab,
@@ -346,12 +445,13 @@ export function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Event Content Based on Active Tab - 與 Tab 連接 */}
+      {/* ========== 活動內容區（根據選中的 Tab 顯示）========== */}
       <View style={styles.eventContentContainer}>
-        {/* Announcements Tab Content */}
+        {/* 公告內容 */}
         {activeEventTab === 'announcements' && (
           <View style={styles.section}>
             {events.announcements.length > 0 ? (
+              // 有公告：顯示公告列表
               events.announcements.map(event => (
                 <TouchableOpacity
                   key={event.id}
@@ -374,6 +474,7 @@ export function HomeScreen() {
                 </TouchableOpacity>
               ))
             ) : (
+              // 無公告：顯示空狀態
               <View style={styles.tabEmptyState}>
                 <Ionicons name="megaphone-outline" size={40} color={MibuBrand.tan} />
                 <Text style={styles.tabEmptyText}>
@@ -387,10 +488,11 @@ export function HomeScreen() {
           </View>
         )}
 
-        {/* Local Activities Tab Content */}
+        {/* 在地活動內容 */}
         {activeEventTab === 'local' && (
           <View style={styles.section}>
             {events.festivals.length > 0 ? (
+              // 有在地活動：顯示活動列表
               events.festivals.map(event => (
                 <TouchableOpacity
                   key={event.id}
@@ -413,6 +515,7 @@ export function HomeScreen() {
                 </TouchableOpacity>
               ))
             ) : (
+              // 無在地活動：顯示空狀態
               <View style={styles.tabEmptyState}>
                 <Ionicons name="location-outline" size={40} color={MibuBrand.tan} />
                 <Text style={styles.tabEmptyText}>
@@ -426,10 +529,11 @@ export function HomeScreen() {
           </View>
         )}
 
-        {/* Flash Events Tab Content */}
+        {/* 限時活動內容 */}
         {activeEventTab === 'flash' && (
           <View style={styles.section}>
             {events.limitedEvents.length > 0 ? (
+              // 有限時活動：顯示活動列表
               events.limitedEvents.map(event => (
                 <TouchableOpacity
                   key={event.id}
@@ -452,6 +556,7 @@ export function HomeScreen() {
                 </TouchableOpacity>
               ))
             ) : (
+              // 無限時活動：顯示空狀態
               <View style={styles.tabEmptyState}>
                 <Ionicons name="sparkles" size={40} color={MibuBrand.tan} />
                 <Text style={styles.tabEmptyText}>
@@ -466,12 +571,17 @@ export function HomeScreen() {
         )}
       </View>
 
+      {/* 底部間距（避免被 TabBar 遮擋） */}
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );
 }
 
+// ============================================================
+// 樣式定義
+// ============================================================
 const styles = StyleSheet.create({
+  // 容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.warmWhite,
@@ -487,6 +597,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 120,
   },
+
+  // 頂部問候區
   header: {
     marginBottom: 20,
   },
@@ -503,6 +615,8 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
     marginTop: 2,
   },
+
+  // 等級卡片
   levelCard: {
     backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
@@ -580,6 +694,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
+
+  // XP 進度區
   xpSection: {
     marginTop: 14,
   },
@@ -613,6 +729,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 6,
   },
+
+  // 每日任務卡片
   taskCard: {
     backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
@@ -682,6 +800,8 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.brown,
     borderRadius: 3,
   },
+
+  // 活動 Tab 導航
   eventTabsContainer: {
     flexDirection: 'row',
     backgroundColor: MibuBrand.creamLight,
@@ -712,6 +832,8 @@ const styles = StyleSheet.create({
   eventTabTextActive: {
     color: MibuBrand.brownDark,
   },
+
+  // 活動內容區
   eventContentContainer: {
     minHeight: 150,
     backgroundColor: MibuBrand.warmWhite,
@@ -753,6 +875,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
+
+  // 公告/活動卡片
   announcementCard: {
     backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
@@ -798,6 +922,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: MibuBrand.tan,
   },
+
+  // 空狀態
   emptyState: {
     alignItems: 'center',
     paddingVertical: 48,
@@ -807,6 +933,8 @@ const styles = StyleSheet.create({
     color: MibuBrand.tan,
     marginTop: 12,
   },
+
+  // 底部間距
   bottomSpacer: {
     height: 40,
   },

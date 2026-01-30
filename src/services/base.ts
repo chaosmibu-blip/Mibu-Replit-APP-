@@ -1,22 +1,80 @@
 /**
- * API 基礎設施 - 共用的 request 方法和類型
+ * API 基礎設施模組
+ *
+ * 提供所有 API 服務的基礎類別和共用工具
+ * 包含統一的 HTTP 請求方法、錯誤處理機制、認證標頭生成
+ *
+ * @module services/base
+ * @see 後端契約: contracts/APP.md
+ *
+ * ============ 串接端點 ============
+ * 此模組不直接串接端點，而是提供基礎設施給其他 API 服務使用
+ *
+ * ============ 主要功能 ============
+ * - ApiBase: 所有 API 服務的基底類別
+ * - ApiError: 統一的 API 錯誤類別
+ * - request(): 通用 HTTP 請求方法
+ * - authHeaders(): 生成 Bearer Token 認證標頭
  */
 import { API_BASE_URL } from '../constants/translations';
 
+// ============ 類型定義 ============
+
+/**
+ * API 錯誤回應格式
+ *
+ * 後端回傳錯誤時的統一格式
+ * 包含多種可能的錯誤訊息欄位，因為不同端點的回傳格式略有不同
+ */
 export interface ApiErrorResponse {
+  /** 操作是否成功（錯誤時固定為 false） */
   success: false;
+  /** 錯誤訊息（主要欄位） */
   message?: string;
+  /** 錯誤訊息（部分端點使用） */
   error?: string;
+  /** 錯誤碼（如 E1001, E2001 等） */
   code?: string;
+  /** 詳細錯誤說明 */
   detail?: string;
+  /** 錯誤原因 */
   reason?: string;
 }
 
+// ============ 錯誤類別 ============
+
+/**
+ * API 錯誤類別
+ *
+ * 封裝 API 請求失敗時的錯誤資訊
+ * 繼承自 Error，並加入 HTTP 狀態碼和伺服器回傳的錯誤訊息
+ *
+ * @example
+ * try {
+ *   await apiService.getUser();
+ * } catch (error) {
+ *   if (error instanceof ApiError) {
+ *     console.log('HTTP 狀態碼:', error.status);
+ *     console.log('伺服器訊息:', error.serverMessage);
+ *   }
+ * }
+ */
 export class ApiError extends Error {
+  /** HTTP 狀態碼（如 401, 404, 500） */
   status: number;
+  /** 伺服器回傳的錯誤訊息 */
   serverMessage?: string;
+  /** 錯誤碼（如 E1001） */
   code?: string;
 
+  /**
+   * 建立 API 錯誤實例
+   *
+   * @param status - HTTP 狀態碼
+   * @param message - 錯誤訊息（給開發者看的）
+   * @param serverMessage - 伺服器回傳的訊息（可顯示給用戶）
+   * @param code - 錯誤碼
+   */
   constructor(status: number, message: string, serverMessage?: string, code?: string) {
     super(message);
     this.name = 'ApiError';
@@ -26,13 +84,54 @@ export class ApiError extends Error {
   }
 }
 
+// ============ 基礎類別 ============
+
+/**
+ * API 基礎服務類別
+ *
+ * 所有 API 服務模組都繼承自此類別
+ * 提供統一的請求方法和認證標頭生成
+ *
+ * @example
+ * class UserApi extends ApiBase {
+ *   async getUser(token: string) {
+ *     return this.request('/api/user', {
+ *       headers: this.authHeaders(token),
+ *     });
+ *   }
+ * }
+ */
 export class ApiBase {
+  /** API 基礎網址（從環境變數讀取） */
   protected baseUrl = API_BASE_URL;
 
+  /**
+   * 發送 HTTP 請求
+   *
+   * 統一處理所有 API 請求，包含：
+   * - 自動設定 Content-Type 和 Accept 標頭
+   * - JSON 回應解析
+   * - HTTP 錯誤狀態碼處理
+   * - 錯誤訊息提取
+   *
+   * @template T - 回應資料的型別
+   * @param endpoint - API 端點路徑（如 /api/auth/login）
+   * @param options - fetch 請求選項
+   * @returns 解析後的 JSON 回應
+   * @throws {ApiError} 當 HTTP 狀態碼非 2xx 時拋出
+   *
+   * @example
+   * const user = await this.request<User>('/api/auth/user', {
+   *   headers: this.authHeaders(token),
+   * });
+   */
   protected async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    // 組合完整 URL
     const url = `${this.baseUrl}${endpoint}`;
     console.log('[ApiBase] Full URL:', url);
     console.log('[ApiBase] Authorization:', options.headers && 'Authorization' in options.headers ? 'Bearer ***' : 'none');
+
+    // 發送請求，自動加入 JSON 標頭
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -47,7 +146,7 @@ export class ApiBase {
     try {
       data = await response.json();
     } catch {
-      // 無法解析 JSON
+      // 無法解析 JSON（可能是 HTML 錯誤頁面或空回應）
       if (!response.ok) {
         throw new ApiError(response.status, `API Error: ${response.status}`);
       }
@@ -58,6 +157,7 @@ export class ApiBase {
     if (!response.ok) {
       const errorData = data as ApiErrorResponse;
       // 嘗試從多個可能的欄位提取錯誤訊息
+      // 不同端點可能使用不同的欄位名稱
       const serverMessage = errorData.message || errorData.error || errorData.detail || errorData.reason;
       console.log('[ApiBase] HTTP error response:', JSON.stringify(errorData));
       throw new ApiError(
@@ -71,6 +171,19 @@ export class ApiBase {
     return data as T;
   }
 
+  /**
+   * 生成認證標頭
+   *
+   * 將 JWT Token 轉換為 Bearer Token 格式的認證標頭
+   *
+   * @param token - JWT Token
+   * @returns 包含 Authorization 標頭的物件
+   *
+   * @example
+   * const response = await fetch('/api/user', {
+   *   headers: this.authHeaders(token),
+   * });
+   */
   protected authHeaders(token: string): Record<string, string> {
     return {
       'Authorization': `Bearer ${token}`,
@@ -78,4 +191,7 @@ export class ApiBase {
   }
 }
 
+// ============ 匯出 ============
+
+/** API 基礎網址（供其他模組使用） */
 export const API_BASE = API_BASE_URL;

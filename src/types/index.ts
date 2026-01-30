@@ -1,66 +1,77 @@
 /**
- * Types 統一匯出
+ * @fileoverview Types 統一匯出模組
  *
- * 向後兼容：import { User, GachaItem } from '@/types' 仍然有效
- * 新用法：import { User } from '@/types/auth'
+ * 本檔案負責統一匯出所有型別定義，提供簡潔的引入方式。
+ *
+ * 用法：
+ * - 向後兼容：import { User, GachaItem } from '@/types' 仍然有效
+ * - 新用法：import { User } from '@/types/auth'（推薦，可提升編譯效能）
+ *
+ * @module types
  */
 
-// Common
+// ============ 通用基礎型別 ============
 export * from './common';
 
-// Auth
+// ============ 認證與用戶 ============
 export * from './auth';
 
-// Gacha
+// ============ 扭蛋系統 ============
 export * from './gacha';
 
-// Inventory
+// ============ 物品箱/庫存 ============
 export * from './inventory';
 
-// Collection
+// ============ 收藏/圖鑑 ============
 export * from './collection';
 
-// Merchant
+// ============ 商家系統 ============
 export * from './merchant';
 
-// Specialist
+// ============ 策劃師/專員 ============
 export * from './specialist';
 
-// Admin
+// ============ 管理員後台 ============
 export * from './admin';
 
-// Location
+// ============ 地點/地區 ============
 export * from './location';
 
-// SOS
+// ============ SOS 緊急求救 ============
 export * from './sos';
 
-// App State
+// ============ App 狀態 ============
 export * from './app';
 
-// Ads
+// ============ 廣告系統 ============
 export * from './ads';
 
-// Notifications
+// ============ 通知系統 ============
 export * from './notifications';
 
-// Errors
+// ============ 錯誤碼定義 ============
 export * from './errors';
 
-// Economy (Phase 5)
+// ============ 經濟系統（Phase 5）============
+// 包含：等級、經驗值、成就、每日任務
 export * from './economy';
 
-// Crowdfunding (Phase 5)
+// ============ 募資系統（Phase 5）============
+// 包含：募資活動、贊助、獎勵
 export * from './crowdfunding';
 
-// Referral (Phase 5)
+// ============ 推薦系統（Phase 5）============
+// 包含：推薦碼、推薦獎勵、排行榜
 export * from './referral';
 
-// Contribution (Phase 6)
+// ============ 用戶貢獻系統（Phase 6）============
+// 包含：回報歇業、建議景點、投票
 export * from './contribution';
 
-// Event (Phase 7 - sync-app #006)
+// ============ 活動系統（Phase 7）============
+// 對應後端 sync-app #006
 export * from './event';
 
-// Itinerary (sync-app #026, #027)
+// ============ 行程規劃系統 ============
+// 對應後端 sync-app #026, #027
 export * from './itinerary';

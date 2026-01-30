@@ -1,6 +1,18 @@
 /**
- * CrowdfundingDetailScreen - 眾籌活動詳情
- * 顯示活動詳情、獎勵階層、更新、參與按鈕
+ * CrowdfundingDetailScreen - 眾籌活動詳情畫面
+ *
+ * 功能：
+ * - 顯示募資活動詳細資訊（標題、描述、目標金額、進度）
+ * - 顯示獎勵階層列表（可選擇贊助方案）
+ * - 顯示活動更新動態
+ * - 參與贊助（整合 RevenueCat IAP）
+ * - 剩餘天數倒數
+ * - 贊助者人數統計
+ *
+ * 串接 API：
+ * - crowdfundingApi.getCampaignDetail() - 取得活動詳情
+ * - crowdfundingApi.contribute() - 記錄贊助
+ * - revenueCatService.purchasePackage() - IAP 購買
  *
  * @see 後端合約: contracts/APP.md Phase 5
  */
@@ -25,18 +37,44 @@ import { revenueCatService } from '../../../services/revenueCatService';
 import { MibuBrand } from '../../../../constants/Colors';
 import { CampaignDetail, CampaignReward, CampaignUpdate } from '../../../types/crowdfunding';
 
+// ============================================================
+// 主元件
+// ============================================================
+
 export function CrowdfundingDetailScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
+
+  // 從路由參數取得活動 ID
   const { id } = useLocalSearchParams<{ id: string }>();
+
+  // 語言判斷
   const isZh = state.language === 'zh-TW';
 
+  // ============================================================
+  // 狀態管理
+  // ============================================================
+
+  // 載入狀態
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // 購買中狀態
   const [purchasing, setPurchasing] = useState(false);
+
+  // 活動詳情
   const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
+
+  // 選中的贊助方案
   const [selectedTier, setSelectedTier] = useState<CampaignReward | null>(null);
 
+  // ============================================================
+  // API 呼叫
+  // ============================================================
+
+  /**
+   * 載入活動詳情
+   */
   const loadData = useCallback(async () => {
     if (!id) return;
 
@@ -65,19 +103,35 @@ export function CrowdfundingDetailScreen() {
     loadData();
   }, [loadData]);
 
+  /**
+   * 下拉重新整理
+   */
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadData();
   }, [loadData]);
 
+  // ============================================================
+  // 輔助函數
+  // ============================================================
+
+  /**
+   * 格式化金額
+   */
   const formatCurrency = (amount: number) => {
     return `NT$ ${amount.toLocaleString()}`;
   };
 
+  /**
+   * 計算進度百分比
+   */
   const calculateProgress = (current: number, target: number) => {
     return Math.min((current / target) * 100, 100);
   };
 
+  /**
+   * 計算剩餘天數
+   */
   const calculateDaysLeft = (endDate: string) => {
     const end = new Date(endDate);
     const now = new Date();
@@ -85,6 +139,17 @@ export function CrowdfundingDetailScreen() {
     return Math.max(0, diff);
   };
 
+  // ============================================================
+  // 事件處理
+  // ============================================================
+
+  /**
+   * 處理贊助
+   * 1. 初始化 RevenueCat
+   * 2. 取得 IAP 商品
+   * 3. 執行購買
+   * 4. 記錄贊助到後端
+   */
   const handleContribute = async () => {
     if (!selectedTier) {
       Alert.alert(

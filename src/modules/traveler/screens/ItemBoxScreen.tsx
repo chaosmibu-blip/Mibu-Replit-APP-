@@ -1,3 +1,22 @@
+/**
+ * ItemBoxScreen - 道具箱畫面
+ *
+ * 功能：
+ * - 顯示用戶獲得的優惠券（以格狀陳列）
+ * - 優惠券按稀有度顯示不同樣式（SP 有脈動動畫）
+ * - 點擊查看優惠券詳情
+ * - 長按可刪除優惠券
+ * - 核銷優惠券功能（輸入商家核銷碼）
+ * - 顯示優惠券到期倒數
+ *
+ * 串接 API：
+ * - apiService.getInventory() - 取得道具箱列表
+ * - apiService.markInventoryItemRead() - 標記已讀
+ * - apiService.redeemInventoryItem() - 核銷優惠券
+ * - apiService.deleteInventoryItem() - 刪除優惠券
+ *
+ * @see 後端合約: contracts/APP.md
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,11 +25,29 @@ import { apiService } from '../../../services/api';
 import { InventoryItem, CouponTier } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
 
+// ============================================================
+// 常數定義
+// ============================================================
+
+/** 道具箱最大格數 */
 const MAX_SLOTS = 30;
+
+/** 格狀陳列的欄數 */
 const GRID_COLS = 6;
+
+/** 螢幕寬度（用於計算格子大小） */
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+/** 單一格子的大小 */
 const SLOT_SIZE = (SCREEN_WIDTH - 48) / GRID_COLS - 8;
 
+/**
+ * 稀有度樣式配置
+ * - borderColor: 邊框顏色
+ * - bgColor: 背景顏色
+ * - glowColor: 光暈顏色
+ * - animate: 是否有脈動動畫
+ */
 const TIER_STYLES: Record<CouponTier, { borderColor: string; bgColor: string; glowColor: string; animate: boolean }> = {
   SP: { borderColor: MibuBrand.tierSP, bgColor: MibuBrand.tierSPBg, glowColor: 'rgba(212, 162, 76, 0.6)', animate: true },
   SSR: { borderColor: MibuBrand.tierSSR, bgColor: MibuBrand.tierSSRBg, glowColor: 'rgba(176, 136, 96, 0.4)', animate: false },
@@ -19,6 +56,9 @@ const TIER_STYLES: Record<CouponTier, { borderColor: string; bgColor: string; gl
   R: { borderColor: MibuBrand.tierR, bgColor: MibuBrand.tierRBg, glowColor: 'transparent', animate: false },
 };
 
+/**
+ * 稀有度對應 icon
+ */
 const TIER_ICONS: Record<CouponTier, string> = {
   SP: 'star',
   SSR: 'diamond',
@@ -27,18 +67,28 @@ const TIER_ICONS: Record<CouponTier, string> = {
   R: 'ticket',
 };
 
-// 計算剩餘時間
+// ============================================================
+// 輔助函數
+// ============================================================
+
+/**
+ * 計算優惠券剩餘時間
+ * @param expiresAt 到期時間 ISO 字串
+ * @returns 剩餘時間資訊物件
+ */
 const getTimeRemaining = (expiresAt: string | null | undefined): { days: number; hours: number; isUrgent: boolean; isExpired: boolean; text: string } | null => {
   if (!expiresAt) return null;
   const now = new Date();
   const expiry = new Date(expiresAt);
   const diff = expiry.getTime() - now.getTime();
 
+  // 已過期
   if (diff <= 0) return { days: 0, hours: 0, isUrgent: true, isExpired: true, text: '' };
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
+  // 格式化顯示文字
   let text = '';
   if (days > 0) {
     text = `${days}d`;
@@ -51,11 +101,15 @@ const getTimeRemaining = (expiresAt: string | null | undefined): { days: number;
   return {
     days,
     hours,
-    isUrgent: days < 3,
+    isUrgent: days < 3, // 3 天內為緊急
     isExpired: false,
     text,
   };
 };
+
+// ============================================================
+// 子元件：單一道具格
+// ============================================================
 
 interface InventorySlotProps {
   item: InventoryItem | null;
@@ -65,9 +119,17 @@ interface InventorySlotProps {
   language: string;
 }
 
+/**
+ * InventorySlot - 單一道具格
+ * 顯示優惠券或空格，SP 級別有脈動動畫
+ */
 function InventorySlot({ item, index, onPress, onLongPress, language }: InventorySlotProps) {
+  // SP 級別的脈動動畫值
   const [pulseAnim] = useState(new Animated.Value(1));
 
+  /**
+   * SP 級別啟動脈動動畫
+   */
   useEffect(() => {
     if (item?.tier === 'SP') {
       const pulse = Animated.loop(
@@ -81,6 +143,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
     }
   }, [item?.tier, pulseAnim]);
 
+  // ========== 空格狀態 ==========
   if (!item) {
     return (
       <View
@@ -97,16 +160,19 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
           justifyContent: 'center',
         }}
       >
+        {/* 格子序號 */}
         <Text style={{ fontSize: 10, color: '#cbd5e1' }}>{index + 1}</Text>
       </View>
     );
   }
 
+  // ========== 有優惠券的格子 ==========
   const tierStyle = TIER_STYLES[item.tier] || TIER_STYLES.R;
   const isExpired = item.isExpired || Boolean(item.expiresAt && new Date(item.expiresAt) < new Date());
   const isDisabled = item.status === 'redeemed' || item.status === 'deleted' || isExpired;
   const timeRemaining = item.expiresAt && !isExpired ? getTimeRemaining(item.expiresAt) : null;
 
+  // 格子內容
   const SlotContent = (
     <View
       style={{
@@ -128,6 +194,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
         position: 'relative',
       }}
     >
+      {/* 未讀紅點 */}
       {!item.isRead && !isDisabled && (
         <View
           style={{
@@ -145,12 +212,14 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
         />
       )}
 
+      {/* 稀有度 icon */}
       <Ionicons
         name={(TIER_ICONS[item.tier] || 'ticket') as any}
         size={20}
         color={isDisabled ? '#9ca3af' : tierStyle.borderColor}
       />
 
+      {/* 稀有度文字 */}
       <Text
         style={{
           fontSize: 8,
@@ -162,6 +231,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
         {item.tier}
       </Text>
 
+      {/* 已過期標籤 */}
       {isExpired && (
         <View
           style={{
@@ -201,6 +271,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
         </View>
       )}
 
+      {/* 已使用標籤 */}
       {item.status === 'redeemed' && (
         <View
           style={{
@@ -220,6 +291,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
     </View>
   );
 
+  // SP 級別有脈動動畫包裝
   if (item.tier === 'SP' && !isDisabled) {
     return (
       <TouchableOpacity
@@ -245,24 +317,46 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
   );
 }
 
+// ============================================================
+// 主元件
+// ============================================================
+
 export function ItemBoxScreen() {
   const { state, setUnreadCount, getToken } = useApp();
+
+  // ============================================================
+  // 狀態管理
+  // ============================================================
+
+  // 道具箱資料
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [slotCount, setSlotCount] = useState(0);
   const [maxSlots, setMaxSlots] = useState(MAX_SLOTS);
+
+  // 載入狀態
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  
+
+  // Modal 狀態
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [redeemModalVisible, setRedeemModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+  // 核銷相關狀態
   const [redemptionCode, setRedemptionCode] = useState('');
   const [redeeming, setRedeeming] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [redeemSuccess, setRedeemSuccess] = useState(false);
 
+  // ============================================================
+  // API 呼叫
+  // ============================================================
+
+  /**
+   * 載入道具箱資料
+   */
   const loadInventory = useCallback(async () => {
     try {
       const token = await getToken();
@@ -270,12 +364,15 @@ export function ItemBoxScreen() {
         setLoading(false);
         return;
       }
-      
+
       const data = await apiService.getInventory(token);
+      // 過濾已刪除的項目
       const inventoryItems = (data.items || []).filter(i => !i.isDeleted);
       setItems(inventoryItems);
       setSlotCount(data.slotCount || inventoryItems.length);
       setMaxSlots(data.maxSlots || MAX_SLOTS);
+
+      // 更新未讀數量
       const unreadCount = inventoryItems.filter((item: InventoryItem) => !item.isRead && item.status === 'active').length;
       setUnreadCount(unreadCount);
     } catch (error) {
@@ -286,10 +383,15 @@ export function ItemBoxScreen() {
     }
   }, [setUnreadCount]);
 
+  // 初始載入
   useEffect(() => {
     loadInventory();
   }, [loadInventory]);
 
+  /**
+   * 核銷成功後的倒數計時
+   * 3 分鐘後自動關閉 Modal
+   */
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | undefined;
     if (countdown !== null && countdown > 0) {
@@ -297,6 +399,7 @@ export function ItemBoxScreen() {
         setCountdown(prev => (prev !== null && prev > 0) ? prev - 1 : null);
       }, 1000);
     } else if (countdown === 0) {
+      // 倒數結束，關閉 Modal
       setRedeemSuccess(false);
       setCountdown(null);
       setRedeemModalVisible(false);
@@ -305,12 +408,23 @@ export function ItemBoxScreen() {
     return () => { if (timer) clearInterval(timer); };
   }, [countdown]);
 
+  /**
+   * 下拉重新整理
+   */
   const handleRefresh = () => {
     setRefreshing(true);
     loadInventory();
   };
 
+  // ============================================================
+  // 事件處理
+  // ============================================================
+
+  /**
+   * 點擊優惠券：標記已讀 + 開啟詳情 Modal
+   */
   const handleItemPress = async (item: InventoryItem) => {
+    // 若未讀，先標記已讀
     if (!item.isRead && item.status === 'active') {
       try {
         const token = await getToken();
@@ -327,17 +441,23 @@ export function ItemBoxScreen() {
         console.error('Failed to mark item as read:', error);
       }
     }
-    
+
     setSelectedItem(item);
     setDetailModalVisible(true);
   };
 
+  /**
+   * 長按優惠券：開啟刪除確認 Modal
+   */
   const handleItemLongPress = (item: InventoryItem) => {
     if (item.status === 'deleted' || item.isDeleted) return;
     setSelectedItem(item);
     setDeleteModalVisible(true);
   };
 
+  /**
+   * 開啟核銷 Modal
+   */
   const handleOpenRedeem = () => {
     setDetailModalVisible(false);
     setRedemptionCode('');
@@ -346,6 +466,9 @@ export function ItemBoxScreen() {
     setTimeout(() => setRedeemModalVisible(true), 300);
   };
 
+  /**
+   * 執行核銷
+   */
   const handleRedeem = async () => {
     if (!selectedItem || !redemptionCode.trim()) {
       Alert.alert(
@@ -361,10 +484,12 @@ export function ItemBoxScreen() {
       if (!token) return;
 
       const response = await apiService.redeemInventoryItem(token, selectedItem.id, redemptionCode.trim());
-      
+
       if (response.success) {
+        // 核銷成功，顯示倒數計時
         setRedeemSuccess(true);
-        setCountdown(180);
+        setCountdown(180); // 3 分鐘
+        // 更新本地狀態
         setItems(prev => prev.map(i => i.id === selectedItem.id ? { ...i, isRedeemed: true, status: 'redeemed' as const } : i));
       } else {
         Alert.alert(
@@ -373,6 +498,7 @@ export function ItemBoxScreen() {
         );
       }
     } catch (error: unknown) {
+      // 處理特定錯誤
       const errorMessage = error?.message || '';
       if (errorMessage.includes('expired') || errorMessage.includes('過期')) {
         Alert.alert(
@@ -395,6 +521,9 @@ export function ItemBoxScreen() {
     }
   };
 
+  /**
+   * 刪除優惠券
+   */
   const handleDelete = async () => {
     if (!selectedItem) return;
 
@@ -407,7 +536,7 @@ export function ItemBoxScreen() {
       if (response.success) {
         setDeleteModalVisible(false);
         setSelectedItem(null);
-        await loadInventory();
+        await loadInventory(); // 重新載入列表
       }
     } catch (error) {
       Alert.alert(
@@ -419,12 +548,24 @@ export function ItemBoxScreen() {
     }
   };
 
+  // ============================================================
+  // 輔助函數
+  // ============================================================
+
+  /**
+   * 格式化倒數計時
+   * @param seconds 剩餘秒數
+   * @returns 格式化字串 "M:SS"
+   */
   const formatCountdown = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  /**
+   * 取得稀有度標籤
+   */
   const getTierLabel = (tier: CouponTier) => {
     const labels: Record<CouponTier, string> = {
       SP: 'Special',
@@ -436,12 +577,21 @@ export function ItemBoxScreen() {
     return labels[tier] || tier;
   };
 
+  // ============================================================
+  // 格子陣列處理
+  // ============================================================
+
+  // 建立格子陣列，將優惠券放到對應位置
   const slots: (InventoryItem | null)[] = Array(maxSlots).fill(null);
   items.forEach(item => {
     if (item.slotIndex >= 0 && item.slotIndex < maxSlots) {
       slots[item.slotIndex] = item;
     }
   });
+
+  // ============================================================
+  // 載入中狀態
+  // ============================================================
 
   if (loading) {
     return (
@@ -454,9 +604,13 @@ export function ItemBoxScreen() {
     );
   }
 
+  // ============================================================
+  // 主畫面渲染
+  // ============================================================
+
   return (
     <View style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}>
-      {/* Header 區域 */}
+      {/* ========== Header 區域 ========== */}
       <View style={{
         backgroundColor: MibuBrand.creamLight,
         paddingTop: 60,
@@ -470,6 +624,7 @@ export function ItemBoxScreen() {
         shadowRadius: 8,
         elevation: 3,
       }}>
+        {/* 標題列 */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="cube-outline" size={28} color={MibuBrand.brown} />
@@ -477,6 +632,7 @@ export function ItemBoxScreen() {
               {state.language === 'zh-TW' ? '道具箱' : 'Item Box'}
             </Text>
           </View>
+          {/* 容量顯示 */}
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -510,6 +666,8 @@ export function ItemBoxScreen() {
             </Text>
           </View>
         )}
+
+        {/* 快滿警告（80% 以上） */}
         {slotCount >= maxSlots * 0.8 && slotCount < maxSlots && (
           <View style={{ backgroundColor: '#fef3c7', borderRadius: 12, padding: 12, marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="alert-circle" size={18} color="#d97706" />
@@ -519,6 +677,7 @@ export function ItemBoxScreen() {
           </View>
         )}
 
+        {/* 各稀有度統計 */}
         <View style={{ flexDirection: 'row', marginTop: 12, gap: 8, flexWrap: 'wrap' }}>
           {(['SP', 'SSR', 'SR', 'S', 'R'] as CouponTier[]).map(tier => {
             const count = items.filter(i => i.tier === tier && i.status === 'active').length;
@@ -545,6 +704,7 @@ export function ItemBoxScreen() {
         </View>
       </View>
 
+      {/* ========== 格狀列表 ========== */}
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         refreshControl={
@@ -565,7 +725,7 @@ export function ItemBoxScreen() {
         </View>
       </ScrollView>
 
-      {/* Detail Modal */}
+      {/* ========== 詳情 Modal ========== */}
       <Modal
         visible={detailModalVisible}
         animationType="fade"
@@ -576,6 +736,7 @@ export function ItemBoxScreen() {
           <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, borderWidth: 2, borderColor: selectedItem ? TIER_STYLES[selectedItem.tier]?.borderColor : MibuBrand.tan }}>
             {selectedItem && (
               <>
+                {/* 稀有度圖示 */}
                 <View style={{ alignItems: 'center', marginBottom: 20 }}>
                   <View
                     style={{
@@ -601,16 +762,19 @@ export function ItemBoxScreen() {
                   </Text>
                 </View>
 
+                {/* 優惠券標題 */}
                 <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark, textAlign: 'center', marginBottom: 8 }}>
                   {selectedItem.title}
                 </Text>
 
+                {/* 優惠券描述 */}
                 {selectedItem.description && (
                   <Text style={{ fontSize: 14, color: MibuBrand.brownLight, textAlign: 'center', marginBottom: 16 }}>
                     {selectedItem.description}
                   </Text>
                 )}
 
+                {/* 商家名稱 */}
                 {selectedItem.merchantName && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                     <Ionicons name="storefront-outline" size={14} color={MibuBrand.copper} />
@@ -618,6 +782,7 @@ export function ItemBoxScreen() {
                   </View>
                 )}
 
+                {/* 有效期限 */}
                 {selectedItem.expiresAt && (
                   <View style={{ backgroundColor: selectedItem.isExpired ? MibuBrand.error : MibuBrand.cream, padding: 12, borderRadius: 12, marginBottom: 20 }}>
                     <Text style={{ fontSize: 12, color: selectedItem.isExpired ? '#ffffff' : MibuBrand.brown, textAlign: 'center' }}>
@@ -629,6 +794,7 @@ export function ItemBoxScreen() {
                   </View>
                 )}
 
+                {/* 按鈕列 */}
                 <View style={{ flexDirection: 'row', gap: 12 }}>
                   <TouchableOpacity
                     onPress={() => setDetailModalVisible(false)}
@@ -639,6 +805,7 @@ export function ItemBoxScreen() {
                     </Text>
                   </TouchableOpacity>
 
+                  {/* 核銷按鈕（僅限可用狀態） */}
                   {selectedItem.status === 'active' && !selectedItem.isExpired && (
                     <TouchableOpacity
                       onPress={handleOpenRedeem}
@@ -656,7 +823,7 @@ export function ItemBoxScreen() {
         </View>
       </Modal>
 
-      {/* Redeem Modal */}
+      {/* ========== 核銷 Modal ========== */}
       <Modal
         visible={redeemModalVisible}
         animationType="slide"
@@ -666,6 +833,7 @@ export function ItemBoxScreen() {
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
             {redeemSuccess ? (
+              // ===== 核銷成功畫面 =====
               <View style={{ alignItems: 'center' }}>
                 <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: MibuBrand.success, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                   <Ionicons name="checkmark-circle" size={48} color="#ffffff" />
@@ -676,7 +844,8 @@ export function ItemBoxScreen() {
                 <Text style={{ fontSize: 14, color: MibuBrand.brownLight, textAlign: 'center', marginBottom: 16 }}>
                   {state.language === 'zh-TW' ? '請出示此畫面給商家確認' : 'Please show this screen to the merchant'}
                 </Text>
-                
+
+                {/* 倒數計時 */}
                 {countdown !== null && (
                   <View style={{ backgroundColor: MibuBrand.brown, paddingHorizontal: 32, paddingVertical: 20, borderRadius: 16, marginBottom: 20 }}>
                     <Text style={{ fontSize: 48, fontWeight: '900', color: '#ffffff', textAlign: 'center' }}>
@@ -698,7 +867,9 @@ export function ItemBoxScreen() {
                 </TouchableOpacity>
               </View>
             ) : (
+              // ===== 輸入核銷碼畫面 =====
               <>
+                {/* 標題列 */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark }}>
                     {state.language === 'zh-TW' ? '核銷優惠券' : 'Redeem Coupon'}
@@ -708,6 +879,7 @@ export function ItemBoxScreen() {
                   </TouchableOpacity>
                 </View>
 
+                {/* 優惠券資訊 */}
                 {selectedItem && (
                   <View style={{ backgroundColor: MibuBrand.cream, borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: TIER_STYLES[selectedItem.tier]?.borderColor }}>
                     <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark, marginBottom: 4 }}>
@@ -719,6 +891,7 @@ export function ItemBoxScreen() {
                   </View>
                 )}
 
+                {/* 核銷碼輸入 */}
                 <Text style={{ fontSize: 14, fontWeight: '600', color: MibuBrand.brownLight, marginBottom: 8 }}>
                   {state.language === 'zh-TW' ? '請輸入商家核銷碼' : 'Enter Merchant Redemption Code'}
                 </Text>
@@ -744,6 +917,7 @@ export function ItemBoxScreen() {
                   }}
                 />
 
+                {/* 確認核銷按鈕 */}
                 <TouchableOpacity
                   onPress={handleRedeem}
                   disabled={redeeming || redemptionCode.length < 8}
@@ -768,7 +942,7 @@ export function ItemBoxScreen() {
         </View>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
+      {/* ========== 刪除確認 Modal ========== */}
       <Modal
         visible={deleteModalVisible}
         animationType="fade"
@@ -777,6 +951,7 @@ export function ItemBoxScreen() {
       >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
+            {/* 警告圖示 */}
             <View style={{ alignItems: 'center', marginBottom: 20 }}>
               <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: '#fef2f2', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                 <Ionicons name="trash" size={28} color={MibuBrand.error} />
@@ -789,6 +964,7 @@ export function ItemBoxScreen() {
               </Text>
             </View>
 
+            {/* 要刪除的項目 */}
             {selectedItem && (
               <View style={{ backgroundColor: MibuBrand.cream, borderRadius: 12, padding: 12, marginBottom: 20 }}>
                 <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.dark, textAlign: 'center' }}>
@@ -797,6 +973,7 @@ export function ItemBoxScreen() {
               </View>
             )}
 
+            {/* 按鈕列 */}
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity
                 onPress={() => setDeleteModalVisible(false)}

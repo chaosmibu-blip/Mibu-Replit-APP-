@@ -1,6 +1,16 @@
 /**
  * EconomyScreen - 成就與任務畫面
- * 顯示用戶等級、經驗值、每日任務、成就徽章
+ *
+ * 功能：
+ * - 顯示用戶等級和經驗值進度條
+ * - 每日任務列表（簽到、扭蛋、瀏覽圖鑑等）
+ * - 新手任務列表（一次性任務）
+ * - 成就徽章列表（累計任務進度）
+ * - 統計數據卡片（已解鎖成就、階段、連續登入）
+ *
+ * 串接 API：
+ * - economyApi.getLevelInfo() - 取得等級資訊
+ * - economyApi.getAchievements() - 取得成就列表
  *
  * @see 後端合約: contracts/APP.md Phase 5
  */
@@ -22,20 +32,36 @@ import { economyApi } from '../../../services/economyApi';
 import { MibuBrand } from '../../../../constants/Colors';
 import { LevelInfo, Achievement } from '../../../types/economy';
 
-// 任務類型定義
+// ============================================================
+// 常數定義
+// ============================================================
+
+/**
+ * 任務類型
+ * - daily: 每日任務
+ * - onetime: 新手任務（一次性）
+ * - cumulative: 累計成就
+ * - level: 等級獎勵
+ */
 type TaskCategory = 'daily' | 'onetime' | 'cumulative' | 'level';
 
+/**
+ * 任務項目介面
+ */
 interface Task {
-  id: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  title: string;
-  description: string;
-  xp: number;
-  isCompleted: boolean;
-  category: TaskCategory;
+  id: string;                              // 任務 ID
+  icon: keyof typeof Ionicons.glyphMap;    // 任務圖示
+  title: string;                           // 任務標題
+  description: string;                     // 任務描述
+  xp: number;                              // 獎勵經驗值
+  isCompleted: boolean;                    // 是否已完成
+  category: TaskCategory;                  // 任務類型
 }
 
-// 每日任務靜態定義（實際應從 API 取得）
+/**
+ * 每日任務靜態定義
+ * 注意：實際應從後端 API 取得
+ */
 const DAILY_TASKS: Task[] = [
   { id: 'd1', icon: 'calendar-outline', title: '每日簽到', description: '登入 APP', xp: 5, isCompleted: false, category: 'daily' },
   { id: 'd2', icon: 'gift-outline', title: '每日扭蛋', description: '完成 1 次扭蛋', xp: 10, isCompleted: false, category: 'daily' },
@@ -45,7 +71,10 @@ const DAILY_TASKS: Task[] = [
   { id: 'd6', icon: 'grid-outline', title: '每日全勤', description: '完成全部每日任務', xp: 30, isCompleted: false, category: 'daily' },
 ];
 
-// 新手任務靜態定義
+/**
+ * 新手任務靜態定義
+ * 一次性任務，完成後不會重置
+ */
 const ONETIME_TASKS: Task[] = [
   { id: 'o1', icon: 'compass-outline', title: '初次探索', description: '完成第一次扭蛋', xp: 50, isCompleted: false, category: 'onetime' },
   { id: 'o2', icon: 'person-outline', title: '建立檔案', description: '設定個人暱稱', xp: 30, isCompleted: false, category: 'onetime' },
@@ -57,19 +86,45 @@ const ONETIME_TASKS: Task[] = [
   { id: 'o8', icon: 'document-text-outline', title: '規劃達人', description: '建立第一個行程項目', xp: 30, isCompleted: false, category: 'onetime' },
 ];
 
+// ============================================================
+// 主元件
+// ============================================================
+
 export function EconomyScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
+
+  // 語言判斷
   const isZh = state.language === 'zh-TW';
 
+  // ============================================================
+  // 狀態管理
+  // ============================================================
+
+  // 載入狀態
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // 用戶等級資訊
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null);
+
+  // 成就列表
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+
+  // 當前選中的 Tab
   const [selectedTab, setSelectedTab] = useState<TaskCategory>('daily');
+
+  // 任務列表（靜態資料）
   const [dailyTasks] = useState<Task[]>(DAILY_TASKS);
   const [onetimeTasks] = useState<Task[]>(ONETIME_TASKS);
 
+  // ============================================================
+  // API 呼叫
+  // ============================================================
+
+  /**
+   * 載入等級和成就資料
+   */
   const loadData = useCallback(async () => {
     try {
       const token = await getToken();
@@ -83,10 +138,12 @@ export function EconomyScreen() {
         economyApi.getAchievements(token),
       ]);
 
-      // 處理後端 API 回應格式（可能是 { level: {...} } 或直接 {...}）
+      // 處理後端 API 回應格式
+      // 後端可能回傳 { level: {...} } 或直接 {...}，需要統一處理
       const rawLevel = (levelResponse as any)?.level || levelResponse;
 
       // 映射後端欄位名稱到前端格式
+      // 處理欄位名稱不一致的情況（如 currentLevel vs level）
       const mappedLevel: LevelInfo = {
         level: rawLevel?.currentLevel ?? rawLevel?.level ?? 1,
         currentExp: rawLevel?.currentExp ?? 0,
@@ -108,36 +165,57 @@ export function EconomyScreen() {
     }
   }, [getToken, router]);
 
+  // 初始載入
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  /**
+   * 下拉重新整理
+   */
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadData();
   }, [loadData]);
 
+  // ============================================================
+  // 計算衍生數據
+  // ============================================================
+
+  // 經驗值進度百分比
   const expProgress = levelInfo
     ? (levelInfo.currentExp / levelInfo.nextLevelExp) * 100
     : 0;
 
+  // 距離下一級所需經驗
   const xpToNextLevel = levelInfo
     ? levelInfo.nextLevelExp - levelInfo.currentExp
     : 0;
 
-  // 統計數據
+  // 已解鎖成就數量
   const unlockedCount = achievements.filter(a => a.isUnlocked).length;
+
+  // 當前階段
   const currentTier = levelInfo?.tier || 1;
+
+  // 連續登入天數
   const loginStreak = levelInfo?.loginStreak || 0;
 
-  // 完成的每日任務數
+  // 每日任務完成統計
   const completedDailyCount = dailyTasks.filter(t => t.isCompleted).length;
   const totalDailyCount = dailyTasks.length;
 
-  // 完成的新手任務數
+  // 新手任務完成統計
   const completedOnetimeCount = onetimeTasks.filter(t => t.isCompleted).length;
   const totalOnetimeCount = onetimeTasks.length;
 
+  // ============================================================
+  // 子元件渲染
+  // ============================================================
+
+  /**
+   * 渲染單一任務項目
+   */
   const renderTaskItem = (task: Task) => (
     <TouchableOpacity
       style={styles.taskItem}
@@ -164,12 +242,16 @@ export function EconomyScreen() {
     </TouchableOpacity>
   );
 
+  /**
+   * 根據選中的 Tab 渲染對應內容
+   */
   const renderTabContent = () => {
     switch (selectedTab) {
       case 'daily':
+        // ===== 每日任務 Tab =====
         return (
           <>
-            {/* 每日任務區塊 */}
+            {/* 每日任務列表 */}
             <View style={styles.taskGroup}>
               {dailyTasks.map((task, index) => (
                 <React.Fragment key={task.id}>
@@ -201,6 +283,7 @@ export function EconomyScreen() {
           </>
         );
       case 'onetime':
+        // ===== 一次性任務 Tab =====
         return (
           <>
             <View style={styles.sectionHeader}>
@@ -218,7 +301,7 @@ export function EconomyScreen() {
           </>
         );
       case 'cumulative':
-        // 成就列表（顯示進度條）
+        // ===== 累計成就 Tab（顯示進度條） =====
         return (
           <>
             <View style={styles.sectionHeader}>
@@ -290,6 +373,7 @@ export function EconomyScreen() {
           </>
         );
       case 'level':
+        // ===== 等級獎勵 Tab（尚未開放） =====
         return (
           <View style={styles.emptyState}>
             <Ionicons name="ribbon-outline" size={48} color={MibuBrand.tan} />
@@ -301,6 +385,10 @@ export function EconomyScreen() {
     }
   };
 
+  // ============================================================
+  // 載入中狀態
+  // ============================================================
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -309,9 +397,18 @@ export function EconomyScreen() {
     );
   }
 
+  // ============================================================
+  // 計算今日經驗值
+  // ============================================================
+
   // 今日可獲得的 XP 總和
   const dailyTotalXp = dailyTasks.reduce((sum, t) => sum + t.xp, 0);
+  // 今日已獲得的 XP
   const dailyEarnedXp = dailyTasks.filter(t => t.isCompleted).reduce((sum, t) => sum + t.xp, 0);
+
+  // ============================================================
+  // 主畫面渲染
+  // ============================================================
 
   return (
     <View style={styles.container}>
@@ -449,7 +546,12 @@ export function EconomyScreen() {
   );
 }
 
+// ============================================================
+// 樣式定義
+// ============================================================
+
 const styles = StyleSheet.create({
+  // 容器樣式
   container: {
     flex: 1,
     backgroundColor: MibuBrand.warmWhite,

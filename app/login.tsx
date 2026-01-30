@@ -1,3 +1,21 @@
+/**
+ * 登入頁面
+ *
+ * 提供多入口登入功能：
+ * - 旅客入口（traveler）
+ * - 商家入口（merchant）
+ * - 專員入口（specialist）
+ * - 管理端入口（admin）
+ *
+ * 支援的登入方式：
+ * - Google OAuth（Web 使用 Replit OAuth，iOS/Android 使用原生登入）
+ * - Apple Sign In（僅 iOS）
+ *
+ * 功能：
+ * - 多語系支援（繁中、英文、日文、韓文）
+ * - Deep Link 處理 OAuth 回調
+ * - 登入後根據角色自動導向對應頁面
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,

@@ -1,3 +1,15 @@
+/**
+ * 旅客主頁面 Tab 導航佈局
+ *
+ * 定義旅客介面的底部 Tab 導航結構：
+ * - index (首頁): 首頁資訊、公告、快速入口
+ * - gacha (扭蛋): 扭蛋系統，含未讀 badge
+ * - planner (規劃): 隱藏 Tab，定位/行程/聊天功能
+ * - collection (圖鑑): 隱藏 Tab，景點圖鑑
+ * - settings (設定): 設定頁面
+ *
+ * 使用 Mibu 品牌配色和樣式
+ */
 import { Tabs } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Platform, View, Text } from 'react-native';

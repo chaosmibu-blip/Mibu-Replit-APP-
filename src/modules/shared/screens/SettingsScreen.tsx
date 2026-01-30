@@ -1,3 +1,30 @@
+/**
+ * SettingsScreen - 設定頁面
+ *
+ * 功能：
+ * - 帳號：個人資料、推薦好友、語言設定
+ * - 探索：解鎖全球地圖、等級與成就
+ * - 偏好設定：我的最愛/黑名單、推播通知
+ * - 更多功能：帳號綁定、社群貢獻
+ * - 關於：隱私政策、服務條款、幫助中心
+ * - 帳號管理：合併帳號、登出、刪除帳號
+ *
+ * 串接 API：
+ * - apiService.logout() - 登出
+ * - apiService.deleteAccount() - 刪除帳號
+ * - authApi.mergeAccount() - 合併帳號 (#036)
+ *
+ * 跳轉頁面：
+ * - /profile - 個人資料
+ * - /referral - 推薦好友
+ * - /map - 解鎖全球地圖
+ * - /economy - 等級與成就
+ * - /favorites-management - 我的最愛/黑名單
+ * - /account - 帳號綁定
+ * - /contribution - 社群貢獻
+ * - /admin-exclusions - 管理員：全域排除管理
+ * - /login - 登出後
+ */
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +36,13 @@ import { apiService } from '../../../services/api';
 import { authApi, MergeSummary } from '../../../services/authApi';
 import { MibuBrand } from '../../../../constants/Colors';
 
+// ============================================================
+// 常數定義
+// ============================================================
+
+/**
+ * 支援的語言選項
+ */
 const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
   { code: 'zh-TW', label: '繁體中文', flag: '🇹🇼' },
   { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -16,42 +50,81 @@ const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
   { code: 'ko', label: '한국어', flag: '🇰🇷' },
 ];
 
+// ============================================================
+// 型別定義
+// ============================================================
+
+/**
+ * 設定項目介面
+ */
 type SettingItem = {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  action?: () => void;
-  hasArrow?: boolean;
-  highlight?: boolean;
-  badge?: string;
-  value?: string;
-  toggle?: boolean;
-  checked?: boolean;
-  onChange?: (value: boolean) => void;
-  iconBg?: string;
-  iconColor?: string;
+  icon: keyof typeof Ionicons.glyphMap;  // 圖示名稱
+  label: string;                          // 顯示文字
+  action?: () => void;                    // 點擊動作
+  hasArrow?: boolean;                     // 是否顯示箭頭
+  highlight?: boolean;                    // 是否高亮顯示
+  badge?: string;                         // 右側徽章文字
+  value?: string;                         // 右側顯示值
+  toggle?: boolean;                       // 是否為開關
+  checked?: boolean;                      // 開關狀態
+  onChange?: (value: boolean) => void;    // 開關變更回調
+  iconBg?: string;                        // 圖示背景色
+  iconColor?: string;                     // 圖示顏色
 };
 
+/**
+ * 設定群組介面
+ */
 type SettingGroup = {
-  title: string;
-  items: SettingItem[];
+  title: string;          // 群組標題
+  items: SettingItem[];   // 群組內的項目
 };
+
+// ============================================================
+// 主元件
+// ============================================================
 
 export function SettingsScreen() {
+  // ============================================================
+  // Hooks & Context
+  // ============================================================
   const { state, t, setLanguage, setUser, getToken } = useApp();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-  const [notifications, setNotifications] = useState(true);
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
 
-  // #036 帳號合併狀態
+  // ============================================================
+  // 狀態管理
+  // ============================================================
+
+  // 登入/註冊 Modal
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // 語言選擇 Modal
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+
+  // 推播通知開關狀態
+  const [notifications, setNotifications] = useState(true);
+
+  // ============================================================
+  // #036 帳號合併功能狀態
+  // ============================================================
+
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [mergeStep, setMergeStep] = useState<'warning' | 'login' | 'processing' | 'result'>('warning');
   const [mergeResult, setMergeResult] = useState<{ success: boolean; summary?: MergeSummary; message?: string } | null>(null);
   const [secondaryToken, setSecondaryToken] = useState<string | null>(null);
 
+  // 當前選中的語言
   const currentLang = LANGUAGE_OPTIONS.find(l => l.code === state.language) || LANGUAGE_OPTIONS[0];
 
+  // ============================================================
+  // 帳號操作
+  // ============================================================
+
+  /**
+   * 處理登出
+   * 顯示確認對話框，確認後清除用戶狀態並跳轉到登入頁
+   */
   const handleLogout = async () => {
     Alert.alert(
       isZh ? '確認登出' : 'Confirm Logout',
@@ -63,12 +136,14 @@ export function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
+              // 呼叫後端登出 API（忽略錯誤）
               const token = await getToken();
               if (token) {
                 await apiService.logout(token).catch(() => {});
               }
             } catch {}
-            
+
+            // 清除本地用戶狀態
             setUser(null);
             router.replace('/login');
           },
@@ -77,6 +152,10 @@ export function SettingsScreen() {
     );
   };
 
+  /**
+   * 處理刪除帳號
+   * 顯示警告對話框，確認後刪除帳號
+   */
   const handleDeleteAccount = () => {
     Alert.alert(
       isZh ? '刪除帳號' : 'Delete Account',
@@ -91,14 +170,20 @@ export function SettingsScreen() {
               const token = await getToken();
               if (token) {
                 const response = await apiService.deleteAccount(token);
+
                 if (response.success) {
+                  // 刪除成功：清除狀態並跳轉
                   setUser(null);
                   router.replace('/');
                 } else {
+                  // 刪除失敗：顯示錯誤訊息
                   let errorMsg = response.message || response.error;
+
+                  // 特殊錯誤碼處理
                   if (response.code === 'MERCHANT_ACCOUNT_EXISTS') {
                     errorMsg = isZh ? '請先解除商家帳號' : 'Please deactivate merchant account first';
                   }
+
                   Alert.alert(
                     isZh ? '無法刪除' : 'Cannot Delete',
                     errorMsg || (isZh ? '刪除失敗，請稍後再試' : 'Delete failed, please try again')
@@ -117,7 +202,14 @@ export function SettingsScreen() {
     );
   };
 
+  // ============================================================
   // #036 帳號合併功能
+  // ============================================================
+
+  /**
+   * 開啟帳號合併 Modal
+   * 重置所有合併相關狀態
+   */
   const handleOpenMergeModal = () => {
     setMergeStep('warning');
     setMergeResult(null);
@@ -125,17 +217,28 @@ export function SettingsScreen() {
     setShowMergeModal(true);
   };
 
+  /**
+   * 確認警告後進入登入副帳號步驟
+   */
   const handleMergeConfirmWarning = () => {
     setMergeStep('login');
   };
 
+  /**
+   * 副帳號登入成功後執行合併
+   */
   const handleSecondaryLoginSuccess = (token: string) => {
     setSecondaryToken(token);
     executeMerge(token);
   };
 
+  /**
+   * 執行帳號合併
+   * 呼叫 authApi.mergeAccount() 將副帳號資料合併到主帳號
+   */
   const executeMerge = async (secToken: string) => {
     setMergeStep('processing');
+
     try {
       const token = await getToken();
       if (!token) {
@@ -144,7 +247,9 @@ export function SettingsScreen() {
         return;
       }
 
+      // 呼叫合併 API
       const result = await authApi.mergeAccount(token, secToken);
+
       setMergeResult({
         success: result.success,
         summary: result.summary,
@@ -160,6 +265,10 @@ export function SettingsScreen() {
     }
   };
 
+  /**
+   * 關閉帳號合併 Modal
+   * 重置所有狀態
+   */
   const handleCloseMergeModal = () => {
     setShowMergeModal(false);
     setMergeStep('warning');
@@ -167,7 +276,16 @@ export function SettingsScreen() {
     setSecondaryToken(null);
   };
 
+  // ============================================================
+  // 設定項目配置
+  // ============================================================
+
+  /**
+   * 設定群組配置
+   * 根據登入狀態顯示不同項目
+   */
   const settingGroups: SettingGroup[] = state.isAuthenticated ? [
+    // ===== 已登入狀態 =====
     {
       title: isZh ? '帳號' : 'Account',
       items: [
@@ -184,7 +302,7 @@ export function SettingsScreen() {
           label: isZh ? '推薦領好禮' : 'Refer & Earn',
           action: () => router.push('/referral' as any),
           hasArrow: true,
-          highlight: true,
+          highlight: true,  // 高亮顯示
           iconBg: '#ECFDF5',
           iconColor: '#059669',
         },
@@ -295,6 +413,7 @@ export function SettingsScreen() {
       ],
     },
   ] : [
+    // ===== 未登入狀態 =====
     {
       title: isZh ? '設定' : 'Settings',
       items: [
@@ -340,31 +459,47 @@ export function SettingsScreen() {
     },
   ];
 
+  // ============================================================
+  // 渲染設定項目
+  // ============================================================
+
+  /**
+   * 渲染單個設定項目
+   */
   const renderSettingItem = (item: SettingItem, index: number, isLast: boolean) => (
     <TouchableOpacity
       key={`${item.label}-${index}`}
       style={[
         styles.settingItem,
-        !isLast && styles.settingItemBorder,
-        item.highlight && styles.settingItemHighlight,
+        !isLast && styles.settingItemBorder,  // 非最後一項加底線
+        item.highlight && styles.settingItemHighlight,  // 高亮樣式
       ]}
       onPress={item.action}
-      activeOpacity={item.toggle ? 1 : 0.7}
+      activeOpacity={item.toggle ? 1 : 0.7}  // 開關項目不要有點擊效果
     >
+      {/* 圖示 */}
       <View style={[styles.iconContainer, { backgroundColor: item.iconBg || MibuBrand.highlight }]}>
         <Ionicons name={item.icon} size={20} color={item.iconColor || MibuBrand.brown} />
       </View>
+
+      {/* 標籤 */}
       <Text style={[styles.itemLabel, item.highlight && styles.itemLabelHighlight]}>
         {item.label}
       </Text>
+
+      {/* 徽章 */}
       {item.badge && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{item.badge}</Text>
         </View>
       )}
+
+      {/* 值 */}
       {item.value && (
         <Text style={styles.itemValue}>{item.value}</Text>
       )}
+
+      {/* 開關 */}
       {item.toggle && (
         <Switch
           value={item.checked}
@@ -373,29 +508,38 @@ export function SettingsScreen() {
           thumbColor="#ffffff"
         />
       )}
+
+      {/* 箭頭 */}
       {item.hasArrow && (
         <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
       )}
     </TouchableOpacity>
   );
 
+  // ============================================================
+  // 主畫面渲染
+  // ============================================================
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* ========== 頁面標題 ========== */}
       <View style={styles.header}>
         <Text style={styles.title}>{isZh ? '設定' : 'Settings'}</Text>
       </View>
 
+      {/* ========== 設定群組列表 ========== */}
       {settingGroups.map((group, groupIndex) => (
         <View key={group.title} style={styles.section}>
           <Text style={styles.sectionTitle}>{group.title}</Text>
           <View style={styles.card}>
-            {group.items.map((item, index) => 
+            {group.items.map((item, index) =>
               renderSettingItem(item, index, index === group.items.length - 1)
             )}
           </View>
         </View>
       ))}
 
+      {/* ========== 管理員專區（非超級管理員）========== */}
       {state.user?.role === 'admin' && !state.user?.isSuperAdmin && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '管理員' : 'Admin'}</Text>
@@ -416,6 +560,7 @@ export function SettingsScreen() {
         </View>
       )}
 
+      {/* ========== 帳號管理（已登入）========== */}
       {state.isAuthenticated && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '帳號管理' : 'Account Management'}</Text>
@@ -431,6 +576,8 @@ export function SettingsScreen() {
               <Text style={styles.itemLabel}>{isZh ? '合併帳號' : 'Merge Accounts'}</Text>
               <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
             </TouchableOpacity>
+
+            {/* 登出 */}
             <TouchableOpacity
               style={[styles.settingItem, styles.settingItemBorder]}
               onPress={handleLogout}
@@ -440,6 +587,8 @@ export function SettingsScreen() {
               </View>
               <Text style={styles.itemLabel}>{isZh ? '登出' : 'Logout'}</Text>
             </TouchableOpacity>
+
+            {/* 刪除帳號 */}
             <TouchableOpacity
               style={styles.settingItem}
               onPress={handleDeleteAccount}
@@ -455,6 +604,7 @@ export function SettingsScreen() {
         </View>
       )}
 
+      {/* ========== 登入按鈕（未登入）========== */}
       {!state.isAuthenticated && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '帳號' : 'Account'}</Text>
@@ -465,6 +615,7 @@ export function SettingsScreen() {
         </View>
       )}
 
+      {/* ========== App 資訊 ========== */}
       <View style={styles.section}>
         <View style={styles.aboutCard}>
           <Text style={styles.appName}>Mibu 旅行扭蛋</Text>
@@ -473,11 +624,13 @@ export function SettingsScreen() {
         </View>
       </View>
 
-      <AuthScreen 
-        visible={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
+      {/* ========== 登入/註冊 Modal ========== */}
+      <AuthScreen
+        visible={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
       />
 
+      {/* ========== 語言選擇 Modal ========== */}
       <Modal
         visible={showLanguageDropdown}
         transparent={true}
@@ -493,6 +646,8 @@ export function SettingsScreen() {
             <Text style={styles.modalTitle}>
               {isZh ? '選擇語言' : 'Select Language'}
             </Text>
+
+            {/* 語言選項列表 */}
             {LANGUAGE_OPTIONS.map(lang => (
               <TouchableOpacity
                 key={lang.code}
@@ -512,6 +667,7 @@ export function SettingsScreen() {
                 ]}>
                   {lang.label}
                 </Text>
+                {/* 選中標記 */}
                 {state.language === lang.code && (
                   <Ionicons name="checkmark" size={20} color={MibuBrand.brown} />
                 )}
@@ -521,7 +677,7 @@ export function SettingsScreen() {
         </TouchableOpacity>
       </Modal>
 
-      {/* #036 帳號合併 Modal */}
+      {/* ========== #036 帳號合併 Modal ========== */}
       <Modal
         visible={showMergeModal}
         transparent={true}
@@ -530,7 +686,7 @@ export function SettingsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.mergeModalContent}>
-            {/* 步驟一：警告確認 */}
+            {/* ===== 步驟一：警告確認 ===== */}
             {mergeStep === 'warning' && (
               <>
                 <View style={styles.mergeIconContainer}>
@@ -565,15 +721,17 @@ export function SettingsScreen() {
               </>
             )}
 
-            {/* 步驟二：登入副帳號 */}
+            {/* ===== 步驟二：登入副帳號 ===== */}
             {mergeStep === 'login' && (
               <>
+                {/* 返回按鈕 */}
                 <TouchableOpacity
                   style={styles.mergeBackButton}
                   onPress={() => setMergeStep('warning')}
                 >
                   <Ionicons name="arrow-back" size={24} color={MibuBrand.copper} />
                 </TouchableOpacity>
+
                 <View style={styles.mergeIconContainer}>
                   <Ionicons name="person-add-outline" size={48} color={MibuBrand.brown} />
                 </View>
@@ -585,6 +743,8 @@ export function SettingsScreen() {
                     ? '請使用副帳號的登入方式進行驗證，以確認您擁有該帳號的存取權限。'
                     : 'Please login with the secondary account to verify your ownership.'}
                 </Text>
+
+                {/* 內嵌登入表單 */}
                 <AuthScreen
                   visible={true}
                   onClose={handleCloseMergeModal}
@@ -595,7 +755,7 @@ export function SettingsScreen() {
               </>
             )}
 
-            {/* 步驟三：處理中 */}
+            {/* ===== 步驟三：處理中 ===== */}
             {mergeStep === 'processing' && (
               <>
                 <ActivityIndicator size="large" color={MibuBrand.brown} />
@@ -608,7 +768,7 @@ export function SettingsScreen() {
               </>
             )}
 
-            {/* 步驟四：結果 */}
+            {/* ===== 步驟四：結果 ===== */}
             {mergeStep === 'result' && mergeResult && (
               <>
                 <View style={styles.mergeIconContainer}>
@@ -623,6 +783,8 @@ export function SettingsScreen() {
                     ? (isZh ? '合併成功！' : 'Merge Successful!')
                     : (isZh ? '合併失敗' : 'Merge Failed')}
                 </Text>
+
+                {/* 成功：顯示合併摘要 */}
                 {mergeResult.success && mergeResult.summary ? (
                   <View style={styles.mergeSummary}>
                     <Text style={styles.mergeSummaryTitle}>
@@ -660,10 +822,13 @@ export function SettingsScreen() {
                     )}
                   </View>
                 ) : (
+                  // 失敗：顯示錯誤訊息
                   <Text style={styles.mergeDescription}>
                     {mergeResult.message || (isZh ? '發生未知錯誤' : 'An unknown error occurred')}
                   </Text>
                 )}
+
+                {/* 完成按鈕 */}
                 <TouchableOpacity
                   style={[styles.mergeButton, styles.mergeButtonConfirm, { marginTop: 20 }]}
                   onPress={handleCloseMergeModal}
@@ -681,7 +846,12 @@ export function SettingsScreen() {
   );
 }
 
+// ============================================================
+// 樣式定義
+// ============================================================
+
 const styles = StyleSheet.create({
+  // 容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.warmWhite,
@@ -691,6 +861,8 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 100,
   },
+
+  // 頁面標題
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -702,6 +874,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: MibuBrand.brownDark,
   },
+
+  // 群組區塊
   section: {
     marginBottom: 24,
   },
@@ -714,6 +888,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginLeft: 4,
   },
+
+  // 卡片容器
   card: {
     backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
@@ -724,6 +900,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
+
+  // 設定項目
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -737,6 +915,8 @@ const styles = StyleSheet.create({
   settingItemHighlight: {
     backgroundColor: `${MibuBrand.brown}08`,
   },
+
+  // 圖示容器
   iconContainer: {
     width: 44,
     height: 44,
@@ -744,6 +924,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  // 標籤
   itemLabel: {
     flex: 1,
     fontSize: 16,
@@ -753,11 +935,15 @@ const styles = StyleSheet.create({
   itemLabelHighlight: {
     color: MibuBrand.brown,
   },
+
+  // 值
   itemValue: {
     fontSize: 14,
     color: MibuBrand.copper,
     marginRight: 4,
   },
+
+  // 徽章
   badge: {
     backgroundColor: `${MibuBrand.brown}15`,
     paddingHorizontal: 10,
@@ -769,6 +955,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: MibuBrand.brown,
   },
+
+  // 登入按鈕
   loginButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -783,6 +971,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
+
+  // App 資訊卡片
   aboutCard: {
     backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
@@ -809,6 +999,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: MibuBrand.tan,
   },
+
+  // Modal 通用
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -829,6 +1021,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
   },
+
+  // 語言選項
   languageOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -854,6 +1048,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: MibuBrand.brown,
   },
+
   // #036 帳號合併 Modal 樣式
   mergeModalContent: {
     backgroundColor: MibuBrand.warmWhite,

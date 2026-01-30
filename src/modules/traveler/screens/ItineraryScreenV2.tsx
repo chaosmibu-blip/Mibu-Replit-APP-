@@ -1,14 +1,35 @@
 /**
- * 行程規劃頁面 V2 - 完整 API 串接版
+ * ItineraryScreenV2 - 行程規劃畫面 V2
+ *
+ * 功能：
+ * - 主畫面：AI 對話式規劃（核心體驗）
+ * - 左側抽屜：行程列表切換
+ * - 右側抽屜：行程詳情揭曉（WOW 時刻）
+ * - 建立新行程（選擇國家、地區、日期）
+ * - AI 智能推薦景點
+ * - 手動新增/移除景點
+ * - 景點導航功能
  *
  * 設計理念：
  * - 主畫面：純 AI 對話（像跟朋友聊天）
  * - 右側邊欄：行程揭曉（WOW 時刻）
  * - 左側邊欄：行程列表切換
  *
- * Mibu 品牌風格：溫暖、療癒、大地色調
+ * 串接 API：
+ * - itineraryApi.getItineraries() - 取得行程列表
+ * - itineraryApi.getItinerary() - 取得行程詳情
+ * - itineraryApi.createItinerary() - 建立行程
+ * - itineraryApi.deleteItinerary() - 刪除行程
+ * - itineraryApi.addPlacesToItinerary() - 新增景點
+ * - itineraryApi.removePlaceFromItinerary() - 移除景點
+ * - itineraryApi.aiChat() - AI 對話
+ * - locationApi.getCountries/Regions - 取得地區資料
+ *
+ * UI 特色：
+ * - Mibu 品牌風格：溫暖、療癒、大地色調
+ * - 滑動抽屜動畫
+ * - 打字機效果（AI 回覆）
  */
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
@@ -48,10 +69,26 @@ import {
   AvailablePlacesByCategory,
 } from '../../../types/itinerary';
 
+// ============================================================
+// 常數定義
+// ============================================================
+
+// 螢幕寬度
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// 抽屜寬度（螢幕的 88%）
 const DRAWER_WIDTH = SCREEN_WIDTH * 0.88;
 
-// #033: 開啟地圖導航
+// ============================================================
+// 輔助函數
+// ============================================================
+
+/**
+ * #033: 開啟原生地圖導航
+ * @param lat 緯度
+ * @param lng 經度
+ * @param name 景點名稱
+ */
 const openInMaps = (lat: number, lng: number, name: string) => {
   const url = Platform.select({
     ios: `maps:?q=${encodeURIComponent(name)}&ll=${lat},${lng}`,
@@ -63,19 +100,28 @@ const openInMaps = (lat: number, lng: number, name: string) => {
   }
 };
 
-// 取得景點的座標（支援新舊結構）
+/**
+ * 取得景點的座標
+ * 支援新舊 API 回應結構
+ */
 const getPlaceCoords = (place: ItineraryPlaceItem) => {
   const lat = place.locationLat ?? place.place?.locationLat;
   const lng = place.locationLng ?? place.place?.locationLng;
   return { lat, lng };
 };
 
-// 取得景點的描述（支援新舊結構）
+/**
+ * 取得景點的描述
+ * 支援新舊 API 回應結構
+ */
 const getPlaceDescription = (place: ItineraryPlaceItem) => {
   return place.description ?? place.place?.description;
 };
 
-// 取得景點的名稱（支援新舊結構）
+/**
+ * 取得景點的名稱
+ * 支援新舊 API 回應結構
+ */
 const getPlaceName = (place: ItineraryPlaceItem) => {
   return place.name ?? place.place?.name ?? '未知景點';
 };

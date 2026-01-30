@@ -1,3 +1,19 @@
+/**
+ * ChatScreen - AI 對話畫面
+ *
+ * 功能說明：
+ * - 與 Mibu 旅程助手進行對話
+ * - 支援快速回覆建議
+ * - 多語系支援（中/英/日/韓）
+ * - 模擬 AI 回應（目前為本地模擬，未串接後端）
+ *
+ * 串接的 API：
+ * - 目前為本地模擬，未來可串接：
+ *   - POST /api/chat/send - 發送訊息
+ *   - GET /api/chat/history - 取得對話歷史
+ *
+ * @see 後端合約: contracts/APP.md（待定）
+ */
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -14,12 +30,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
 import { MibuBrand } from '../../../../constants/Colors';
 
+// ============ 介面定義 ============
+
+/** 訊息資料結構 */
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'assistant';
+  sender: 'user' | 'assistant'; // user: 用戶發送, assistant: AI 回應
   timestamp: Date;
 }
+
+// ============ 多語系翻譯 ============
 
 const translations = {
   'zh-TW': {
@@ -116,15 +137,24 @@ const translations = {
   },
 };
 
+// ============ 元件本體 ============
+
 export function ChatScreen() {
   const { state } = useApp();
   const scrollViewRef = useRef<ScrollView>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputText, setInputText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
 
+  // ============ 狀態管理 ============
+
+  const [messages, setMessages] = useState<Message[]>([]); // 訊息列表
+  const [inputText, setInputText] = useState(''); // 輸入框文字
+  const [isTyping, setIsTyping] = useState(false); // AI 是否正在輸入
+
+  // 取得當前語系的翻譯文字
   const texts = translations[state.language] || translations['zh-TW'];
 
+  // ============ 生命週期 ============
+
+  /** 語系變更時重設歡迎訊息 */
   useEffect(() => {
     setMessages([{
       id: '1',
@@ -134,32 +164,49 @@ export function ChatScreen() {
     }]);
   }, [state.language]);
 
+  // ============ 輔助函數 ============
+
+  /**
+   * 根據用戶訊息取得 AI 回應
+   * @param userMessage 用戶發送的訊息
+   * @returns AI 回應文字
+   */
   const getResponse = (userMessage: string): string => {
     const responses = texts.responses;
     return responses[userMessage as keyof typeof responses] || responses['default'];
   };
 
+  /**
+   * 模擬 AI 回應
+   * 延遲 1-2 秒後顯示回應，模擬真實 AI 處理時間
+   */
   const simulateAIResponse = (userMessage: string) => {
     setIsTyping(true);
-    
+
     setTimeout(() => {
       const response = getResponse(userMessage);
-      
+
       const newMessage: Message = {
         id: Date.now().toString(),
         text: response,
         sender: 'assistant',
         timestamp: new Date(),
       };
-      
+
       setMessages(prev => [...prev, newMessage]);
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
+    }, 1000 + Math.random() * 1000); // 1-2 秒隨機延遲
   };
 
+  // ============ 事件處理 ============
+
+  /**
+   * 處理發送訊息
+   */
   const handleSend = () => {
     if (!inputText.trim()) return;
 
+    // 新增用戶訊息
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputText.trim(),
@@ -169,11 +216,16 @@ export function ChatScreen() {
 
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
-    
+
+    // 觸發 AI 回應
     simulateAIResponse(inputText.trim());
   };
 
+  /**
+   * 處理快速回覆點擊
+   */
   const handleQuickReply = (text: string) => {
+    // 新增用戶訊息
     const userMessage: Message = {
       id: Date.now().toString(),
       text: text,
@@ -182,19 +234,27 @@ export function ChatScreen() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+
+    // 觸發 AI 回應
     simulateAIResponse(text);
   };
 
+  /**
+   * 格式化時間顯示
+   */
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  // ============ 主要渲染 ============
+
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
+      {/* ===== 頂部導航列 ===== */}
       <View style={styles.header}>
         <View style={styles.headerIcon}>
           <Ionicons name="chatbubbles" size={24} color="#ffffff" />
@@ -207,20 +267,22 @@ export function ChatScreen() {
         </View>
       </View>
 
-      <ScrollView 
+      {/* ===== 訊息列表區 ===== */}
+      <ScrollView
         ref={scrollViewRef}
         style={styles.messagesContainer}
         contentContainerStyle={styles.messagesContent}
         onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
       >
         {messages.map(message => (
-          <View 
-            key={message.id} 
+          <View
+            key={message.id}
             style={[
               styles.messageBubble,
               message.sender === 'user' ? styles.userBubble : styles.assistantBubble
             ]}
           >
+            {/* AI 頭像（僅 AI 訊息顯示） */}
             {message.sender === 'assistant' && (
               <View style={styles.avatarContainer}>
                 <View style={styles.avatar}>
@@ -228,6 +290,7 @@ export function ChatScreen() {
                 </View>
               </View>
             )}
+            {/* 訊息內容 */}
             <View style={[
               styles.messageContent,
               message.sender === 'user' ? styles.userContent : styles.assistantContent
@@ -248,6 +311,7 @@ export function ChatScreen() {
           </View>
         ))}
 
+        {/* ===== AI 輸入中指示器 ===== */}
         {isTyping && (
           <View style={[styles.messageBubble, styles.assistantBubble]}>
             <View style={styles.avatarContainer}>
@@ -263,11 +327,12 @@ export function ChatScreen() {
         )}
       </ScrollView>
 
+      {/* ===== 快速回覆區（僅在對話初期顯示） ===== */}
       {messages.length <= 2 && (
         <View style={styles.quickRepliesContainer}>
           <Text style={styles.quickRepliesLabel}>{texts.quickRepliesLabel}</Text>
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.quickRepliesScroll}
           >
@@ -284,6 +349,7 @@ export function ChatScreen() {
         </View>
       )}
 
+      {/* ===== 輸入區 ===== */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -294,7 +360,7 @@ export function ChatScreen() {
           multiline
           maxLength={500}
         />
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
           onPress={handleSend}
           disabled={!inputText.trim()}
@@ -306,11 +372,15 @@ export function ChatScreen() {
   );
 }
 
+// ============ 樣式定義 ============
+
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.creamLight,
   },
+  // 頂部導航列
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -342,6 +412,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#22c55e',
   },
+  // 訊息列表區
   messagesContainer: {
     flex: 1,
   },
@@ -349,6 +420,7 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 24,
   },
+  // 訊息氣泡
   messageBubble: {
     flexDirection: 'row',
     marginBottom: 16,
@@ -360,6 +432,7 @@ const styles = StyleSheet.create({
   assistantBubble: {
     alignSelf: 'flex-start',
   },
+  // AI 頭像
   avatarContainer: {
     marginRight: 8,
   },
@@ -371,6 +444,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // 訊息內容
   messageContent: {
     borderRadius: 20,
     paddingHorizontal: 16,
@@ -407,6 +481,7 @@ const styles = StyleSheet.create({
   assistantTime: {
     color: MibuBrand.tan,
   },
+  // 輸入中指示器
   typingIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -417,6 +492,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: MibuBrand.copper,
   },
+  // 快速回覆區
   quickRepliesContainer: {
     backgroundColor: MibuBrand.warmWhite,
     paddingTop: 12,
@@ -448,6 +524,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.brown,
     fontWeight: '500',
   },
+  // 輸入區
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',

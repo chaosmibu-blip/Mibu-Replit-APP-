@@ -1,3 +1,13 @@
+/**
+ * 規劃主頁面
+ *
+ * 整合三個子功能的分頁式頁面：
+ * - location (定位): 顯示當前位置和附近景點
+ * - itinerary (行程): 行程規劃和管理
+ * - chat (聊天): AI 旅遊助手對話
+ *
+ * 使用 SegmentedControl 切換子頁面
+ */
 import React, { useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

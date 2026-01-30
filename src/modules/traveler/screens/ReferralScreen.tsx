@@ -1,6 +1,23 @@
 /**
- * ReferralScreen - 邀請好友
- * 推薦碼分享、獎勵說明、好友列表
+ * ReferralScreen - 邀請好友畫面
+ *
+ * 功能：
+ * - 顯示/生成個人推薦碼
+ * - 複製/分享推薦碼
+ * - 輸入好友推薦碼
+ * - 顯示邀請獎勵等級說明
+ * - 顯示已邀請好友列表
+ * - 推薦排行榜（週/月/全部）
+ * - 獎勵餘額查詢
+ *
+ * 串接 API：
+ * - referralApi.getMyCode() - 取得推薦碼
+ * - referralApi.generateCode() - 生成推薦碼
+ * - referralApi.applyCode() - 套用推薦碼
+ * - referralApi.getMyReferrals() - 取得邀請列表
+ * - referralApi.getBalance() - 取得獎勵餘額
+ * - referralApi.getLeaderboard() - 取得排行榜
+ * - referralApi.getMyRank() - 取得我的排名
  *
  * @see 後端合約: contracts/APP.md Phase 5
  */
@@ -32,14 +49,24 @@ import {
   LeaderboardPeriod,
 } from '../../../types/referral';
 
-// 獎勵等級設定
+// ============================================================
+// 常數定義
+// ============================================================
+
+/**
+ * 獎勵等級介面
+ */
 interface RewardTier {
-  count: number;
-  reward: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
+  count: number;                         // 達成邀請數
+  reward: string;                        // 獎勵說明
+  icon: keyof typeof Ionicons.glyphMap;  // 獎勵圖示
+  color: string;                         // 顏色
 }
 
+/**
+ * 邀請獎勵等級設定
+ * 根據邀請人數給予不同獎勵
+ */
 const REWARD_TIERS: RewardTier[] = [
   { count: 1, reward: '雙方各得 50 XP', icon: 'star', color: '#D97706' },
   { count: 3, reward: '額外獎勵 200 XP', icon: 'star', color: '#6366f1' },
@@ -48,30 +75,61 @@ const REWARD_TIERS: RewardTier[] = [
 ];
 
 
+// ============================================================
+// 主元件
+// ============================================================
+
 export function ReferralScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
+
+  // 語言判斷
   const isZh = state.language === 'zh-TW';
 
+  // ============================================================
+  // 狀態管理
+  // ============================================================
+
+  // 載入狀態
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // State
+  // 我的推薦碼
   const [myCode, setMyCode] = useState<ReferralCode | null>(null);
+
+  // 輸入的推薦碼
   const [inputCode, setInputCode] = useState('');
+
+  // 操作中狀態
   const [applyingCode, setApplyingCode] = useState(false);
   const [generatingCode, setGeneratingCode] = useState(false);
+
+  // 邀請列表
   const [referrals, setReferrals] = useState<Referral[]>([]);
+
+  // 邀請統計
   const [referralStats, setReferralStats] = useState({
-    totalReferrals: 0,
-    activeReferrals: 0,
-    totalRewardEarned: 0
+    totalReferrals: 0,      // 總邀請數
+    activeReferrals: 0,     // 有效邀請數
+    totalRewardEarned: 0    // 總獎勵
   });
+
+  // 獎勵餘額
   const [balance, setBalance] = useState<ReferralBalance | null>(null);
+
+  // 排行榜
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [myRank, setMyRank] = useState<{ rank: number; isOnLeaderboard: boolean } | null>(null);
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<LeaderboardPeriod>('weekly');
 
+  // ============================================================
+  // API 呼叫
+  // ============================================================
+
+  /**
+   * 載入所有資料
+   * 包含：推薦碼、邀請列表、餘額、排行榜
+   */
   const loadData = useCallback(async () => {
     try {
       const token = await getToken();

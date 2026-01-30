@@ -1,3 +1,14 @@
+/**
+ * MerchantVerifyScreen - 驗證頁面
+ *
+ * 功能說明：
+ * - 提供核銷碼驗證功能
+ * - 輸入商家 ID 和核銷碼進行驗證
+ * - 顯示驗證結果（成功/失敗）
+ *
+ * 串接的 API：
+ * - POST /merchant/verify-code - 驗證核銷碼
+ */
 import React, { useState } from 'react';
 import {
   View,
@@ -15,16 +26,26 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 
+// ============ 主元件 ============
 export function MerchantVerifyScreen() {
+  // ============ Hooks ============
   const { state, getToken } = useApp();
   const router = useRouter();
+
+  // ============ 狀態變數 ============
+  // code: 核銷碼輸入值
   const [code, setCode] = useState('');
+  // merchantId: 商家 ID 輸入值
   const [merchantId, setMerchantId] = useState('');
+  // loading: 驗證中狀態
   const [loading, setLoading] = useState(false);
+  // result: 驗證結果
   const [result, setResult] = useState<{ valid: boolean; message?: string } | null>(null);
 
+  // isZh: 判斷是否為中文語系
   const isZh = state.language === 'zh-TW';
 
+  // ============ 多語系翻譯 ============
   const translations = {
     title: isZh ? '驗證核銷碼' : 'Verify Code',
     merchantIdLabel: isZh ? '商家 ID' : 'Merchant ID',
@@ -40,12 +61,20 @@ export function MerchantVerifyScreen() {
     tryAgain: isZh ? '再試一次' : 'Try Again',
   };
 
+  // ============ 事件處理函數 ============
+
+  /**
+   * handleVerify - 處理驗證
+   * 驗證輸入後呼叫 API 進行核銷碼驗證
+   */
   const handleVerify = async () => {
+    // 驗證必填欄位
     if (!code.trim() || !merchantId.trim()) {
       Alert.alert('', translations.errorEmpty);
       return;
     }
 
+    // 驗證商家 ID 為數字
     const merchantIdNum = parseInt(merchantId.trim(), 10);
     if (isNaN(merchantIdNum)) {
       Alert.alert('', isZh ? '商家 ID 必須是數字' : 'Merchant ID must be a number');
@@ -59,9 +88,9 @@ export function MerchantVerifyScreen() {
       if (!token) return;
 
       const response = await apiService.verifyMerchantCode(token, merchantIdNum, code.trim());
-      setResult({ 
-        valid: response.valid, 
-        message: response.valid 
+      setResult({
+        valid: response.valid,
+        message: response.valid
           ? (isZh ? '核銷碼有效' : 'Code is valid')
           : (response.error || (isZh ? '核銷碼無效' : 'Code is invalid'))
       });
@@ -73,27 +102,38 @@ export function MerchantVerifyScreen() {
     }
   };
 
+  /**
+   * handleReset - 重置表單
+   * 清空輸入和驗證結果，準備重新驗證
+   */
   const handleReset = () => {
     setCode('');
     setMerchantId('');
     setResult(null);
   };
 
+  // ============ 主要 JSX 渲染 ============
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
+        {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
       </View>
 
+      {/* ============ 主要內容區 ============ */}
       <View style={styles.content}>
+        {/* 根據是否有結果顯示不同內容 */}
         {result ? (
+          // ============ 驗證結果畫面 ============
           <View style={styles.resultCard}>
+            {/* 結果圖示 */}
             <View style={[styles.resultIcon, result.valid ? styles.resultValid : styles.resultInvalid]}>
               <Ionicons
                 name={result.valid ? 'checkmark-circle' : 'close-circle'}
@@ -101,18 +141,23 @@ export function MerchantVerifyScreen() {
                 color="#ffffff"
               />
             </View>
+            {/* 結果標題 */}
             <Text style={styles.resultTitle}>
               {result.valid ? translations.valid : translations.invalid}
             </Text>
+            {/* 結果訊息 */}
             {result.message && (
               <Text style={styles.resultMessage}>{result.message}</Text>
             )}
+            {/* 重試按鈕 */}
             <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
               <Text style={styles.resetButtonText}>{translations.tryAgain}</Text>
             </TouchableOpacity>
           </View>
         ) : (
+          // ============ 輸入表單畫面 ============
           <View style={styles.formCard}>
+            {/* 商家 ID 輸入 */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{translations.merchantIdLabel}</Text>
               <TextInput
@@ -125,6 +170,7 @@ export function MerchantVerifyScreen() {
               />
             </View>
 
+            {/* 核銷碼輸入 */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{translations.codeLabel}</Text>
               <TextInput
@@ -138,6 +184,7 @@ export function MerchantVerifyScreen() {
               />
             </View>
 
+            {/* 驗證按鈕 */}
             <TouchableOpacity
               style={[styles.verifyButton, loading && styles.verifyButtonDisabled]}
               onPress={handleVerify}
@@ -159,11 +206,14 @@ export function MerchantVerifyScreen() {
   );
 }
 
+// ============ 樣式定義 ============
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
   },
+  // 頂部標題區
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -174,19 +224,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
+  // 返回按鈕
   backButton: {
     marginRight: 16,
   },
+  // 頁面標題
   title: {
     fontSize: 24,
     fontWeight: '800',
     color: '#1e293b',
   },
+  // 主要內容區
   content: {
     flex: 1,
     padding: 20,
     justifyContent: 'center',
   },
+  // 表單卡片
   formCard: {
     backgroundColor: '#ffffff',
     borderRadius: 20,
@@ -194,15 +248,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#e2e8f0',
   },
+  // 輸入群組
   inputGroup: {
     marginBottom: 20,
   },
+  // 輸入標籤
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#64748b',
     marginBottom: 8,
   },
+  // 輸入框
   input: {
     backgroundColor: '#f8fafc',
     borderWidth: 2,
@@ -213,12 +270,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1e293b',
   },
+  // 核銷碼輸入框（特殊樣式）
   codeInput: {
     fontSize: 24,
     fontWeight: '800',
     textAlign: 'center',
     letterSpacing: 8,
   },
+  // 驗證按鈕
   verifyButton: {
     backgroundColor: '#6366f1',
     flexDirection: 'row',
@@ -229,14 +288,17 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginTop: 12,
   },
+  // 驗證按鈕（停用狀態）
   verifyButtonDisabled: {
     backgroundColor: '#a5b4fc',
   },
+  // 驗證按鈕文字
   verifyButtonText: {
     fontSize: 16,
     fontWeight: '700',
     color: '#ffffff',
   },
+  // 結果卡片
   resultCard: {
     backgroundColor: '#ffffff',
     borderRadius: 20,
@@ -245,6 +307,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#e2e8f0',
   },
+  // 結果圖示容器
   resultIcon: {
     width: 100,
     height: 100,
@@ -253,30 +316,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
   },
+  // 成功結果背景
   resultValid: {
     backgroundColor: '#22c55e',
   },
+  // 失敗結果背景
   resultInvalid: {
     backgroundColor: '#ef4444',
   },
+  // 結果標題
   resultTitle: {
     fontSize: 24,
     fontWeight: '800',
     color: '#1e293b',
     marginBottom: 8,
   },
+  // 結果訊息
   resultMessage: {
     fontSize: 16,
     color: '#64748b',
     textAlign: 'center',
     marginBottom: 24,
   },
+  // 重試按鈕
   resetButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
     backgroundColor: '#f1f5f9',
     borderRadius: 12,
   },
+  // 重試按鈕文字
   resetButtonText: {
     fontSize: 16,
     fontWeight: '600',

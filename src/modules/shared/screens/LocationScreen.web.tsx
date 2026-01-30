@@ -1,7 +1,26 @@
+/**
+ * LocationScreen - 位置選擇畫面（Web 版）
+ *
+ * 功能說明：
+ * - Web 平台的位置畫面替代版本
+ * - 顯示用戶當前座標（文字列表形式）
+ * - 支援位置分享開關
+ * - 顯示旅程策畫師的位置資訊
+ * - 提示使用者地圖功能僅限行動裝置
+ *
+ * 與原生版差異：
+ * - 不使用 react-native-maps（Web 不支援）
+ * - 以列表方式顯示位置資訊取代地圖
+ *
+ * 串接的 API：
+ * - POST /api/location/update - 更新用戶位置
+ *
+ * @see 後端合約: contracts/APP.md Phase 3
+ */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-  View, 
-  StyleSheet, 
+import {
+  View,
+  StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
   Text,
@@ -13,9 +32,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../../constants/translations';
 import { useApp } from '../../../context/AppContext';
 
+// ============ 常數定義 ============
+
+/** 位置回報節流間隔（毫秒） */
 const THROTTLE_INTERVAL = 10000;
+
+/** 最小移動距離（公尺），超過才回報 */
 const MIN_DISTANCE_METERS = 10;
 
+// ============ 介面定義 ============
+
+/** 策畫師位置資料 */
 interface PlannerLocation {
   id: string;
   name: string;
@@ -23,14 +50,20 @@ interface PlannerLocation {
   longitude: number;
 }
 
+// ============ 輔助函數 ============
+
+/**
+ * 計算兩點間距離（公尺）
+ * 使用 Haversine 公式
+ */
 function getDistanceFromLatLonInMeters(
-  lat1: number, lon1: number, 
+  lat1: number, lon1: number,
   lat2: number, lon2: number
 ): number {
-  const R = 6371000;
+  const R = 6371000; // 地球半徑（公尺）
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
+  const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -38,18 +71,32 @@ function getDistanceFromLatLonInMeters(
   return R * c;
 }
 
+// ============ 元件本體 ============
+
 export function LocationScreen() {
   const { t } = useApp();
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isSharingEnabled, setIsSharingEnabled] = useState(false);
-  const [plannerLocations, setPlannerLocations] = useState<PlannerLocation[]>([]);
-  
-  const lastReportedLocation = useRef<{ latitude: number; longitude: number } | null>(null);
-  const lastReportTime = useRef<number>(0);
-  const locationSubscription = useRef<Location.LocationSubscription | null>(null);
 
+  // ============ 狀態管理 ============
+
+  const [location, setLocation] = useState<Location.LocationObject | null>(null); // 當前位置
+  const [loading, setLoading] = useState(true); // 載入中
+  const [errorMsg, setErrorMsg] = useState<string | null>(null); // 錯誤訊息
+  const [isSharingEnabled, setIsSharingEnabled] = useState(false); // 是否開啟位置分享
+  const [plannerLocations, setPlannerLocations] = useState<PlannerLocation[]>([]); // 策畫師位置列表
+
+  // Refs（用於節流控制）
+  const lastReportedLocation = useRef<{ latitude: number; longitude: number } | null>(null); // 上次回報的位置
+  const lastReportTime = useRef<number>(0); // 上次回報時間
+  const locationSubscription = useRef<Location.LocationSubscription | null>(null); // 位置監聽訂閱
+
+  // ============ API 函數 ============
+
+  /**
+   * 更新用戶位置到後端
+   * @param latitude 緯度
+   * @param longitude 經度
+   * @param sharing 是否分享位置
+   */
   const updateUserLocation = useCallback(async (latitude: number, longitude: number, sharing: boolean) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/location/update`, {
@@ -59,11 +106,12 @@ export function LocationScreen() {
         },
         body: JSON.stringify({ lat: latitude, lng: longitude }),
       });
-      
+
       if (response.ok) {
         const contentLength = response.headers.get('content-length');
         if (contentLength && parseInt(contentLength) > 0) {
           const data = await response.json();
+          // 更新策畫師位置（如果有回傳）
           if (data.plannerLocations && Array.isArray(data.plannerLocations)) {
             setPlannerLocations(data.plannerLocations);
           }
@@ -74,14 +122,20 @@ export function LocationScreen() {
     }
   }, []);
 
+  /**
+   * 判斷是否應該回報位置
+   * 條件：超過節流間隔 或 移動超過最小距離
+   */
   const shouldReportLocation = useCallback((latitude: number, longitude: number): boolean => {
     const now = Date.now();
     const timeSinceLastReport = now - lastReportTime.current;
-    
+
+    // 超過節流間隔
     if (timeSinceLastReport >= THROTTLE_INTERVAL) {
       return true;
     }
-    
+
+    // 檢查移動距離
     if (lastReportedLocation.current) {
       const distance = getDistanceFromLatLonInMeters(
         lastReportedLocation.current.latitude,
@@ -89,20 +143,25 @@ export function LocationScreen() {
         latitude,
         longitude
       );
-      
+
       if (distance >= MIN_DISTANCE_METERS) {
         return true;
       }
     }
-    
+
     return false;
   }, []);
 
+  /**
+   * 處理位置更新
+   * 更新本地狀態並決定是否回報後端
+   */
   const handleLocationUpdate = useCallback((newLocation: Location.LocationObject) => {
     setLocation(newLocation);
-    
+
     const { latitude, longitude } = newLocation.coords;
-    
+
+    // 檢查是否需要回報
     if (shouldReportLocation(latitude, longitude)) {
       updateUserLocation(latitude, longitude, isSharingEnabled);
       lastReportedLocation.current = { latitude, longitude };
@@ -110,8 +169,13 @@ export function LocationScreen() {
     }
   }, [shouldReportLocation, updateUserLocation, isSharingEnabled]);
 
+  /**
+   * 開始位置追蹤
+   * 請求權限、取得初始位置、設定持續監聽
+   */
   const startLocationTracking = useCallback(async () => {
     try {
+      // 請求位置權限
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg(t.locationPermissionRequired);
@@ -119,18 +183,20 @@ export function LocationScreen() {
         return;
       }
 
+      // 取得當前位置（高精度）
       const currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
-      
+
       handleLocationUpdate(currentLocation);
       setLoading(false);
 
+      // 設定持續監聽
       locationSubscription.current = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.Balanced,
-          timeInterval: 5000,
-          distanceInterval: 5,
+          timeInterval: 5000, // 每 5 秒檢查
+          distanceInterval: 5, // 每 5 公尺檢查
         },
         handleLocationUpdate
       );
@@ -141,15 +207,20 @@ export function LocationScreen() {
     }
   }, [handleLocationUpdate, t]);
 
+  // ============ 生命週期 ============
+
   useEffect(() => {
     startLocationTracking();
-    
+
+    // 清理：移除位置監聽
     return () => {
       if (locationSubscription.current) {
         locationSubscription.current.remove();
       }
     };
   }, [startLocationTracking]);
+
+  // ============ 載入狀態 ============
 
   if (loading) {
     return (
@@ -159,6 +230,8 @@ export function LocationScreen() {
       </View>
     );
   }
+
+  // ============ 錯誤狀態 ============
 
   if (errorMsg) {
     return (
@@ -172,8 +245,11 @@ export function LocationScreen() {
     );
   }
 
+  // ============ 主要渲染 ============
+
   return (
     <View style={styles.container}>
+      {/* ===== 位置分享開關 ===== */}
       <View style={styles.sharingToggle}>
         <View style={styles.sharingInfo}>
           <Ionicons name="people" size={20} color="#64748b" />
@@ -186,8 +262,10 @@ export function LocationScreen() {
           thumbColor={isSharingEnabled ? '#22c55e' : '#f4f4f5'}
         />
       </View>
-      
+
+      {/* ===== 位置資訊列表 ===== */}
       <ScrollView style={styles.listContainer} contentContainerStyle={styles.listContent}>
+        {/* 用戶位置卡片 */}
         <View style={styles.locationCard}>
           <View style={styles.locationIcon}>
             <Ionicons name="navigate" size={24} color="#22c55e" />
@@ -200,6 +278,7 @@ export function LocationScreen() {
           </View>
         </View>
 
+        {/* 策畫師位置區塊 */}
         {plannerLocations.length > 0 && (
           <View style={styles.plannerSection}>
             <Text style={styles.sectionTitle}>{t.planner}</Text>
@@ -219,6 +298,7 @@ export function LocationScreen() {
           </View>
         )}
 
+        {/* ===== Web 版提示訊息 ===== */}
         <View style={styles.webNotice}>
           <Ionicons name="information-circle-outline" size={20} color="#64748b" />
           <Text style={styles.webNoticeText}>
@@ -230,11 +310,15 @@ export function LocationScreen() {
   );
 }
 
+// ============ 樣式定義 ============
+
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
   },
+  // 位置分享開關區
   sharingToggle: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -255,12 +339,14 @@ const styles = StyleSheet.create({
     color: '#334155',
     fontWeight: '500',
   },
+  // 列表區
   listContainer: {
     flex: 1,
   },
   listContent: {
     padding: 16,
   },
+  // 載入狀態
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -272,6 +358,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#64748b',
   },
+  // 錯誤狀態
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -297,6 +384,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  // 位置卡片
   locationCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -333,6 +421,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontFamily: 'monospace',
   },
+  // 策畫師區塊
   plannerSection: {
     marginTop: 8,
   },
@@ -363,6 +452,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  // Web 版提示
   webNotice: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,3 +1,23 @@
+/**
+ * CollectionScreen - 圖鑑畫面
+ *
+ * 功能：
+ * - 顯示用戶收集到的所有景點（以方格卡片呈現）
+ * - 依分類分群顯示
+ * - 支援篩選和搜尋
+ * - 點擊卡片查看詳情（Modal）
+ * - 支援收藏/黑名單功能
+ * - 下拉重新整理
+ * - 未讀標記和優惠更新通知
+ *
+ * 串接 API：
+ * - collectionApi.getCollection() - 取得圖鑑列表
+ * - collectionApi.markAsRead() - 標記已讀
+ *
+ * 視覺設計：
+ * - 使用分類色彩區分不同類型景點
+ * - PRO 商家顯示品牌色
+ */
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
@@ -15,21 +35,43 @@ import { GachaItem, Language, CollectionItem } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
 
-// 擴展 GachaItem 類型以包含 isRead 和優惠更新狀態
+// ============================================================
+// 型別定義
+// ============================================================
+
+/**
+ * 擴展 GachaItem 類型
+ * 新增圖鑑特有欄位
+ */
 type GachaItemWithRead = GachaItem & {
-  isRead?: boolean;
-  collectionId?: number;
-  hasPromoUpdate?: boolean; // #028 優惠更新通知
+  isRead?: boolean;           // 是否已讀
+  collectionId?: number;      // 圖鑑 ID
+  hasPromoUpdate?: boolean;   // #028 是否有優惠更新通知
 };
 
+// ============================================================
+// 輔助函數
+// ============================================================
+
+/**
+ * 取得景點名稱
+ */
 const getPlaceName = (item: GachaItem): string => {
   return item.placeName || '';
 };
 
+/**
+ * 取得景點描述
+ */
 const getDescription = (item: GachaItem): string => {
   return item.description || '';
 };
 
+/**
+ * 格式化日期
+ * @param dateStr ISO 日期字串
+ * @returns YYYY/MM/DD 格式
+ */
 const formatDate = (dateStr: string | undefined): string => {
   if (!dateStr) return '';
   try {
@@ -40,12 +82,20 @@ const formatDate = (dateStr: string | undefined): string => {
   }
 };
 
+// ============================================================
+// 子元件：景點詳情 Modal
+// ============================================================
+
 interface PlaceDetailModalProps {
-  item: GachaItem;
-  language: Language;
-  onClose: () => void;
+  item: GachaItem;     // 景點資料
+  language: Language;  // 語言設定
+  onClose: () => void; // 關閉回調
 }
 
+/**
+ * PlaceDetailModal - 景點詳情彈窗
+ * 顯示景點完整資訊，可導航、收藏、加入黑名單
+ */
 function PlaceDetailModal({ item, language, onClose }: PlaceDetailModalProps) {
   const [showActionMenu, setShowActionMenu] = useState(false);
   const placeName = getPlaceName(item);

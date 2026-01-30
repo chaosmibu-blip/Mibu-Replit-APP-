@@ -1,3 +1,17 @@
+/**
+ * ItemsScreen - 扭蛋結果畫面
+ *
+ * 功能：
+ * - 顯示扭蛋抽到的景點列表
+ * - 每個景點卡片顯示：時間預估、分類、名稱、描述
+ * - 商家優惠券區塊（若有）
+ * - 點擊可在 Google 地圖查看位置
+ * - 底部「重新扭蛋」按鈕返回扭蛋頁
+ *
+ * 資料來源：
+ * - state.result.inventory - 扭蛋結果列表
+ * - state.result.meta - 扭蛋元資料（城市、區域、主題等）
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -16,6 +30,13 @@ import { getCategoryLabel, getCategoryColor } from '../../../constants/translati
 import { MibuBrand, SemanticColors, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
 import { InfoToast } from '../../shared/components/InfoToast';
 
+// ============================================================
+// 稀有度顏色定義
+// ============================================================
+
+/**
+ * 稀有度對應主色
+ */
 const RARITY_COLORS: Record<string, string> = {
   SP: MibuBrand.tierSP,
   SSR: MibuBrand.tierSSR,
@@ -25,6 +46,9 @@ const RARITY_COLORS: Record<string, string> = {
   N: MibuBrand.tan,
 };
 
+/**
+ * 稀有度對應背景色
+ */
 const RARITY_BG_COLORS: Record<string, string> = {
   SP: MibuBrand.tierSPBg,
   SSR: MibuBrand.tierSSRBg,
@@ -34,25 +58,40 @@ const RARITY_BG_COLORS: Record<string, string> = {
   N: MibuBrand.creamLight,
 };
 
+// ============================================================
+// 子元件：單一景點卡片
+// ============================================================
+
 interface ItemCardProps {
   item: GachaItem;
   translations: Record<string, string>;
   language: Language;
 }
 
+/**
+ * ItemCard - 單一景點卡片
+ * 顯示景點的詳細資訊，包含商家優惠券（若有）
+ */
 function ItemCard({ item, translations, language }: ItemCardProps) {
+  // 取得分類顏色 token
   const categoryToken = getCategoryToken(item.category as string);
   const categoryLabel = getCategoryLabel(item.category as string, language);
 
+  // 判斷是否為 PRO 商家（有品牌色）
   const isMerchantPro = item.merchant?.isPro && item.merchant?.brandColor;
-  const merchantScheme = isMerchantPro 
-    ? deriveMerchantScheme(item.merchant!.brandColor!) 
+  const merchantScheme = isMerchantPro
+    ? deriveMerchantScheme(item.merchant!.brandColor!)
     : null;
-  
+
+  // PRO 商家使用品牌色，否則使用分類色
   const stripeColor = merchantScheme ? merchantScheme.accent : categoryToken.stripe;
   const titleColor = merchantScheme ? merchantScheme.accent : MibuBrand.dark;
   const merchantPromo = item.merchant?.promo;
 
+  /**
+   * 取得多語言內容
+   * 支援字串或 LocalizedContent 物件
+   */
   const getLocalizedContent = (content: LocalizedContent | string | null | undefined): string => {
     if (typeof content === 'string') return content;
     if (typeof content === 'object' && content !== null) {
@@ -64,6 +103,12 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
   const placeName = item.placeName || '';
   const description = item.description || '';
 
+  /**
+   * 根據分類估算遊玩時間
+   * - 美食：0.5-1h
+   * - 購物：1-2h
+   * - 其他：2-3h
+   */
   const getDurationText = () => {
     const category = (item.category || '').toString().toLowerCase();
     if (category.includes('food') || category.includes('美食') || category === 'f') {
@@ -75,6 +120,9 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
     return '2-3h';
   };
 
+  /**
+   * 開啟 Google 搜尋（查看景點位置）
+   */
   const handleOpenMaps = async () => {
     if (!placeName) return;
     const url = `https://www.google.com/search?q=${encodeURIComponent(placeName)}`;
@@ -85,10 +133,12 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
     }
   };
 
+  // 稀有度顏色
   const rarity = item.rarity || 'N';
   const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.N;
   const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.N;
 
+  // 優惠券資訊
   const hasCoupon = item.couponData;
   const couponText = item.couponData?.title || '';
   const couponCode = item.couponData?.code || '';
@@ -117,7 +167,9 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
         }}
       />
       <View style={{ flex: 1, padding: 20 }}>
+        {/* 頂部：時間預估 + 分類標籤 */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+          {/* 時間預估 badge */}
           <View
             style={{
               backgroundColor: MibuBrand.creamLight,
@@ -146,6 +198,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
           </View>
         </View>
 
+        {/* 景點名稱 */}
         <Text
           style={{ fontSize: 20, fontWeight: '700', color: titleColor, marginBottom: 8, letterSpacing: -0.3 }}
           numberOfLines={2}
@@ -153,6 +206,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
           {placeName}
         </Text>
 
+        {/* 景點描述 */}
         {description ? (
           <Text
             style={{ fontSize: 14, color: MibuBrand.brownLight, lineHeight: 22, marginBottom: 16 }}
@@ -191,6 +245,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
               alignItems: 'center',
             }}
           >
+            {/* 稀有度 badge */}
             <View
               style={{
                 backgroundColor: rarityBg,
@@ -204,6 +259,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
                 {rarity}
               </Text>
             </View>
+            {/* 優惠券內容 */}
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 13, fontWeight: '600', color: MibuBrand.dark, marginBottom: 2 }}>
                 {couponText}
@@ -217,6 +273,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
           </View>
         )}
 
+        {/* 底部：查看地圖按鈕 */}
         <TouchableOpacity
           style={{
             backgroundColor: MibuBrand.creamLight,
@@ -238,16 +295,28 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
   );
 }
 
+// ============================================================
+// 主元件
+// ============================================================
+
 export function ItemsScreen() {
   const router = useRouter();
   const { state, t } = useApp();
 
+  // 從 state 取得扭蛋結果
   const items = state.result?.inventory || [];
   const meta = state.result?.meta;
+
+  // ============================================================
+  // 狀態管理 - 數量不足提示
+  // ============================================================
 
   const [showShortfallToast, setShowShortfallToast] = useState(false);
   const [shortfallMessage, setShortfallMessage] = useState('');
 
+  /**
+   * 若扭蛋結果數量不足（isShortfall），延遲顯示提示訊息
+   */
   useEffect(() => {
     if (meta?.isShortfall && meta?.shortfallMessage) {
       const timer = setTimeout(() => {
@@ -258,9 +327,16 @@ export function ItemsScreen() {
     }
   }, [meta?.isShortfall, meta?.shortfallMessage]);
 
+  /**
+   * 返回扭蛋頁面
+   */
   const handleBackToGacha = () => {
     router.back();
   };
+
+  // ============================================================
+  // 空狀態：尚無扭蛋結果
+  // ============================================================
 
   if (items.length === 0) {
     return (
@@ -273,6 +349,7 @@ export function ItemsScreen() {
           padding: 20,
         }}
       >
+        {/* 空狀態圖示 */}
         <View
           style={{
             width: 90,
@@ -292,6 +369,7 @@ export function ItemsScreen() {
         <Text style={{ fontSize: 14, color: MibuBrand.brownLight, textAlign: 'center', marginBottom: 28 }}>
           {t.tryGachaFirst || '先來一發扭蛋吧！'}
         </Text>
+        {/* 返回扭蛋按鈕 */}
         <TouchableOpacity
           style={{
             backgroundColor: MibuBrand.brown,
@@ -309,6 +387,13 @@ export function ItemsScreen() {
     );
   }
 
+  // ============================================================
+  // 輔助函數
+  // ============================================================
+
+  /**
+   * 取得多語言字串
+   */
   const getLocalizedString = (content: LocalizedContent | string | null | undefined): string => {
     if (typeof content === 'string') return content;
     if (typeof content === 'object' && content !== null) {
@@ -317,13 +402,20 @@ export function ItemsScreen() {
     return '';
   };
 
+  // 取得城市和區域名稱
   const cityName = getLocalizedString(meta?.city) || '';
   const districtName = getLocalizedString(meta?.lockedDistrict) || '';
 
+  // 主題介紹文字
   const themeIntro = meta?.themeIntro;
+
+  // ============================================================
+  // 主畫面渲染
+  // ============================================================
 
   return (
     <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+      {/* ========== 頂部區域：Logo + 城市名 ========== */}
       <View
         style={{
           paddingTop: 56,
@@ -332,6 +424,7 @@ export function ItemsScreen() {
           alignItems: 'center',
         }}
       >
+        {/* MIBU Logo */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
           <Image
             source={require('../../../../assets/images/icon.png')}
@@ -343,10 +436,12 @@ export function ItemsScreen() {
           </Text>
         </View>
 
+        {/* 城市名稱 */}
         <Text style={{ fontSize: 32, fontWeight: '800', color: MibuBrand.dark, marginBottom: 4, letterSpacing: -0.5 }}>
           {cityName}
         </Text>
 
+        {/* 區域名稱 */}
         {districtName && (
           <Text style={{ fontSize: 14, color: MibuBrand.brownLight }}>
             {t.exploring || '正在探索'}{' '}
@@ -356,6 +451,7 @@ export function ItemsScreen() {
           </Text>
         )}
 
+        {/* 主題介紹（若有） */}
         {themeIntro && (
           <Text style={{ fontSize: 13, color: MibuBrand.copper, marginTop: 8, textAlign: 'center', fontStyle: 'italic' }}>
             "{themeIntro}"
@@ -363,6 +459,7 @@ export function ItemsScreen() {
         )}
       </View>
 
+      {/* ========== 景點列表 ========== */}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 100, paddingTop: 8 }}
@@ -378,6 +475,7 @@ export function ItemsScreen() {
         ))}
       </ScrollView>
 
+      {/* ========== 底部：重新扭蛋按鈕 ========== */}
       <View
         style={{
           position: 'absolute',
@@ -413,6 +511,7 @@ export function ItemsScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* ========== 數量不足提示 Toast ========== */}
       <InfoToast
         visible={showShortfallToast}
         message={shortfallMessage}

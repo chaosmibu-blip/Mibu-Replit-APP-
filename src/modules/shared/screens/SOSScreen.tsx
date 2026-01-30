@@ -1,3 +1,22 @@
+/**
+ * SOSScreen - SOS 緊急求助畫面
+ *
+ * 功能說明：
+ * - 長按 3 秒發送 SOS 求救訊號
+ * - 自動取得並傳送當前位置
+ * - 顯示求救記錄與狀態
+ * - 整合 iOS Shortcuts Webhook 功能
+ * - 檢查 SOS 功能使用資格
+ *
+ * 串接的 API：
+ * - GET /api/user/sos-link - 取得 SOS Webhook URL
+ * - GET /api/sos/eligibility - 檢查 SOS 使用資格
+ * - GET /api/sos/alerts - 取得求救記錄
+ * - POST /api/sos/send - 發送 SOS 求救
+ * - PUT /api/sos/cancel/:id - 取消求救
+ *
+ * @see 後端合約: contracts/APP.md Phase 5
+ */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
@@ -21,8 +40,12 @@ import { apiService } from '../../../services/api';
 import { SosAlert, SosAlertStatus } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
 
+// ============ 常數定義 ============
+
+/** Token 儲存 key */
 const AUTH_TOKEN_KEY = '@mibu_token';
 
+/** SOS 狀態顏色對應 */
 const STATUS_COLORS: Record<SosAlertStatus, { bg: string; text: string; label: string; labelEn: string }> = {
   pending: { bg: '#fef3c7', text: '#d97706', label: '等待處理', labelEn: 'Pending' },
   acknowledged: { bg: '#dbeafe', text: '#2563eb', label: '已確認', labelEn: 'Acknowledged' },
@@ -30,46 +53,62 @@ const STATUS_COLORS: Record<SosAlertStatus, { bg: string; text: string; label: s
   cancelled: { bg: '#f1f5f9', text: '#64748b', label: '已取消', labelEn: 'Cancelled' },
 };
 
+// ============ 元件本體 ============
+
 export function SOSScreen() {
   const { t, state } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';
-  
-  const [webhookUrl, setWebhookUrl] = useState<string | null>(null);
-  const [sosKey, setSosKey] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [eligible, setEligible] = useState(true);
-  const [eligibilityReason, setEligibilityReason] = useState<string | null>(null);
-  const [alerts, setAlerts] = useState<SosAlert[]>([]);
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // ============ 狀態管理 ============
+
+  const [webhookUrl, setWebhookUrl] = useState<string | null>(null); // Webhook URL
+  const [sosKey, setSosKey] = useState<string | null>(null); // SOS 驗證 key
+  const [loading, setLoading] = useState(true); // 頁面載入中
+  const [sending, setSending] = useState(false); // 正在發送 SOS
+  const [copied, setCopied] = useState(false); // 已複製到剪貼簿
+  const [eligible, setEligible] = useState(true); // 是否有使用資格
+  const [eligibilityReason, setEligibilityReason] = useState<string | null>(null); // 無資格原因
+  const [alerts, setAlerts] = useState<SosAlert[]>([]); // 求救記錄列表
+
+  // 長按動畫相關
+  const progressAnim = useRef(new Animated.Value(0)).current; // 進度條動畫值
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // 長按計時器
+
+  // ============ 資料載入 ============
+
+  /**
+   * 載入所有 SOS 相關資料
+   * 包含資格檢查、求救記錄、Webhook URL
+   */
   const fetchData = useCallback(async () => {
     const userToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
     if (!userToken) {
       setLoading(false);
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
+      // 並行請求資格與記錄
       const [eligibilityData, alertsData] = await Promise.allSettled([
         apiService.getSosEligibility(userToken),
         apiService.getSosAlerts(userToken),
       ]);
-      
+
+      // 處理資格資料
       if (eligibilityData.status === 'fulfilled') {
         setEligible(eligibilityData.value.eligible);
         setEligibilityReason(eligibilityData.value.reason);
       }
-      
+
+      // 處理求救記錄
       if (alertsData.status === 'fulfilled') {
         setAlerts(alertsData.value.alerts || []);
       }
-      
+
+      // 取得 Webhook URL
       const fullUrl = `${API_BASE_URL}/api/user/sos-link`;
       const response = await fetch(fullUrl, {
         method: 'GET',
@@ -78,14 +117,15 @@ export function SOSScreen() {
           'Authorization': `Bearer ${userToken}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         const url = data.webhookUrl || data.url;
         const key = data.key || data.sosKey;
-        
+
         if (url) {
           setWebhookUrl(url);
+          // 嘗試從 URL 或回應中取得 key
           if (key) {
             setSosKey(key);
           } else {
@@ -110,6 +150,11 @@ export function SOSScreen() {
     fetchData();
   }, [fetchData]);
 
+  // ============ 事件處理 ============
+
+  /**
+   * 複製 Webhook URL 到剪貼簿
+   */
   const copyToClipboard = async () => {
     if (webhookUrl) {
       await Clipboard.setStringAsync(webhookUrl);
@@ -118,9 +163,14 @@ export function SOSScreen() {
     }
   };
 
+  /**
+   * 處理長按開始
+   * 開始進度條動畫並設定 3 秒後觸發 SOS
+   */
   const handlePressIn = () => {
     if (!eligible || sending) return;
 
+    // 重置並開始進度條動畫
     progressAnim.setValue(0);
     Animated.timing(progressAnim, {
       toValue: 1,
@@ -128,11 +178,16 @@ export function SOSScreen() {
       useNativeDriver: false,
     }).start();
 
+    // 設定 3 秒後觸發 SOS
     holdTimerRef.current = setTimeout(() => {
       triggerSOS();
     }, 3000);
   };
 
+  /**
+   * 處理長按結束
+   * 取消計時器並重置進度條
+   */
   const handlePressOut = () => {
     if (holdTimerRef.current) {
       clearTimeout(holdTimerRef.current);
@@ -142,6 +197,10 @@ export function SOSScreen() {
     progressAnim.setValue(0);
   };
 
+  /**
+   * 觸發 SOS 求救
+   * 取得位置後發送求救訊號
+   */
   const triggerSOS = async () => {
     setSending(true);
     try {
@@ -150,12 +209,14 @@ export function SOSScreen() {
 
       let locationData: { location?: string; locationAddress?: string } = {};
 
+      // 嘗試取得位置資訊
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
           const position = await Location.getCurrentPositionAsync({});
           locationData.location = `${position.coords.latitude},${position.coords.longitude}`;
 
+          // 反向地理編碼取得地址
           try {
             const [address] = await Location.reverseGeocodeAsync({
               latitude: position.coords.latitude,
@@ -174,6 +235,7 @@ export function SOSScreen() {
         }
       } catch {}
 
+      // 發送 SOS
       const response = await apiService.sendSosAlert(token, locationData);
 
       if (response.success) {
@@ -184,6 +246,7 @@ export function SOSScreen() {
         );
       }
     } catch (error: unknown) {
+      // 如果主要 API 失敗，嘗試備用 Webhook
       if (sosKey) {
         const triggerUrl = `${API_BASE_URL}/api/sos/trigger?key=${sosKey}`;
         try {
@@ -191,7 +254,7 @@ export function SOSScreen() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
           });
-          
+
           if (response.ok) {
             Alert.alert(t.sent, t.sosSuccess);
             fetchData();
@@ -199,7 +262,7 @@ export function SOSScreen() {
           }
         } catch {}
       }
-      
+
       Alert.alert(
         isZh ? '發送失敗' : 'Failed to Send',
         isZh ? '請稍後再試' : 'Please try again later'
@@ -209,6 +272,9 @@ export function SOSScreen() {
     }
   };
 
+  /**
+   * 處理取消求救
+   */
   const handleCancelAlert = async (alertId: number) => {
     Alert.alert(
       isZh ? '確認取消' : 'Confirm Cancel',
@@ -237,6 +303,11 @@ export function SOSScreen() {
     );
   };
 
+  // ============ 輔助函數 ============
+
+  /**
+   * 格式化日期顯示
+   */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleString(isZh ? 'zh-TW' : 'en-US', {
@@ -248,6 +319,8 @@ export function SOSScreen() {
     });
   };
 
+  // ============ 載入狀態 ============
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -257,13 +330,17 @@ export function SOSScreen() {
     );
   }
 
+  // 進度條寬度動畫
   const progressWidth = progressAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0%', '100%'],
   });
 
+  // ============ 主要渲染 ============
+
   return (
     <View style={styles.container}>
+      {/* ===== 頂部導航列 ===== */}
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
@@ -276,6 +353,7 @@ export function SOSScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
+        {/* ===== 功能鎖定狀態（無資格時顯示） ===== */}
         {!eligible ? (
           <View style={styles.lockedCard}>
             <View style={styles.lockIcon}>
@@ -287,7 +365,7 @@ export function SOSScreen() {
             <Text style={styles.lockedText}>
               {eligibilityReason || (isZh ? '需購買旅程服務才能使用安全中心功能' : 'Purchase travel service to unlock Safety Center')}
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.purchaseButton}
               onPress={() => router.push('/purchase-service' as any)}
             >
@@ -298,6 +376,7 @@ export function SOSScreen() {
           </View>
         ) : (
           <>
+            {/* ===== 標題區塊 ===== */}
             <View style={styles.header}>
               <View style={styles.iconContainer}>
                 <Ionicons name="shield-checkmark" size={48} color="#ef4444" />
@@ -306,14 +385,16 @@ export function SOSScreen() {
               <Text style={styles.subtitle}>{t.safetyCenterDesc}</Text>
             </View>
 
+            {/* ===== 緊急求救區塊 ===== */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{isZh ? '緊急求救' : 'Emergency SOS'}</Text>
               <Text style={styles.sectionDescription}>
-                {isZh 
+                {isZh
                   ? '長按下方按鈕 3 秒發送求救訊號，我們會立即通知您的旅程策畫師'
                   : 'Press and hold the button for 3 seconds to send an SOS alert'}
               </Text>
-              
+
+              {/* SOS 按鈕 */}
               <TouchableOpacity
                 style={[styles.sosButton, sending && styles.sosButtonDisabled]}
                 onPressIn={handlePressIn}
@@ -321,11 +402,12 @@ export function SOSScreen() {
                 disabled={sending}
                 activeOpacity={0.9}
               >
-                <Animated.View 
+                {/* 進度條背景 */}
+                <Animated.View
                   style={[
                     styles.sosButtonProgress,
                     { width: progressWidth }
-                  ]} 
+                  ]}
                 />
                 <View style={styles.sosButtonContent}>
                   {sending ? (
@@ -343,6 +425,7 @@ export function SOSScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* ===== 求救記錄區塊 ===== */}
             {alerts.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{isZh ? '求救記錄' : 'Alert History'}</Text>
@@ -350,6 +433,7 @@ export function SOSScreen() {
                   const statusInfo = STATUS_COLORS[alert.status];
                   return (
                     <View key={alert.id} style={styles.alertCard}>
+                      {/* 狀態與時間 */}
                       <View style={styles.alertHeader}>
                         <View style={[styles.statusBadge, { backgroundColor: statusInfo.bg }]}>
                           <Text style={[styles.statusText, { color: statusInfo.text }]}>
@@ -361,6 +445,7 @@ export function SOSScreen() {
                         </Text>
                       </View>
 
+                      {/* 位置資訊 */}
                       {alert.locationAddress && (
                         <View style={styles.alertRow}>
                           <Ionicons name="location" size={16} color="#64748b" />
@@ -368,6 +453,7 @@ export function SOSScreen() {
                         </View>
                       )}
 
+                      {/* 取消按鈕（僅 pending 狀態顯示） */}
                       {alert.status === 'pending' && (
                         <TouchableOpacity
                           style={styles.cancelAlertButton}
@@ -384,12 +470,14 @@ export function SOSScreen() {
               </View>
             )}
 
+            {/* ===== iOS Shortcuts 整合區塊 ===== */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{t.iosShortcutsIntegration}</Text>
               <Text style={styles.sectionDescription}>
                 {t.iosShortcutsDesc}
               </Text>
-              
+
+              {/* Webhook URL 顯示區 */}
               <View style={styles.webhookBox}>
                 <Text style={styles.webhookLabel}>{t.webhookUrl}</Text>
                 <View style={styles.webhookContent}>
@@ -397,16 +485,17 @@ export function SOSScreen() {
                     {webhookUrl || t.notAvailable}
                   </Text>
                 </View>
-                
+
+                {/* 複製按鈕 */}
                 <TouchableOpacity
                   style={[styles.copyButton, copied && styles.copyButtonSuccess]}
                   onPress={copyToClipboard}
                   disabled={!webhookUrl}
                 >
-                  <Ionicons 
-                    name={copied ? "checkmark" : "copy-outline"} 
-                    size={20} 
-                    color="#ffffff" 
+                  <Ionicons
+                    name={copied ? "checkmark" : "copy-outline"}
+                    size={20}
+                    color="#ffffff"
                   />
                   <Text style={styles.copyButtonText}>
                     {copied ? t.copied : t.copyLink}
@@ -414,6 +503,7 @@ export function SOSScreen() {
                 </TouchableOpacity>
               </View>
 
+              {/* 設定步驟說明 */}
               <View style={styles.instructionBox}>
                 <Text style={styles.instructionTitle}>{t.setupSteps}</Text>
                 <Text style={styles.instructionStep}>{t.step1}</Text>
@@ -426,13 +516,17 @@ export function SOSScreen() {
           </>
         )}
 
+        {/* 底部留白 */}
         <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );
 }
 
+// ============ 樣式定義 ============
+
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.creamLight,
@@ -443,6 +537,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 20,
   },
+  // 頂部導航列
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -465,6 +560,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
+  // 載入狀態
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -476,6 +572,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: MibuBrand.copper,
   },
+  // 功能鎖定卡片
   lockedCard: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
@@ -517,6 +614,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
+  // 標題區塊
   header: {
     alignItems: 'center',
     marginBottom: 32,
@@ -541,6 +639,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
     textAlign: 'center',
   },
+  // 區塊
   section: {
     marginBottom: 28,
   },
@@ -556,6 +655,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     lineHeight: 20,
   },
+  // SOS 按鈕
   sosButton: {
     height: 140,
     backgroundColor: '#ef4444',
@@ -593,6 +693,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     marginTop: 2,
   },
+  // 求救記錄卡片
   alertCard: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
@@ -643,6 +744,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ef4444',
   },
+  // Webhook 區塊
   webhookBox: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 12,
@@ -687,6 +789,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
+  // 設定步驟說明
   instructionBox: {
     backgroundColor: '#fffbeb',
     borderRadius: 12,

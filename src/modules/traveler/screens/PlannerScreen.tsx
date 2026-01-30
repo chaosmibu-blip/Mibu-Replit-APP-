@@ -1,8 +1,21 @@
+/**
+ * PlannerScreen - 行程規劃畫面（即將推出）
+ *
+ * 功能：
+ * - 顯示「即將推出」提示
+ * - 預覽未來功能：定位探索、行程規劃、策劃師聊天
+ *
+ * 注意：此畫面為佔位頁面，實際功能尚未開發
+ */
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
 import { MibuBrand } from '../../../../constants/Colors';
+
+// ============================================================
+// 主元件
+// ============================================================
 
 export function PlannerScreen() {
   const { t, state } = useApp();

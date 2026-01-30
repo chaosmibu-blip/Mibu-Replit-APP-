@@ -1,6 +1,23 @@
 /**
- * 物品箱/庫存相關 API
+ * 物品箱/庫存 API 服務
+ *
+ * 處理用戶背包管理、物品核銷、庫存查詢等功能
  * 依據後端合約 APP.md 定義
+ *
+ * @module services/inventoryApi
+ * @see 後端契約: contracts/APP.md
+ *
+ * ============ 串接端點 ============
+ * - GET    /api/inventory           - 取得背包列表
+ * - GET    /api/inventory/:id       - 取得單個項目詳情
+ * - DELETE /api/inventory/:id       - 刪除背包項目
+ * - POST   /api/inventory/:id/redeem - 核銷優惠券
+ * - GET    /api/inventory/count     - 取得背包數量統計
+ * - POST   /api/inventory/add       - 新增物品 (#011)
+ *
+ * ============ 本地配置 ============
+ * - getInventoryConfig(): 背包容量配置（前端本地）
+ * - getRarityConfig(): 稀有度配置（前端本地）
  */
 import { ApiBase } from './base';
 import {
@@ -10,29 +27,59 @@ import {
   PaginationParams,
 } from '../types';
 
+// ============ 類型定義 ============
+
+/** 背包物品類型篩選 */
 export type InventoryFilter = 'all' | 'coupon' | 'ticket' | 'gift';
+
+/** 背包物品狀態 */
 export type InventoryStatus = 'active' | 'expired' | 'redeemed';
 
+/**
+ * 背包查詢參數
+ */
 export interface InventoryQueryParams extends PaginationParams {
+  /** 物品類型篩選 */
   type?: InventoryFilter;
+  /** 物品狀態篩選 */
   status?: InventoryStatus;
 }
 
+/**
+ * 背包數量統計回應
+ */
 export interface InventoryCountResponse {
+  /** 總數量 */
   total: number;
+  /** 有效數量 */
   active: number;
+  /** 已過期數量 */
   expired: number;
+  /** 已核銷數量 */
   redeemed: number;
 }
 
+// ============ API 服務類別 ============
+
+/**
+ * 背包 API 服務類別
+ *
+ * 管理用戶的物品箱（優惠券、票券、禮品等）
+ */
 class InventoryApiService extends ApiBase {
+
   /**
    * 獲取背包列表
-   * GET /api/inventory
    *
+   * 支援分頁和篩選
    * #030: 後端回傳 { items, slotCount, maxSlots, isFull, pagination }，沒有 success 欄位
+   *
+   * @param token - JWT Token
+   * @param params - 查詢參數（分頁、類型、狀態）
+   * @returns 背包列表和統計資訊
    */
   async getInventory(token: string, params?: InventoryQueryParams): Promise<InventoryResponse> {
+    // 組裝查詢參數
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
@@ -52,6 +99,7 @@ class InventoryApiService extends ApiBase {
       }>(url, {
         headers: this.authHeaders(token),
       });
+
       // 後端沒有 success 欄位，HTTP 200 就是成功
       return {
         success: true,
@@ -75,8 +123,12 @@ class InventoryApiService extends ApiBase {
 
   /**
    * 獲取單個背包項目
-   * GET /api/inventory/:id
+   *
    * 注意：後端在 GET 時自動標記為已讀
+   *
+   * @param token - JWT Token
+   * @param itemId - 項目 ID
+   * @returns 項目詳情
    */
   async getInventoryItem(token: string, itemId: number): Promise<{ item: InventoryItem }> {
     return this.request<{ item: InventoryItem }>(`/api/inventory/${itemId}`, {
@@ -86,7 +138,12 @@ class InventoryApiService extends ApiBase {
 
   /**
    * 刪除背包項目
-   * DELETE /api/inventory/:id
+   *
+   * 用戶可主動丟棄不需要的物品
+   *
+   * @param token - JWT Token
+   * @param itemId - 項目 ID
+   * @returns 刪除結果
    */
   async deleteInventoryItem(token: string, itemId: number): Promise<{ success: boolean; message: string }> {
     return this.request<{ success: boolean; message: string }>(`/api/inventory/${itemId}`, {
@@ -97,8 +154,19 @@ class InventoryApiService extends ApiBase {
 
   /**
    * 核銷優惠券
-   * POST /api/inventory/:id/redeem
-   * @param dailyCode 商家每日核銷碼
+   *
+   * 用戶到店消費時，提供核銷碼給商家核銷
+   *
+   * @param token - JWT Token
+   * @param itemId - 優惠券項目 ID
+   * @param dailyCode - 商家每日核銷碼
+   * @returns 核銷結果
+   *
+   * @example
+   * const result = await inventoryApi.redeemInventoryItem(token, 123, 'ABC123');
+   * if (result.success) {
+   *   console.log('核銷成功！');
+   * }
    */
   async redeemInventoryItem(token: string, itemId: number, dailyCode: string): Promise<RedeemResponse> {
     return this.request<RedeemResponse>(`/api/inventory/${itemId}/redeem`, {
@@ -110,7 +178,11 @@ class InventoryApiService extends ApiBase {
 
   /**
    * 獲取背包數量統計
-   * GET /api/inventory/count
+   *
+   * 快速取得各狀態的物品數量，不含詳細資料
+   *
+   * @param token - JWT Token
+   * @returns 數量統計
    */
   async getInventoryCount(token: string): Promise<InventoryCountResponse> {
     return this.request<InventoryCountResponse>('/api/inventory/count', {
@@ -118,11 +190,19 @@ class InventoryApiService extends ApiBase {
     });
   }
 
-  // ========== #011 新增 ==========
+  // ============ #011 新增 ============
 
   /**
    * 新增物品到背包
-   * POST /api/inventory/add
+   *
+   * 將扭蛋抽到的物品加入背包
+   *
+   * @param token - JWT Token
+   * @param params - 物品資訊
+   * @param params.type - 物品類型（coupon/item）
+   * @param params.itemId - 物品 ID
+   * @param params.gachaSessionId - 扭蛋 session ID（可選）
+   * @returns 新增的物品資料
    */
   async addInventoryItem(
     token: string,
@@ -135,13 +215,15 @@ class InventoryApiService extends ApiBase {
     });
   }
 
-  // =====================
-  // 本地配置（不需要後端 API）
-  // =====================
+  // ============ 本地配置（不需要後端 API） ============
 
   /**
    * 獲取背包容量配置
+   *
    * 這是前端本地配置，不是後端 API
+   * 用於 UI 顯示背包容量限制
+   *
+   * @returns 背包容量配置
    */
   getInventoryConfig(): { maxSlots: number } {
     return { maxSlots: 30 };
@@ -149,7 +231,11 @@ class InventoryApiService extends ApiBase {
 
   /**
    * 獲取稀有度配置
+   *
    * 這是前端本地配置，不是後端 API
+   * 用於 UI 顯示各稀有度的機率和顏色
+   *
+   * @returns 各稀有度的機率和對應顏色
    */
   getRarityConfig(): {
     SP: { rate: number; color: string };
@@ -159,13 +245,16 @@ class InventoryApiService extends ApiBase {
     R: { rate: number; color: string };
   } {
     return {
-      SP: { rate: 0.01, color: '#FFD700' },
-      SSR: { rate: 0.05, color: '#FF6B6B' },
-      SR: { rate: 0.15, color: '#9B59B6' },
-      S: { rate: 0.30, color: '#3498DB' },
-      R: { rate: 0.49, color: '#95A5A6' },
+      SP: { rate: 0.01, color: '#FFD700' },   // 1% - 金色
+      SSR: { rate: 0.05, color: '#FF6B6B' },  // 5% - 紅色
+      SR: { rate: 0.15, color: '#9B59B6' },   // 15% - 紫色
+      S: { rate: 0.30, color: '#3498DB' },    // 30% - 藍色
+      R: { rate: 0.49, color: '#95A5A6' },    // 49% - 灰色
     };
   }
 }
 
+// ============ 匯出 ============
+
+/** 背包 API 服務實例 */
 export const inventoryApi = new InventoryApiService();

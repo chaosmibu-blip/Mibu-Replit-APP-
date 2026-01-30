@@ -5,6 +5,8 @@
 
 溝通用口語繁中，像朋友聊天。改東西前先說想法。
 
+
+
 ---
 
 ## 啟動儀式
@@ -178,6 +180,7 @@ import { Spacing, Radius, FontSize, Shadow, CommonStyles } from '@/theme/designT
 | API 規格、請求回應格式 | 後端 `docs/contracts/APP.md`（v1.4.0） |
 | 同步任務清單 | 後端 `docs/SYNC_QUEUE.md` |
 | 畫面架構、路由、導航 | `docs/memory-screens.md` |
+| **三大 Tab 功能地圖** | `docs/memory-tabs.md` |
 | 登入、Token、OAuth | `docs/memory-auth-flow.md` |
 | 元件、樣式、顏色 | `docs/memory-components.md` |
 | 狀態管理、Context | `docs/memory-state.md` |

@@ -1,3 +1,30 @@
+/**
+ * GachaScreen - 扭蛋主頁面
+ *
+ * 功能：
+ * - 選擇國家 → 選擇城市/地區
+ * - 調整扭蛋次數（5~12 張）
+ * - 檢查道具箱容量
+ * - 執行扭蛋抽卡
+ * - 顯示獎池預覽（SP/SSR 優惠券）
+ * - 新手教學引導
+ *
+ * 串接 API：
+ * - apiService.getCountries() - 國家列表
+ * - apiService.getRegions() - 城市列表
+ * - apiService.getInventoryCapacity() - 道具箱容量
+ * - apiService.generateItinerary() - 核心扭蛋抽卡
+ * - apiService.getGachaPool() - 獎池預覽
+ * - apiService.getRegionCouponPool() - 區域優惠券池
+ * - apiService.getPrizePool() - 獎品池
+ * - apiService.getRarityConfig() - 稀有度機率
+ *
+ * 跳轉頁面：
+ * - /(tabs)/gacha/items - 扭蛋結果
+ * - /login - 未登入時
+ * - /crowdfunding - 解鎖全球地圖
+ * - /(tabs)/collection/itembox - 道具箱已滿時
+ */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
@@ -27,11 +54,28 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { ErrorCode, isAuthError } from '../../../shared/errors';
 
+// ============================================================
+// 常數定義
+// ============================================================
+
+// 不限次數的特殊帳號（測試用）
 const UNLIMITED_EMAILS = ['s8869420@gmail.com'];
 
+// 每日扭蛋次數儲存 key
 const DAILY_LIMIT_KEY = '@mibu_daily_limit';
+
+// 螢幕寬度（用於計算獎池項目寬度）
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+/**
+ * 稀有度對應顏色
+ * SP = 金色（最稀有）
+ * SSR = 紫銅色
+ * SR = 深銅色
+ * S = 淺銅色
+ * R = 米黃色
+ * N = 一般
+ */
 const RARITY_COLORS: Record<string, string> = {
   SP: MibuBrand.tierSP,
   SSR: MibuBrand.tierSSR,
@@ -41,6 +85,9 @@ const RARITY_COLORS: Record<string, string> = {
   N: MibuBrand.tan,
 };
 
+/**
+ * 稀有度對應背景色
+ */
 const RARITY_BG_COLORS: Record<string, string> = {
   SP: MibuBrand.tierSPBg,
   SSR: MibuBrand.tierSSRBg,
@@ -50,54 +97,105 @@ const RARITY_BG_COLORS: Record<string, string> = {
   N: MibuBrand.creamLight,
 };
 
+// ============================================================
+// 主元件
+// ============================================================
+
 export function GachaScreen() {
+  // ============================================================
+  // Hooks & Context
+  // ============================================================
   const router = useRouter();
   const { state, t, addToCollection, setResult, getToken, setUser } = useApp();
+
+  // ============================================================
+  // 狀態管理 - 選擇區域
+  // ============================================================
+
+  // 國家列表 & 載入狀態
   const [countries, setCountries] = useState<Country[]>([]);
+  const [loadingCountries, setLoadingCountries] = useState(true);
+
+  // 城市/地區列表 & 載入狀態
   const [regions, setRegions] = useState<Region[]>([]);
+  const [loadingRegions, setLoadingRegions] = useState(false);
+
+  // 選中的國家 ID 和城市 ID
   const [selectedCountryId, setSelectedCountryId] = useState<number | null>(null);
   const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null);
+
+  // 扭蛋次數（預設 5，範圍 5~12）
   const [pullCount, setPullCount] = useState(5);
-  const [loadingCountries, setLoadingCountries] = useState(true);
-  const [loadingRegions, setLoadingRegions] = useState(false);
-  
+
+  // ============================================================
+  // 狀態管理 - 獎池預覽 Modal
+  // ============================================================
+
   const [poolModalVisible, setPoolModalVisible] = useState(false);
   const [poolData, setPoolData] = useState<GachaPoolResponse | null>(null);
   const [loadingPool, setLoadingPool] = useState(false);
   const [couponPoolData, setCouponPoolData] = useState<RegionPoolCoupon[]>([]);
   const [prizePoolData, setPrizePoolData] = useState<PrizePoolResponse | null>(null);
-  
+
+  // ============================================================
+  // 狀態管理 - 扭蛋載入畫面
+  // ============================================================
+
+  // 是否顯示載入畫面
   const [showLoadingAd, setShowLoadingAd] = useState(false);
+
+  // API 是否已完成（用於控制載入畫面結束時機）
   const [isApiComplete, setIsApiComplete] = useState(false);
+
+  // 暫存扭蛋結果（等待載入動畫結束後顯示）
   const pendingResultRef = useRef<{ items: GachaItem[]; meta: GachaMeta; couponsWon: CouponWon[] } | null>(null);
-  
+
+  // ============================================================
+  // 狀態管理 - 機率說明 Modal（目前隱藏）
+  // ============================================================
+
   const [rarityModalVisible, setRarityModalVisible] = useState(false);
   const [rarityConfig, setRarityConfig] = useState<{ rarity: string; probability: number }[]>([]);
   const [loadingRarity, setLoadingRarity] = useState(false);
 
-  // 道具箱容量檢查
-  const [inventorySlotCount, setInventorySlotCount] = useState(0);
-  const [inventoryMaxSlots, setInventoryMaxSlots] = useState(30);
+  // ============================================================
+  // 狀態管理 - 道具箱容量
+  // ============================================================
+
+  const [inventorySlotCount, setInventorySlotCount] = useState(0);   // 已使用格數
+  const [inventoryMaxSlots, setInventoryMaxSlots] = useState(30);    // 最大格數
+
+  // 道具箱是否已滿
   const isInventoryFull = inventorySlotCount >= inventoryMaxSlots;
+
+  // 剩餘格數
   const inventoryRemaining = inventoryMaxSlots - inventorySlotCount;
 
+  // ============================================================
+  // 初始化載入
+  // ============================================================
+
   useEffect(() => {
-    loadCountries();
-    checkInventoryCapacity();
+    loadCountries();         // 載入國家列表
+    checkInventoryCapacity(); // 檢查道具箱容量
   }, []);
 
+  /**
+   * 檢查道具箱容量
+   * 優先使用 capacity API，失敗則 fallback 到 getInventory
+   */
   const checkInventoryCapacity = async () => {
     try {
       const token = await getToken();
       if (!token) return;
 
-      // 使用新的 capacity API（如果可用），否則 fallback 到舊方式
       try {
+        // 嘗試使用新的 capacity API
         const capacity = await apiService.getInventoryCapacity(token);
         setInventorySlotCount(capacity.used);
         setInventoryMaxSlots(capacity.max);
       } catch {
-        // Fallback: 使用 getInventory API
+        // Fallback: 使用 getInventory API 計算
         const data = await apiService.getInventory(token);
         const activeItems = (data.items || []).filter((i: { isDeleted?: boolean; status?: string }) => !i.isDeleted && i.status !== 'deleted');
         setInventorySlotCount(activeItems.length);
@@ -108,12 +206,18 @@ export function GachaScreen() {
     }
   };
 
+  /**
+   * 當選擇國家時，自動載入該國家的城市列表
+   */
   useEffect(() => {
     if (selectedCountryId) {
       loadRegions(selectedCountryId);
     }
   }, [selectedCountryId]);
 
+  /**
+   * 載入國家列表
+   */
   const loadCountries = async () => {
     try {
       console.log('🌍 Loading countries...');
@@ -127,11 +231,16 @@ export function GachaScreen() {
     }
   };
 
+  /**
+   * 載入指定國家的城市列表
+   * 設定 10 秒 timeout 防止卡住
+   */
   const loadRegions = async (countryId: number) => {
     setLoadingRegions(true);
     setRegions([]); // 清空舊資料
+
     try {
-      // 設定 10 秒 timeout 防止卡住
+      // 設定 10 秒 timeout
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Request timeout')), 10000);
       });
@@ -149,6 +258,14 @@ export function GachaScreen() {
     }
   };
 
+  // ============================================================
+  // 輔助函數 - 多語言
+  // ============================================================
+
+  /**
+   * 取得國家/城市的在地化名稱
+   * 根據當前語言返回對應名稱
+   */
   const getLocalizedName = (item: Country | Region): string => {
     const lang = state.language;
     if (lang === 'zh-TW') return item.nameZh || item.nameEn || '';
@@ -157,6 +274,10 @@ export function GachaScreen() {
     return item.nameEn || '';
   };
 
+  /**
+   * 取得獎池項目的在地化名稱
+   * 支援字串或 LocalizedContent 物件
+   */
   const getLocalizedPoolItemName = (name: LocalizedContent | string): string => {
     if (typeof name === 'string') return name;
     if (typeof name === 'object' && name !== null) {
@@ -165,16 +286,27 @@ export function GachaScreen() {
     return '';
   };
 
+  // ============================================================
+  // 每日次數限制
+  // ============================================================
+
+  /**
+   * 檢查是否還有每日扭蛋次數
+   * 特殊帳號（UNLIMITED_EMAILS）不受限制
+   */
   const checkDailyLimit = async (): Promise<boolean> => {
+    // 特殊帳號不限次數
     if (state.user?.email && UNLIMITED_EMAILS.includes(state.user.email)) {
       return true;
     }
-    
+
     try {
       const today = new Date().toISOString().split('T')[0];
       const stored = await AsyncStorage.getItem(DAILY_LIMIT_KEY);
+
       if (stored) {
         const parsed = JSON.parse(stored);
+        // 如果是今天且已達上限，返回 false
         if (parsed.date === today && parsed.count >= MAX_DAILY_GENERATIONS) {
           return false;
         }
@@ -185,10 +317,14 @@ export function GachaScreen() {
     }
   };
 
+  /**
+   * 增加今日扭蛋次數計數
+   */
   const incrementDailyCount = async () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       const stored = await AsyncStorage.getItem(DAILY_LIMIT_KEY);
+
       let count = 1;
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -196,19 +332,30 @@ export function GachaScreen() {
           count = parsed.count + 1;
         }
       }
+
       await AsyncStorage.setItem(DAILY_LIMIT_KEY, JSON.stringify({ date: today, count }));
     } catch (error) {
       console.error('Failed to increment daily count:', error);
     }
   };
 
+  // ============================================================
+  // 獎池預覽 & 機率說明
+  // ============================================================
+
+  /**
+   * 查看機率說明（目前隱藏）
+   * 從後端取得各稀有度的機率配置
+   */
   const handleViewRarity = async () => {
     setRarityModalVisible(true);
     setLoadingRarity(true);
+
     try {
       const result = await apiService.getRarityConfig();
       if (result.config) {
         const config = result.config;
+        // 依機率高到低排序
         const probArray = [
           { rarity: 'R', probability: config.rRate },
           { rarity: 'S', probability: config.sRate },
@@ -220,6 +367,7 @@ export function GachaScreen() {
       }
     } catch (error) {
       console.error('Failed to load rarity config:', error);
+      // 使用預設值
       setRarityConfig([
         { rarity: 'R', probability: 32 },
         { rarity: 'S', probability: 23 },
@@ -232,28 +380,33 @@ export function GachaScreen() {
     }
   };
 
+  /**
+   * 查看獎池預覽
+   * 載入該區域的景點池、優惠券池、獎品池
+   */
   const handleViewPool = async () => {
     if (!selectedRegionId) return;
-    
+
     const selectedRegion = regions.find(r => r.id === selectedRegionId);
     if (!selectedRegion) return;
-    
+
     setLoadingPool(true);
     setPoolModalVisible(true);
     setPoolData(null);
     setCouponPoolData([]);
     setPrizePoolData(null);
-    
+
     try {
       const city = selectedRegion.nameZh || selectedRegion.nameEn || '';
       const token = await getToken();
-      
+
+      // 並行載入三種獎池資料
       const [poolResult, couponResult, prizePoolResult] = await Promise.allSettled([
         apiService.getGachaPool(city),
         token ? apiService.getRegionCouponPool(token, selectedRegionId) : Promise.resolve([]),
         apiService.getPrizePool(selectedRegionId)
       ]);
-      
+
       if (poolResult.status === 'fulfilled') {
         setPoolData(poolResult.value);
       }
@@ -272,7 +425,16 @@ export function GachaScreen() {
     }
   };
 
+  // ============================================================
+  // 核心：執行扭蛋
+  // ============================================================
+
+  /**
+   * 執行扭蛋抽卡
+   * 這是整個扭蛋流程的核心函數
+   */
   const handleGacha = async () => {
+    // 檢查是否已選擇國家和城市
     if (!selectedCountryId || !selectedRegionId) return;
 
     // 檢查是否有 Token（訪客登入沒有 Token）
@@ -289,12 +451,14 @@ export function GachaScreen() {
       return;
     }
 
+    // 檢查每日次數限制
     const canPull = await checkDailyLimit();
     if (!canPull) {
       Alert.alert(t.dailyLimitReached, t.dailyLimitReachedDesc);
       return;
     }
 
+    // 顯示載入畫面
     setShowLoadingAd(true);
     setIsApiComplete(false);
     pendingResultRef.current = null;
@@ -307,6 +471,7 @@ export function GachaScreen() {
       const deviceId = await getDeviceId();
       console.log('🎰 [GachaScreen] Device ID:', deviceId ? `${deviceId.substring(0, 8)}...` : 'none');
 
+      // ========== 呼叫核心 API ==========
       const response = await apiService.generateItinerary({
         regionId: selectedRegionId,
         itemCount: pullCount,
@@ -321,15 +486,15 @@ export function GachaScreen() {
         errorMsg: response.error || response.message,
       });
 
-      // 錯誤處理：統一使用後端標準格式 { error, code }
+      // ========== 錯誤處理 ==========
       const errorCode = response.errorCode || response.code;
-      const errorMsg = response.error || response.message; // 相容舊格式
+      const errorMsg = response.error || response.message;
 
       if (!response.success && (errorCode || errorMsg)) {
         console.warn('🎰 [GachaScreen] API returned error:', { errorCode, errorMsg });
         setShowLoadingAd(false);
 
-        // 處理認證錯誤：使用 isAuthError helper（已包含舊格式檢查）
+        // 處理認證錯誤：Token 過期
         if (isAuthError(errorCode)) {
           setUser(null);
           Alert.alert(
@@ -349,6 +514,7 @@ export function GachaScreen() {
           return;
         }
 
+        // 處理扭蛋次數不足
         if (errorCode === ErrorCode.GACHA_NO_CREDITS) {
           Alert.alert(
             state.language === 'zh-TW' ? '次數不足' : 'No Credits',
@@ -357,6 +523,7 @@ export function GachaScreen() {
           return;
         }
 
+        // 處理每日額度用完
         if (errorCode === 'DAILY_LIMIT_EXCEEDED' || errorCode === ErrorCode.GACHA_RATE_LIMITED || errorCode === ErrorCode.DAILY_LIMIT_REACHED) {
           Alert.alert(
             state.language === 'zh-TW' ? '今日額度已用完' : 'Daily Limit Reached',
@@ -365,7 +532,7 @@ export function GachaScreen() {
           return;
         }
 
-        // #031: 裝置額度用完
+        // #031: 裝置額度用完（防刷機制）
         if (errorCode === 'DEVICE_LIMIT_EXCEEDED' || errorCode === 'DEVICE_DAILY_LIMIT') {
           Alert.alert(
             state.language === 'zh-TW' ? '裝置額度已達上限' : 'Device Limit Reached',
@@ -374,6 +541,7 @@ export function GachaScreen() {
           return;
         }
 
+        // 處理超過剩餘額度
         if (errorCode === 'EXCEEDS_REMAINING_QUOTA') {
           const remaining = response.remainingQuota || 0;
           Alert.alert(
@@ -391,9 +559,11 @@ export function GachaScreen() {
         return;
       }
 
+      // ========== 處理空結果 ==========
       const itineraryItems = response.itinerary || [];
       if (!itineraryItems || itineraryItems.length === 0) {
         setShowLoadingAd(false);
+
         if (response.meta?.code === 'NO_PLACES_AVAILABLE') {
           const metaMessage = response.meta?.message || (state.language === 'zh-TW' ? '該區域暫無景點' : 'No places available in this area');
           Alert.alert(
@@ -409,16 +579,22 @@ export function GachaScreen() {
         return;
       }
 
+      // ========== 轉換 API 回應為 GachaItem ==========
       const couponsWon = response.couponsWon || [];
 
       const items: GachaItem[] = itineraryItems.map((item: ItineraryItemRaw, index: number) => {
+        // 判斷是否有商家優惠券
         const hasMerchantCoupon = item.isCoupon || item.couponWon || (item.merchantPromo?.isPromoActive && item.couponWon);
         const place = item.place || item;
+
+        // 取得經緯度
         const lat = place.locationLat || item.locationLat || null;
         const lng = place.locationLng || item.locationLng || null;
+
+        // 取得城市和區域
         const cityVal = item.city || response.meta?.city || response.city || '';
         const districtVal = item.district || response.meta?.district || response.anchorDistrict || response.targetDistrict || '';
-        
+
         return {
           id: Date.now() + index,
           placeName: place.placeName || item.placeName || `${item.district || response.anchorDistrict || ''} ${item.subCategory || ''}`,
@@ -450,8 +626,10 @@ export function GachaScreen() {
         };
       });
 
+      // 更新每日計數
       await incrementDailyCount();
 
+      // ========== 暫存結果，等待載入動畫結束 ==========
       pendingResultRef.current = {
         items,
         meta: {
@@ -473,11 +651,13 @@ export function GachaScreen() {
         couponsWon,
       };
 
-      // 處理成就解鎖通知 (#020)
+      // ========== 處理成就解鎖通知 (#020) ==========
       const unlockedAchievements = response.unlockedAchievements || [];
       if (unlockedAchievements.length > 0) {
         const achievementNames = unlockedAchievements.map(a => a.title).join('、');
         const totalReward = unlockedAchievements.reduce((sum, a) => sum + (a.reward?.exp || 0), 0);
+
+        // 延遲 2 秒顯示，讓扭蛋結果先呈現
         setTimeout(() => {
           Alert.alert(
             state.language === 'zh-TW' ? '🏆 成就解鎖！' : '🏆 Achievement Unlocked!',
@@ -485,21 +665,26 @@ export function GachaScreen() {
               ? `恭喜解鎖：${achievementNames}\n獲得 ${totalReward} 經驗值！`
               : `Unlocked: ${achievementNames}\nEarned ${totalReward} XP!`
           );
-        }, 2000); // 延遲顯示，讓扭蛋結果先呈現
+        }, 2000);
       }
 
+      // 標記 API 完成，讓載入畫面知道可以結束了
       setIsApiComplete(true);
+
     } catch (error) {
+      // ========== 錯誤處理 ==========
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const isUserAbort = errorMessage.includes('Network request failed') || 
+
+      // 檢查是否為用戶主動取消
+      const isUserAbort = errorMessage.includes('Network request failed') ||
                           errorMessage.includes('AbortError') ||
                           errorMessage.includes('cancelled');
-      
+
       if (isUserAbort) {
         setShowLoadingAd(false);
         return;
       }
-      
+
       console.error('Gacha failed:', error);
       setShowLoadingAd(false);
       Alert.alert(
@@ -509,12 +694,18 @@ export function GachaScreen() {
     }
   };
 
+  /**
+   * 載入動畫結束後的處理
+   * 將暫存的結果加入收藏，並跳轉到結果頁
+   */
   const handleLoadingComplete = useCallback(() => {
     if (pendingResultRef.current) {
       const { items, meta } = pendingResultRef.current;
-      
+
+      // 加入收藏
       addToCollection(items);
 
+      // 設定結果（供 ItemsScreen 讀取）
       setResult({
         status: 'success',
         meta,
@@ -522,28 +713,43 @@ export function GachaScreen() {
       });
 
       setShowLoadingAd(false);
-      
+
+      // 跳轉到結果頁
       router.push('/(tabs)/gacha/items');
     }
   }, [addToCollection, setResult, router]);
 
+  // ============================================================
+  // 下拉選單選項
+  // ============================================================
+
+  // 國家選項
   const countryOptions = countries.map(c => ({
     label: getLocalizedName(c),
     value: c.id,
   }));
 
+  // 城市選項
   const regionOptions = regions.map(r => ({
     label: getLocalizedName(r),
     value: r.id,
   }));
 
+  // 是否可以提交（已選國家、城市，且道具箱未滿）
   const canSubmit = selectedCountryId && selectedRegionId && !isInventoryFull;
 
+  // ============================================================
+  // 獎池項目渲染
+  // ============================================================
+
+  /**
+   * 渲染單個獎池項目
+   */
   const renderPoolItem = ({ item }: { item: GachaPoolItem }) => {
     const rarity = item.rarity || 'N';
     const rarityColor = RARITY_COLORS[rarity] || RARITY_COLORS.N;
     const rarityBg = RARITY_BG_COLORS[rarity] || RARITY_BG_COLORS.N;
-    
+
     return (
       <View
         style={{
@@ -557,6 +763,7 @@ export function GachaScreen() {
           borderColor: rarityBg,
         }}
       >
+        {/* 圖片區 */}
         {item.imageUrl ? (
           <Image
             source={{ uri: item.imageUrl }}
@@ -576,8 +783,10 @@ export function GachaScreen() {
             <Ionicons name="location" size={32} color="#ffffff" />
           </View>
         )}
-        
+
+        {/* 資訊區 */}
         <View style={{ padding: 12 }}>
+          {/* 稀有度 + 分類 */}
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
             <View
               style={{
@@ -599,14 +808,16 @@ export function GachaScreen() {
               {item.category}
             </Text>
           </View>
-          
+
+          {/* 名稱 */}
           <Text
             style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.dark }}
             numberOfLines={2}
           >
             {getLocalizedPoolItemName(item.name)}
           </Text>
-          
+
+          {/* 商家標籤 */}
           {item.merchant && (
             <View
               style={{
@@ -630,23 +841,30 @@ export function GachaScreen() {
     );
   };
 
+  /**
+   * 取得 Jackpot 項目（大獎）
+   */
   const getJackpotItems = () => {
     if (!poolData?.pool?.jackpots) return [];
     return poolData.pool.jackpots;
   };
 
-  // 取得選中的國家和城市名稱
+  // 取得選中的國家和城市名稱（用於顯示）
   const selectedCountry = countries.find(c => c.id === selectedCountryId);
   const selectedRegion = regions.find(r => r.id === selectedRegionId);
   const countryName = selectedCountry ? getLocalizedName(selectedCountry) : '';
   const regionName = selectedRegion ? getLocalizedName(selectedRegion) : '';
+
+  // ============================================================
+  // 主畫面渲染
+  // ============================================================
 
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}
       contentContainerStyle={{ padding: 20, paddingTop: 60 }}
     >
-      {/* 頂部 Logo 區 */}
+      {/* ========== 頂部 Logo 區 ========== */}
       <View style={{ alignItems: 'center', marginBottom: 40 }}>
         <Text style={{ fontSize: 32, fontWeight: '800', color: MibuBrand.brown, letterSpacing: 3 }}>
           MIBU
@@ -656,7 +874,7 @@ export function GachaScreen() {
         </Text>
       </View>
 
-      {/* 選擇區域卡片 */}
+      {/* ========== 選擇區域卡片 ========== */}
       <View style={{
         backgroundColor: MibuBrand.creamLight,
         borderRadius: 24,
@@ -670,6 +888,7 @@ export function GachaScreen() {
         shadowRadius: 12,
         elevation: 4,
       }}>
+        {/* 標題 */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
           <Ionicons name="globe-outline" size={20} color={MibuBrand.copper} />
           <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.brown, marginLeft: 8 }}>
@@ -677,6 +896,7 @@ export function GachaScreen() {
           </Text>
         </View>
 
+        {/* 國家下拉選單 */}
         <Select
           label={state.language === 'zh-TW' ? '國家' : 'Country'}
           options={countryOptions}
@@ -689,6 +909,7 @@ export function GachaScreen() {
           placeholder={t.selectCountry}
           loading={loadingCountries}
           footerContent={
+            // 國家選單底部：解鎖全球地圖 CTA
             <View style={{ alignItems: 'center', paddingTop: 16 }}>
               <Text style={{ fontSize: 13, color: MibuBrand.copper, lineHeight: 20, textAlign: 'center' }}>
                 {state.language === 'zh-TW'
@@ -716,6 +937,7 @@ export function GachaScreen() {
           }
         />
 
+        {/* 城市下拉選單（選擇國家後才顯示） */}
         {selectedCountryId && (
           <View style={{ marginTop: 12 }}>
             <Select
@@ -732,7 +954,7 @@ export function GachaScreen() {
         )}
       </View>
 
-      {/* 抽取張數卡片 */}
+      {/* ========== 抽取張數卡片（選擇城市後才顯示）========== */}
       {selectedRegionId && (
         <View style={{
           backgroundColor: MibuBrand.creamLight,
@@ -753,6 +975,7 @@ export function GachaScreen() {
               <Text style={{ fontSize: 15, fontWeight: '600', color: MibuBrand.copper }}>
                 {state.language === 'zh-TW' ? '扭蛋次數' : 'Pull Count'}
               </Text>
+              {/* 說明按鈕（點擊顯示 Alert） */}
               <TouchableOpacity
                 onPress={() => {
                   Alert.alert(
@@ -776,12 +999,13 @@ export function GachaScreen() {
                 <Text style={{ fontSize: 12, fontWeight: '800', color: MibuBrand.warmWhite }}>!</Text>
               </TouchableOpacity>
             </View>
+            {/* 當前選擇的次數 */}
             <Text style={{ fontSize: 28, fontWeight: '800', color: MibuBrand.brownDark }}>
               {pullCount} <Text style={{ fontSize: 16, fontWeight: '600' }}>{state.language === 'zh-TW' ? '次' : 'pulls'}</Text>
             </Text>
           </View>
 
-          {/* Slider - 簡潔樣式 */}
+          {/* Slider 滑桿 */}
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -801,7 +1025,6 @@ export function GachaScreen() {
             </View>
           </View>
 
-
           {/* 範圍標籤 */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, paddingHorizontal: 4 }}>
             <Text style={{ fontSize: 13, color: MibuBrand.tan }}>5</Text>
@@ -810,7 +1033,7 @@ export function GachaScreen() {
         </View>
       )}
 
-      {/* 道具箱容量警告 */}
+      {/* ========== 道具箱已滿警告 ========== */}
       {isInventoryFull && (
         <View style={{
           backgroundColor: SemanticColors.errorLight,
@@ -856,6 +1079,7 @@ export function GachaScreen() {
         </View>
       )}
 
+      {/* ========== 道具箱快滿提醒（剩餘 5 格以內）========== */}
       {!isInventoryFull && inventoryRemaining <= 5 && inventoryRemaining > 0 && (
         <View style={{
           backgroundColor: MibuBrand.highlight,
@@ -874,7 +1098,7 @@ export function GachaScreen() {
         </View>
       )}
 
-      {/* 開始扭蛋按鈕 */}
+      {/* ========== 開始扭蛋按鈕 ========== */}
       <TouchableOpacity
         style={{
           backgroundColor: (!canSubmit || showLoadingAd) ? MibuBrand.cream : MibuBrand.brown,
@@ -905,7 +1129,7 @@ export function GachaScreen() {
         </Text>
       </TouchableOpacity>
 
-{/* TODO: 商家端開放後取消註解顯示機率說明按鈕
+      {/* TODO: 商家端開放後取消註解顯示機率說明按鈕
         <TouchableOpacity
           onPress={handleViewRarity}
           style={{
@@ -926,8 +1150,9 @@ export function GachaScreen() {
             {state.language === 'zh-TW' ? '機率說明' : 'Probability Info'}
           </Text>
         </TouchableOpacity>
-        */}
+      */}
 
+      {/* ========== 獎池預覽 Modal ========== */}
       <Modal
         visible={poolModalVisible}
         animationType="slide"
@@ -950,6 +1175,7 @@ export function GachaScreen() {
               minHeight: '60%',
             }}
           >
+            {/* Modal 標題列 */}
             <View
               style={{
                 flexDirection: 'row',
@@ -978,7 +1204,9 @@ export function GachaScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* Modal 內容 */}
             {loadingPool ? (
+              // 載入中
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 }}>
                 <ActivityIndicator size="large" color="#6366f1" />
                 <Text style={{ marginTop: 16, color: MibuBrand.tan, fontSize: 14 }}>
@@ -987,8 +1215,10 @@ export function GachaScreen() {
               </View>
             ) : (
               <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                {/* 有優惠券：顯示列表 */}
                 {((prizePoolData?.coupons?.length || 0) > 0 || (Array.isArray(couponPoolData) ? couponPoolData.length : 0) > 0) ? (
                   <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 }}>
+                    {/* 區域名稱 */}
                     {(prizePoolData?.region?.name || poolData?.pool?.city) && (
                       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
                         <Ionicons name="location" size={16} color="#6366f1" />
@@ -997,14 +1227,16 @@ export function GachaScreen() {
                         </Text>
                       </View>
                     )}
-                    
+
+                    {/* 標題：SP/SSR 稀有優惠券 */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                       <Ionicons name="ticket" size={18} color={SemanticColors.warningDark} />
                       <Text style={{ fontSize: 14, fontWeight: '700', color: SemanticColors.warningDark, marginLeft: 6 }}>
                         {state.language === 'zh-TW' ? 'SP/SSR 稀有優惠券' : 'SP/SSR Rare Coupons'} ({(prizePoolData?.coupons?.length || 0) + (Array.isArray(couponPoolData) ? couponPoolData.length : 0)})
                       </Text>
                     </View>
-                    
+
+                    {/* 獎品池優惠券 */}
                     {prizePoolData?.coupons?.map((coupon) => (
                       <View
                         key={`prize-${coupon.id}`}
@@ -1045,7 +1277,8 @@ export function GachaScreen() {
                         </View>
                       </View>
                     ))}
-                    
+
+                    {/* 區域優惠券 */}
                     {(Array.isArray(couponPoolData) ? couponPoolData : []).map((coupon) => (
                       <View
                         key={`coupon-${coupon.id}`}
@@ -1104,6 +1337,7 @@ export function GachaScreen() {
                     ))}
                   </View>
                 ) : (
+                  // 無優惠券：顯示空狀態
                   <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 60 }}>
                     <View
                       style={{
@@ -1129,119 +1363,18 @@ export function GachaScreen() {
         </View>
       </Modal>
 
-{/* TODO: 商家端開放後取消註解顯示機率說明 Modal
+      {/* TODO: 商家端開放後取消註解顯示機率說明 Modal
       <Modal
         visible={rarityModalVisible}
         animationType="fade"
         transparent={true}
         onRequestClose={() => setRarityModalVisible(false)}
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 20,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: 20,
-              padding: 24,
-              width: '100%',
-              maxWidth: 320,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: 20,
-              }}
-            >
-              <Text style={{ fontSize: 18, fontWeight: '800', color: '#1e293b' }}>
-                {state.language === 'zh-TW' ? '優惠券機率說明' : 'Coupon Probability'}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setRarityModalVisible(false)}
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 14,
-                  backgroundColor: '#f1f5f9',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Ionicons name="close" size={18} color="#64748b" />
-              </TouchableOpacity>
-            </View>
-
-            {loadingRarity ? (
-              <ActivityIndicator size="small" color="#6366f1" />
-            ) : (
-              <View>
-                <Text style={{ fontSize: 13, color: '#64748b', marginBottom: 16, lineHeight: 20 }}>
-                  {state.language === 'zh-TW' 
-                    ? '抽取優惠券時，各稀有度的出現機率如下：'
-                    : 'When drawing coupons, the probability for each rarity is:'}
-                </Text>
-                
-                {rarityConfig.map((item) => (
-                  <View
-                    key={item.rarity}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingVertical: 10,
-                      borderBottomWidth: 1,
-                      borderBottomColor: '#f1f5f9',
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <View
-                        style={{
-                          backgroundColor: RARITY_BG_COLORS[item.rarity] || '#f1f5f9',
-                          paddingHorizontal: 10,
-                          paddingVertical: 4,
-                          borderRadius: 8,
-                          minWidth: 44,
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 13,
-                            fontWeight: '800',
-                            color: RARITY_COLORS[item.rarity] || '#64748b',
-                          }}
-                        >
-                          {item.rarity}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={{ fontSize: 15, fontWeight: '700', color: '#1e293b' }}>
-                      {item.probability}%
-                    </Text>
-                  </View>
-                ))}
-
-                <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 16, textAlign: 'center' }}>
-                  {state.language === 'zh-TW' 
-                    ? '※ 機率僅供參考，實際結果可能有所不同'
-                    : '※ Probabilities are for reference only'}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
+        ... (機率說明 Modal 內容)
       </Modal>
       */}
 
+      {/* ========== 載入畫面（扭蛋等待）========== */}
       <LoadingAdScreen
         visible={showLoadingAd}
         onComplete={handleLoadingComplete}
@@ -1259,7 +1392,7 @@ export function GachaScreen() {
         }}
       />
 
-      {/* 新手教學 */}
+      {/* ========== 新手教學 ========== */}
       <TutorialOverlay
         storageKey="gacha_tutorial"
         steps={GACHA_TUTORIAL_STEPS}

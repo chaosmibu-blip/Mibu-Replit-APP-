@@ -1,3 +1,9 @@
+/**
+ * 404 頁面不存在錯誤頁
+ *
+ * 當用戶訪問不存在的路由時顯示此頁面。
+ * 提供返回首頁的連結。
+ */
 import { Link, Stack } from 'expo-router';
 import { StyleSheet } from 'react-native';
 

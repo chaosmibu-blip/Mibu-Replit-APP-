@@ -1,32 +1,52 @@
+# ============================================================
+# Replit 專案設定檔
+#
+# 定義 Replit 環境的執行方式、端口映射、工作流程
+# 在 Replit 上開發時會自動讀取此設定
+#
+# @see https://docs.replit.com/programming-ide/configuring-repl
+# ============================================================
+
+# 預設開啟的檔案
 entrypoint = "README.md"
+
+# 使用的運行環境模組
 modules = ["nodejs-22", "python-3.11"]
 
 [nix]
 channel = "stable-24_05"
+
+# ============ 端口映射 ============
+# localPort: Replit 容器內的端口
+# externalPort: 對外暴露的端口
 
 [[ports]]
 localPort = 3001
 externalPort = 3001
 
 [[ports]]
-localPort = 5000
-externalPort = 80
+localPort = 5000        # Expo Web 開發伺服器
+externalPort = 80       # 對外映射為 80（主要 Web 入口）
 
 [[ports]]
 localPort = 5001
 externalPort = 3002
 
 [[ports]]
-localPort = 8081
+localPort = 8081        # Metro Bundler 預設端口
 externalPort = 80
 
 [[ports]]
 localPort = 8082
 externalPort = 3000
 
-[workflows]
-runButton = "Project"
+# ============ 工作流程（Workflows）============
+# 在 Replit 介面上點擊即可執行的快捷指令
 
+[workflows]
+runButton = "Project"   # 點擊 Run 按鈕時執行的工作流
+
+# --- 開發伺服器 ---
 [[workflows.workflow]]
 name = "Dev Server"
 mode = "sequential"
@@ -35,6 +55,7 @@ mode = "sequential"
 task = "shell.exec"
 args = "EXPO_PACKAGER_PROXY_URL=https://$REPLIT_DEV_DOMAIN REACT_NATIVE_PACKAGER_HOSTNAME=$REPLIT_DEV_DOMAIN npx expo start"
 
+# --- EAS 初始化 ---
 [[workflows.workflow]]
 name = "EAS Init"
 mode = "sequential"
@@ -43,6 +64,7 @@ mode = "sequential"
 task = "shell.exec"
 args = "npx eas init"
 
+# --- EAS OTA 更新 ---
 [[workflows.workflow]]
 name = "EAS Update"
 mode = "sequential"
@@ -51,6 +73,7 @@ mode = "sequential"
 task = "shell.exec"
 args = "npx eas update --auto"
 
+# --- iOS 預覽版 Build ---
 [[workflows.workflow]]
 name = "EAS Publish Preview iOS"
 mode = "sequential"
@@ -59,6 +82,7 @@ mode = "sequential"
 task = "shell.exec"
 args = "npx eas build --platform ios --profile preview"
 
+# --- Android 預覽版 Build ---
 [[workflows.workflow]]
 name = "EAS Publish Preview Android"
 mode = "sequential"
@@ -67,6 +91,7 @@ mode = "sequential"
 task = "shell.exec"
 args = "npx eas build --platform android --profile preview"
 
+# --- 主要專案（Run 按鈕）---
 [[workflows.workflow]]
 name = "Project"
 mode = "parallel"
@@ -76,6 +101,8 @@ author = "agent"
 task = "workflow.run"
 args = "Expo Dev Server"
 
+# --- Expo 開發伺服器（含 Tunnel）---
+# 這是最常用的開發指令，啟動 Web 版並建立 ngrok tunnel
 [[workflows.workflow]]
 name = "Expo Dev Server"
 author = "agent"
@@ -85,20 +112,30 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
+# --web: 啟動 Web 版
+# --port 5000: 使用 5000 端口
+# --tunnel: 建立 ngrok 公網連線（讓手機掃碼）
+# --go: 強制使用 Expo Go 模式（避免 Dev Client 空白畫面）
+# --clear: 清除快取
 args = "npx expo start --web --port 5000 --tunnel --go --clear"
 waitForPort = 5000
 
+# ============ Agent 設定 ============
 [agent]
 expertMode = true
 integrations = ["twilio:1.0.0"]
 
+# ============ 部署設定 ============
+# 用於 Replit 的靜態網站部署
 [deployment]
 deploymentTarget = "static"
 run = ["npx", "serve", "dist", "-l", "5000"]
 build = ["npx", "expo", "export", "--platform", "web"]
 publicDir = "dist"
 
+# ============ 環境變數 ============
 [userenv]
 
 [userenv.shared]
+# 後端 API 位址
 EXPO_PUBLIC_API_URL = "https://gacha-travel--s8869420.replit.app"

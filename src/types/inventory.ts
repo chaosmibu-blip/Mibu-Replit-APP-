@@ -1,65 +1,110 @@
 /**
- * 物品箱/庫存相關類型
+ * @fileoverview 物品箱/庫存型別定義
+ *
+ * 定義背包系統相關的資料結構，包含：
+ * - 背包項目（優惠券、票券、禮物）
+ * - 項目狀態管理
+ * - 核銷功能
+ *
  * 依據後端合約 APP.md 定義
+ *
+ * @module types/inventory
  */
+
 import { CouponTier, Pagination } from './common';
 
+// ============ 項目型別 ============
+
+/**
+ * 背包項目類型
+ * - coupon: 優惠券
+ * - ticket: 票券
+ * - gift: 禮物
+ */
 export type InventoryItemType = 'coupon' | 'ticket' | 'gift';
+
+/**
+ * 背包項目狀態
+ * - active: 可使用
+ * - expired: 已過期
+ * - redeemed: 已核銷
+ * - deleted: 已刪除
+ */
 export type InventoryItemStatus = 'active' | 'expired' | 'redeemed' | 'deleted';
 
+// ============ 優惠券資料 ============
+
+/**
+ * 背包優惠券資料
+ *
+ * 優惠券項目的詳細資訊
+ */
 export interface InventoryCouponData {
-  code: string;
-  merchantId: number;
-  merchantName: string;
-  terms: string;
-  /** 背包顯示用圖片 */
-  inventoryImageUrl?: string;
-  /** 卡片背景圖片 */
-  backgroundImageUrl?: string;
+  code: string;                   // 優惠券代碼
+  merchantId: number;             // 商家 ID
+  merchantName: string;           // 商家名稱
+  terms: string;                  // 使用條款
+  inventoryImageUrl?: string;     // 背包顯示用圖片
+  backgroundImageUrl?: string;    // 卡片背景圖片
 }
 
+// ============ 背包項目 ============
+
+/**
+ * 背包項目
+ *
+ * 用戶背包中的單一項目
+ */
 export interface InventoryItem {
-  id: number;
-  userId: string;
-  type: InventoryItemType;
-  name: string;
-  description: string | null;
-  rarity: CouponTier;
-  isRead: boolean;
-  isRedeemed: boolean;
-  status: InventoryItemStatus;
-  expiresAt: string | null;
-  obtainedAt: string;
-  redeemedAt: string | null;
-  couponData?: InventoryCouponData;
-  /** 關聯的地點名稱 */
-  placeName?: string;
-  /** 關聯的城市 */
-  city?: string;
+  id: number;                          // 項目 ID
+  userId: string;                      // 用戶 ID
+  type: InventoryItemType;             // 項目類型
+  name: string;                        // 項目名稱
+  description: string | null;          // 項目描述
+  rarity: CouponTier;                  // 稀有度
+  isRead: boolean;                     // 是否已讀
+  isRedeemed: boolean;                 // 是否已核銷
+  status: InventoryItemStatus;         // 項目狀態
+  expiresAt: string | null;            // 過期時間（ISO 8601）
+  obtainedAt: string;                  // 獲得時間（ISO 8601）
+  redeemedAt: string | null;           // 核銷時間（ISO 8601）
+  couponData?: InventoryCouponData;    // 優惠券詳細資料
+  placeName?: string;                  // 關聯的地點名稱
+  city?: string;                       // 關聯的城市
 }
 
+// ============ API 回應 ============
+
+/**
+ * 背包列表回應
+ * GET /api/inventory
+ */
 export interface InventoryResponse {
-  success: boolean;
-  items: InventoryItem[];
-  slotCount: number;
-  maxSlots: number;
-  isFull: boolean;
-  pagination?: Pagination;
+  success: boolean;              // 是否成功
+  items: InventoryItem[];        // 項目列表
+  slotCount: number;             // 當前已使用格數
+  maxSlots: number;              // 最大格數上限
+  isFull: boolean;               // 背包是否已滿
+  pagination?: Pagination;       // 分頁資訊
 }
 
+/**
+ * 核銷成功回應
+ * POST /api/inventory/:id/redeem
+ */
 export interface RedeemResponse {
-  success: boolean;
-  message: string;
-  /** 核銷確認碼 */
-  redemptionCode: string;
-  /** 確認碼過期時間 */
-  expiresAt: string;
-  /** 核銷時間 */
-  redeemedAt: string;
+  success: boolean;        // 是否成功
+  message: string;         // 回應訊息
+  redemptionCode: string;  // 核銷確認碼
+  expiresAt: string;       // 確認碼過期時間（ISO 8601）
+  redeemedAt: string;      // 核銷時間（ISO 8601）
 }
 
+/**
+ * 核銷錯誤回應
+ */
 export interface RedeemErrorResponse {
-  success: false;
-  error: string;
-  code: 'INVALID_REDEMPTION_CODE' | 'REDEMPTION_CODE_EXPIRED' | 'COUPON_EXPIRED' | 'ALREADY_REDEEMED';
+  success: false;          // 固定為 false
+  error: string;           // 錯誤訊息
+  code: 'INVALID_REDEMPTION_CODE' | 'REDEMPTION_CODE_EXPIRED' | 'COUPON_EXPIRED' | 'ALREADY_REDEEMED'; // 錯誤碼
 }

@@ -1,3 +1,17 @@
+/**
+ * SpecialistDashboardScreen - 專家儀表板畫面
+ *
+ * 功能說明：
+ * - 顯示專員的上線/離線狀態，可透過開關切換
+ * - 提供快捷選單導航至其他功能頁面
+ * - 顯示目前服務中的旅客列表
+ * - 支援登出功能
+ *
+ * 串接的 API：
+ * - GET /specialist/me - 取得專員資訊
+ * - GET /specialist/services - 取得服務中的旅客列表
+ * - POST /specialist/toggle-online - 切換上線狀態
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -16,16 +30,25 @@ import { SpecialistInfo, ServiceRelation } from '../../../types';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
 import { MibuBrand } from '../../../../constants/Colors';
 
+// ============ 元件主體 ============
 export function SpecialistDashboardScreen() {
   const { state, getToken, setUser } = useApp();
   const router = useRouter();
+
+  // ============ 狀態變數 ============
+  // specialist: 專員資訊（名稱、上線狀態、服務地區等）
   const [specialist, setSpecialist] = useState<SpecialistInfo | null>(null);
+  // services: 服務中的旅客關係列表
   const [services, setServices] = useState<ServiceRelation[]>([]);
+  // loading: 是否正在載入資料
   const [loading, setLoading] = useState(true);
+  // toggling: 是否正在切換上線狀態
   const [toggling, setToggling] = useState(false);
 
+  // 判斷目前語言是否為繁體中文
   const isZh = state.language === 'zh-TW';
 
+  // ============ 多語系翻譯 ============
   const translations = {
     title: isZh ? '專員後台' : 'Specialist Dashboard',
     online: isZh ? '上線中' : 'Online',
@@ -39,21 +62,33 @@ export function SpecialistDashboardScreen() {
     logout: isZh ? '登出' : 'Logout',
   };
 
+  // ============ 事件處理函數 ============
+
+  /**
+   * 處理登出
+   * 清除用戶狀態並導航至登入頁面
+   */
   const handleLogout = async () => {
     setUser(null);
     router.replace('/login');
   };
 
+  // 元件載入時取得資料
   useEffect(() => {
     loadData();
   }, []);
 
+  /**
+   * 載入專員資訊與服務列表
+   * 同時呼叫兩個 API 並更新狀態
+   */
   const loadData = async () => {
     try {
       setLoading(true);
       const token = await getToken();
       if (!token) return;
 
+      // 同時取得專員資訊與服務列表
       const [specialistData, servicesData] = await Promise.all([
         apiService.getSpecialistMe(token).catch(() => null),
         apiService.getSpecialistServices(token).catch(() => ({ relations: [] })),
@@ -68,6 +103,10 @@ export function SpecialistDashboardScreen() {
     }
   };
 
+  /**
+   * 切換上線/離線狀態
+   * 呼叫 API 並更新專員狀態
+   */
   const handleToggleOnline = async () => {
     try {
       setToggling(true);
@@ -83,6 +122,11 @@ export function SpecialistDashboardScreen() {
     }
   };
 
+  /**
+   * 格式化日期顯示
+   * @param dateStr - ISO 日期字串
+   * @returns 格式化後的日期時間字串
+   */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleString(isZh ? 'zh-TW' : 'en-US', {
@@ -93,6 +137,7 @@ export function SpecialistDashboardScreen() {
     });
   };
 
+  // ============ Loading 畫面 ============
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -102,21 +147,27 @@ export function SpecialistDashboardScreen() {
     );
   }
 
+  // ============ 主畫面 JSX ============
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* ============ 頁面標題區 ============ */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.title}>{translations.title}</Text>
+          {/* 超級管理員才顯示角色切換器 */}
           {state.user?.isSuperAdmin && <RoleSwitcher compact />}
         </View>
+        {/* 登出按鈕 */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={20} color="#ef4444" />
           <Text style={styles.logoutText}>{translations.logout}</Text>
         </TouchableOpacity>
       </View>
 
+      {/* ============ 上線狀態卡片 ============ */}
       <View style={styles.statusCard}>
         <View style={styles.statusHeader}>
+          {/* 狀態指示燈與文字 */}
           <View style={styles.statusInfo}>
             <View style={[
               styles.statusIndicator,
@@ -126,6 +177,7 @@ export function SpecialistDashboardScreen() {
               {specialist?.isOnline ? translations.online : translations.offline}
             </Text>
           </View>
+          {/* 上線狀態開關 */}
           <View style={styles.toggleContainer}>
             {toggling ? (
               <ActivityIndicator size="small" color={MibuBrand.brown} />
@@ -140,6 +192,7 @@ export function SpecialistDashboardScreen() {
           </View>
         </View>
         <Text style={styles.toggleLabel}>{translations.toggleOnline}</Text>
+        {/* 服務地區資訊 */}
         {specialist?.serviceRegion && (
           <Text style={styles.regionText}>
             {translations.region}: {specialist.serviceRegion}
@@ -147,7 +200,9 @@ export function SpecialistDashboardScreen() {
         )}
       </View>
 
+      {/* ============ 快捷選單區 ============ */}
       <View style={styles.menuSection}>
+        {/* 服務中旅客 */}
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/specialist/travelers' as any)}
@@ -162,6 +217,7 @@ export function SpecialistDashboardScreen() {
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
+        {/* 即時位置追蹤 */}
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/specialist/tracking' as any)}
@@ -176,6 +232,7 @@ export function SpecialistDashboardScreen() {
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
+        {/* 服務歷史 */}
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/specialist/history' as any)}
@@ -190,6 +247,7 @@ export function SpecialistDashboardScreen() {
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
 
+        {/* 專員資料 */}
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/specialist/profile' as any)}
@@ -205,20 +263,26 @@ export function SpecialistDashboardScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* ============ 服務中旅客區塊標題 ============ */}
       <Text style={styles.sectionTitle}>{translations.activeServices}</Text>
 
+      {/* ============ 服務中旅客列表 ============ */}
       {services.length === 0 ? (
+        // 空狀態顯示
         <View style={styles.emptyCard}>
           <Ionicons name="people-outline" size={48} color="#94a3b8" />
           <Text style={styles.emptyText}>{translations.noServices}</Text>
         </View>
       ) : (
+        // 旅客卡片列表
         <View style={styles.servicesList}>
           {services.map(service => (
             <View key={service.id} style={styles.serviceCard}>
+              {/* 旅客頭像 */}
               <View style={styles.serviceAvatar}>
                 <Ionicons name="person" size={24} color="#ffffff" />
               </View>
+              {/* 旅客資訊 */}
               <View style={styles.serviceInfo}>
                 <Text style={styles.serviceName}>
                   {service.traveler?.name || `Traveler #${service.travelerId}`}
@@ -227,6 +291,7 @@ export function SpecialistDashboardScreen() {
                   {translations.since}: {formatDate(service.createdAt)}
                 </Text>
               </View>
+              {/* 服務狀態標籤 */}
               <View style={[
                 styles.serviceStatus,
                 service.status === 'active' && styles.serviceStatusActive,
@@ -241,7 +306,9 @@ export function SpecialistDashboardScreen() {
   );
 }
 
+// ============ 樣式定義 ============
 const styles = StyleSheet.create({
+  // 容器樣式
   container: {
     flex: 1,
     backgroundColor: MibuBrand.creamLight,
@@ -251,6 +318,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 100,
   },
+  // Loading 狀態樣式
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
@@ -261,6 +329,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
     fontSize: 16,
   },
+  // 頁面標題樣式
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -277,6 +346,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: MibuBrand.brown,
   },
+  // 登出按鈕樣式
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -291,6 +361,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: MibuBrand.error,
   },
+  // 狀態卡片樣式
   statusCard: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
@@ -339,6 +410,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.brown,
     marginTop: 8,
   },
+  // 選單區樣式
   menuSection: {
     marginBottom: 24,
     gap: 12,
@@ -374,12 +446,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: MibuBrand.copper,
   },
+  // 區塊標題樣式
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: MibuBrand.dark,
     marginBottom: 16,
   },
+  // 空狀態樣式
   emptyCard: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
@@ -393,6 +467,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
     marginTop: 12,
   },
+  // 服務列表樣式
   servicesList: {
     gap: 12,
   },

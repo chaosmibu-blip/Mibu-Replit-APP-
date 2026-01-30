@@ -1,3 +1,14 @@
+/**
+ * 專員註冊頁面
+ *
+ * 提供專員申請帳號的表單，需填寫：
+ * - Email 和密碼
+ * - 名稱
+ * - 服務地區（選填）
+ * - 其他聯絡方式（選填）
+ *
+ * 提交後導向 /register-success，等待後台審核
+ */
 import React, { useState } from 'react';
 import {
   View,

@@ -1,10 +1,21 @@
 /**
  * CouponWinAnimation - 中獎動畫元件
  *
- * SP: 全屏金色閃光動畫
- * SSR: 紫色粒子特效
- * SR: 藍色光暈
- * S/R: 簡單彈出動畫
+ * 功能：
+ * - 以全屏 Modal 顯示扭蛋中獎結果
+ * - 根據稀有度顯示不同特效動畫：
+ *   - SP: 全屏金色閃光 + 旋轉 + 粒子特效
+ *   - SSR: 紫色粒子特效 + 光暈
+ *   - SR: 藍色光暈
+ *   - S/R: 簡單彈出動畫
+ * - SSR+ 等級支援分享功能
+ *
+ * 動畫效果：
+ * - scaleAnim: 卡片彈出縮放
+ * - rotateAnim: SP 等級旋轉
+ * - opacityAnim: 淡入效果
+ * - glowAnim: 光暈脈動
+ * - particleAnims: 粒子擴散（SP/SSR）
  */
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -22,17 +33,34 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { CouponTier } from '../../../types';
 
+// ============================================================
+// 常數定義
+// ============================================================
+
+// 螢幕尺寸（用於粒子動畫計算）
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+// ============================================================
+// Props 介面定義
+// ============================================================
+
 interface CouponWinAnimationProps {
-  visible: boolean;
-  tier: CouponTier;
-  couponName: string;
-  placeName: string;
-  onClose: () => void;
-  language?: 'zh-TW' | 'en';
+  visible: boolean;          // 是否顯示
+  tier: CouponTier;          // 稀有度等級
+  couponName: string;        // 優惠券名稱
+  placeName: string;         // 商家名稱
+  onClose: () => void;       // 關閉回調
+  language?: 'zh-TW' | 'en'; // 語言設定
 }
 
+/**
+ * 稀有度視覺配置
+ * - bgColor: 卡片背景色
+ * - textColor: 文字色
+ * - glowColor: 光暈色
+ * - icon: 圖示名稱
+ * - label/labelEn: 稀有度標籤（中/英）
+ */
 const TIER_CONFIG: Record<CouponTier, {
   bgColor: string;
   textColor: string;
@@ -83,6 +111,10 @@ const TIER_CONFIG: Record<CouponTier, {
   },
 };
 
+// ============================================================
+// 主元件
+// ============================================================
+
 export default function CouponWinAnimation({
   visible,
   tier,
@@ -91,25 +123,61 @@ export default function CouponWinAnimation({
   onClose,
   language = 'zh-TW',
 }: CouponWinAnimationProps) {
+
+  // ============================================================
+  // 動畫值初始化
+  // ============================================================
+
+  // 卡片縮放動畫
   const scaleAnim = useRef(new Animated.Value(0)).current;
+
+  // 旋轉動畫（SP 專用）
   const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // 淡入動畫
   const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  // 光暈脈動動畫
   const glowAnim = useRef(new Animated.Value(0)).current;
+
+  // 粒子動畫陣列（12 個粒子）
   const particleAnims = useRef(
     Array.from({ length: 12 }, () => ({
-      x: new Animated.Value(0),
-      y: new Animated.Value(0),
-      opacity: new Animated.Value(1),
-      scale: new Animated.Value(1),
+      x: new Animated.Value(0),        // X 軸位移
+      y: new Animated.Value(0),        // Y 軸位移
+      opacity: new Animated.Value(1),  // 透明度
+      scale: new Animated.Value(1),    // 縮放
     }))
   ).current;
 
+  // ============================================================
+  // 衍生變數
+  // ============================================================
+
+  // 當前稀有度配置
   const config = TIER_CONFIG[tier];
+
+  // 語言判斷
   const isZh = language === 'zh-TW';
+
+  // 是否為高稀有度（有光暈效果）
   const isHighTier = tier === 'SP' || tier === 'SSR' || tier === 'SR';
+
+  // 是否可分享（SSR 以上）
   const isShareableTier = tier === 'SP' || tier === 'SSR';
+
+  // 分享狀態
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
 
+  // ============================================================
+  // 事件處理
+  // ============================================================
+
+  /**
+   * 分享中獎結果
+   * - Web: 使用 Web Share API，失敗則複製到剪貼簿
+   * - Native: 使用 React Native Share
+   */
   const handleShare = async () => {
     const shareText = isZh
       ? `🎰 我在 Mibu 扭蛋抽到了【${tier}】優惠券！\n🎁 ${couponName}\n📍 ${placeName}\n\n快來一起玩 ➜ https://mibu.app`
@@ -145,15 +213,22 @@ export default function CouponWinAnimation({
     }
   };
 
+  // ============================================================
+  // 動畫效果
+  // ============================================================
+
+  /**
+   * 當 Modal 顯示時啟動動畫
+   */
   useEffect(() => {
     if (visible) {
-      // Reset animations
+      // 重置所有動畫值
       scaleAnim.setValue(0);
       rotateAnim.setValue(0);
       opacityAnim.setValue(0);
       glowAnim.setValue(0);
 
-      // Main card animation
+      // ===== 主卡片動畫：淡入 + 彈跳 =====
       Animated.sequence([
         Animated.timing(opacityAnim, {
           toValue: 1,
@@ -168,7 +243,7 @@ export default function CouponWinAnimation({
         }),
       ]).start();
 
-      // Glow animation for high tiers
+      // ===== 高稀有度：光暈脈動動畫 =====
       if (isHighTier) {
         Animated.loop(
           Animated.sequence([
@@ -185,7 +260,7 @@ export default function CouponWinAnimation({
           ])
         ).start();
 
-        // Particle animations for SP/SSR
+        // ===== SP/SSR：粒子擴散動畫 =====
         if (tier === 'SP' || tier === 'SSR') {
           particleAnims.forEach((particle, index) => {
             const angle = (index / 12) * Math.PI * 2;
@@ -215,7 +290,7 @@ export default function CouponWinAnimation({
         }
       }
 
-      // Rotate animation for SP
+      // ===== SP 專屬：卡片旋轉動畫 =====
       if (tier === 'SP') {
         Animated.loop(
           Animated.timing(rotateAnim, {
@@ -228,22 +303,33 @@ export default function CouponWinAnimation({
     }
   }, [visible]);
 
+  // ============================================================
+  // 動畫插值
+  // ============================================================
+
+  // 旋轉角度插值（0-360 度）
   const rotate = rotateAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
 
+  // 光暈透明度插值（0.3-0.8）
   const glowOpacity = glowAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0.3, 0.8],
   });
 
+  // ============================================================
+  // 渲染
+  // ============================================================
+
+  // 未顯示時不渲染
   if (!visible) return null;
 
   return (
     <Modal transparent visible={visible} animationType="fade">
       <View style={styles.overlay}>
-        {/* Background glow for high tiers */}
+        {/* ========== 背景光暈（高稀有度專用） ========== */}
         {isHighTier && (
           <Animated.View
             style={[
@@ -256,7 +342,7 @@ export default function CouponWinAnimation({
           />
         )}
 
-        {/* Particles for SP/SSR */}
+        {/* ========== 粒子特效（SP/SSR 專用） ========== */}
         {(tier === 'SP' || tier === 'SSR') &&
           particleAnims.map((particle, index) => (
             <Animated.View
@@ -276,7 +362,7 @@ export default function CouponWinAnimation({
             />
           ))}
 
-        {/* Main card */}
+        {/* ========== 主卡片 ========== */}
         <Animated.View
           style={[
             styles.card,
@@ -290,35 +376,35 @@ export default function CouponWinAnimation({
             },
           ]}
         >
-          {/* Tier badge */}
+          {/* 稀有度 badge */}
           <View style={[styles.tierBadge, { backgroundColor: config.glowColor }]}>
             <Text style={[styles.tierText, { color: '#ffffff' }]}>{tier}</Text>
           </View>
 
-          {/* Icon */}
+          {/* 稀有度圖示 */}
           <View style={[styles.iconContainer, { backgroundColor: `${config.glowColor}33` }]}>
             <Ionicons name={config.icon as any} size={48} color={config.textColor} />
           </View>
 
-          {/* Label */}
+          {/* 稀有度標籤 */}
           <Text style={[styles.tierLabel, { color: config.textColor }]}>
             {isZh ? config.label : config.labelEn}
           </Text>
 
-          {/* Coupon info */}
+          {/* 優惠券資訊 */}
           <Text style={styles.couponName}>{couponName}</Text>
           <Text style={styles.placeName}>
             <Ionicons name="location" size={14} color="#64748b" /> {placeName}
           </Text>
 
-          {/* Congratulations text */}
+          {/* 恭喜文字 */}
           <Text style={[styles.congratsText, { color: config.textColor }]}>
             {isZh ? '🎉 恭喜獲得優惠券！' : '🎉 Congratulations!'}
           </Text>
 
-          {/* Button row */}
+          {/* ========== 按鈕列 ========== */}
           <View style={styles.buttonRow}>
-            {/* Share button for SSR+ */}
+            {/* 分享按鈕（SSR 以上顯示） */}
             {isShareableTier && (
               <TouchableOpacity
                 style={[styles.shareButton, { borderColor: config.glowColor }]}
@@ -337,7 +423,7 @@ export default function CouponWinAnimation({
               </TouchableOpacity>
             )}
 
-            {/* Close/Collect button */}
+            {/* 領取按鈕 */}
             <TouchableOpacity
               style={[
                 styles.closeButton,
@@ -356,7 +442,12 @@ export default function CouponWinAnimation({
   );
 }
 
+// ============================================================
+// 樣式定義
+// ============================================================
+
 const styles = StyleSheet.create({
+  // 遮罩層
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',

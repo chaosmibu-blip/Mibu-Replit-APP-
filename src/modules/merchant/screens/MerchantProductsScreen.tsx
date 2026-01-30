@@ -1,3 +1,17 @@
+/**
+ * MerchantProductsScreen - 產品管理
+ *
+ * 功能說明：
+ * - 顯示商家所有產品列表
+ * - 支援新增、編輯、刪除產品
+ * - 顯示產品價格、優惠價、上架狀態
+ *
+ * 串接的 API：
+ * - GET /merchant/products - 取得產品列表
+ * - POST /merchant/products - 建立產品
+ * - PUT /merchant/products/:id - 更新產品
+ * - DELETE /merchant/products/:id - 刪除產品
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -19,23 +33,35 @@ import { apiService } from '../../../services/api';
 import { MerchantProduct } from '../../../types';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 
+// ============ 主元件 ============
 export function MerchantProductsScreen() {
+  // ============ Hooks ============
   const { state, getToken } = useApp();
   const router = useRouter();
+
+  // ============ 狀態變數 ============
+  // products: 產品列表
   const [products, setProducts] = useState<MerchantProduct[]>([]);
+  // loading: 初始載入狀態
   const [loading, setLoading] = useState(true);
+  // saving: 儲存中狀態
   const [saving, setSaving] = useState(false);
+  // modalVisible: 是否顯示新增/編輯彈窗
   const [modalVisible, setModalVisible] = useState(false);
+  // editingProduct: 正在編輯的產品（null 表示新增模式）
   const [editingProduct, setEditingProduct] = useState<MerchantProduct | null>(null);
+  // formData: 表單資料
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    discountPrice: '',
+    name: '',           // 產品名稱
+    description: '',    // 產品描述
+    price: '',          // 原價
+    discountPrice: '',  // 優惠價
   });
 
+  // isZh: 判斷是否為中文語系
   const isZh = state.language === 'zh-TW';
 
+  // ============ 多語系翻譯 ============
   const translations = {
     title: isZh ? '商品管理' : 'Product Management',
     myProducts: isZh ? '我的商品' : 'My Products',
@@ -58,10 +84,17 @@ export function MerchantProductsScreen() {
     saveFailed: isZh ? '儲存失敗' : 'Save failed',
   };
 
+  // ============ Effect Hooks ============
+  // 元件載入時取得產品列表
   useEffect(() => {
     loadProducts();
   }, []);
 
+  // ============ 資料載入函數 ============
+
+  /**
+   * loadProducts - 載入產品列表
+   */
   const loadProducts = async () => {
     try {
       setLoading(true);
@@ -76,8 +109,15 @@ export function MerchantProductsScreen() {
     }
   };
 
+  // ============ 彈窗操作函數 ============
+
+  /**
+   * openModal - 開啟新增/編輯彈窗
+   * @param product - 要編輯的產品（不傳則為新增模式）
+   */
   const openModal = (product?: MerchantProduct) => {
     if (product) {
+      // 編輯模式：填入現有資料
       setEditingProduct(product);
       setFormData({
         name: product.name,
@@ -86,19 +126,27 @@ export function MerchantProductsScreen() {
         discountPrice: product.discountPrice?.toString() || '',
       });
     } else {
+      // 新增模式：清空表單
       setEditingProduct(null);
       setFormData({ name: '', description: '', price: '', discountPrice: '' });
     }
     setModalVisible(true);
   };
 
+  // ============ 事件處理函數 ============
+
+  /**
+   * handleSave - 處理儲存產品
+   */
   const handleSave = async () => {
+    // 驗證必填欄位
     if (!formData.name.trim()) return;
     try {
       setSaving(true);
       const token = await getToken();
       if (!token) return;
 
+      // 組裝參數
       const params = {
         name: formData.name,
         description: formData.description || undefined,
@@ -107,8 +155,10 @@ export function MerchantProductsScreen() {
       };
 
       if (editingProduct) {
+        // 更新模式
         await apiService.updateMerchantProduct(token, editingProduct.id, params);
       } else {
+        // 新增模式
         await apiService.createMerchantProduct(token, params);
       }
 
@@ -123,6 +173,10 @@ export function MerchantProductsScreen() {
     }
   };
 
+  /**
+   * handleDelete - 處理刪除產品
+   * @param product - 要刪除的產品
+   */
   const handleDelete = (product: MerchantProduct) => {
     Alert.alert(
       isZh ? '確認刪除' : 'Confirm Delete',
@@ -148,6 +202,7 @@ export function MerchantProductsScreen() {
     );
   };
 
+  // ============ 載入中畫面 ============
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -157,36 +212,45 @@ export function MerchantProductsScreen() {
     );
   }
 
+  // ============ 主要 JSX 渲染 ============
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={100}
     >
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        {/* ============ 頂部標題區 ============ */}
         <View style={styles.header}>
+          {/* 返回按鈕 */}
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
           </TouchableOpacity>
           <Text style={styles.title}>{translations.title}</Text>
         </View>
 
+        {/* ============ 新增按鈕 ============ */}
         <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
           <Ionicons name="add-circle-outline" size={24} color={MibuBrand.warmWhite} />
           <Text style={styles.addButtonText}>{translations.addNew}</Text>
         </TouchableOpacity>
 
+        {/* ============ 區塊標題 ============ */}
         <Text style={styles.sectionTitle}>{translations.myProducts}</Text>
 
+        {/* ============ 產品列表 ============ */}
         {products.length === 0 ? (
+          // 空狀態
           <View style={styles.emptyCard}>
             <Ionicons name="cube-outline" size={48} color={MibuBrand.tan} />
             <Text style={styles.emptyText}>{translations.noProducts}</Text>
           </View>
         ) : (
+          // 產品卡片列表
           <View style={styles.productsList}>
             {products.map(product => (
               <View key={product.id} style={styles.productCard}>
+                {/* 產品資訊區 */}
                 <View style={styles.productInfo}>
                   <Text style={styles.productName}>{product.name}</Text>
                   {product.description && (
@@ -194,9 +258,11 @@ export function MerchantProductsScreen() {
                       {product.description}
                     </Text>
                   )}
+                  {/* 價格與狀態 */}
                   <View style={styles.priceRow}>
                     {product.discountPrice ? (
                       <>
+                        {/* 有優惠價時顯示優惠價和原價刪除線 */}
                         <Text style={styles.discountPrice}>
                           ${product.discountPrice}
                         </Text>
@@ -205,8 +271,10 @@ export function MerchantProductsScreen() {
                         </Text>
                       </>
                     ) : product.price ? (
+                      // 只有原價
                       <Text style={styles.price}>${product.price}</Text>
                     ) : null}
+                    {/* 上架狀態標籤 */}
                     <View style={[
                       styles.statusBadge,
                       product.isActive ? styles.activeBadge : styles.inactiveBadge
@@ -220,13 +288,16 @@ export function MerchantProductsScreen() {
                     </View>
                   </View>
                 </View>
+                {/* 操作按鈕 */}
                 <View style={styles.productActions}>
+                  {/* 編輯按鈕 */}
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => openModal(product)}
                   >
                     <Ionicons name="pencil-outline" size={20} color={MibuBrand.copper} />
                   </TouchableOpacity>
+                  {/* 刪除按鈕 */}
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => handleDelete(product)}
@@ -240,17 +311,21 @@ export function MerchantProductsScreen() {
         )}
       </ScrollView>
 
+      {/* ============ 新增/編輯彈窗 ============ */}
       <Modal visible={modalVisible} animationType="slide" transparent>
         <KeyboardAvoidingView
           style={styles.modalOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <View style={styles.modalContent}>
+            {/* 彈窗標題 */}
             <Text style={styles.modalTitle}>
               {editingProduct ? translations.edit : translations.addNew}
             </Text>
 
+            {/* 表單內容 */}
             <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+              {/* 產品名稱 */}
               <Text style={styles.inputLabel}>{translations.name}</Text>
               <TextInput
                 style={styles.input}
@@ -260,6 +335,7 @@ export function MerchantProductsScreen() {
                 placeholderTextColor={MibuBrand.tan}
               />
 
+              {/* 產品描述 */}
               <Text style={styles.inputLabel}>{translations.description}</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
@@ -271,6 +347,7 @@ export function MerchantProductsScreen() {
                 numberOfLines={3}
               />
 
+              {/* 價格欄位（並排） */}
               <View style={styles.priceInputRow}>
                 <View style={styles.priceInputContainer}>
                   <Text style={styles.inputLabel}>{translations.price}</Text>
@@ -297,6 +374,7 @@ export function MerchantProductsScreen() {
               </View>
             </ScrollView>
 
+            {/* 彈窗底部按鈕 */}
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.cancelModalButton}
@@ -323,33 +401,40 @@ export function MerchantProductsScreen() {
   );
 }
 
+// ============ 樣式定義 ============
 const styles = StyleSheet.create({
+  // 主容器
   container: {
     flex: 1,
     backgroundColor: MibuBrand.creamLight,
   },
+  // 內容區
   content: {
     padding: 20,
     paddingTop: 60,
     paddingBottom: 100,
   },
+  // 載入中容器
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: MibuBrand.creamLight,
   },
+  // 載入中文字
   loadingText: {
     marginTop: 12,
     color: MibuBrand.copper,
     fontSize: 16,
   },
+  // 頂部標題區
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
     gap: 12,
   },
+  // 返回按鈕
   backButton: {
     width: 40,
     height: 40,
@@ -360,11 +445,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
+  // 頁面標題
   title: {
     fontSize: 24,
     fontWeight: '900',
     color: MibuBrand.brownDark,
   },
+  // 新增按鈕
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -375,17 +462,20 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 24,
   },
+  // 新增按鈕文字
   addButtonText: {
     fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.warmWhite,
   },
+  // 區塊標題
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: MibuBrand.brownDark,
     marginBottom: 16,
   },
+  // 空狀態卡片
   emptyCard: {
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
@@ -394,14 +484,17 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
+  // 空狀態文字
   emptyText: {
     fontSize: 16,
     color: MibuBrand.copper,
     marginTop: 12,
   },
+  // 產品列表
   productsList: {
     gap: 12,
   },
+  // 產品卡片
   productCard: {
     flexDirection: 'row',
     backgroundColor: MibuBrand.warmWhite,
@@ -410,65 +503,80 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
+  // 產品資訊區
   productInfo: {
     flex: 1,
   },
+  // 產品名稱
   productName: {
     fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brownDark,
     marginBottom: 4,
   },
+  // 產品描述
   productDesc: {
     fontSize: 13,
     color: MibuBrand.copper,
     marginBottom: 8,
   },
+  // 價格列
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
+  // 原價
   price: {
     fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
+  // 優惠價
   discountPrice: {
     fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.error,
   },
+  // 原價（刪除線）
   originalPrice: {
     fontSize: 14,
     color: MibuBrand.tan,
     textDecorationLine: 'line-through',
   },
+  // 狀態標籤
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
+  // 上架中標籤
   activeBadge: {
     backgroundColor: SemanticColors.successLight,
   },
+  // 已下架標籤
   inactiveBadge: {
     backgroundColor: MibuBrand.tanLight,
   },
+  // 狀態文字
   statusText: {
     fontSize: 11,
     fontWeight: '600',
   },
+  // 上架中文字
   activeText: {
     color: SemanticColors.successDark,
   },
+  // 已下架文字
   inactiveText: {
     color: MibuBrand.copper,
   },
+  // 產品操作按鈕區
   productActions: {
     flexDirection: 'column',
     gap: 8,
   },
+  // 操作按鈕
   actionButton: {
     width: 36,
     height: 36,
@@ -477,11 +585,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // 彈窗遮罩
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
+  // 彈窗內容
   modalContent: {
     backgroundColor: MibuBrand.warmWhite,
     borderTopLeftRadius: 24,
@@ -489,18 +599,21 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingBottom: 40,
   },
+  // 彈窗標題
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: MibuBrand.brownDark,
     marginBottom: 20,
   },
+  // 輸入標籤
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: MibuBrand.copper,
     marginBottom: 8,
   },
+  // 輸入框
   input: {
     backgroundColor: MibuBrand.creamLight,
     borderRadius: 12,
@@ -512,22 +625,27 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
     marginBottom: 16,
   },
+  // 多行輸入框
   textArea: {
     height: 80,
     textAlignVertical: 'top',
   },
+  // 價格輸入列
   priceInputRow: {
     flexDirection: 'row',
     gap: 12,
   },
+  // 價格輸入容器
   priceInputContainer: {
     flex: 1,
   },
+  // 彈窗底部按鈕區
   modalButtons: {
     flexDirection: 'row',
     gap: 12,
     marginTop: 8,
   },
+  // 取消按鈕
   cancelModalButton: {
     flex: 1,
     paddingVertical: 16,
@@ -535,11 +653,13 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.tanLight,
     alignItems: 'center',
   },
+  // 取消按鈕文字
   cancelModalButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: MibuBrand.copper,
   },
+  // 儲存按鈕
   saveButton: {
     flex: 1,
     paddingVertical: 16,
@@ -547,6 +667,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.brown,
     alignItems: 'center',
   },
+  // 儲存按鈕文字
   saveButtonText: {
     fontSize: 16,
     fontWeight: '600',

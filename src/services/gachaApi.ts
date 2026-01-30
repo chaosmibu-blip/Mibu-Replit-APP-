@@ -1,7 +1,24 @@
 /**
- * 扭蛋相關 API - 抽獎、行程生成、獎池
+ * 扭蛋系統 API 服務
  *
- * #031: 新增 deviceId 參數防刷機制
+ * 處理扭蛋抽獎、AI 行程生成、獎池查詢等功能
+ *
+ * @module services/gachaApi
+ * @see 後端契約: contracts/APP.md
+ *
+ * ============ 串接端點 ============
+ * - POST /api/gacha/itinerary/v3 - AI 生成行程
+ * - GET  /api/gacha/pool         - 取得扭蛋獎池
+ * - POST /api/gacha/pull/v3      - 抽取扭蛋 (#009)
+ * - GET  /api/gacha/prize-pool   - 取得獎池優惠券
+ * - POST /api/feedback/exclude   - 排除景點
+ * - GET  /api/place/promo        - 取得景點優惠
+ * - GET  /api/gacha/quota        - 取得今日額度 (#009)
+ * - POST /api/gacha/submit-trip  - 提交行程至官網 (#010)
+ *
+ * ============ 特別說明 ============
+ * #031: 新增 deviceId 參數用於防刷機制
+ *       同一裝置每日限抽 36 次
  */
 import { ApiBase, API_BASE } from './base';
 import {
@@ -17,15 +34,27 @@ import {
 import * as Application from 'expo-application';
 import { Platform } from 'react-native';
 
+// ============ 輔助函數 ============
+
 /**
  * 取得裝置識別碼
- * #031: 用於防刷機制，同一裝置每日限抽 36 次
+ *
+ * 用於防刷機制，每個裝置每日有抽取次數限制
+ * #031: 同一裝置每日限抽 36 次
+ *
+ * @returns 裝置識別碼，若無法取得則回傳空字串
+ *
+ * @example
+ * const deviceId = await getDeviceId();
+ * await gachaApi.generateItinerary({ regionId: 1, deviceId });
  */
 export const getDeviceId = async (): Promise<string> => {
   try {
     if (Platform.OS === 'ios') {
+      // iOS 使用 Vendor ID（同一開發者的 App 共用）
       return await Application.getIosIdForVendorAsync() || '';
     } else if (Platform.OS === 'android') {
+      // Android 使用 Android ID
       return Application.androidId || '';
     }
     // Web 平台沒有 deviceId，回傳空字串
@@ -36,20 +65,54 @@ export const getDeviceId = async (): Promise<string> => {
   }
 };
 
+// ============ API 服務類別 ============
+
+/**
+ * 扭蛋 API 服務類別
+ *
+ * 處理所有扭蛋相關的 API 請求
+ */
 class GachaApiService extends ApiBase {
+
+  /**
+   * AI 生成行程
+   *
+   * 根據指定的地區和參數，由 AI 生成推薦行程
+   * 這個過程可能需要 1-2 分鐘，UI 需要顯示 loading 狀態
+   *
+   * @param params - 生成參數
+   * @param params.regionId - 地區 ID
+   * @param params.countryId - 國家 ID
+   * @param params.itemCount - 景點數量
+   * @param params.pace - 行程節奏（relaxed/moderate/packed）
+   * @param params.language - 語言代碼
+   * @param params.deviceId - 裝置識別碼（#031 防刷機制）
+   * @param token - JWT Token（可選，未登入也可使用）
+   * @returns 生成的行程項目列表
+   *
+   * @example
+   * const result = await gachaApi.generateItinerary({
+   *   regionId: 1,
+   *   itemCount: 5,
+   *   pace: 'moderate',
+   *   deviceId: await getDeviceId(),
+   * }, token);
+   */
   async generateItinerary(params: {
     regionId?: number;
     countryId?: number;
     itemCount?: number;
     pace?: 'relaxed' | 'moderate' | 'packed';
     language?: string;
-    deviceId?: string;  // #031: 裝置識別碼
+    deviceId?: string;
   }, token?: string): Promise<ItineraryGenerateResponse> {
     const url = `${this.baseUrl}/api/gacha/itinerary/v3`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
+
+    // 若有 token 則加入認證標頭
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -108,9 +171,12 @@ class GachaApiService extends ApiBase {
 
   /**
    * 取得扭蛋獎池
-   * GET /api/gacha/pool
    *
+   * 查詢指定城市的扭蛋獎池內容
    * #030: 後端回傳 { pool }，沒有 success 欄位
+   *
+   * @param city - 城市名稱
+   * @returns 獎池內容
    */
   async getGachaPool(city: string): Promise<GachaPoolResponse> {
     try {
@@ -124,9 +190,17 @@ class GachaApiService extends ApiBase {
     }
   }
 
+  /**
+   * 抽取扭蛋
+   *
+   * 執行扭蛋抽獎，消耗抽取次數
+   * #009: 端點對齊 /api/gacha/pull/v3
+   *
+   * @param payload - 抽獎參數
+   * @returns 抽獎結果
+   */
   async pullGacha(payload: GachaPullPayload): Promise<GachaPullResponse> {
     try {
-      // #009: 端點對齊 /api/gacha/pull/v3
       const data = await this.request<GachaPullResponse>('/api/gacha/pull/v3', {
         method: 'POST',
         body: JSON.stringify(payload),
@@ -140,9 +214,12 @@ class GachaApiService extends ApiBase {
 
   /**
    * 取得獎池優惠券列表
-   * GET /api/gacha/prize-pool
    *
+   * 查詢指定地區的可抽取優惠券
    * #030: 後端回傳 { coupons, region }，沒有 success 欄位
+   *
+   * @param regionId - 地區 ID
+   * @returns 優惠券列表和地區資訊
    */
   async getPrizePool(regionId: number): Promise<PrizePoolResponse> {
     try {
@@ -158,6 +235,18 @@ class GachaApiService extends ApiBase {
     }
   }
 
+  /**
+   * 排除景點
+   *
+   * 用戶不喜歡某個景點時，可將其加入排除清單
+   * 未來抽獎不會再抽到該景點
+   *
+   * @param params - 景點資訊
+   * @param params.placeName - 景點名稱
+   * @param params.district - 區域
+   * @param params.city - 城市
+   * @param params.placeCacheId - 快取 ID（可選）
+   */
   async excludePlace(params: {
     placeName: string;
     district: string;
@@ -170,6 +259,18 @@ class GachaApiService extends ApiBase {
     });
   }
 
+  /**
+   * 取得景點優惠
+   *
+   * 查詢景點目前的優惠活動
+   *
+   * @param params - 景點查詢參數（至少需要一個）
+   * @param params.placeId - 景點 ID
+   * @param params.placeName - 景點名稱
+   * @param params.district - 區域
+   * @param params.city - 城市
+   * @returns 優惠資訊
+   */
   async getPlacePromo(params: {
     placeId?: string;
     placeName?: string;
@@ -185,11 +286,15 @@ class GachaApiService extends ApiBase {
     return this.request(`/api/place/promo?${queryParams}`);
   }
 
-  // ========== #009 新增 ==========
+  // ============ #009 新增 ============
 
   /**
    * 取得今日扭蛋額度
-   * GET /api/gacha/quota
+   *
+   * 查詢用戶今日剩餘的抽取次數
+   *
+   * @param token - JWT Token
+   * @returns 額度資訊（已用/總額度）
    */
   async getQuota(token: string): Promise<GachaQuotaResponse> {
     return this.request<GachaQuotaResponse>('/api/gacha/quota', {
@@ -197,11 +302,18 @@ class GachaApiService extends ApiBase {
     });
   }
 
-  // ========== #010 新增 ==========
+  // ============ #010 新增 ============
 
   /**
    * 提交行程至官網 SEO
-   * POST /api/gacha/submit-trip
+   *
+   * 將 AI 生成的行程發布到官網，用於 SEO 和分享
+   *
+   * @param token - JWT Token
+   * @param params - 提交參數
+   * @param params.sessionId - 行程 session ID
+   * @param params.tripImageUrl - 行程圖片網址（可選）
+   * @returns 提交結果
    */
   async submitTrip(
     token: string,
@@ -215,4 +327,7 @@ class GachaApiService extends ApiBase {
   }
 }
 
+// ============ 匯出 ============
+
+/** 扭蛋 API 服務實例 */
 export const gachaApi = new GachaApiService();

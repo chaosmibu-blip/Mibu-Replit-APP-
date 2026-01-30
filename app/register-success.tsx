@@ -1,3 +1,11 @@
+/**
+ * 註冊成功頁面
+ *
+ * 商家或專員提交申請後顯示的成功頁面。
+ * 告知用戶申請已送出，審核通過後會收到通知。
+ *
+ * 提供返回登入頁的按鈕。
+ */
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useRouter } from 'expo-router';

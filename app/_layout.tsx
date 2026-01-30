@@ -1,3 +1,21 @@
+/**
+ * 主應用層級佈局
+ *
+ * 這是整個 App 的根層級 Layout，負責：
+ * - 全域 Provider 包裝（AppProvider、ThemeProvider）
+ * - 字體載入
+ * - Stack 導航結構定義
+ * - StatusBar 設定
+ *
+ * 導航結構：
+ * - login: 登入頁
+ * - (tabs): 旅客主頁面（Tab 導航）
+ * - economy/profile/account 等: 旅客功能頁面
+ * - merchant-dashboard: 商家主控台
+ * - specialist-dashboard: 專員主控台
+ * - admin-dashboard: 管理員主控台
+ * - pending-approval: 審核中等待頁
+ */
 import "../global.css";
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';

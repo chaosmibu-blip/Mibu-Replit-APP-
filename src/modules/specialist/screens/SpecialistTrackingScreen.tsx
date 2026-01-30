@@ -1,3 +1,17 @@
+/**
+ * SpecialistTrackingScreen - 專員即時追蹤畫面
+ *
+ * 功能說明：
+ * - 透過 WebSocket 即時接收旅客位置更新
+ * - 顯示連線狀態（已連線 / 已斷線）
+ * - 列出所有旅客的位置資訊（經緯度、最後更新時間）
+ * - 支援地圖顯示（需要 react-native-maps，網頁版顯示替代畫面）
+ *
+ * 串接的 API / WebSocket：
+ * - WebSocket 連線至 API_BASE_URL
+ * - 事件: traveler_location - 單一旅客位置更新
+ * - 事件: active_travelers - 所有活躍旅客位置
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -13,26 +27,40 @@ import { io, Socket } from 'socket.io-client';
 import { useApp } from '../../../context/AppContext';
 import { API_BASE_URL } from '../../../constants/translations';
 
+// ============ 型別定義 ============
+
+/**
+ * 旅客位置資料結構
+ */
 interface TravelerLocation {
-  travelerId: string;
-  serviceId?: number;
-  lat: number;
-  lng: number;
-  timestamp: string;
-  travelerName?: string;
+  travelerId: string;       // 旅客 ID
+  serviceId?: number;       // 服務關係 ID（選填）
+  lat: number;              // 緯度
+  lng: number;              // 經度
+  timestamp: string;        // 時間戳記
+  travelerName?: string;    // 旅客名稱（選填）
 }
 
+// ============ 元件主體 ============
 export function SpecialistTrackingScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
   const params = useLocalSearchParams();
+
+  // ============ 狀態變數與 Refs ============
+  // socketRef: WebSocket 連線實例
   const socketRef = useRef<Socket | null>(null);
+  // locations: 旅客位置 Map（以 travelerId 為 key）
   const [locations, setLocations] = useState<Map<string, TravelerLocation>>(new Map());
+  // connected: WebSocket 是否已連線
   const [connected, setConnected] = useState(false);
+  // loading: 是否正在載入/連線中
   const [loading, setLoading] = useState(true);
 
+  // 判斷目前語言是否為繁體中文
   const isZh = state.language === 'zh-TW';
 
+  // ============ 多語系翻譯 ============
   const translations = {
     title: isZh ? '即時位置追蹤' : 'Live Location Tracking',
     connecting: isZh ? '連線中...' : 'Connecting...',
@@ -43,6 +71,7 @@ export function SpecialistTrackingScreen() {
     travelers: isZh ? '旅客' : 'travelers',
   };
 
+  // 元件載入時初始化 WebSocket，卸載時斷開連線
   useEffect(() => {
     initSocket();
     return () => {
@@ -52,6 +81,12 @@ export function SpecialistTrackingScreen() {
     };
   }, []);
 
+  // ============ WebSocket 初始化 ============
+
+  /**
+   * 初始化 WebSocket 連線
+   * 設定連線、斷線、錯誤等事件監聽
+   */
   const initSocket = async () => {
     try {
       const token = await getToken();
@@ -60,21 +95,26 @@ export function SpecialistTrackingScreen() {
         return;
       }
 
+      // 建立 WebSocket 連線
       socketRef.current = io(API_BASE_URL, {
         auth: { token },
         transports: ['websocket', 'polling'],
       });
 
+      // 連線成功事件
       socketRef.current.on('connect', () => {
         setConnected(true);
         setLoading(false);
+        // 訂閱旅客位置更新
         socketRef.current?.emit('specialist_subscribe', {});
       });
 
+      // 斷線事件
       socketRef.current.on('disconnect', () => {
         setConnected(false);
       });
 
+      // 單一旅客位置更新事件
       socketRef.current.on('traveler_location', (data: TravelerLocation) => {
         setLocations(prev => {
           const updated = new Map(prev);
@@ -83,6 +123,7 @@ export function SpecialistTrackingScreen() {
         });
       });
 
+      // 所有活躍旅客位置事件
       socketRef.current.on('active_travelers', (data: { count: number; travelers: TravelerLocation[] }) => {
         const newLocations = new Map<string, TravelerLocation>();
         data.travelers.forEach(t => {
@@ -91,6 +132,7 @@ export function SpecialistTrackingScreen() {
         setLocations(newLocations);
       });
 
+      // 連線錯誤事件
       socketRef.current.on('connect_error', (error) => {
         console.error('Socket connection error:', error);
         setLoading(false);
@@ -101,6 +143,13 @@ export function SpecialistTrackingScreen() {
     }
   };
 
+  // ============ 格式化函數 ============
+
+  /**
+   * 格式化時間顯示
+   * @param timestamp - ISO 時間字串
+   * @returns 格式化後的時間字串（時:分:秒）
+   */
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString(isZh ? 'zh-TW' : 'en-US', {
@@ -110,8 +159,10 @@ export function SpecialistTrackingScreen() {
     });
   };
 
+  // 將 Map 轉為陣列以便渲染
   const locationArray = Array.from(locations.values());
 
+  // ============ Loading 畫面 ============
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -121,13 +172,17 @@ export function SpecialistTrackingScreen() {
     );
   }
 
+  // ============ 主畫面 JSX ============
   return (
     <View style={styles.container}>
+      {/* ============ 頁面標題區 ============ */}
       <View style={styles.header}>
+        {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
+        {/* 連線狀態標籤 */}
         <View style={[styles.connectionStatus, connected ? styles.statusConnected : styles.statusDisconnected]}>
           <View style={[styles.statusDot, connected ? styles.dotConnected : styles.dotDisconnected]} />
           <Text style={styles.statusText}>
@@ -136,8 +191,11 @@ export function SpecialistTrackingScreen() {
         </View>
       </View>
 
+      {/* ============ 主內容區 ============ */}
       <View style={styles.content}>
+        {/* ============ 地圖區域 ============ */}
         {Platform.OS === 'web' ? (
+          // 網頁版：顯示替代畫面
           <View style={styles.webMapPlaceholder}>
             <Ionicons name="map-outline" size={64} color="#94a3b8" />
             <Text style={styles.webMapText}>
@@ -148,6 +206,7 @@ export function SpecialistTrackingScreen() {
             </Text>
           </View>
         ) : (
+          // 原生版：地圖容器（需要 react-native-maps）
           <View style={styles.mapContainer}>
             <Text style={styles.mapPlaceholderText}>
               {isZh ? '地圖區域 - 需要 react-native-maps' : 'Map Area - requires react-native-maps'}
@@ -155,19 +214,24 @@ export function SpecialistTrackingScreen() {
           </View>
         )}
 
+        {/* ============ 旅客位置列表卡片 ============ */}
         <View style={styles.travelerListCard}>
           <Text style={styles.listTitle}>
             {isZh ? '旅客位置' : 'Traveler Locations'} ({locationArray.length})
           </Text>
           {locationArray.length === 0 ? (
+            // 空狀態顯示
             <Text style={styles.noDataText}>{translations.noLocations}</Text>
           ) : (
+            // 旅客位置列表
             <View style={styles.travelerList}>
               {locationArray.map(loc => (
                 <View key={loc.travelerId} style={styles.travelerItem}>
+                  {/* 旅客圖示 */}
                   <View style={styles.travelerIcon}>
                     <Ionicons name="person-circle" size={36} color="#6366f1" />
                   </View>
+                  {/* 旅客位置資訊 */}
                   <View style={styles.travelerDetails}>
                     <Text style={styles.travelerName}>
                       {loc.travelerName || `Traveler #${loc.travelerId.slice(-6)}`}
@@ -179,6 +243,7 @@ export function SpecialistTrackingScreen() {
                       {translations.lastUpdate}: {formatTime(loc.timestamp)}
                     </Text>
                   </View>
+                  {/* 定位按鈕 */}
                   <TouchableOpacity style={styles.focusButton}>
                     <Ionicons name="locate" size={20} color="#6366f1" />
                   </TouchableOpacity>
@@ -192,11 +257,14 @@ export function SpecialistTrackingScreen() {
   );
 }
 
+// ============ 樣式定義 ============
 const styles = StyleSheet.create({
+  // 容器樣式
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
   },
+  // 頁面標題樣式
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -216,6 +284,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#1e293b',
   },
+  // 連線狀態標籤樣式
   connectionStatus: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -246,6 +315,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#64748b',
   },
+  // Loading 狀態樣式
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
@@ -256,9 +326,11 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontSize: 16,
   },
+  // 主內容區樣式
   content: {
     flex: 1,
   },
+  // 網頁版地圖替代畫面樣式
   webMapPlaceholder: {
     height: 200,
     backgroundColor: '#e2e8f0',
@@ -276,6 +348,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#6366f1',
   },
+  // 原生版地圖容器樣式
   mapContainer: {
     height: 300,
     backgroundColor: '#e2e8f0',
@@ -286,6 +359,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontSize: 14,
   },
+  // 旅客列表卡片樣式
   travelerListCard: {
     flex: 1,
     backgroundColor: '#ffffff',
@@ -306,6 +380,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 40,
   },
+  // 旅客列表樣式
   travelerList: {
     gap: 12,
   },
@@ -330,6 +405,7 @@ const styles = StyleSheet.create({
     color: '#1e293b',
     marginBottom: 2,
   },
+  // 座標文字樣式（使用等寬字體）
   travelerCoords: {
     fontSize: 12,
     color: '#64748b',
@@ -340,6 +416,7 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     marginTop: 2,
   },
+  // 定位按鈕樣式
   focusButton: {
     width: 40,
     height: 40,
