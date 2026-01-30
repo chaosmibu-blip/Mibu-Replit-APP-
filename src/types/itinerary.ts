@@ -183,6 +183,7 @@ export interface AiChatRequest {
  * AI 對話上下文
  *
  * 用於傳遞累積的篩選條件和行程變更狀態
+ * v2.2.0 更新：新增 userPreferences 用戶偏好
  */
 export interface AiChatContext {
   currentFilters?: {                // 前一輪對話提取的篩選條件（累積傳遞）
@@ -203,6 +204,11 @@ export interface AiChatContext {
   changeType?: 'added' | 'removed' | 'reordered'; // 變更類型
   changedItem?: { name: string };   // 變更的項目
   excludedPlaces?: number[];        // 排除的地點 ID
+  userPreferences?: {               // v2.2.0 用戶偏好（用於個人化推薦）
+    favoriteCategories?: string[];  // 常去的分類
+    recentDistricts?: string[];     // 最近瀏覽的區域
+    collectionCount?: number;       // 圖鑑收藏數量
+  };
 }
 
 /**
@@ -316,17 +322,59 @@ export interface AiSuggestedPlace {
   locationLng?: number | null;       // 經度（v2.1.0）
 }
 
+// ============ V2.2 AI 意圖與動作型別 ============
+
+/**
+ * AI 偵測到的用戶意圖
+ * v2.2.0 新增
+ */
+export type AiDetectedIntent =
+  | 'plan'        // 規劃行程
+  | 'modify'      // 修改行程
+  | 'detail'      // 查詢詳情
+  | 'route'       // 路線優化
+  | 'chitchat'    // 閒聊
+  | 'unsupported'; // 不支援的請求
+
+/**
+ * AI 建議的下一步動作
+ * v2.2.0 新增
+ */
+export type AiNextAction =
+  | 'ask_preference'    // 詢問偏好
+  | 'show_suggestions'  // 顯示推薦
+  | 'confirm_add'       // 確認加入
+  | 'show_detail'       // 顯示詳情
+  | 'optimize_route'    // 優化路線
+  | null;
+
+/**
+ * AI 執行的動作結果
+ * v2.2.0 新增（Function Calling）
+ */
+export interface AiActionTaken {
+  type: 'query_detail' | 'optimize_route' | 'add_place' | 'remove_place' | 'none';
+  result?: unknown;  // 動作執行結果
+}
+
 /**
  * AI 對話回應
  * POST /api/itinerary/:id/ai-chat
  *
  * v2.1.0 更新：新增 extractedFilters 和 remainingCount
+ * v2.2.0 更新：新增 detectedIntent, nextAction, actionTaken（智慧意圖識別）
  */
 export interface AiChatResponse {
   success: boolean;                  // 是否成功
   message?: string;                  // 原訊息
   response: string;                  // AI 回覆
   suggestions: AiSuggestedPlace[];   // 建議景點
+
+  // v2.2.0 意圖識別
+  detectedIntent?: AiDetectedIntent; // AI 偵測到的意圖
+  nextAction?: AiNextAction;         // 建議的下一步動作
+  actionTaken?: AiActionTaken;       // 已執行的動作（Function Calling 結果）
+
   extractedFilters?: {               // 從本輪對話提取的篩選條件
     categories: string[];            // 大分類
     subcategories: string[];         // 子分類

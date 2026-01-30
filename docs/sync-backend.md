@@ -47,6 +47,36 @@ AI 應該只在**模糊需求**時才進入推薦模式（回傳 `suggestions`�
 
 ---
 
+### 2026-01-30 #027-V2.2：AI 對話升級 V2.2
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #027 V2.2 升級 |
+| 狀態 | ✅ 完成 |
+
+**新增型別定義**
+```typescript
+// src/types/itinerary.ts
+export type AiDetectedIntent = 'plan' | 'modify' | 'detail' | 'route' | 'chitchat' | 'unsupported';
+export type AiNextAction = 'ask_preference' | 'show_suggestions' | 'confirm_add' | 'show_detail' | 'optimize_route' | null;
+export interface AiActionTaken { type: string; result?: unknown; }
+```
+
+**AiChatResponse 新增欄位**
+- `detectedIntent` - AI 偵測到的意圖
+- `nextAction` - 建議的下一步動作
+- `actionTaken` - Function Calling 執行結果
+
+**AiChatContext 新增欄位**
+- `userPreferences` - 用戶偏好（favoriteCategories, recentDistricts, collectionCount）
+
+**前端處理邏輯**
+- `detectedIntent === 'chitchat' | 'unsupported'` 時不顯示推薦卡片
+- `actionTaken.type === 'add_place' | 'remove_place'` 時顯示成功訊息
+- 傳送 `userPreferences` 給後端用於個人化推薦
+
+---
+
 ### 2026-01-29 #036：帳號合併功能
 
 | 項目 | 內容 |
@@ -364,6 +394,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 027-V2.2 | 01-30 | AI 對話升級 V2.2（意圖識別 + Function Calling） | ✅ |
 | BUG | 01-30 | AI 對話無法自動加入景點到行程 | 🟡 待後端 |
 | 036 | 01-29 | 帳號合併功能 | ✅ |
 | 034 | 01-29 | 共用型別套件（@shared 模組） | ✅ |

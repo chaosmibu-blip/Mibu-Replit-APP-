@@ -248,14 +248,28 @@ export function ItineraryScreenV2() {
           context: aiContext ? {
             currentFilters: aiContext.currentFilters,
             excludedPlaces: aiContext.excludedPlaces,
+            // v2.2.0: 傳送用戶偏好（未來可從本地統計取得）
+            userPreferences: aiContext.userPreferences,
           } : undefined,
         },
         token
       );
 
       if (res.success) {
-        setMessages(prev => [...prev, { role: 'assistant', content: res.response }]);
-        setAiSuggestions(res.suggestions || []);
+        // v2.2.0: 根據 actionTaken 顯示操作結果
+        let responseText = res.response;
+        if (res.actionTaken?.type === 'add_place') {
+          responseText += isZh ? '\n\n✅ 已加入行程' : '\n\n✅ Added to itinerary';
+        } else if (res.actionTaken?.type === 'remove_place') {
+          responseText += isZh ? '\n\n✅ 已從行程移除' : '\n\n✅ Removed from itinerary';
+        }
+
+        setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
+
+        // v2.2.0: 根據 detectedIntent 決定是否顯示推薦
+        // chitchat 和 unsupported 不顯示推薦卡片
+        const shouldShowSuggestions = res.detectedIntent !== 'chitchat' && res.detectedIntent !== 'unsupported';
+        setAiSuggestions(shouldShowSuggestions ? (res.suggestions || []) : []);
 
         // 保存篩選條件
         if (res.extractedFilters) {
@@ -265,7 +279,7 @@ export function ItineraryScreenV2() {
           }));
         }
 
-        // 行程有更新時重新載入
+        // 行程有更新時重新載入（含 AI 自動操作）
         if (res.itineraryUpdated) {
           await fetchItineraryDetail(currentItinerary.id);
         }

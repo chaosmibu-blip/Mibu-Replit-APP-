@@ -453,6 +453,10 @@ class ItineraryApi extends ApiBase {
           message: string;
           response: string;
           suggestions: AiChatResponse['suggestions'];
+          // v2.2.0 新增欄位
+          detectedIntent?: AiChatResponse['detectedIntent'];
+          nextAction?: AiChatResponse['nextAction'];
+          actionTaken?: AiChatResponse['actionTaken'];
           extractedFilters?: AiChatResponse['extractedFilters'];
           remainingCount?: number;
           itineraryUpdated?: boolean;
@@ -470,6 +474,10 @@ class ItineraryApi extends ApiBase {
           message: result.message,
           response: result.response,
           suggestions: result.suggestions || [],
+          // v2.2.0 新增欄位
+          detectedIntent: result.detectedIntent,
+          nextAction: result.nextAction,
+          actionTaken: result.actionTaken,
           extractedFilters: result.extractedFilters,
           remainingCount: result.remainingCount,
           itineraryUpdated: result.itineraryUpdated,
