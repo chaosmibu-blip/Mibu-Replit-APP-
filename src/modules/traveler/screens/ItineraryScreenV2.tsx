@@ -184,6 +184,10 @@ export function ItineraryScreenV2() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedItineraryIds, setSelectedItineraryIds] = useState<number[]>([]);
 
+  // 【截圖 9-15 #5】預先載入快取
+  const itineraryCache = useRef<Record<number, Itinerary>>({});
+  const collectionCacheRef = useRef<AvailablePlacesByCategory[] | null>(null);
+
   // 【截圖 9】使用說明 Tooltip 狀態（淡入淡出）
   const [showHelpTooltip, setShowHelpTooltip] = useState(false);
   const helpTooltipOpacity = useRef(new Animated.Value(0)).current;
@@ -438,29 +442,59 @@ export function ItineraryScreenV2() {
     }
   }, [currentItinerary, getToken, fetchItineraryDetail, isZh, showToastMessage]);
 
-  // 【截圖 9-15 #13】切換行程 - 不清空對話，讓 fetchItineraryDetail 載入保存的對話
+  // 【截圖 9-15 #5 #13】切換行程 - 優先使用快取，提升體驗
   const handleSelectItinerary = useCallback(async (id: number) => {
     setActiveItineraryId(id);
     setAiContext(undefined);
     setAiSuggestions([]);
-    await fetchItineraryDetail(id);
-    closeLeftDrawer();
-  }, [fetchItineraryDetail]);
 
-  // 開啟「從圖鑑加入」Modal
+    // 【截圖 9-15 #5】優先使用快取
+    const cached = itineraryCache.current[id];
+    if (cached) {
+      setCurrentItinerary(cached);
+      // 載入保存的對話記錄
+      const savedMessages = await loadMessages(id);
+      if (savedMessages.length > 0) {
+        setMessages(savedMessages);
+      } else {
+        const city = cached.city || cached.country || '這裡';
+        const welcomeMessage: AiChatMessage = {
+          role: 'assistant',
+          content: `嗨！${city}之旅想怎麼玩？告訴我你的喜好，我來幫你安排行程 ✨`,
+        };
+        setMessages([welcomeMessage]);
+        saveMessages(id, [welcomeMessage]);
+      }
+    } else {
+      // 沒有快取時正常載入
+      await fetchItineraryDetail(id);
+    }
+    closeLeftDrawer();
+  }, [fetchItineraryDetail, loadMessages, saveMessages]);
+
+  // 【截圖 9-15 #5】開啟「從圖鑑加入」Modal - 優先使用快取
   const openAddPlacesModal = useCallback(async () => {
     if (!currentItinerary) return;
+
+    setAddPlacesModalVisible(true);
+    setSelectedCollectionIds([]);
+
+    // 優先使用快取
+    if (collectionCacheRef.current) {
+      setAvailablePlaces(collectionCacheRef.current);
+      setLoadingAvailable(false);
+      return;
+    }
+
     const token = await getToken();
     if (!token) return;
 
     setLoadingAvailable(true);
-    setAddPlacesModalVisible(true);
-    setSelectedCollectionIds([]);
-
     try {
       const res = await itineraryApi.getAvailablePlaces(currentItinerary.id, token);
       if (res.success) {
         setAvailablePlaces(res.categories);
+        collectionCacheRef.current = res.categories;
       }
     } catch (error) {
       console.error('Failed to fetch available places:', error);
@@ -854,6 +888,48 @@ export function ItineraryScreenV2() {
   //   3. 兩個 drawer 共用一個 overlayAnim，所以開/關時都要停止它
 
   /**
+   * 【截圖 9-15 #5】預先載入所有行程詳情
+   * 在開啟左側抽屜時背景載入，提升切換行程時的體驗
+   */
+  const preloadItineraries = useCallback(async () => {
+    const token = await getToken();
+    if (!token) return;
+
+    // 背景載入所有行程詳情
+    for (const item of itineraries) {
+      if (!itineraryCache.current[item.id]) {
+        try {
+          const res = await itineraryApi.getItinerary(item.id, token);
+          if (res.success) {
+            itineraryCache.current[item.id] = res.itinerary;
+          }
+        } catch (error) {
+          console.error(`Failed to preload itinerary ${item.id}:`, error);
+        }
+      }
+    }
+  }, [getToken, itineraries]);
+
+  /**
+   * 【截圖 9-15 #5】預先載入該城市的圖鑑內容
+   * 在開啟右側抽屜時背景載入，提升從圖鑑加入景點時的體驗
+   */
+  const preloadCollection = useCallback(async () => {
+    if (!currentItinerary || collectionCacheRef.current) return;
+    const token = await getToken();
+    if (!token) return;
+
+    try {
+      const res = await itineraryApi.getAvailablePlaces(currentItinerary.id, token);
+      if (res.success) {
+        collectionCacheRef.current = res.categories;
+      }
+    } catch (error) {
+      console.error('Failed to preload collection:', error);
+    }
+  }, [currentItinerary, getToken]);
+
+  /**
    * 開啟左側 Drawer（行程列表）
    */
   const openLeftDrawer = () => {
@@ -862,6 +938,8 @@ export function ItineraryScreenV2() {
     overlayAnim.stopAnimation();
     // 立即設定狀態，不等動畫完成
     setLeftDrawerOpen(true);
+    // 【截圖 9-15 #5】背景預先載入所有行程詳情
+    preloadItineraries();
     Animated.parallel([
       Animated.spring(leftDrawerAnim, {
         toValue: 0,
@@ -909,6 +987,8 @@ export function ItineraryScreenV2() {
     rightDrawerAnim.stopAnimation();
     overlayAnim.stopAnimation();
     setRightDrawerOpen(true);
+    // 【截圖 9-15 #5】背景預先載入該城市的圖鑑內容
+    preloadCollection();
     Animated.parallel([
       Animated.spring(rightDrawerAnim, {
         toValue: 0,
