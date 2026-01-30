@@ -29,7 +29,11 @@
       "Bash(done)",
       "Bash(sort:*)",
       "Bash(xargs find:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm view:*)",
+      "Bash(npm show:*)",
+      "Bash(npm install:*)",
+      "Bash(echo:*)"
     ]
   }
 }
