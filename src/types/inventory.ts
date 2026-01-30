@@ -71,6 +71,20 @@ export interface InventoryItem {
   couponData?: InventoryCouponData;    // 優惠券詳細資料
   placeName?: string;                  // 關聯的地點名稱
   city?: string;                       // 關聯的城市
+
+  // ============ 擴充欄位（UI 使用） ============
+  /** 稀有度別名（與 rarity 相同，向後兼容） */
+  tier?: CouponTier;
+  /** 優惠券標題（與 name 相同，向後兼容） */
+  title?: string;
+  /** 商家名稱（從 couponData 提取） */
+  merchantName?: string;
+  /** 是否已過期（計算欄位） */
+  isExpired?: boolean;
+  /** 是否已刪除（計算欄位，等同 status === 'deleted'） */
+  isDeleted?: boolean;
+  /** 背包格位索引（後端可能返回） */
+  slotIndex?: number;
 }
 
 // ============ API 回應 ============

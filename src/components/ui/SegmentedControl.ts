@@ -9,8 +9,6 @@
  *
  * 使用方式：
  * import { SegmentedControl } from '@/components/ui/SegmentedControl';
- * // 或
- * import SegmentedControl from '@/components/ui/SegmentedControl';
  */
 
-export { default, default as SegmentedControl } from '../../modules/shared/components/ui/SegmentedControl';
+export { SegmentedControl } from '../../modules/shared/components/ui/SegmentedControl';

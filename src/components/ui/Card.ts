@@ -6,8 +6,6 @@
  *
  * 使用方式：
  * import { Card } from '@/components/ui/Card';
- * // 或
- * import Card from '@/components/ui/Card';
  */
 
-export { default, default as Card } from '../../modules/shared/components/ui/Card';
+export { Card } from '../../modules/shared/components/ui/Card';

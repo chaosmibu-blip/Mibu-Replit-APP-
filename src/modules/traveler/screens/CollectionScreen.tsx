@@ -260,12 +260,17 @@ export function CollectionScreen() {
       const response = await collectionApi.getCollections(token, { sort: 'unread' });
       if (response.items) {
         // 將 CollectionItem 轉換為 GachaItemWithRead
-        const items: GachaItemWithRead[] = response.items.map(item => ({
-          id: item.placeId || item.id?.toString() || '',
+        const items = response.items.map(item => ({
+          id: parseInt(item.placeId || item.id?.toString() || '0', 10) || 0,
           placeId: item.placeId,
           placeName: item.placeName,
           description: item.description,
           category: item.category,
+          subcategory: null,
+          address: null,
+          rating: null,
+          locationLat: null,
+          locationLng: null,
           city: item.city,
           cityDisplay: item.cityDisplay,
           district: item.district,
@@ -276,7 +281,7 @@ export function CollectionScreen() {
           merchant: item.merchant,
           isCoupon: item.isCoupon,
           couponData: item.couponData,
-        }));
+        })) as GachaItemWithRead[];
         setApiCollection(items);
         setHasLoadedFromApi(true);
       }

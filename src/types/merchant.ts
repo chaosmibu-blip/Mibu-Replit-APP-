@@ -348,6 +348,12 @@ export interface MerchantPlace {
   isPromoActive: boolean;                     // 促銷是否啟用
   createdAt: string;                          // 建立時間
   updatedAt: string;                          // 更新時間
+
+  // ============ 擴充欄位（UI 向後兼容） ============
+  /** 連結 ID（舊版欄位） */
+  linkId?: string;
+  /** 是否已驗證（可由 status === 'approved' 判斷） */
+  isVerified?: boolean;
 }
 
 /**

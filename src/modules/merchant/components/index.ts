@@ -1,4 +1,4 @@
 /**
- * Merchant Components
+ * Merchant Components - 商家元件
  */
-export { default as MerchantRegistrationForm } from './MerchantRegistrationForm';
+export { MerchantRegistrationForm } from './MerchantRegistrationForm';

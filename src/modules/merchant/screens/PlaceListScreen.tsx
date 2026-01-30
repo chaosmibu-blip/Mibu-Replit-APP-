@@ -28,7 +28,7 @@ import { apiService } from '../../../services/api';
 import { MerchantPlace } from '../../../types';
 
 // ============ 主元件 ============
-export default function PlaceListScreen() {
+export function PlaceListScreen() {
   // ============ Hooks ============
   const { state, getToken } = useApp();
   const router = useRouter();

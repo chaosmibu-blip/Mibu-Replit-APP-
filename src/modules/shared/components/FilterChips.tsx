@@ -74,7 +74,7 @@ interface FilterChipsProps {
  * 根據 scrollable 參數決定使用 ScrollView 還是普通 View 作為容器。
  * 選中的晶片會變成棕色背景突顯。
  */
-export default function FilterChips({
+export function FilterChips({
   options,
   selected,
   onSelect,

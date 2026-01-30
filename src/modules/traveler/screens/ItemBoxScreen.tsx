@@ -127,11 +127,14 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
   // SP 級別的脈動動畫值
   const [pulseAnim] = useState(new Animated.Value(1));
 
+  // 取得稀有度（優先使用 tier，fallback 到 rarity）
+  const itemTier = item?.tier || item?.rarity;
+
   /**
    * SP 級別啟動脈動動畫
    */
   useEffect(() => {
-    if (item?.tier === 'SP') {
+    if (itemTier === 'SP') {
       const pulse = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, { toValue: 1.05, duration: 800, useNativeDriver: true }),
@@ -141,7 +144,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
       pulse.start();
       return () => pulse.stop();
     }
-  }, [item?.tier, pulseAnim]);
+  }, [itemTier, pulseAnim]);
 
   // ========== 空格狀態 ==========
   if (!item) {
@@ -167,7 +170,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
   }
 
   // ========== 有優惠券的格子 ==========
-  const tierStyle = TIER_STYLES[item.tier] || TIER_STYLES.R;
+  const tierStyle = TIER_STYLES[itemTier || 'R'] || TIER_STYLES.R;
   const isExpired = item.isExpired || Boolean(item.expiresAt && new Date(item.expiresAt) < new Date());
   const isDisabled = item.status === 'redeemed' || item.status === 'deleted' || isExpired;
   const timeRemaining = item.expiresAt && !isExpired ? getTimeRemaining(item.expiresAt) : null;
@@ -214,7 +217,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
 
       {/* 稀有度 icon */}
       <Ionicons
-        name={(TIER_ICONS[item.tier] || 'ticket') as any}
+        name={(TIER_ICONS[itemTier || 'R'] || 'ticket') as any}
         size={20}
         color={isDisabled ? '#9ca3af' : tierStyle.borderColor}
       />
@@ -228,7 +231,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
           marginTop: 2,
         }}
       >
-        {item.tier}
+        {itemTier || 'R'}
       </Text>
 
       {/* 已過期標籤 */}
@@ -292,7 +295,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
   );
 
   // SP 級別有脈動動畫包裝
-  if (item.tier === 'SP' && !isDisabled) {
+  if (itemTier === 'SP' && !isDisabled) {
     return (
       <TouchableOpacity
         onPress={() => onPress(item)}
@@ -366,8 +369,8 @@ export function ItemBoxScreen() {
       }
 
       const data = await apiService.getInventory(token);
-      // 過濾已刪除的項目
-      const inventoryItems = (data.items || []).filter(i => !i.isDeleted);
+      // 過濾已刪除的項目（檢查 isDeleted 或 status === 'deleted'）
+      const inventoryItems = (data.items || []).filter(i => !i.isDeleted && i.status !== 'deleted');
       setItems(inventoryItems);
       setSlotCount(data.slotCount || inventoryItems.length);
       setMaxSlots(data.maxSlots || MAX_SLOTS);
@@ -450,7 +453,8 @@ export function ItemBoxScreen() {
    * 長按優惠券：開啟刪除確認 Modal
    */
   const handleItemLongPress = (item: InventoryItem) => {
-    if (item.status === 'deleted' || item.isDeleted) return;
+    // 已刪除的項目不可操作
+    if (item.status === 'deleted' || item.isDeleted === true) return;
     setSelectedItem(item);
     setDeleteModalVisible(true);
   };
@@ -499,7 +503,7 @@ export function ItemBoxScreen() {
       }
     } catch (error: unknown) {
       // 處理特定錯誤
-      const errorMessage = error?.message || '';
+      const errorMessage = (error instanceof Error ? error.message : String(error)) || '';
       if (errorMessage.includes('expired') || errorMessage.includes('過期')) {
         Alert.alert(
           state.language === 'zh-TW' ? '已過期' : 'Expired',
@@ -582,10 +586,12 @@ export function ItemBoxScreen() {
   // ============================================================
 
   // 建立格子陣列，將優惠券放到對應位置
+  // 如果後端有提供 slotIndex 就用，否則依序填入
   const slots: (InventoryItem | null)[] = Array(maxSlots).fill(null);
-  items.forEach(item => {
-    if (item.slotIndex >= 0 && item.slotIndex < maxSlots) {
-      slots[item.slotIndex] = item;
+  items.forEach((item, index) => {
+    const slotIdx = item.slotIndex ?? index;
+    if (slotIdx >= 0 && slotIdx < maxSlots) {
+      slots[slotIdx] = item;
     }
   });
 
@@ -680,7 +686,8 @@ export function ItemBoxScreen() {
         {/* 各稀有度統計 */}
         <View style={{ flexDirection: 'row', marginTop: 12, gap: 8, flexWrap: 'wrap' }}>
           {(['SP', 'SSR', 'SR', 'S', 'R'] as CouponTier[]).map(tier => {
-            const count = items.filter(i => i.tier === tier && i.status === 'active').length;
+            // 檢查 tier 或 rarity 欄位
+            const count = items.filter(i => (i.tier || i.rarity) === tier && i.status === 'active').length;
             return (
               <View
                 key={tier}
@@ -733,8 +740,11 @@ export function ItemBoxScreen() {
         onRequestClose={() => setDetailModalVisible(false)}
       >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, borderWidth: 2, borderColor: selectedItem ? TIER_STYLES[selectedItem.tier]?.borderColor : MibuBrand.tan }}>
-            {selectedItem && (
+          <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, borderWidth: 2, borderColor: selectedItem ? TIER_STYLES[selectedItem.tier || selectedItem.rarity]?.borderColor : MibuBrand.tan }}>
+            {selectedItem && (() => {
+              const selTier = selectedItem.tier || selectedItem.rarity;
+              const selIsExpired = selectedItem.isExpired || Boolean(selectedItem.expiresAt && new Date(selectedItem.expiresAt) < new Date());
+              return (
               <>
                 {/* 稀有度圖示 */}
                 <View style={{ alignItems: 'center', marginBottom: 20 }}>
@@ -743,28 +753,28 @@ export function ItemBoxScreen() {
                       width: 80,
                       height: 80,
                       borderRadius: 40,
-                      backgroundColor: TIER_STYLES[selectedItem.tier]?.bgColor,
+                      backgroundColor: TIER_STYLES[selTier]?.bgColor,
                       alignItems: 'center',
                       justifyContent: 'center',
                       borderWidth: 3,
-                      borderColor: TIER_STYLES[selectedItem.tier]?.borderColor,
+                      borderColor: TIER_STYLES[selTier]?.borderColor,
                       marginBottom: 12,
                     }}
                   >
                     <Ionicons
-                      name={(TIER_ICONS[selectedItem.tier] || 'ticket') as any}
+                      name={(TIER_ICONS[selTier] || 'ticket') as any}
                       size={36}
-                      color={TIER_STYLES[selectedItem.tier]?.borderColor}
+                      color={TIER_STYLES[selTier]?.borderColor}
                     />
                   </View>
-                  <Text style={{ fontSize: 12, fontWeight: '700', color: TIER_STYLES[selectedItem.tier]?.borderColor }}>
-                    {selectedItem.tier} - {getTierLabel(selectedItem.tier)}
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: TIER_STYLES[selTier]?.borderColor }}>
+                    {selTier} - {getTierLabel(selTier)}
                   </Text>
                 </View>
 
                 {/* 優惠券標題 */}
                 <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark, textAlign: 'center', marginBottom: 8 }}>
-                  {selectedItem.title}
+                  {selectedItem.title || selectedItem.name}
                 </Text>
 
                 {/* 優惠券描述 */}
@@ -775,18 +785,18 @@ export function ItemBoxScreen() {
                 )}
 
                 {/* 商家名稱 */}
-                {selectedItem.merchantName && (
+                {(selectedItem.merchantName || selectedItem.couponData?.merchantName) && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                     <Ionicons name="storefront-outline" size={14} color={MibuBrand.copper} />
-                    <Text style={{ fontSize: 13, color: MibuBrand.copper, marginLeft: 6 }}>{selectedItem.merchantName}</Text>
+                    <Text style={{ fontSize: 13, color: MibuBrand.copper, marginLeft: 6 }}>{selectedItem.merchantName || selectedItem.couponData?.merchantName}</Text>
                   </View>
                 )}
 
                 {/* 有效期限 */}
                 {selectedItem.expiresAt && (
-                  <View style={{ backgroundColor: selectedItem.isExpired ? MibuBrand.error : MibuBrand.cream, padding: 12, borderRadius: 12, marginBottom: 20 }}>
-                    <Text style={{ fontSize: 12, color: selectedItem.isExpired ? '#ffffff' : MibuBrand.brown, textAlign: 'center' }}>
-                      {selectedItem.isExpired
+                  <View style={{ backgroundColor: selIsExpired ? MibuBrand.error : MibuBrand.cream, padding: 12, borderRadius: 12, marginBottom: 20 }}>
+                    <Text style={{ fontSize: 12, color: selIsExpired ? '#ffffff' : MibuBrand.brown, textAlign: 'center' }}>
+                      {selIsExpired
                         ? (state.language === 'zh-TW' ? '已過期' : 'Expired')
                         : `${state.language === 'zh-TW' ? '有效期至' : 'Valid until'} ${new Date(selectedItem.expiresAt).toLocaleDateString()}`
                       }
@@ -806,7 +816,7 @@ export function ItemBoxScreen() {
                   </TouchableOpacity>
 
                   {/* 核銷按鈕（僅限可用狀態） */}
-                  {selectedItem.status === 'active' && !selectedItem.isExpired && (
+                  {selectedItem.status === 'active' && !selIsExpired && (
                     <TouchableOpacity
                       onPress={handleOpenRedeem}
                       style={{ flex: 1, backgroundColor: MibuBrand.brown, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
@@ -818,7 +828,7 @@ export function ItemBoxScreen() {
                   )}
                 </View>
               </>
-            )}
+            );})()}
           </View>
         </View>
       </Modal>
@@ -881,9 +891,9 @@ export function ItemBoxScreen() {
 
                 {/* 優惠券資訊 */}
                 {selectedItem && (
-                  <View style={{ backgroundColor: MibuBrand.cream, borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: TIER_STYLES[selectedItem.tier]?.borderColor }}>
+                  <View style={{ backgroundColor: MibuBrand.cream, borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: TIER_STYLES[selectedItem.tier || selectedItem.rarity]?.borderColor }}>
                     <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark, marginBottom: 4 }}>
-                      {selectedItem.title}
+                      {selectedItem.title || selectedItem.name}
                     </Text>
                     {selectedItem.description && (
                       <Text style={{ fontSize: 13, color: MibuBrand.brownLight }}>{selectedItem.description}</Text>
@@ -968,7 +978,7 @@ export function ItemBoxScreen() {
             {selectedItem && (
               <View style={{ backgroundColor: MibuBrand.cream, borderRadius: 12, padding: 12, marginBottom: 20 }}>
                 <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.dark, textAlign: 'center' }}>
-                  {selectedItem.title}
+                  {selectedItem.title || selectedItem.name}
                 </Text>
               </View>
             )}

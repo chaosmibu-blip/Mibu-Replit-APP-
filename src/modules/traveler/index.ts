@@ -2,14 +2,14 @@
  * Traveler 模組 - 一般用戶：行程扭蛋、旅程策畫
  */
 
-// Screens
-export { default as GachaScreen } from './screens/GachaScreen';
-export { default as GachaModuleScreen } from './screens/GachaModuleScreen';
-export { default as ItemBoxScreen } from './screens/ItemBoxScreen';
-export { default as ItemsScreen } from './screens/ItemsScreen';
-export { default as CollectionScreen } from './screens/CollectionScreen';
-export { ItineraryScreenV2 as ItineraryScreen } from './screens/ItineraryScreenV2';
-export { default as PlannerScreen } from './screens/PlannerScreen';
+// Screens - 畫面元件
+export { GachaScreen } from './screens/GachaScreen';
+export { GachaModuleScreen } from './screens/GachaModuleScreen';
+export { ItemBoxScreen } from './screens/ItemBoxScreen';
+export { ItemsScreen } from './screens/ItemsScreen';
+export { CollectionScreen } from './screens/CollectionScreen';
+export { ItineraryScreenV2, ItineraryScreenV2 as ItineraryScreen } from './screens/ItineraryScreenV2';
+export { PlannerScreen } from './screens/PlannerScreen';
 export { EconomyScreen } from './screens/EconomyScreen';
 export { CrowdfundingScreen } from './screens/CrowdfundingScreen';
 export { CrowdfundingDetailScreen } from './screens/CrowdfundingDetailScreen';
@@ -17,7 +17,7 @@ export { ReferralScreen } from './screens/ReferralScreen';
 export { ContributionScreen } from './screens/ContributionScreen';
 export { FavoritesScreen } from './screens/FavoritesScreen';
 
-// Components
+// Components - 元件
 export { CouponWinAnimation, CouponPreviewCard } from './components';
 
 // 相關 API（從 services 重新匯出方便使用）

@@ -56,7 +56,7 @@ interface SearchInputProps {
  * 當輸入框有內容時，會在右側顯示清除按鈕。
  * 點擊清除按鈕會清空輸入並觸發 onClear 回調（如果有）。
  */
-export default function SearchInput({
+export function SearchInput({
   value,
   onChangeText,
   placeholder = '搜尋...',

@@ -106,6 +106,33 @@ class SpecialistApiService extends ApiBase {
       body: JSON.stringify(params),
     });
   }
+
+  /**
+   * 更新策劃師可接單狀態
+   *
+   * @param token - JWT Token
+   * @param isAvailable - 是否可接單
+   * @returns 更新後的策劃師資料
+   */
+  async updateSpecialistAvailability(token: string, isAvailable: boolean): Promise<{ specialist: SpecialistInfo }> {
+    return this.request<{ specialist: SpecialistInfo }>('/api/specialist/availability', {
+      method: 'PATCH',
+      headers: this.authHeaders(token),
+      body: JSON.stringify({ isAvailable }),
+    });
+  }
+
+  /**
+   * 獲取策劃師目前服務的旅客列表
+   *
+   * @param token - JWT Token
+   * @returns 旅客列表
+   */
+  async getSpecialistTravelers(token: string): Promise<{ travelers: Array<{ id: string; name: string; status: string }> }> {
+    return this.request<{ travelers: Array<{ id: string; name: string; status: string }> }>('/api/specialist/travelers', {
+      headers: this.authHeaders(token),
+    });
+  }
 }
 
 // ============ 匯出 ============

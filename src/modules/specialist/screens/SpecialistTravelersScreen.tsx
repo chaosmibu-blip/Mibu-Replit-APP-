@@ -86,7 +86,12 @@ export function SpecialistTravelersScreen() {
       if (!token) return;
 
       const response = await apiService.getSpecialistTravelers(token);
-      setTravelers(response.travelers || []);
+      // 將 API 回應轉換為 TravelerData 格式
+      const travelerData = (response.travelers || []).map((t: { id: string; name: string; status: string }) => ({
+        serviceRelation: { id: parseInt(t.id, 10) || 0, travelerId: t.id, specialistId: 0, status: t.status as 'active' | 'completed' | 'cancelled', createdAt: '' },
+        traveler: { id: t.id, firstName: t.name, lastName: '' },
+      })) as TravelerData[];
+      setTravelers(travelerData);
     } catch (error) {
       console.error('Failed to load travelers:', error);
     } finally {

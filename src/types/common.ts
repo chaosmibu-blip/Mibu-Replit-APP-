@@ -29,7 +29,7 @@ export {
   SOS_STATUSES,                            // SOS 狀態
   type MibuCategory,                       // Mibu 分類型別
   type CouponRarity as SharedCouponRarity, // 優惠券稀有度型別
-  type AchievementCategory,                // 成就分類型別
+  // AchievementCategory 由 economy.ts 定義，避免重複匯出
   type UserRole as SharedUserRole,         // 用戶角色型別
   type OrderStatus,                        // 訂單狀態型別
   type SosStatus,                          // SOS 狀態型別

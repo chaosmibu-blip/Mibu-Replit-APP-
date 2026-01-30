@@ -8,8 +8,6 @@
  *
  * 使用方式：
  * import { Select } from '@/components/ui/Select';
- * // 或
- * import Select from '@/components/ui/Select';
  */
 
-export { default, default as Select } from '../../modules/shared/components/ui/Select';
+export { Select } from '../../modules/shared/components/ui/Select';

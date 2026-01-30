@@ -155,7 +155,7 @@ app/
 | Screen 元件 | 對應路由 | 說明 |
 |-------------|----------|------|
 | `PlannerScreen.tsx` | `/planner` | 行程規劃 |
-| `ItineraryScreen.tsx` | - | 行程結果 |
+| `ItineraryScreenV2.tsx` | - | 行程結果（V2 版本） |
 | `LocationScreen.tsx` | - | 定位頁面 |
 | `LocationScreen.web.tsx` | - | 定位頁面 (Web 版) |
 | `ChatScreen.tsx` | - | 聊天頁面 |

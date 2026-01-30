@@ -55,7 +55,7 @@ interface CtaButtonProps {
  *
  * 設計為全寬使用，適合放在頁面底部作為主要操作按鈕。
  */
-export default function CtaButton({
+export function CtaButton({
   title,
   onPress,
   icon,

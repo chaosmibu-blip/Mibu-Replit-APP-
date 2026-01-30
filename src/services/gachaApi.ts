@@ -55,7 +55,7 @@ export const getDeviceId = async (): Promise<string> => {
       return await Application.getIosIdForVendorAsync() || '';
     } else if (Platform.OS === 'android') {
       // Android 使用 Android ID
-      return Application.androidId || '';
+      return await Application.getAndroidId() || '';
     }
     // Web 平台沒有 deviceId，回傳空字串
     return '';

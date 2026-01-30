@@ -178,6 +178,10 @@ class ApiService {
   redeemInventoryItem = inventoryApi.redeemInventoryItem.bind(inventoryApi);
   /** 取得背包數量統計 */
   getInventoryCount = inventoryApi.getInventoryCount.bind(inventoryApi);
+  /** 標記背包項目已讀 */
+  markInventoryItemRead = inventoryApi.markInventoryItemRead.bind(inventoryApi);
+  /** 取得背包容量統計 */
+  getInventoryCapacity = inventoryApi.getInventoryCapacity.bind(inventoryApi);
 
   // ============ Collection 圖鑑相關 ============
 
@@ -261,6 +265,10 @@ class ApiService {
   getSpecialistServices = specialistApi.getSpecialistServices.bind(specialistApi);
   /** 更新策劃師資料 */
   updateSpecialistProfile = specialistApi.updateSpecialistProfile.bind(specialistApi);
+  /** 更新策劃師可接單狀態 */
+  updateSpecialistAvailability = specialistApi.updateSpecialistAvailability.bind(specialistApi);
+  /** 取得策劃師服務的旅客列表 */
+  getSpecialistTravelers = specialistApi.getSpecialistTravelers.bind(specialistApi);
 
   // ============ Admin 管理員相關 ============
 

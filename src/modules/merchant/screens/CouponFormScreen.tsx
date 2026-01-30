@@ -29,7 +29,7 @@ const TIERS: { id: MerchantCouponTier; label: string; prob: string; color: strin
   { id: 'R', label: 'R', prob: '80%', color: MibuBrand.tierR },
 ];
 
-export default function CouponFormScreen() {
+export function CouponFormScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();

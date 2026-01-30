@@ -137,6 +137,25 @@ class InventoryApiService extends ApiBase {
   }
 
   /**
+   * 標記背包項目為已讀
+   *
+   * 後端在 GET 時自動標記為已讀，此方法為便利方法
+   *
+   * @param token - JWT Token
+   * @param itemId - 項目 ID
+   * @returns 更新後的項目
+   */
+  async markInventoryItemRead(token: string, itemId: number): Promise<{ success: boolean; item?: InventoryItem }> {
+    try {
+      const result = await this.getInventoryItem(token, itemId);
+      return { success: true, item: result.item };
+    } catch (error) {
+      console.error('[InventoryApi] markInventoryItemRead error:', error);
+      return { success: false };
+    }
+  }
+
+  /**
    * 刪除背包項目
    *
    * 用戶可主動丟棄不需要的物品
@@ -213,6 +232,23 @@ class InventoryApiService extends ApiBase {
       headers: this.authHeaders(token),
       body: JSON.stringify(params),
     });
+  }
+
+  /**
+   * 獲取背包容量統計
+   *
+   * 快速取得背包使用量，不含詳細資料
+   *
+   * @param token - JWT Token
+   * @returns 容量統計 { used, max }
+   */
+  async getInventoryCapacity(token: string): Promise<{ used: number; max: number }> {
+    // 目前後端沒有獨立的 capacity API，透過 getInventory 計算
+    const data = await this.getInventory(token);
+    return {
+      used: data.slotCount || 0,
+      max: data.maxSlots || 30,
+    };
   }
 
   // ============ 本地配置（不需要後端 API） ============

@@ -352,19 +352,17 @@ export function GachaScreen() {
     setLoadingRarity(true);
 
     try {
-      const result = await apiService.getRarityConfig();
-      if (result.config) {
-        const config = result.config;
-        // 依機率高到低排序
-        const probArray = [
-          { rarity: 'R', probability: config.rRate },
-          { rarity: 'S', probability: config.sRate },
-          { rarity: 'SR', probability: config.srRate },
-          { rarity: 'SSR', probability: config.ssrRate },
-          { rarity: 'SP', probability: config.spRate },
-        ].sort((a, b) => b.probability - a.probability);
-        setRarityConfig(probArray);
-      }
+      const result = apiService.getRarityConfig();
+      // getRarityConfig 返回 { SP: { rate, color }, SSR: { rate, color }, ... }
+      // 依機率高到低排序
+      const probArray = [
+        { rarity: 'R', probability: result.R.rate },
+        { rarity: 'S', probability: result.S.rate },
+        { rarity: 'SR', probability: result.SR.rate },
+        { rarity: 'SSR', probability: result.SSR.rate },
+        { rarity: 'SP', probability: result.SP.rate },
+      ].sort((a, b) => b.probability - a.probability);
+      setRarityConfig(probArray);
     } catch (error) {
       console.error('Failed to load rarity config:', error);
       // 使用預設值
@@ -582,7 +580,7 @@ export function GachaScreen() {
       // ========== 轉換 API 回應為 GachaItem ==========
       const couponsWon = response.couponsWon || [];
 
-      const items: GachaItem[] = itineraryItems.map((item: ItineraryItemRaw, index: number) => {
+      const items = itineraryItems.map((item: ItineraryItemRaw, index: number) => {
         // 判斷是否有商家優惠券
         const hasMerchantCoupon = item.isCoupon || item.couponWon || (item.merchantPromo?.isPromoActive && item.couponWon);
         const place = item.place || item;
@@ -624,7 +622,7 @@ export function GachaScreen() {
           } : undefined,
           rarity: item.rarity || 'N',
         };
-      });
+      }) as GachaItem[];
 
       // 更新每日計數
       await incrementDailyCount();
@@ -1064,7 +1062,7 @@ export function GachaScreen() {
             </Text>
           </View>
           <TouchableOpacity
-            onPress={() => router.push('/(tabs)/collection/itembox')}
+            onPress={() => router.push('/(tabs)/collection' as any)}
             style={{
               backgroundColor: SemanticColors.errorDark,
               paddingHorizontal: 14,
@@ -1396,7 +1394,7 @@ export function GachaScreen() {
       <TutorialOverlay
         storageKey="gacha_tutorial"
         steps={GACHA_TUTORIAL_STEPS}
-        language={state.language}
+        language={state.language as 'zh-TW' | 'en'}
       />
     </ScrollView>
   );

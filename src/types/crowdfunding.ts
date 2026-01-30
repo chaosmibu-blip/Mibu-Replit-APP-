@@ -97,8 +97,10 @@ export interface CampaignsResponse {
 export interface ContributeParams {
   campaignId: string;             // 活動 ID
   amount: number;                 // 贊助金額
-  receiptData: string;            // IAP 收據資料
-  platform: 'ios' | 'android';    // 平台
+  receiptData?: string;           // IAP 收據資料（可選）
+  platform?: 'ios' | 'android';   // 平台（可選）
+  rewardTier?: string;            // 回饋等級（可選）
+  transactionId?: string;         // 交易 ID（測試用）
 }
 
 /**

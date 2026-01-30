@@ -57,7 +57,7 @@ interface StatCardProps {
  * 設計為 flex: 1，方便在水平排列中平均分配寬度。
  * 通常會多個 StatCard 並排使用。
  */
-export default function StatCard({
+export function StatCard({
   label,
   value,
   change,

@@ -28,7 +28,7 @@ const CATEGORIES = [
   { id: 'education', label: '文化教育', labelEn: 'Education', icon: 'school' },
 ];
 
-export default function NewPlaceScreen() {
+export function NewPlaceScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';

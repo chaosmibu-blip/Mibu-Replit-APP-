@@ -20,7 +20,7 @@ import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { PlaceSearchResult } from '../../../types';
 
-export default function ClaimPlaceScreen() {
+export function ClaimPlaceScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
   const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
@@ -60,7 +60,8 @@ export default function ClaimPlaceScreen() {
       setSearchResults(data.places || []);
     } catch (error: unknown) {
       console.error('Search failed:', error);
-      if (error.message === 'UNAUTHORIZED') {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage === 'UNAUTHORIZED') {
         router.push('/login');
         return;
       }

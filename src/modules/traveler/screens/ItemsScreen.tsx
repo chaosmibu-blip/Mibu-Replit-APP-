@@ -140,7 +140,11 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
 
   // 優惠券資訊
   const hasCoupon = item.couponData;
-  const couponText = item.couponData?.title || '';
+  // 處理 title 可能是 LocalizedContent 或 string
+  const titleVal = item.couponData?.title;
+  const couponText = typeof titleVal === 'string'
+    ? titleVal
+    : (titleVal as { [key: string]: string })?.[language] || (titleVal as { [key: string]: string })?.['zh-TW'] || '';
   const couponCode = item.couponData?.code || '';
 
   return (

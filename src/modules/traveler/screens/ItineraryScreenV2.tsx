@@ -1047,7 +1047,7 @@ export function ItineraryScreenV2() {
                             { color: categoryToken.badgeText },
                           ]}
                         >
-                          {categoryToken.label || getPlaceCategory(place)}
+                          {getPlaceCategory(place)}
                         </Text>
                       </View>
                     </View>

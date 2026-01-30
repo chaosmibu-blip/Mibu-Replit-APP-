@@ -36,7 +36,7 @@ const TIER_PROBABILITY: Record<MerchantCouponTier, string> = {
   R: '80%',
 };
 
-export default function CouponListScreen() {
+export function CouponListScreen() {
   const { state, getToken } = useApp();
   const router = useRouter();
   const isZh = state.language === 'zh-TW';

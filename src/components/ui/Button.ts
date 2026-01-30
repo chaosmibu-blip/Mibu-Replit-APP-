@@ -6,8 +6,6 @@
  *
  * 使用方式：
  * import { Button } from '@/components/ui/Button';
- * // 或
- * import Button from '@/components/ui/Button';
  */
 
-export { default, default as Button } from '../../modules/shared/components/ui/Button';
+export { Button } from '../../modules/shared/components/ui/Button';
