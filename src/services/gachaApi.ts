@@ -31,6 +31,7 @@ import {
   GachaQuotaResponse,
   SubmitTripResponse,
 } from '../types';
+import type { V2GachaPullRequest, V2GachaPullResponse } from '@chaosmibu-blip/mibu-shared';
 import * as Application from 'expo-application';
 import { Platform } from 'react-native';
 
@@ -284,6 +285,56 @@ class GachaApiService extends ApiBase {
     if (params.city) queryParams.append('city', params.city);
 
     return this.request(`/api/place/promo?${queryParams}`);
+  }
+
+  // ============ V2 API ============
+
+  /**
+   * V2 扭蛋抽取
+   *
+   * 新版扭蛋 API，回傳更完整的卡片資訊
+   * 包含：地點詳情、優惠券、每日額度狀態
+   *
+   * @param params - 抽取參數
+   * @param params.regionId - 地區 ID
+   * @param params.city - 城市名稱
+   * @param params.district - 區域名稱
+   * @param params.count - 抽取數量（預設 5）
+   * @param params.deviceId - 裝置識別碼（防刷機制）
+   * @param token - JWT Token（可選）
+   * @returns V2 格式的抽取結果
+   */
+  async pullGachaV2(params: V2GachaPullRequest, token?: string): Promise<V2GachaPullResponse> {
+    const url = `${this.baseUrl}/api/v2/gacha/pull`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    console.log('🎰 [Gacha V2] Calling API:', url);
+    console.log('🎰 [Gacha V2] Params:', JSON.stringify(params));
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(params),
+    });
+
+    console.log('🎰 [Gacha V2] Response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('🎰 [Gacha V2] Error:', errorData);
+      throw new Error(errorData.error || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('🎰 [Gacha V2] Success:', data.cards?.length || 0, 'cards');
+    return data;
   }
 
   // ============ #009 新增 ============

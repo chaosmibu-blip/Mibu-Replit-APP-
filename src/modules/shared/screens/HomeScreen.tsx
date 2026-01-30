@@ -23,7 +23,11 @@ import {
   RefreshControl,
   Image,
   Platform,
+  Dimensions,
 } from 'react-native';
+
+// 取得螢幕高度，用於計算活動內容區最小高度
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
@@ -445,7 +449,7 @@ export function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* ========== 活動內容區（根據選中的 Tab 顯示）========== */}
+      {/* ========== 活動內容區（延伸到底部）========== */}
       <View style={styles.eventContentContainer}>
         {/* 公告內容 */}
         {activeEventTab === 'announcements' && (
@@ -570,9 +574,6 @@ export function HomeScreen() {
           </View>
         )}
       </View>
-
-      {/* 底部間距（避免被 TabBar 遮擋） */}
-      <View style={styles.bottomSpacer} />
     </ScrollView>
   );
 }
@@ -593,9 +594,9 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
   },
   content: {
+    flexGrow: 1,
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
-    paddingBottom: 120,
   },
 
   // 頂部問候區
@@ -833,17 +834,19 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
   },
 
-  // 活動內容區
+  // 活動內容區（延伸到底部）
+  // 使用 minHeight 確保內容區延伸到螢幕底部
+  // 計算：螢幕高度 - 頂部內容估算高度(~420px) - 底部 Tab Bar(~90px)
   eventContentContainer: {
-    minHeight: 150,
+    minHeight: SCREEN_HEIGHT - 420 - 90,
     backgroundColor: MibuBrand.warmWhite,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
     borderWidth: 1,
     borderTopWidth: 0,
     borderColor: MibuBrand.tanLight,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
     padding: 16,
-    marginBottom: 16,
+    paddingBottom: 100, // 底部 Tab Bar 間距
   },
   tabEmptyState: {
     alignItems: 'center',
@@ -934,8 +937,4 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 
-  // 底部間距
-  bottomSpacer: {
-    height: 40,
-  },
 });

@@ -21,6 +21,23 @@
 
 讀完再動手。
 
+### 共用套件檢查
+
+每次開工前，確認 `@chaosmibu-blip/mibu-shared` 是否為最新版本：
+
+```bash
+# 查看目前安裝版本
+npm list @chaosmibu-blip/mibu-shared
+
+# 查看最新版本（需要 NPM_TOKEN）
+npm view @chaosmibu-blip/mibu-shared version
+
+# 更新到最新版
+npm update @chaosmibu-blip/mibu-shared
+```
+
+**注意**：需要設定 `NPM_TOKEN` 環境變數才能存取 GitHub Packages。
+
 ---
 
 ## 我的價值觀
@@ -59,6 +76,46 @@
 1. 用戶路徑走一遍 — 進得來、用得順、出得去、爆了會怎樣
 2. 該記的記 — 新知識更新 memory，踩的坑寫進教訓
 3. 該刪的刪 — 過時資訊移除，別讓未來的自己被誤導
+4. 加註解 — 改過的程式碼要加中文註解（見下方規範）
+```
+
+### 程式碼註解規範
+
+每次修改程式碼後，必須加上中文註解：
+
+**函數/方法**
+```typescript
+/**
+ * 函數用途說明
+ *
+ * @param paramName - 參數說明
+ * @returns 回傳值說明
+ */
+```
+
+**區塊/邏輯**
+```typescript
+// ========== 區塊標題 ==========
+// 這段邏輯在做什麼
+// - 步驟 1
+// - 步驟 2
+```
+
+**樣式**
+```typescript
+/** 樣式用途說明 */
+styleName: {
+  // 特殊屬性說明
+  propertyName: value,
+},
+```
+
+**重要變更**
+```typescript
+// 變更說明（#issue編號 或日期）
+// - 原本：舊做法
+// - 現在：新做法
+// - 原因：為什麼改
 ```
 
 ### 接到 UI 任務時
@@ -187,6 +244,7 @@ import { Spacing, Radius, FontSize, Shadow, CommonStyles } from '@/theme/designT
 | 圖片、字體、i18n | `docs/memory-assets.md` |
 | Design Token 定義 | `src/theme/designTokens.ts` |
 | 品牌色彩定義 | `constants/Colors.ts` |
+| **共用型別套件** | `@chaosmibu-blip/mibu-shared`（v1.0.1） |
 
 ### 更新原則
 - **新的取代舊的** — 發現過時資訊，直接改

@@ -604,7 +604,22 @@ export function ItineraryScreenV2() {
   }, [newItinerary.countryId, loadRegions]);
 
   // ===== Drawer 控制 =====
+  // 【截圖 0 修復】連續開關會卡住的問題
+  // 問題：快速連續點擊開關按鈕時，drawer 會卡在中間位置
+  // 原因：前一個動畫還在執行時，新動畫就啟動，造成狀態不一致
+  // 解法：
+  //   1. 在啟動新動畫前，先呼叫 stopAnimation() 停止進行中的動畫
+  //   2. 立即設定 state（不要等動畫完成才設定）
+  //   3. 兩個 drawer 共用一個 overlayAnim，所以開/關時都要停止它
+
+  /**
+   * 開啟左側 Drawer（行程列表）
+   */
   const openLeftDrawer = () => {
+    // 停止進行中的動畫，避免動畫衝突
+    leftDrawerAnim.stopAnimation();
+    overlayAnim.stopAnimation();
+    // 立即設定狀態，不等動畫完成
     setLeftDrawerOpen(true);
     Animated.parallel([
       Animated.spring(leftDrawerAnim, {
@@ -621,7 +636,15 @@ export function ItineraryScreenV2() {
     ]).start();
   };
 
+  /**
+   * 關閉左側 Drawer
+   */
   const closeLeftDrawer = () => {
+    // 停止進行中的動畫
+    leftDrawerAnim.stopAnimation();
+    overlayAnim.stopAnimation();
+    // 立即設定狀態（重要！不要放在 .start() callback 裡）
+    setLeftDrawerOpen(false);
     Animated.parallel([
       Animated.spring(leftDrawerAnim, {
         toValue: -DRAWER_WIDTH,
@@ -634,10 +657,16 @@ export function ItineraryScreenV2() {
         duration: 200,
         useNativeDriver: true,
       }),
-    ]).start(() => setLeftDrawerOpen(false));
+    ]).start();
   };
 
+  /**
+   * 開啟右側 Drawer（景點列表）
+   */
   const openRightDrawer = () => {
+    // 停止進行中的動畫
+    rightDrawerAnim.stopAnimation();
+    overlayAnim.stopAnimation();
     setRightDrawerOpen(true);
     Animated.parallel([
       Animated.spring(rightDrawerAnim, {
@@ -654,7 +683,15 @@ export function ItineraryScreenV2() {
     ]).start();
   };
 
+  /**
+   * 關閉右側 Drawer
+   */
   const closeRightDrawer = () => {
+    // 停止進行中的動畫
+    rightDrawerAnim.stopAnimation();
+    overlayAnim.stopAnimation();
+    // 立即設定狀態
+    setRightDrawerOpen(false);
     Animated.parallel([
       Animated.spring(rightDrawerAnim, {
         toValue: DRAWER_WIDTH,
@@ -667,7 +704,7 @@ export function ItineraryScreenV2() {
         duration: 200,
         useNativeDriver: true,
       }),
-    ]).start(() => setRightDrawerOpen(false));
+    ]).start();
   };
 
   // ===== 未登入狀態 =====

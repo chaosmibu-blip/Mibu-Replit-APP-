@@ -204,12 +204,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'flex-end',
   },
-  /** Modal 內容區：從底部彈出，圓角頂部 */
+  /**
+   * Modal 內容區：從底部彈出，圓角頂部
+   *
+   * 【截圖 2 修改】高度改為自適應
+   * - 原本：height: '65%'（固定高度，選項少時顯得很空）
+   * - 現在：maxHeight: '65%'（最大高度，選項少時自動縮小）
+   * - 效果：國家選單只有台灣一個選項時，不會顯得太空
+   */
   modalContent: {
     backgroundColor: MibuBrand.warmWhite,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    height: '65%',
+    maxHeight: '65%',
+    paddingBottom: 34, // Safe area for bottom
   },
   /** Modal 標題列：左右對齊 */
   modalHeader: {
