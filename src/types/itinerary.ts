@@ -97,25 +97,32 @@ export interface ItinerarySummary {
 
 /**
  * 可加入行程的景點（來自圖鑑）
+ *
+ * 對應後端 GET /api/itinerary/:id/available-places 的 places 項目
+ * 注意：category 在父層 AvailablePlacesByCategory 提供，不在單一景點內
  */
 export interface AvailablePlaceItem {
+  id: number;              // 項目 ID
   collectionId: number;    // 圖鑑收藏 ID（V2 主要識別符）
   placeId: number;         // 地點 ID
   name: string;            // 地點名稱
-  nameEn?: string;         // 英文名稱
-  category: PlaceCategory; // 分類
-  imageUrl?: string;       // 圖片 URL
+  address?: string;        // 地址
+  city?: string;           // 城市
+  district?: string;       // 區域
+  nameEn?: string;         // 英文名稱（可選）
+  imageUrl?: string;       // 圖片 URL（可選）
 }
 
 /**
  * 按分類分組的可用景點
  *
  * 用於景點選擇器的分類顯示
+ * 注意：category 是字串（如 "美食"），不是 PlaceCategory 列舉
  */
 export interface AvailablePlacesByCategory {
-  category: PlaceCategory;         // 分類
-  categoryName: string;            // 分類顯示名稱
-  places: AvailablePlaceItem[];    // 該分類下的景點
+  category: string;                  // 分類名稱（如 "美食"、"景點"）
+  categoryName: string;              // 分類顯示名稱
+  places: AvailablePlaceItem[];      // 該分類下的景點
 }
 
 // ============ API 請求型別 ============

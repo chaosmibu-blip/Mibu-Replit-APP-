@@ -1206,12 +1206,13 @@ export function ItineraryScreenV2() {
             contentContainerStyle={styles.modalScrollContent}
             showsVerticalScrollIndicator={false}
           >
-            {availablePlaces.map(category => (
-              <View key={category.category} style={styles.modalCategorySection}>
-                <Text style={styles.modalCategoryTitle}>{category.categoryName}</Text>
-                {category.places.map(place => {
+            {availablePlaces.map(categoryGroup => (
+              <View key={categoryGroup.category} style={styles.modalCategorySection}>
+                <Text style={styles.modalCategoryTitle}>{categoryGroup.categoryName}</Text>
+                {categoryGroup.places.map(place => {
                   const isSelected = selectedCollectionIds.includes(place.collectionId);
-                  const categoryToken = getCategoryToken(place.category);
+                  // 使用父層的 category，因為後端不在 place 內提供 category
+                  const categoryToken = getCategoryToken(categoryGroup.category);
                   return (
                     <TouchableOpacity
                       key={place.collectionId}

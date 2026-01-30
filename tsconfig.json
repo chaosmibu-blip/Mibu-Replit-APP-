@@ -8,10 +8,10 @@
         "./*"
       ],
       "@shared/*": [
-        "./shared/*"
+        "./node_modules/@chaosmibu-blip/mibu-shared/dist/*"
       ],
       "@shared": [
-        "./shared"
+        "./node_modules/@chaosmibu-blip/mibu-shared/dist"
       ]
     }
   },
