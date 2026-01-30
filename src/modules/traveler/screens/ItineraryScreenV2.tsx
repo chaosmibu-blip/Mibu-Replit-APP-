@@ -131,6 +131,31 @@ const getPlaceCategory = (place: ItineraryPlaceItem) => {
   return place.category ?? place.place?.category ?? 'other';
 };
 
+/**
+ * 【截圖 9】取得城市專屬的 AI 頭像
+ * 根據城市名稱返回對應的頭像，用戶可以上傳不同城市的 MIBU 頭像
+ * 目前使用預設圖片，之後會根據城市切換
+ *
+ * @param city 城市名稱
+ * @returns 對應的頭像 source
+ */
+const getCityAvatar = (city: string | undefined) => {
+  // TODO: 根據城市載入不同頭像
+  // 目前使用預設頭像，之後可以擴展城市頭像映射
+  // 例如: { '台北市': require('...taipei.png'), '高雄市': require('...kaohsiung.png') }
+  const defaultAvatar = require('../../../../assets/images/icon.png');
+
+  // 城市頭像映射（之後擴展）
+  // const cityAvatars: Record<string, any> = {
+  //   '台北市': require('../../../../assets/images/avatars/taipei.png'),
+  //   '高雄市': require('../../../../assets/images/avatars/kaohsiung.png'),
+  //   // ... 更多城市
+  // };
+  // return city && cityAvatars[city] ? cityAvatars[city] : defaultAvatar;
+
+  return defaultAvatar;
+};
+
 export function ItineraryScreenV2() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -153,6 +178,10 @@ export function ItineraryScreenV2() {
   // Drawer 狀態
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
   const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
+
+  // 【截圖 9】使用說明 Tooltip 狀態（淡入淡出）
+  const [showHelpTooltip, setShowHelpTooltip] = useState(false);
+  const helpTooltipOpacity = useRef(new Animated.Value(0)).current;
 
   // 從圖鑑加入景點 Modal 狀態
   const [addPlacesModalVisible, setAddPlacesModalVisible] = useState(false);
@@ -603,6 +632,28 @@ export function ItineraryScreenV2() {
     }
   }, [newItinerary.countryId, loadRegions]);
 
+  /**
+   * 【截圖 9】顯示使用說明 Tooltip（淡入淡出，持續 3 秒）
+   */
+  const showHelpInfo = useCallback(() => {
+    setShowHelpTooltip(true);
+    // 淡入
+    Animated.timing(helpTooltipOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      // 持續 3 秒後淡出
+      setTimeout(() => {
+        Animated.timing(helpTooltipOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setShowHelpTooltip(false));
+      }, 3000);
+    });
+  }, [helpTooltipOpacity]);
+
   // ===== Drawer 控制 =====
   // 【截圖 0 修復】連續開關會卡住的問題
   // 問題：快速連續點擊開關按鈕時，drawer 會卡在中間位置
@@ -795,20 +846,32 @@ export function ItineraryScreenV2() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* AI 歡迎區塊 */}
+        {/* 【截圖 9 修改】AI 歡迎區塊 - 移除圖片、文字置中、左上角加說明按鈕 */}
         <View style={styles.welcomeCard}>
-          <View style={styles.welcomeIconContainer}>
-            <Image
-              source={require('../../../../assets/images/icon.png')}
-              style={styles.welcomeIcon}
-              resizeMode="contain"
-            />
-          </View>
+          {/* 左上角驚嘆號按鈕 - 點擊顯示使用說明（淡入淡出 tooltip） */}
+          <TouchableOpacity
+            style={styles.helpButton}
+            onPress={showHelpInfo}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="help-circle-outline" size={22} color={MibuBrand.copper} />
+          </TouchableOpacity>
           <Text style={styles.welcomeTitle}>Mibu {isZh ? '行程助手' : 'Trip Assistant'}</Text>
           <Text style={styles.welcomeSubtitle}>
             {isZh ? '告訴我你想去哪，我來幫你安排' : 'Tell me where you want to go'}
           </Text>
         </View>
+
+        {/* 【截圖 9】使用說明 Tooltip（淡入淡出 3 秒） */}
+        {showHelpTooltip && (
+          <Animated.View style={[styles.helpTooltip, { opacity: helpTooltipOpacity }]}>
+            <Text style={styles.helpTooltipText}>
+              {isZh
+                ? '💡 告訴我你的旅遊偏好，我會推薦景點並加入行程。點擊右上角查看行程表！'
+                : '💡 Tell me your preferences, I\'ll recommend places. Tap top-right to view itinerary!'}
+            </Text>
+          </Animated.View>
+        )}
 
         {/* 對話訊息 */}
         {messages.map((msg, index) => (
@@ -819,10 +882,11 @@ export function ItineraryScreenV2() {
               msg.role === 'user' ? styles.userMessageRow : styles.assistantMessageRow,
             ]}
           >
+            {/* 【截圖 9 修改】AI 頭像根據城市可更換 */}
             {msg.role === 'assistant' && (
               <View style={styles.avatarContainer}>
                 <Image
-                  source={require('../../../../assets/images/icon.png')}
+                  source={getCityAvatar(currentItinerary?.city)}
                   style={styles.avatarIcon}
                   resizeMode="contain"
                 />
@@ -847,11 +911,12 @@ export function ItineraryScreenV2() {
         ))}
 
         {/* AI 載入中 */}
+        {/* 【截圖 9 修改】AI 頭像根據城市可更換 */}
         {aiLoading && (
           <View style={[styles.messageRow, styles.assistantMessageRow]}>
             <View style={styles.avatarContainer}>
               <Image
-                source={require('../../../../assets/images/icon.png')}
+                source={getCityAvatar(currentItinerary?.city)}
                 style={styles.avatarIcon}
                 resizeMode="contain"
               />
@@ -1562,21 +1627,20 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: Radius.xl,
     padding: Spacing.xl,
+    paddingTop: Spacing.lg,
     marginBottom: Spacing.xl,
+    position: 'relative',
     ...Shadow.md,
   },
-  welcomeIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: Radius.full,
-    backgroundColor: MibuBrand.highlight,
+  // 【截圖 9】左上角說明按鈕
+  helpButton: {
+    position: 'absolute',
+    top: Spacing.md,
+    left: Spacing.md,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
-  welcomeIcon: {
-    width: 40,
-    height: 40,
   },
   welcomeTitle: {
     fontSize: FontSize.xl,
@@ -2134,6 +2198,21 @@ const styles = StyleSheet.create({
   },
   createChipTextSelected: {
     color: MibuBrand.warmWhite,
+  },
+
+  // ===== 【截圖 9】使用說明 Tooltip 樣式（淡入淡出） =====
+  helpTooltip: {
+    backgroundColor: MibuBrand.brownDark,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    ...Shadow.md,
+  },
+  helpTooltipText: {
+    fontSize: FontSize.sm,
+    color: MibuBrand.warmWhite,
+    lineHeight: 20,
+    textAlign: 'center',
   },
 });
 
