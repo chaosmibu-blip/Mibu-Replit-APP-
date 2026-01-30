@@ -16,24 +16,20 @@ modules = ["nodejs-22", "python-3.11"]
 [nix]
 channel = "stable-24_05"
 
-# ============ 端口映射 ============
-# localPort: Replit 容器內的端口
-# externalPort: 對外暴露的端口
-
 [[ports]]
 localPort = 3001
 externalPort = 3001
 
 [[ports]]
-localPort = 5000        # Expo Web 開發伺服器
-externalPort = 80       # 對外映射為 80（主要 Web 入口）
+localPort = 5000
+externalPort = 80
 
 [[ports]]
 localPort = 5001
 externalPort = 3002
 
 [[ports]]
-localPort = 8081        # Metro Bundler 預設端口
+localPort = 8081
 externalPort = 80
 
 [[ports]]
