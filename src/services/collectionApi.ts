@@ -28,7 +28,6 @@ import {
   GachaItem,
   CollectionItem,
   CollectionResponse,
-  PaginationParams,
   FavoritesResponse,
   FavoriteItem,
   FavoriteStatusResponse,
@@ -74,22 +73,15 @@ export interface CollectionStatsResponse {
 class CollectionApiService extends ApiBase {
 
   /**
-   * 獲取用戶收藏列表
+   * 獲取用戶圖鑑列表（回傳所有圖鑑，無分頁）
    *
    * @param token - JWT Token
    * @param params - 查詢參數
-   * @param params.page - 頁碼
-   * @param params.limit - 每頁數量
-   * @param params.city - 城市篩選
-   * @param params.sort - 排序方式（unread 優先未讀、newest 最新、oldest 最舊）
+   * @param params.sort - 排序方式（unread 優先未讀、recent 最近收集）
    * @returns 收藏列表
    */
-  async getCollections(token: string, params?: PaginationParams & { city?: string; sort?: 'unread' | 'newest' | 'oldest' }): Promise<CollectionResponse> {
-    // 組裝查詢參數
+  async getCollections(token: string, params?: { sort?: 'unread' | 'recent' }): Promise<CollectionResponse> {
     const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.limit) queryParams.append('limit', params.limit.toString());
-    if (params?.city) queryParams.append('city', params.city);
     if (params?.sort) queryParams.append('sort', params.sort);
 
     const query = queryParams.toString();
