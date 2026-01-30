@@ -6,6 +6,31 @@
 
 ## 最新回報
 
+### 2026-01-30 #037：個人資料頁面 UI 調整
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #037 |
+| 狀態 | ✅ 完成 |
+
+**實作內容**
+
+1. **用戶 ID 截斷顯示**
+   - 原本：`apple_001841.4e76a5ef7a914a4694d7ae760d3bd943.1507`
+   - 現在：`apple_001841`（只顯示第一個點之前）
+   - 新增 `displayUserId()` 輔助函數
+
+2. **Email 欄位可編輯**
+   - 從唯讀欄位改為 TextInput
+   - 新增 `email` 到 `UpdateProfileParams` 型別
+   - 儲存時傳送 email 給後端 API（後端已支援唯一性驗證）
+
+**修改檔案**
+- `src/modules/shared/screens/ProfileScreen.tsx`
+- `src/types/auth.ts`
+
+---
+
 ### 2026-01-30 🐛 BUG：AI 對話無法自動加入景點到行程
 
 | 項目 | 內容 |
