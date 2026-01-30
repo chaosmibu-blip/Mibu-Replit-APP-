@@ -50,6 +50,10 @@ import {
   Keyboard,
   Modal,
 } from 'react-native';
+import DraggableFlatList, {
+  ScaleDecorator,
+  RenderItemParams,
+} from 'react-native-draggable-flatlist';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -573,6 +577,40 @@ export function ItineraryScreenV2() {
       await fetchItineraryDetail(currentItinerary.id);
     }
   }, [currentItinerary, getToken, fetchItineraryDetail]);
+
+  // 【截圖 9-15 #9】拖曳重新排序
+  const handleDragReorder = useCallback(async (newPlaces: ItineraryPlaceItem[]) => {
+    if (!currentItinerary) return;
+    const token = await getToken();
+    if (!token) return;
+
+    // 檢查順序是否有變化
+    const oldIds = currentItinerary.places.map(p => p.id);
+    const newIds = newPlaces.map(p => p.id);
+    if (JSON.stringify(oldIds) === JSON.stringify(newIds)) {
+      return; // 順序沒變，不需要更新
+    }
+
+    // 樂觀更新 UI
+    setCurrentItinerary(prev => prev ? { ...prev, places: newPlaces } : null);
+
+    // 呼叫 API
+    try {
+      const itemIds = newPlaces.map(p => p.id);
+      const res = await itineraryApi.reorderPlaces(currentItinerary.id, { itemIds }, token);
+      if (!res.success) {
+        // 失敗時還原
+        await fetchItineraryDetail(currentItinerary.id);
+        showToastMessage(isZh ? '排序失敗，請重試' : 'Reorder failed, please try again');
+      } else {
+        showToastMessage(isZh ? '已更新順序' : 'Order updated');
+      }
+    } catch (error) {
+      console.error('Drag reorder error:', error);
+      await fetchItineraryDetail(currentItinerary.id);
+      showToastMessage(isZh ? '排序失敗，請重試' : 'Reorder failed, please try again');
+    }
+  }, [currentItinerary, getToken, fetchItineraryDetail, isZh, showToastMessage]);
 
   // 載入國家列表
   const loadCountries = useCallback(async () => {
@@ -1447,107 +1485,143 @@ export function ItineraryScreenV2() {
           </TouchableOpacity>
         </View>
 
-        {/* 景點卡片列表 */}
-        <ScrollView
-          style={styles.drawerScroll}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: Spacing.xxl }}
-        >
-          {currentItinerary?.places && currentItinerary.places.length > 0 ? (
-            currentItinerary.places.map((place, index) => {
+        {/* 【截圖 9-15 #9】景點卡片列表 - 支援長按拖曳排序 */}
+        {currentItinerary?.places && currentItinerary.places.length > 0 ? (
+          <DraggableFlatList
+            data={currentItinerary.places}
+            keyExtractor={(item) => String(item.id)}
+            onDragEnd={({ data }) => handleDragReorder(data)}
+            contentContainerStyle={{ paddingBottom: Spacing.xxl }}
+            showsVerticalScrollIndicator={false}
+            style={styles.drawerScroll}
+            renderItem={({ item: place, getIndex, drag, isActive }: RenderItemParams<ItineraryPlaceItem>) => {
+              const index = getIndex() ?? 0;
               const categoryToken = getCategoryToken(getPlaceCategory(place));
               const coords = getPlaceCoords(place);
               const description = getPlaceDescription(place);
               const name = getPlaceName(place);
               const isFirst = index === 0;
-              const isLast = index === currentItinerary.places.length - 1;
+              const isLast = index === (currentItinerary?.places.length ?? 1) - 1;
 
-              // 【截圖 9-15 #11】景點卡片 - 刪除按鈕移到右上角小 X
+              // 【截圖 9-15 #10】根據分類估算遊玩時間（與扭蛋卡片一致）
+              const categoryStr = getPlaceCategory(place).toLowerCase();
+              const getDurationText = () => {
+                if (categoryStr.includes('food') || categoryStr.includes('美食') || categoryStr === 'f') {
+                  return '0.5-1h';
+                }
+                if (categoryStr.includes('shop') || categoryStr.includes('購物') || categoryStr === 's') {
+                  return '1-2h';
+                }
+                return '2-3h';
+              };
+
               return (
-                <View key={place.id} style={styles.placeCard}>
-                  {/* 左側：排序按鈕 + 色條 */}
-                  <View style={styles.reorderControls}>
-                    <View
-                      style={[
-                        styles.placeStripe,
-                        { backgroundColor: categoryToken.stripe },
-                      ]}
-                    />
-                    <View style={styles.reorderButtonsContainer}>
-                      <TouchableOpacity
-                        style={[styles.reorderButton, isFirst && styles.reorderButtonDisabled]}
-                        activeOpacity={0.7}
-                        disabled={isFirst}
-                        onPress={() => handleMovePlace(place.id, 'up')}
-                      >
-                        <Ionicons
-                          name="chevron-up"
-                          size={18}
-                          color={isFirst ? MibuBrand.tanLight : MibuBrand.copper}
-                        />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.reorderButton, isLast && styles.reorderButtonDisabled]}
-                        activeOpacity={0.7}
-                        disabled={isLast}
-                        onPress={() => handleMovePlace(place.id, 'down')}
-                      >
-                        <Ionicons
-                          name="chevron-down"
-                          size={18}
-                          color={isLast ? MibuBrand.tanLight : MibuBrand.copper}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <View style={styles.placeContent}>
-                    {/* 右上角刪除按鈕 X */}
+                <ScaleDecorator>
+                  <View
+                    style={[
+                      styles.placeCard,
+                      isActive && styles.placeCardDragging,
+                    ]}
+                  >
+                    {/* 左側：拖曳把手 + 色條（長按觸發拖曳） */}
                     <TouchableOpacity
-                      style={styles.placeDeleteX}
-                      activeOpacity={0.7}
-                      onPress={() => handleRemovePlace(place.id, name)}
+                      style={styles.reorderControls}
+                      onLongPress={drag}
+                      delayLongPress={150}
+                      activeOpacity={0.8}
                     >
-                      <Ionicons name="close" size={16} color={MibuBrand.copper} />
-                    </TouchableOpacity>
-
-                    {/* 頂部：順序 + 類別 */}
-                    <View style={styles.placeTopRow}>
-                      <View style={styles.placeOrderBadge}>
-                        <Text style={styles.placeOrderText}>{index + 1}</Text>
-                      </View>
                       <View
                         style={[
-                          styles.placeCategoryBadge,
-                          { backgroundColor: categoryToken.badge },
+                          styles.placeStripe,
+                          { backgroundColor: categoryToken.stripe },
                         ]}
+                      />
+                      <View style={styles.reorderButtonsContainer}>
+                        {/* 拖曳圖示提示 */}
+                        <Ionicons
+                          name="reorder-three"
+                          size={20}
+                          color={MibuBrand.copper}
+                          style={{ marginBottom: 4 }}
+                        />
+                        <TouchableOpacity
+                          style={[styles.reorderButton, isFirst && styles.reorderButtonDisabled]}
+                          activeOpacity={0.7}
+                          disabled={isFirst}
+                          onPress={() => handleMovePlace(place.id, 'up')}
+                        >
+                          <Ionicons
+                            name="chevron-up"
+                            size={18}
+                            color={isFirst ? MibuBrand.tanLight : MibuBrand.copper}
+                          />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.reorderButton, isLast && styles.reorderButtonDisabled]}
+                          activeOpacity={0.7}
+                          disabled={isLast}
+                          onPress={() => handleMovePlace(place.id, 'down')}
+                        >
+                          <Ionicons
+                            name="chevron-down"
+                            size={18}
+                            color={isLast ? MibuBrand.tanLight : MibuBrand.copper}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </TouchableOpacity>
+
+                    <View style={styles.placeContent}>
+                      {/* 右上角刪除按鈕 X */}
+                      <TouchableOpacity
+                        style={styles.placeDeleteX}
+                        activeOpacity={0.7}
+                        onPress={() => handleRemovePlace(place.id, name)}
                       >
-                        <Text
+                        <Ionicons name="close" size={16} color={MibuBrand.copper} />
+                      </TouchableOpacity>
+
+                      {/* 【對齊扭蛋】頂部：時間預估 + 順序 + 類別 */}
+                      <View style={styles.placeTopRow}>
+                        {/* 時間預估 badge（跟扭蛋卡片一致） */}
+                        <View style={styles.placeDurationBadge}>
+                          <Text style={styles.placeDurationText}>{getDurationText()}</Text>
+                        </View>
+                        {/* 順序編號 */}
+                        <View style={styles.placeOrderBadge}>
+                          <Text style={styles.placeOrderText}>{index + 1}</Text>
+                        </View>
+                        {/* 類別標籤 */}
+                        <View
                           style={[
-                            styles.placeCategoryText,
-                            { color: categoryToken.badgeText },
+                            styles.placeCategoryBadge,
+                            { backgroundColor: categoryToken.badge },
                           ]}
                         >
-                          {getPlaceCategory(place)}
-                        </Text>
+                          <Text
+                            style={[
+                              styles.placeCategoryText,
+                              { color: categoryToken.badgeText },
+                            ]}
+                          >
+                            {getPlaceCategory(place)}
+                          </Text>
+                        </View>
                       </View>
-                    </View>
 
-                    {/* 景點名稱 */}
-                    <Text style={styles.placeName}>{name}</Text>
+                      {/* 【對齊扭蛋】景點名稱 - 加大字體 */}
+                      <Text style={styles.placeName} numberOfLines={2}>{name}</Text>
 
-                    {/* 描述 */}
-                    {description && (
-                      <Text style={styles.placeDescription}>{description}</Text>
-                    )}
+                      {/* 【對齊扭蛋】描述 */}
+                      {description && (
+                        <Text style={styles.placeDescription}>{description}</Text>
+                      )}
 
-                    {/* 底部操作 - 只保留地圖按鈕 */}
-                    <View style={styles.placeActions}>
-                      {/* 地圖按鈕 */}
+                      {/* 【對齊扭蛋】底部：地圖按鈕 */}
                       <TouchableOpacity
                         style={[
-                          styles.placeActionButton,
-                          !(coords.lat && coords.lng) && styles.placeActionDisabled,
+                          styles.placeMapButton,
+                          !(coords.lat && coords.lng) && styles.placeMapButtonDisabled,
                         ]}
                         activeOpacity={0.7}
                         disabled={!(coords.lat && coords.lng)}
@@ -1558,45 +1632,58 @@ export function ItineraryScreenV2() {
                         }}
                       >
                         <Ionicons
-                          name="map-outline"
+                          name="location-outline"
                           size={16}
                           color={coords.lat && coords.lng ? MibuBrand.copper : MibuBrand.tanLight}
                         />
                         <Text
                           style={[
-                            styles.placeActionText,
+                            styles.placeMapText,
                             !(coords.lat && coords.lng) && { color: MibuBrand.tanLight },
                           ]}
                         >
-                          {isZh ? '地圖' : 'Map'}
+                          {isZh ? '在地圖中查看' : 'View on Map'}
                         </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
-                </View>
+                </ScaleDecorator>
               );
-            })
-          ) : (
+            }}
+            ListFooterComponent={
+              <TouchableOpacity
+                style={styles.addFromCollectionButton}
+                activeOpacity={0.8}
+                onPress={openAddPlacesModal}
+              >
+                <Ionicons name="albums-outline" size={20} color={MibuBrand.brown} />
+                <Text style={styles.addFromCollectionText}>
+                  {isZh ? '從圖鑑加入景點' : 'Add from Collection'}
+                </Text>
+              </TouchableOpacity>
+            }
+          />
+        ) : (
+          <View style={styles.drawerScroll}>
             <View style={styles.emptyPlaces}>
               <Ionicons name="location-outline" size={48} color={MibuBrand.tanLight} />
               <Text style={styles.emptyPlacesText}>
                 {isZh ? '還沒有景點\n跟 AI 聊聊想去哪吧！' : 'No places yet\nChat with AI to add some!'}
               </Text>
             </View>
-          )}
-
-          {/* 從圖鑑加入 */}
-          <TouchableOpacity
-            style={styles.addFromCollectionButton}
-            activeOpacity={0.8}
-            onPress={openAddPlacesModal}
-          >
-            <Ionicons name="albums-outline" size={20} color={MibuBrand.brown} />
-            <Text style={styles.addFromCollectionText}>
-              {isZh ? '從圖鑑加入景點' : 'Add from Collection'}
-            </Text>
-          </TouchableOpacity>
-        </ScrollView>
+            {/* 從圖鑑加入 */}
+            <TouchableOpacity
+              style={styles.addFromCollectionButton}
+              activeOpacity={0.8}
+              onPress={openAddPlacesModal}
+            >
+              <Ionicons name="albums-outline" size={20} color={MibuBrand.brown} />
+              <Text style={styles.addFromCollectionText}>
+                {isZh ? '從圖鑑加入景點' : 'Add from Collection'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </Animated.View>
   );
@@ -2414,21 +2501,35 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
   },
 
-  // ===== Place Cards (Right Drawer) =====
+  // ===== Place Cards (Right Drawer) - 對齊扭蛋卡片樣式 =====
   placeCard: {
     flexDirection: 'row',
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: Radius.lg,
-    marginBottom: Spacing.md,
+    borderRadius: 16, // 對齊扭蛋卡片
+    marginBottom: 12, // 對齊扭蛋卡片
     overflow: 'hidden',
-    ...Shadow.md,
+    // 對齊扭蛋卡片陰影
+    shadowColor: MibuBrand.brown,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  // 【截圖 9-15 #9】拖曳時的卡片樣式
+  placeCardDragging: {
+    shadowColor: MibuBrand.brown,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+    transform: [{ scale: 1.02 }],
   },
   reorderControls: {
     flexDirection: 'row',
     alignItems: 'stretch',
   },
   placeStripe: {
-    width: 5,
+    width: 4, // 對齊扭蛋卡片（從 5 改為 4）
   },
   reorderButtonsContainer: {
     width: 32,
@@ -2447,7 +2548,7 @@ const styles = StyleSheet.create({
   },
   placeContent: {
     flex: 1,
-    padding: Spacing.lg,
+    padding: 20, // 對齊扭蛋卡片（從 Spacing.lg 改為 20）
     position: 'relative',
   },
   // 【截圖 9-15 #11】右上角刪除按鈕
@@ -2466,7 +2567,22 @@ const styles = StyleSheet.create({
   placeTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.sm,
+    justifyContent: 'flex-start', // 改為 flex-start
+    marginBottom: 12, // 對齊扭蛋卡片
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  // 【對齊扭蛋】時間預估 badge
+  placeDurationBadge: {
+    backgroundColor: MibuBrand.creamLight,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  placeDurationText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: MibuBrand.copper,
   },
   placeOrderBadge: {
     width: 24,
@@ -2475,7 +2591,6 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.brown,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: Spacing.sm,
   },
   placeOrderText: {
     fontSize: FontSize.xs,
@@ -2483,27 +2598,46 @@ const styles = StyleSheet.create({
     color: MibuBrand.warmWhite,
   },
   placeCategoryBadge: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
-    borderRadius: Radius.sm,
+    paddingHorizontal: 12, // 對齊扭蛋卡片
+    paddingVertical: 5, // 對齊扭蛋卡片
+    borderRadius: 12, // 對齊扭蛋卡片
   },
   placeCategoryText: {
-    fontSize: FontSize.xs,
+    fontSize: 12, // 對齊扭蛋卡片
     fontWeight: '600',
   },
   placeName: {
-    fontSize: FontSize.lg,
+    fontSize: 20, // 對齊扭蛋卡片（從 16 改為 20）
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    marginBottom: Spacing.xs,
+    marginBottom: 8, // 對齊扭蛋卡片
     letterSpacing: -0.3,
   },
   placeDescription: {
-    fontSize: FontSize.sm,
+    fontSize: 14, // 對齊扭蛋卡片（從 12 改為 14）
     color: MibuBrand.brownLight,
-    lineHeight: 20,
-    marginBottom: Spacing.md,
+    lineHeight: 22, // 對齊扭蛋卡片
+    marginBottom: 16, // 對齊扭蛋卡片
   },
+  // 【對齊扭蛋】地圖按鈕樣式
+  placeMapButton: {
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: 12,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeMapButtonDisabled: {
+    opacity: 0.5,
+  },
+  placeMapText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: MibuBrand.copper,
+    marginLeft: 6,
+  },
+  // 舊的 placeActions 保留以防其他地方使用
   placeActions: {
     flexDirection: 'row',
     borderTopWidth: 1,
