@@ -6,6 +6,47 @@
 
 ## 最新回報
 
+### 2026-01-30 🐛 BUG：AI 對話無法自動加入景點到行程
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | APP 端測試發現 |
+| 狀態 | 🟡 待後端調整 AI prompt |
+| 嚴重度 | 中（功能可用但體驗不佳） |
+
+**問題描述**
+- 用戶對 AI 說「幫我加入 XX 餐廳到行程」
+- 預期：AI 直接執行，回傳 `itineraryUpdated: true`
+- 實際：AI 回覆「請從圖鑑手動選擇景點加入」
+
+**技術分析**
+
+| 層級 | 狀態 | 說明 |
+|------|------|------|
+| API 規格 | ✅ 支援 | `AiChatResponse` 有 `itineraryUpdated` + `updatedItinerary` 欄位 |
+| 前端處理 | ✅ 有做 | 偵測到 `itineraryUpdated: true` 會刷新行程（`ItineraryScreenV2.tsx:269`） |
+| 後端 AI | ❌ 未啟用 | AI prompt 只設定為「推薦」模式，不會主動執行操作 |
+
+**前端程式碼確認**
+```typescript
+// ItineraryScreenV2.tsx:269
+if (res.itineraryUpdated) {
+  await fetchItineraryDetail(currentItinerary.id);  // ✅ 正確處理
+}
+```
+
+**建議修復**
+
+更新後端 AI prompt，讓 AI 在以下情況**直接執行**並回傳 `itineraryUpdated: true`：
+- 用戶說「加入 XX」「把 XX 排進去」「我要去 XX」
+- 用戶說「幫我安排 XX」「加這個」
+- 用戶說「把 XX 移到最後」「重新排序」
+
+AI 應該只在**模糊需求**時才進入推薦模式（回傳 `suggestions`）：
+- 「推薦一些餐廳」「有什麼好玩的」
+
+---
+
 ### 2026-01-29 #036：帳號合併功能
 
 | 項目 | 內容 |
@@ -323,6 +364,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| BUG | 01-30 | AI 對話無法自動加入景點到行程 | 🟡 待後端 |
 | 036 | 01-29 | 帳號合併功能 | ✅ |
 | 034 | 01-29 | 共用型別套件（@shared 模組） | ✅ |
 | BUG | 01-29 | 行程「選擇景點」顯示空（城市名稱不一致） | 🔴 **緊急** |
