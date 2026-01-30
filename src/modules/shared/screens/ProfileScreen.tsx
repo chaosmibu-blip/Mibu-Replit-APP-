@@ -54,6 +54,19 @@ const RELATION_OPTIONS = [
   { value: 'other', labelZh: '其他', labelEn: 'Other' },
 ];
 
+// ============ 輔助函數 ============
+
+/**
+ * #037: 截斷用戶 ID 顯示
+ * Apple 登入的 ID 格式為 apple_001841.4e76a5ef7a914a4694d7ae760d3bd943.1507
+ * 只顯示第一個點之前的部分：apple_001841
+ */
+const displayUserId = (userId: string | undefined): string => {
+  if (!userId) return '-';
+  const dotIndex = userId.indexOf('.');
+  return dotIndex > 0 ? userId.substring(0, dotIndex) : userId;
+};
+
 // ============ 元件本體 ============
 
 export function ProfileScreen() {
@@ -68,6 +81,7 @@ export function ProfileScreen() {
   const [profile, setProfile] = useState<UserProfile | null>(null); // 完整的 profile 資料
 
   // 基本資訊欄位
+  const [email, setEmail] = useState(''); // Email（#037 可編輯）
   const [firstName, setFirstName] = useState(''); // 名
   const [lastName, setLastName] = useState(''); // 姓
   const [gender, setGender] = useState<Gender | null>(null); // 性別
@@ -113,6 +127,7 @@ export function ProfileScreen() {
       setProfile(data);
 
       // 將資料填入各欄位
+      setEmail(data.email || ''); // #037: Email 可編輯
       setFirstName(data.firstName || '');
       setLastName(data.lastName || '');
       setGender(data.gender);
@@ -147,6 +162,7 @@ export function ProfileScreen() {
       if (!token) return;
 
       const response = await apiService.updateProfile(token, {
+        email: email || undefined, // #037: 支援 Email 更新
         firstName: firstName || undefined,
         lastName: lastName || undefined,
         gender: gender || undefined,
@@ -163,6 +179,7 @@ export function ProfileScreen() {
       if (response && response.profile) {
         const data = response.profile;
         setProfile(data);
+        setEmail(data.email || ''); // #037: 更新 Email
         setFirstName(data.firstName || '');
         setLastName(data.lastName || '');
         setGender(data.gender);
@@ -265,20 +282,27 @@ export function ProfileScreen() {
           </Text>
         </View>
 
-        {/* ===== 唯讀欄位：用戶 ID ===== */}
+        {/* ===== 唯讀欄位：用戶 ID（#037 截斷顯示）===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '用戶 ID' : 'User ID'}</Text>
           <View style={styles.readOnlyField}>
-            <Text style={styles.readOnlyText}>{profile?.id || '-'}</Text>
+            <Text style={styles.readOnlyText}>{displayUserId(profile?.id)}</Text>
           </View>
         </View>
 
-        {/* ===== 唯讀欄位：Email ===== */}
+        {/* ===== Email 欄位（#037 改為可編輯）===== */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Email</Text>
-          <View style={styles.readOnlyField}>
-            <Text style={styles.readOnlyText}>{profile?.email || '-'}</Text>
-          </View>
+          <Text style={styles.sectionTitle}>EMAIL</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder={isZh ? '請輸入 Email' : 'Enter email'}
+            placeholderTextColor="#94a3b8"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
         </View>
 
         {/* ===== 姓名欄位 ===== */}

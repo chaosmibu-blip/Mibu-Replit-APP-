@@ -100,6 +100,7 @@ export interface UserProfile {
  * 所有欄位皆為可選，只傳需要更新的欄位
  */
 export interface UpdateProfileParams {
+  email?: string;                          // Email（#037 可編輯）
   firstName?: string;                      // 名
   lastName?: string;                       // 姓
   gender?: Gender;                         // 性別
