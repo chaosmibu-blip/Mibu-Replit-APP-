@@ -30,7 +30,8 @@
  * - 滑動抽屜動畫
  * - 打字機效果（AI 回覆）
  */
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -179,9 +180,18 @@ export function ItineraryScreenV2() {
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
   const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
 
+  // 【截圖 9-15 #2】行程列表多選刪除狀態
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedItineraryIds, setSelectedItineraryIds] = useState<number[]>([]);
+
   // 【截圖 9】使用說明 Tooltip 狀態（淡入淡出）
   const [showHelpTooltip, setShowHelpTooltip] = useState(false);
   const helpTooltipOpacity = useRef(new Animated.Value(0)).current;
+
+  // 【截圖 9-15 #8 #11】Toast 通知狀態（淡入淡出 3 秒）
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const toastOpacity = useRef(new Animated.Value(0)).current;
 
   // 從圖鑑加入景點 Modal 狀態
   const [addPlacesModalVisible, setAddPlacesModalVisible] = useState(false);
@@ -190,9 +200,17 @@ export function ItineraryScreenV2() {
   const [loadingAvailable, setLoadingAvailable] = useState(false);
   const [addingPlaces, setAddingPlaces] = useState(false);
 
+  // 【截圖 9-15 #6 #7】圖鑑手風琴 + 搜索狀態
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [placeSearchQuery, setPlaceSearchQuery] = useState('');
+
   // 建立行程 Modal 狀態
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [creating, setCreating] = useState(false);
+
+  // 【截圖 9-15 #12】編輯標題狀態
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleInput, setTitleInput] = useState('');
   const [newItinerary, setNewItinerary] = useState({
     date: new Date().toISOString().split('T')[0],
     countryId: null as number | null,
@@ -210,6 +228,33 @@ export function ItineraryScreenV2() {
   const rightDrawerAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
   const chatScrollRef = useRef<ScrollView>(null);
+
+  // ===== 共用函數 =====
+
+  /**
+   * 【截圖 9-15 #8 #11】顯示 Toast 通知（淡入淡出，持續 3 秒）
+   * 用於加入景點成功、刪除景點等操作回饋
+   * 不使用 icon，純文字
+   */
+  const showToastMessage = useCallback((message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+    // 淡入
+    Animated.timing(toastOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      // 持續 3 秒後淡出
+      setTimeout(() => {
+        Animated.timing(toastOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setShowToast(false));
+      }, 3000);
+    });
+  }, [toastOpacity]);
 
   // ===== API 呼叫 =====
 
@@ -232,6 +277,34 @@ export function ItineraryScreenV2() {
     }
   }, [getToken, activeItineraryId]);
 
+  /**
+   * 【截圖 9-15 #13】保存對話記錄到本地
+   */
+  const saveMessages = useCallback(async (itineraryId: number, msgs: AiChatMessage[]) => {
+    try {
+      const key = `@itinerary_messages_${itineraryId}`;
+      await AsyncStorage.setItem(key, JSON.stringify(msgs));
+    } catch (error) {
+      console.error('Failed to save messages:', error);
+    }
+  }, []);
+
+  /**
+   * 【截圖 9-15 #13】從本地載入對話記錄
+   */
+  const loadMessages = useCallback(async (itineraryId: number): Promise<AiChatMessage[]> => {
+    try {
+      const key = `@itinerary_messages_${itineraryId}`;
+      const stored = await AsyncStorage.getItem(key);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Failed to load messages:', error);
+    }
+    return [];
+  }, []);
+
   // 載入行程詳情
   const fetchItineraryDetail = useCallback(async (id: number) => {
     const token = await getToken();
@@ -241,21 +314,27 @@ export function ItineraryScreenV2() {
       const res = await itineraryApi.getItinerary(id, token);
       if (res.success) {
         setCurrentItinerary(res.itinerary);
-        // 初始化 AI 歡迎訊息
-        if (messages.length === 0) {
+
+        // 【截圖 9-15 #13】載入已保存的對話記錄
+        const savedMessages = await loadMessages(id);
+        if (savedMessages.length > 0) {
+          setMessages(savedMessages);
+        } else {
+          // 初始化 AI 歡迎訊息
           const city = res.itinerary.city || res.itinerary.country || '這裡';
-          setMessages([
-            {
-              role: 'assistant',
-              content: `嗨！${city}之旅想怎麼玩？告訴我你的喜好，我來幫你安排行程 ✨`,
-            },
-          ]);
+          const welcomeMessage: AiChatMessage = {
+            role: 'assistant',
+            content: `嗨！${city}之旅想怎麼玩？告訴我你的喜好，我來幫你安排行程 ✨`,
+          };
+          setMessages([welcomeMessage]);
+          // 保存歡迎訊息
+          saveMessages(id, [welcomeMessage]);
         }
       }
     } catch (error) {
       console.error('Failed to fetch itinerary detail:', error);
     }
-  }, [getToken, messages.length]);
+  }, [getToken, loadMessages, saveMessages]);
 
   // 發送 AI 訊息
   const sendAiMessage = useCallback(async () => {
@@ -265,7 +344,12 @@ export function ItineraryScreenV2() {
 
     Keyboard.dismiss();
     const userMessage: AiChatMessage = { role: 'user', content: inputText.trim() };
-    setMessages(prev => [...prev, userMessage]);
+    // 【截圖 9-15 #13】保存用戶訊息
+    setMessages(prev => {
+      const newMessages = [...prev, userMessage];
+      saveMessages(currentItinerary.id, newMessages);
+      return newMessages;
+    });
     setInputText('');
     setAiLoading(true);
 
@@ -293,7 +377,13 @@ export function ItineraryScreenV2() {
           responseText += isZh ? '\n\n✅ 已從行程移除' : '\n\n✅ Removed from itinerary';
         }
 
-        setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
+        const assistantMessage: AiChatMessage = { role: 'assistant', content: responseText };
+        setMessages(prev => {
+          const newMessages = [...prev, assistantMessage];
+          // 【截圖 9-15 #13】保存對話記錄
+          saveMessages(currentItinerary.id, newMessages);
+          return newMessages;
+        });
 
         // v2.2.0: 根據 detectedIntent 決定是否顯示推薦
         // chitchat 和 unsupported 不顯示推薦卡片
@@ -329,39 +419,28 @@ export function ItineraryScreenV2() {
     }
   }, [currentItinerary, inputText, getToken, aiContext, fetchItineraryDetail, isZh]);
 
-  // 移除景點
-  const handleRemovePlace = useCallback(async (itemId: number) => {
+  // 【截圖 9-15 #11】移除景點 - 不使用彈窗確認，直接移除並顯示 Toast
+  const handleRemovePlace = useCallback(async (itemId: number, placeName?: string) => {
     if (!currentItinerary) return;
     const token = await getToken();
     if (!token) return;
 
-    Alert.alert(
-      isZh ? '移除景點' : 'Remove Place',
-      isZh ? '確定要從行程中移除這個景點嗎？' : 'Are you sure you want to remove this place?',
-      [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
-        {
-          text: isZh ? '移除' : 'Remove',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const res = await itineraryApi.removePlace(currentItinerary.id, itemId, token);
-              if (res.success) {
-                await fetchItineraryDetail(currentItinerary.id);
-              }
-            } catch (error) {
-              console.error('Remove place error:', error);
-            }
-          },
-        },
-      ]
-    );
-  }, [currentItinerary, getToken, fetchItineraryDetail, isZh]);
+    try {
+      const res = await itineraryApi.removePlace(currentItinerary.id, itemId, token);
+      if (res.success) {
+        await fetchItineraryDetail(currentItinerary.id);
+        // 顯示 Toast 通知
+        showToastMessage(isZh ? `已移除「${placeName || '景點'}」` : `Removed "${placeName || 'place'}"`);
+      }
+    } catch (error) {
+      console.error('Remove place error:', error);
+      showToastMessage(isZh ? '移除失敗，請稍後再試' : 'Failed to remove, please try again');
+    }
+  }, [currentItinerary, getToken, fetchItineraryDetail, isZh, showToastMessage]);
 
-  // 切換行程
+  // 【截圖 9-15 #13】切換行程 - 不清空對話，讓 fetchItineraryDetail 載入保存的對話
   const handleSelectItinerary = useCallback(async (id: number) => {
     setActiveItineraryId(id);
-    setMessages([]); // 清空對話
     setAiContext(undefined);
     setAiSuggestions([]);
     await fetchItineraryDetail(id);
@@ -399,7 +478,7 @@ export function ItineraryScreenV2() {
     );
   }, []);
 
-  // 確認加入選取的景點
+  // 【截圖 9-15 #8】確認加入選取的景點 - 使用 Toast 而不是 Alert
   const confirmAddPlaces = useCallback(async () => {
     if (!currentItinerary || selectedCollectionIds.length === 0) return;
     const token = await getToken();
@@ -415,21 +494,16 @@ export function ItineraryScreenV2() {
       if (res.success) {
         await fetchItineraryDetail(currentItinerary.id);
         setAddPlacesModalVisible(false);
-        Alert.alert(
-          isZh ? '成功' : 'Success',
-          isZh ? `已加入 ${res.addedCount} 個景點` : `Added ${res.addedCount} places`
-        );
+        // 使用 Toast 通知而不是 Alert 彈窗
+        showToastMessage(isZh ? `已加入 ${res.addedCount} 個景點` : `Added ${res.addedCount} places`);
       }
     } catch (error) {
       console.error('Failed to add places:', error);
-      Alert.alert(
-        isZh ? '錯誤' : 'Error',
-        isZh ? '加入景點失敗，請稍後再試' : 'Failed to add places, please try again'
-      );
+      showToastMessage(isZh ? '加入景點失敗，請稍後再試' : 'Failed to add places, please try again');
     } finally {
       setAddingPlaces(false);
     }
-  }, [currentItinerary, selectedCollectionIds, getToken, fetchItineraryDetail, isZh]);
+  }, [currentItinerary, selectedCollectionIds, getToken, fetchItineraryDetail, isZh, showToastMessage]);
 
   // 移動景點（上/下）
   const handleMovePlace = useCallback(async (itemId: number, direction: 'up' | 'down') => {
@@ -563,7 +637,122 @@ export function ItineraryScreenV2() {
     }
   }, [newItinerary, getToken, fetchItineraries, isZh]);
 
-  // 刪除行程
+  /**
+   * 【截圖 9-15 #12】保存行程標題
+   */
+  const handleSaveTitle = useCallback(async () => {
+    if (!currentItinerary || !titleInput.trim()) {
+      setEditingTitle(false);
+      return;
+    }
+    const token = await getToken();
+    if (!token) return;
+
+    try {
+      const res = await itineraryApi.updateItinerary(
+        currentItinerary.id,
+        { title: titleInput.trim() },
+        token
+      );
+      if (res.success) {
+        // 更新本地狀態
+        setCurrentItinerary(prev => prev ? { ...prev, title: titleInput.trim() } : null);
+        // 更新列表中的標題
+        setItineraries(prev =>
+          prev.map(item =>
+            item.id === currentItinerary.id
+              ? { ...item, title: titleInput.trim() }
+              : item
+          )
+        );
+        showToastMessage(isZh ? '標題已更新' : 'Title updated');
+      }
+    } catch (error) {
+      console.error('Update title error:', error);
+      showToastMessage(isZh ? '更新失敗' : 'Update failed');
+    } finally {
+      setEditingTitle(false);
+    }
+  }, [currentItinerary, titleInput, getToken, isZh, showToastMessage]);
+
+  /**
+   * 【截圖 9-15 #12】開始編輯標題
+   */
+  const startEditingTitle = useCallback(() => {
+    if (currentItinerary) {
+      setTitleInput(currentItinerary.title || '');
+      setEditingTitle(true);
+    }
+  }, [currentItinerary]);
+
+  /**
+   * 【截圖 9-15 #2】切換行程選擇
+   */
+  const toggleItinerarySelection = useCallback((id: number) => {
+    setSelectedItineraryIds(prev =>
+      prev.includes(id)
+        ? prev.filter(i => i !== id)
+        : [...prev, id]
+    );
+  }, []);
+
+  /**
+   * 【截圖 9-15 #2】批量刪除選中的行程
+   */
+  const handleDeleteSelectedItineraries = useCallback(async () => {
+    if (selectedItineraryIds.length === 0) return;
+
+    Alert.alert(
+      isZh ? '刪除行程' : 'Delete Itineraries',
+      isZh
+        ? `確定要刪除 ${selectedItineraryIds.length} 個行程嗎？此操作無法復原。`
+        : `Are you sure you want to delete ${selectedItineraryIds.length} itineraries? This cannot be undone.`,
+      [
+        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        {
+          text: isZh ? '刪除' : 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const token = await getToken();
+            if (!token) return;
+
+            try {
+              // 逐一刪除
+              for (const id of selectedItineraryIds) {
+                await itineraryApi.deleteItinerary(id, token);
+              }
+
+              // 重新載入列表
+              const listRes = await itineraryApi.getItineraries(token);
+              if (listRes.success) {
+                setItineraries(listRes.itineraries);
+                // 如果刪除的包含當前行程，切換到第一個
+                if (selectedItineraryIds.includes(activeItineraryId!)) {
+                  if (listRes.itineraries.length > 0) {
+                    setActiveItineraryId(listRes.itineraries[0].id);
+                    await fetchItineraryDetail(listRes.itineraries[0].id);
+                  } else {
+                    setActiveItineraryId(null);
+                    setCurrentItinerary(null);
+                  }
+                }
+              }
+
+              // 退出選擇模式
+              setSelectMode(false);
+              setSelectedItineraryIds([]);
+              showToastMessage(isZh ? `已刪除 ${selectedItineraryIds.length} 個行程` : `Deleted ${selectedItineraryIds.length} itineraries`);
+            } catch (error) {
+              console.error('Delete itineraries error:', error);
+              showToastMessage(isZh ? '刪除失敗' : 'Delete failed');
+            }
+          },
+        },
+      ]
+    );
+  }, [selectedItineraryIds, getToken, activeItineraryId, fetchItineraryDetail, isZh, showToastMessage]);
+
+  // 刪除單一行程（非選擇模式時使用）
   const handleDeleteItinerary = useCallback(async (id: number) => {
     Alert.alert(
       isZh ? '刪除行程' : 'Delete Itinerary',
@@ -595,6 +784,7 @@ export function ItineraryScreenV2() {
                     }
                   }
                 }
+                showToastMessage(isZh ? '行程已刪除' : 'Itinerary deleted');
               }
             } catch (error) {
               console.error('Delete itinerary error:', error);
@@ -603,7 +793,7 @@ export function ItineraryScreenV2() {
         },
       ]
     );
-  }, [getToken, activeItineraryId, fetchItineraryDetail, isZh]);
+  }, [getToken, activeItineraryId, fetchItineraryDetail, isZh, showToastMessage]);
 
   // 初始載入
   useEffect(() => {
@@ -799,11 +989,14 @@ export function ItineraryScreenV2() {
   }
 
   // ===== 主畫面：AI 對話 =====
+  // 【截圖 9-15 #3 #4】修復輸入框被底部導航欄和鍵盤擋住的問題
+  // - iOS 使用 padding behavior，offset 設定為底部 Tab 高度（約 80）
+  // - Android 使用 height behavior
   const renderMainContent = () => (
     <KeyboardAvoidingView
       style={styles.mainContainer}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       {/* Header */}
       <View style={[styles.header, { paddingTop: Spacing.md }]}>
@@ -815,14 +1008,39 @@ export function ItineraryScreenV2() {
           <Ionicons name="menu-outline" size={26} color={MibuBrand.brown} />
         </TouchableOpacity>
 
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>
-            {currentItinerary?.title || (isZh ? '行程助手' : 'Trip Assistant')}
-          </Text>
-          <Text style={styles.headerSubtitle}>
-            {currentItinerary?.city || currentItinerary?.country || ''}
-          </Text>
-        </View>
+        {/* 【截圖 9-15 #12】標題可編輯 */}
+        <TouchableOpacity
+          style={styles.headerCenter}
+          onPress={startEditingTitle}
+          activeOpacity={0.7}
+        >
+          {editingTitle ? (
+            <View style={styles.titleEditContainer}>
+              <TextInput
+                style={styles.titleEditInput}
+                value={titleInput}
+                onChangeText={setTitleInput}
+                onBlur={handleSaveTitle}
+                onSubmitEditing={handleSaveTitle}
+                autoFocus
+                selectTextOnFocus
+                returnKeyType="done"
+              />
+            </View>
+          ) : (
+            <>
+              <View style={styles.headerTitleRow}>
+                <Text style={styles.headerTitle}>
+                  {currentItinerary?.title || (isZh ? '行程助手' : 'Trip Assistant')}
+                </Text>
+                <Ionicons name="pencil-outline" size={14} color={MibuBrand.copper} style={{ marginLeft: 4 }} />
+              </View>
+              <Text style={styles.headerSubtitle}>
+                {currentItinerary?.city || currentItinerary?.country || ''}
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
 
         <TouchableOpacity
           onPress={openRightDrawer}
@@ -862,13 +1080,13 @@ export function ItineraryScreenV2() {
           </Text>
         </View>
 
-        {/* 【截圖 9】使用說明 Tooltip（淡入淡出 3 秒） */}
+        {/* 【截圖 9-15 #1】使用說明 Tooltip（淡入淡出 3 秒） */}
         {showHelpTooltip && (
           <Animated.View style={[styles.helpTooltip, { opacity: helpTooltipOpacity }]}>
             <Text style={styles.helpTooltipText}>
               {isZh
-                ? '💡 告訴我你的旅遊偏好，我會推薦景點並加入行程。點擊右上角查看行程表！'
-                : '💡 Tell me your preferences, I\'ll recommend places. Tap top-right to view itinerary!'}
+                ? '告訴我你的旅遊偏好，我會推薦景點並加入行程。點擊左上角查看行程列表，點擊右上角查看行程表'
+                : 'Tell me your preferences, I\'ll recommend places. Tap top-left for trip list, top-right for itinerary'}
             </Text>
           </Animated.View>
         )}
@@ -931,7 +1149,8 @@ export function ItineraryScreenV2() {
       </ScrollView>
 
       {/* Input Area */}
-      <View style={[styles.inputArea, { paddingBottom: insets.bottom + Spacing.sm }]}>
+      {/* 【截圖 9-15 #3】加大底部間距，避免被底部導航欄擋住 */}
+      <View style={[styles.inputArea, { paddingBottom: Math.max(insets.bottom, 20) + 60 }]}>
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.textInput}
@@ -981,14 +1200,43 @@ export function ItineraryScreenV2() {
               {itineraries.length} {isZh ? '個行程' : 'trips'}
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={closeLeftDrawer}
-            style={styles.closeButton}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="close" size={24} color={MibuBrand.copper} />
-          </TouchableOpacity>
+          <View style={styles.drawerHeaderActions}>
+            {/* 【截圖 9-15 #2】選擇/取消選擇按鈕 */}
+            <TouchableOpacity
+              onPress={() => {
+                setSelectMode(!selectMode);
+                setSelectedItineraryIds([]);
+              }}
+              style={styles.selectModeButton}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.selectModeText}>
+                {selectMode ? (isZh ? '取消' : 'Cancel') : (isZh ? '選擇' : 'Select')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={closeLeftDrawer}
+              style={styles.closeButton}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="close" size={24} color={MibuBrand.copper} />
+            </TouchableOpacity>
+          </View>
         </View>
+
+        {/* 【截圖 9-15 #2】選擇模式下顯示刪除按鈕 */}
+        {selectMode && selectedItineraryIds.length > 0 && (
+          <TouchableOpacity
+            style={styles.deleteSelectedButton}
+            onPress={handleDeleteSelectedItineraries}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="trash-outline" size={18} color={MibuBrand.warmWhite} />
+            <Text style={styles.deleteSelectedText}>
+              {isZh ? `刪除 ${selectedItineraryIds.length} 個` : `Delete ${selectedItineraryIds.length}`}
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {/* 行程列表 */}
         <ScrollView
@@ -996,60 +1244,87 @@ export function ItineraryScreenV2() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: Spacing.xxl }}
         >
-          {itineraries.map((item) => (
-            <View key={item.id} style={styles.tripCardWrapper}>
-              <TouchableOpacity
-                style={[
-                  styles.tripCard,
-                  item.id === activeItineraryId && styles.tripCardActive,
-                ]}
-                activeOpacity={0.8}
-                onPress={() => handleSelectItinerary(item.id)}
-              >
-                <View style={styles.tripIconContainer}>
-                  <Ionicons
-                    name="airplane"
-                    size={20}
-                    color={item.id === activeItineraryId ? MibuBrand.brown : MibuBrand.copper}
-                  />
-                </View>
-                <View style={styles.tripInfo}>
-                  <Text
+          {itineraries.map((item) => {
+            const isSelected = selectedItineraryIds.includes(item.id);
+            return (
+              <View key={item.id} style={styles.tripCardWrapper}>
+                {/* 【截圖 9-15 #2】選擇模式下顯示勾選框 */}
+                {selectMode && (
+                  <TouchableOpacity
                     style={[
-                      styles.tripTitle,
-                      item.id === activeItineraryId && styles.tripTitleActive,
+                      styles.tripCheckbox,
+                      isSelected && styles.tripCheckboxSelected,
                     ]}
+                    onPress={() => toggleItinerarySelection(item.id)}
+                    activeOpacity={0.7}
                   >
-                    {item.title}
-                  </Text>
-                  <Text style={styles.tripMeta}>
-                    {item.date} · {item.city}
-                  </Text>
-                  <View style={styles.tripBadgeRow}>
-                    <View style={styles.tripCountBadge}>
-                      <Ionicons name="location" size={12} color={MibuBrand.copper} />
-                      <Text style={styles.tripCountText}>
-                        {item.placeCount} {isZh ? '個景點' : 'places'}
-                      </Text>
+                    {isSelected && (
+                      <Ionicons name="checkmark" size={16} color={MibuBrand.warmWhite} />
+                    )}
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={[
+                    styles.tripCard,
+                    item.id === activeItineraryId && styles.tripCardActive,
+                    selectMode && styles.tripCardSelectMode,
+                  ]}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    if (selectMode) {
+                      toggleItinerarySelection(item.id);
+                    } else {
+                      handleSelectItinerary(item.id);
+                    }
+                  }}
+                >
+                  <View style={styles.tripIconContainer}>
+                    <Ionicons
+                      name="airplane"
+                      size={20}
+                      color={item.id === activeItineraryId ? MibuBrand.brown : MibuBrand.copper}
+                    />
+                  </View>
+                  <View style={styles.tripInfo}>
+                    <Text
+                      style={[
+                        styles.tripTitle,
+                        item.id === activeItineraryId && styles.tripTitleActive,
+                      ]}
+                    >
+                      {item.title}
+                    </Text>
+                    <Text style={styles.tripMeta}>
+                      {item.date} · {item.city}
+                    </Text>
+                    <View style={styles.tripBadgeRow}>
+                      <View style={styles.tripCountBadge}>
+                        <Ionicons name="location" size={12} color={MibuBrand.copper} />
+                        <Text style={styles.tripCountText}>
+                          {item.placeCount} {isZh ? '個景點' : 'places'}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-                {item.id === activeItineraryId && (
-                  <View style={styles.activeIndicator}>
-                    <Ionicons name="checkmark-circle" size={20} color={MibuBrand.brown} />
-                  </View>
+                  {!selectMode && item.id === activeItineraryId && (
+                    <View style={styles.activeIndicator}>
+                      <Ionicons name="checkmark-circle" size={20} color={MibuBrand.brown} />
+                    </View>
+                  )}
+                </TouchableOpacity>
+                {/* 非選擇模式下顯示刪除按鈕 */}
+                {!selectMode && (
+                  <TouchableOpacity
+                    style={styles.tripDeleteButton}
+                    activeOpacity={0.7}
+                    onPress={() => handleDeleteItinerary(item.id)}
+                  >
+                    <Ionicons name="trash-outline" size={18} color={MibuBrand.error} />
+                  </TouchableOpacity>
                 )}
-              </TouchableOpacity>
-              {/* 刪除按鈕 */}
-              <TouchableOpacity
-                style={styles.tripDeleteButton}
-                activeOpacity={0.7}
-                onPress={() => handleDeleteItinerary(item.id)}
-              >
-                <Ionicons name="trash-outline" size={18} color={MibuBrand.error} />
-              </TouchableOpacity>
-            </View>
-          ))}
+              </View>
+            );
+          })}
 
           {/* 新增行程按鈕 */}
           <TouchableOpacity
@@ -1107,6 +1382,7 @@ export function ItineraryScreenV2() {
               const isFirst = index === 0;
               const isLast = index === currentItinerary.places.length - 1;
 
+              // 【截圖 9-15 #11】景點卡片 - 刪除按鈕移到右上角小 X
               return (
                 <View key={place.id} style={styles.placeCard}>
                   {/* 左側：排序按鈕 + 色條 */}
@@ -1146,6 +1422,15 @@ export function ItineraryScreenV2() {
                   </View>
 
                   <View style={styles.placeContent}>
+                    {/* 右上角刪除按鈕 X */}
+                    <TouchableOpacity
+                      style={styles.placeDeleteX}
+                      activeOpacity={0.7}
+                      onPress={() => handleRemovePlace(place.id, name)}
+                    >
+                      <Ionicons name="close" size={16} color={MibuBrand.copper} />
+                    </TouchableOpacity>
+
                     {/* 頂部：順序 + 類別 */}
                     <View style={styles.placeTopRow}>
                       <View style={styles.placeOrderBadge}>
@@ -1176,7 +1461,7 @@ export function ItineraryScreenV2() {
                       <Text style={styles.placeDescription}>{description}</Text>
                     )}
 
-                    {/* 底部操作 */}
+                    {/* 底部操作 - 只保留地圖按鈕 */}
                     <View style={styles.placeActions}>
                       {/* 地圖按鈕 */}
                       <TouchableOpacity
@@ -1204,18 +1489,6 @@ export function ItineraryScreenV2() {
                           ]}
                         >
                           {isZh ? '地圖' : 'Map'}
-                        </Text>
-                      </TouchableOpacity>
-
-                      {/* 移除按鈕 */}
-                      <TouchableOpacity
-                        style={styles.placeActionButton}
-                        activeOpacity={0.7}
-                        onPress={() => handleRemovePlace(place.id)}
-                      >
-                        <Ionicons name="trash-outline" size={16} color={MibuBrand.error} />
-                        <Text style={[styles.placeActionText, { color: MibuBrand.error }]}>
-                          {isZh ? '移除' : 'Remove'}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -1263,112 +1536,199 @@ export function ItineraryScreenV2() {
       </Animated.View>
     );
 
-  // ===== 從圖鑑加入景點 Modal =====
-  const renderAddPlacesModal = () => (
-    <Modal
-      visible={addPlacesModalVisible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={() => setAddPlacesModalVisible(false)}
-    >
-      <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
-        {/* Modal Header */}
-        <View style={styles.modalHeader}>
-          <TouchableOpacity
-            onPress={() => setAddPlacesModalVisible(false)}
-            style={styles.modalCloseButton}
-          >
-            <Ionicons name="close" size={24} color={MibuBrand.copper} />
-          </TouchableOpacity>
-          <Text style={styles.modalTitle}>
-            {isZh ? '從圖鑑加入景點' : 'Add from Collection'}
-          </Text>
-          <TouchableOpacity
-            onPress={confirmAddPlaces}
-            style={[
-              styles.modalConfirmButton,
-              selectedCollectionIds.length === 0 && styles.modalConfirmButtonDisabled,
-            ]}
-            disabled={selectedCollectionIds.length === 0 || addingPlaces}
-          >
-            {addingPlaces ? (
-              <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
-            ) : (
-              <Text style={styles.modalConfirmText}>
-                {isZh ? `加入 (${selectedCollectionIds.length})` : `Add (${selectedCollectionIds.length})`}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
+  // ===== 【截圖 9-15 #6 #7】從圖鑑加入景點 Modal（手風琴 + 搜索） =====
+  const renderAddPlacesModal = () => {
+    // 搜索過濾
+    const filteredPlaces = availablePlaces.map(categoryGroup => ({
+      ...categoryGroup,
+      places: categoryGroup.places.filter(place =>
+        placeSearchQuery.trim() === '' ||
+        place.name.toLowerCase().includes(placeSearchQuery.toLowerCase()) ||
+        (place.nameEn && place.nameEn.toLowerCase().includes(placeSearchQuery.toLowerCase()))
+      ),
+    })).filter(group => group.places.length > 0);
 
-        {/* Modal Content */}
-        {loadingAvailable ? (
-          <View style={styles.modalLoading}>
-            <ActivityIndicator size="large" color={MibuBrand.brown} />
-            <Text style={styles.modalLoadingText}>
-              {isZh ? '載入中...' : 'Loading...'}
+    return (
+      <Modal
+        visible={addPlacesModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => {
+          setAddPlacesModalVisible(false);
+          setExpandedCategory(null);
+          setPlaceSearchQuery('');
+        }}
+      >
+        <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
+          {/* Modal Header */}
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              onPress={() => {
+                setAddPlacesModalVisible(false);
+                setExpandedCategory(null);
+                setPlaceSearchQuery('');
+              }}
+              style={styles.modalCloseButton}
+            >
+              <Ionicons name="close" size={24} color={MibuBrand.copper} />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>
+              {isZh ? '從圖鑑加入景點' : 'Add from Collection'}
             </Text>
+            <TouchableOpacity
+              onPress={confirmAddPlaces}
+              style={[
+                styles.modalConfirmButton,
+                selectedCollectionIds.length === 0 && styles.modalConfirmButtonDisabled,
+              ]}
+              disabled={selectedCollectionIds.length === 0 || addingPlaces}
+            >
+              {addingPlaces ? (
+                <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
+              ) : (
+                <Text style={styles.modalConfirmText}>
+                  {isZh ? `加入 (${selectedCollectionIds.length})` : `Add (${selectedCollectionIds.length})`}
+                </Text>
+              )}
+            </TouchableOpacity>
           </View>
-        ) : availablePlaces.length === 0 ? (
-          <View style={styles.modalEmpty}>
-            <Ionicons name="albums-outline" size={48} color={MibuBrand.tanLight} />
-            <Text style={styles.modalEmptyText}>
-              {isZh ? '圖鑑中沒有可加入的景點\n先去抽卡收集一些吧！' : 'No places in collection\nGo gacha to collect some!'}
-            </Text>
+
+          {/* 【截圖 9-15 #7】搜索輸入框 */}
+          <View style={styles.searchContainer}>
+            <Ionicons name="search-outline" size={20} color={MibuBrand.copper} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={isZh ? '搜尋景點...' : 'Search places...'}
+              placeholderTextColor={MibuBrand.copper}
+              value={placeSearchQuery}
+              onChangeText={setPlaceSearchQuery}
+            />
+            {placeSearchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setPlaceSearchQuery('')}>
+                <Ionicons name="close-circle" size={20} color={MibuBrand.copper} />
+              </TouchableOpacity>
+            )}
           </View>
-        ) : (
-          <ScrollView
-            style={styles.modalScroll}
-            contentContainerStyle={styles.modalScrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {availablePlaces.map(categoryGroup => (
-              <View key={categoryGroup.category} style={styles.modalCategorySection}>
-                <Text style={styles.modalCategoryTitle}>{categoryGroup.categoryName}</Text>
-                {categoryGroup.places.map(place => {
-                  const isSelected = selectedCollectionIds.includes(place.collectionId);
-                  // 使用父層的 category，因為後端不在 place 內提供 category
-                  const categoryToken = getCategoryToken(categoryGroup.category);
-                  return (
+
+          {/* Modal Content */}
+          {loadingAvailable ? (
+            <View style={styles.modalLoading}>
+              <ActivityIndicator size="large" color={MibuBrand.brown} />
+              <Text style={styles.modalLoadingText}>
+                {isZh ? '載入中...' : 'Loading...'}
+              </Text>
+            </View>
+          ) : filteredPlaces.length === 0 ? (
+            <View style={styles.modalEmpty}>
+              <Ionicons name="albums-outline" size={48} color={MibuBrand.tanLight} />
+              <Text style={styles.modalEmptyText}>
+                {placeSearchQuery.trim()
+                  ? (isZh ? '找不到符合的景點' : 'No matching places found')
+                  : (isZh ? '圖鑑中沒有可加入的景點\n先去抽卡收集一些吧！' : 'No places in collection\nGo gacha to collect some!')}
+              </Text>
+            </View>
+          ) : (
+            <ScrollView
+              style={styles.modalScroll}
+              contentContainerStyle={styles.modalScrollContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {filteredPlaces.map(categoryGroup => {
+                const categoryToken = getCategoryToken(categoryGroup.category);
+                const isExpanded = expandedCategory === categoryGroup.category;
+                // 【截圖 9-15 #6】最多顯示 15 個
+                const displayPlaces = isExpanded ? categoryGroup.places.slice(0, 15) : [];
+
+                return (
+                  <View key={categoryGroup.category} style={styles.modalCategorySection}>
+                    {/* 手風琴標題（可點擊展開/收合） */}
                     <TouchableOpacity
-                      key={place.collectionId}
                       style={[
-                        styles.modalPlaceItem,
-                        isSelected && styles.modalPlaceItemSelected,
+                        styles.accordionHeader,
+                        isExpanded && styles.accordionHeaderExpanded,
                       ]}
+                      onPress={() => setExpandedCategory(isExpanded ? null : categoryGroup.category)}
                       activeOpacity={0.7}
-                      onPress={() => togglePlaceSelection(place.collectionId)}
                     >
-                      <View
-                        style={[
-                          styles.modalPlaceStripe,
-                          { backgroundColor: categoryToken.stripe },
-                        ]}
+                      <View style={styles.accordionHeaderLeft}>
+                        <View
+                          style={[
+                            styles.accordionStripe,
+                            { backgroundColor: categoryToken.stripe },
+                          ]}
+                        />
+                        <Text style={styles.accordionTitle}>{categoryGroup.categoryName}</Text>
+                        <View style={styles.accordionCountBadge}>
+                          <Text style={styles.accordionCountText}>{categoryGroup.places.length}</Text>
+                        </View>
+                      </View>
+                      <Ionicons
+                        name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                        size={20}
+                        color={MibuBrand.copper}
                       />
-                      <View style={styles.modalPlaceInfo}>
-                        <Text style={styles.modalPlaceName}>{place.name}</Text>
-                        {place.nameEn && (
-                          <Text style={styles.modalPlaceNameEn}>{place.nameEn}</Text>
-                        )}
-                      </View>
-                      <View style={[
-                        styles.modalCheckbox,
-                        isSelected && styles.modalCheckboxSelected,
-                      ]}>
-                        {isSelected && (
-                          <Ionicons name="checkmark" size={16} color={MibuBrand.warmWhite} />
-                        )}
-                      </View>
                     </TouchableOpacity>
-                  );
-                })}
-              </View>
-            ))}
-          </ScrollView>
-        )}
-      </View>
-    </Modal>
-  );
+
+                    {/* 展開的景點列表（可滑動，最多 15 個） */}
+                    {isExpanded && (
+                      <ScrollView
+                        style={styles.accordionContent}
+                        nestedScrollEnabled
+                        showsVerticalScrollIndicator={true}
+                      >
+                        {displayPlaces.map(place => {
+                          const isSelected = selectedCollectionIds.includes(place.collectionId);
+                          return (
+                            <TouchableOpacity
+                              key={place.collectionId}
+                              style={[
+                                styles.modalPlaceItem,
+                                isSelected && styles.modalPlaceItemSelected,
+                              ]}
+                              activeOpacity={0.7}
+                              onPress={() => togglePlaceSelection(place.collectionId)}
+                            >
+                              <View
+                                style={[
+                                  styles.modalPlaceStripe,
+                                  { backgroundColor: categoryToken.stripe },
+                                ]}
+                              />
+                              <View style={styles.modalPlaceInfo}>
+                                <Text style={styles.modalPlaceName}>{place.name}</Text>
+                                {place.nameEn && (
+                                  <Text style={styles.modalPlaceNameEn}>{place.nameEn}</Text>
+                                )}
+                              </View>
+                              <View style={[
+                                styles.modalCheckbox,
+                                isSelected && styles.modalCheckboxSelected,
+                              ]}>
+                                {isSelected && (
+                                  <Ionicons name="checkmark" size={16} color={MibuBrand.warmWhite} />
+                                )}
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })}
+                        {categoryGroup.places.length > 15 && (
+                          <Text style={styles.accordionMoreText}>
+                            {isZh
+                              ? `還有 ${categoryGroup.places.length - 15} 個景點...`
+                              : `${categoryGroup.places.length - 15} more places...`}
+                          </Text>
+                        )}
+                      </ScrollView>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
+          )}
+        </View>
+      </Modal>
+    );
+  };
 
   // ===== 建立行程 Modal =====
   const renderCreateModal = () => (
@@ -1502,6 +1862,20 @@ export function ItineraryScreenV2() {
     </Modal>
   );
 
+  // 【截圖 9-15 #8 #11】Toast 通知組件
+  const renderToast = () =>
+    showToast && (
+      <Animated.View
+        style={[
+          styles.toastContainer,
+          { opacity: toastOpacity, bottom: insets.bottom + 70 },
+        ]}
+        pointerEvents="none"
+      >
+        <Text style={styles.toastText}>{toastMessage}</Text>
+      </Animated.View>
+    );
+
   return (
     <View style={styles.container}>
       {renderMainContent()}
@@ -1510,6 +1884,7 @@ export function ItineraryScreenV2() {
       {renderRightDrawer()}
       {renderAddPlacesModal()}
       {renderCreateModal()}
+      {renderToast()}
     </View>
   );
 }
@@ -1583,12 +1958,33 @@ const styles = StyleSheet.create({
   },
   headerCenter: {
     alignItems: 'center',
+    flex: 1,
+    marginHorizontal: Spacing.sm,
+  },
+  // 【截圖 9-15 #12】標題列（含編輯圖示）
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: FontSize.lg,
     fontWeight: '700',
     color: MibuBrand.brownDark,
     letterSpacing: -0.3,
+  },
+  // 【截圖 9-15 #12】標題編輯輸入框
+  titleEditContainer: {
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+  },
+  titleEditInput: {
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+    textAlign: 'center',
+    minWidth: 120,
   },
   headerSubtitle: {
     fontSize: FontSize.xs,
@@ -1787,6 +2183,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // 【截圖 9-15 #2】Drawer header actions
+  drawerHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  selectModeButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    marginRight: Spacing.xs,
+  },
+  selectModeText: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: MibuBrand.brown,
+  },
+  // 【截圖 9-15 #2】批量刪除按鈕
+  deleteSelectedButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: MibuBrand.error,
+    borderRadius: Radius.md,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  deleteSelectedText: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: MibuBrand.warmWhite,
+    marginLeft: Spacing.xs,
+  },
+  // 【截圖 9-15 #2】行程勾選框
+  tripCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: Radius.sm,
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
+    marginRight: Spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  tripCheckboxSelected: {
+    backgroundColor: MibuBrand.brown,
+    borderColor: MibuBrand.brown,
+  },
+  tripCardSelectMode: {
+    flex: 1,
+  },
   drawerScroll: {
     flex: 1,
   },
@@ -1922,6 +2368,20 @@ const styles = StyleSheet.create({
   placeContent: {
     flex: 1,
     padding: Spacing.lg,
+    position: 'relative',
+  },
+  // 【截圖 9-15 #11】右上角刪除按鈕
+  placeDeleteX: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    width: 24,
+    height: 24,
+    borderRadius: Radius.full,
+    backgroundColor: MibuBrand.creamLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
   },
   placeTopRow: {
     flexDirection: 'row',
@@ -2084,8 +2544,29 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     paddingBottom: Spacing.xxl,
   },
+  // 【截圖 9-15 #7】搜索輸入框
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: MibuBrand.warmWhite,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: FontSize.md,
+    color: MibuBrand.brownDark,
+    marginLeft: Spacing.sm,
+    paddingVertical: Spacing.xs,
+  },
   modalCategorySection: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.md,
   },
   modalCategoryTitle: {
     fontSize: FontSize.md,
@@ -2093,6 +2574,66 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
     marginBottom: Spacing.md,
     paddingLeft: Spacing.sm,
+  },
+  // 【截圖 9-15 #6】手風琴樣式
+  accordionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: Radius.md,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    ...Shadow.sm,
+  },
+  accordionHeaderExpanded: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: MibuBrand.tanLight,
+  },
+  accordionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  accordionStripe: {
+    width: 4,
+    height: 24,
+    borderRadius: 2,
+    marginRight: Spacing.md,
+  },
+  accordionTitle: {
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    color: MibuBrand.brownDark,
+    flex: 1,
+  },
+  accordionCountBadge: {
+    backgroundColor: MibuBrand.highlight,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Radius.sm,
+    marginRight: Spacing.md,
+  },
+  accordionCountText: {
+    fontSize: FontSize.xs,
+    fontWeight: '600',
+    color: MibuBrand.brown,
+  },
+  accordionContent: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderBottomLeftRadius: Radius.md,
+    borderBottomRightRadius: Radius.md,
+    maxHeight: 300,
+    paddingVertical: Spacing.sm,
+  },
+  accordionMoreText: {
+    fontSize: FontSize.sm,
+    color: MibuBrand.copper,
+    textAlign: 'center',
+    paddingVertical: Spacing.md,
+    fontStyle: 'italic',
   },
   modalPlaceItem: {
     flexDirection: 'row',
@@ -2212,6 +2753,25 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     color: MibuBrand.warmWhite,
     lineHeight: 20,
+    textAlign: 'center',
+  },
+
+  // ===== 【截圖 9-15 #8 #11】Toast 通知樣式（淡入淡出） =====
+  toastContainer: {
+    position: 'absolute',
+    left: Spacing.xl,
+    right: Spacing.xl,
+    backgroundColor: MibuBrand.brownDark,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.lg,
+    alignItems: 'center',
+    zIndex: 1000,
+    ...Shadow.lg,
+  },
+  toastText: {
+    fontSize: FontSize.md,
+    color: MibuBrand.warmWhite,
     textAlign: 'center',
   },
 });
