@@ -183,6 +183,8 @@ export function ItineraryScreenV2() {
   // Drawer 狀態
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
   const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
+  // 【截圖 36 修復】防止動畫中重複觸發
+  const drawerAnimating = useRef(false);
 
   // 【截圖 9-15 #2】行程列表多選刪除狀態
   const [selectMode, setSelectMode] = useState(false);
@@ -191,6 +193,8 @@ export function ItineraryScreenV2() {
   // 【截圖 9-15 #5】預先載入快取
   const itineraryCache = useRef<Record<number, Itinerary>>({});
   const collectionCacheRef = useRef<AvailablePlacesByCategory[] | null>(null);
+  // 【預防卡住】追踪當前正在載入的行程 ID，避免快速切換時的狀態錯亂
+  const loadingItineraryIdRef = useRef<number | null>(null);
 
   // 【截圖 9】使用說明 Tooltip 狀態（淡入淡出）
   const [showHelpTooltip, setShowHelpTooltip] = useState(false);
@@ -200,6 +204,9 @@ export function ItineraryScreenV2() {
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const toastOpacity = useRef(new Animated.Value(0)).current;
+  // 【預防卡住】Timer refs 用於清理 setTimeout
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const helpTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 從圖鑑加入景點 Modal 狀態
   const [addPlacesModalVisible, setAddPlacesModalVisible] = useState(false);
@@ -243,10 +250,21 @@ export function ItineraryScreenV2() {
    * 【截圖 9-15 #8 #11】顯示 Toast 通知（淡入淡出，持續 3 秒）
    * 用於加入景點成功、刪除景點等操作回饋
    * 不使用 icon，純文字
+   * 【預防卡住】正確清理 timer 避免記憶體洩漏
    */
   const showToastMessage = useCallback((message: string) => {
+    // 清理之前的 timer
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = null;
+    }
+    // 停止之前的動畫
+    toastOpacity.stopAnimation();
+
     setToastMessage(message);
     setShowToast(true);
+    // 重置動畫值
+    toastOpacity.setValue(0);
     // 淡入
     Animated.timing(toastOpacity, {
       toValue: 1,
@@ -254,7 +272,7 @@ export function ItineraryScreenV2() {
       useNativeDriver: true,
     }).start(() => {
       // 持續 3 秒後淡出
-      setTimeout(() => {
+      toastTimerRef.current = setTimeout(() => {
         Animated.timing(toastOpacity, {
           toValue: 0,
           duration: 300,
@@ -314,14 +332,33 @@ export function ItineraryScreenV2() {
   }, []);
 
   // 載入行程詳情
-  const fetchItineraryDetail = useCallback(async (id: number) => {
+  // 【截圖 36 修復】同時更新快取，確保資料一致性
+  // 【預防卡住】檢查載入的 ID 是否仍是當前想要的，避免快速切換時狀態錯亂
+  const fetchItineraryDetail = useCallback(async (id: number, isBackgroundUpdate = false) => {
     const token = await getToken();
     if (!token) return;
 
+    // 標記正在載入的 ID
+    if (!isBackgroundUpdate) {
+      loadingItineraryIdRef.current = id;
+    }
+
     try {
       const res = await itineraryApi.getItinerary(id, token);
+
+      // 【預防卡住】如果用戶已切換到其他行程，忽略這次結果
+      if (!isBackgroundUpdate && loadingItineraryIdRef.current !== id) {
+        console.log(`[fetchItineraryDetail] Ignoring stale result for id ${id}, current is ${loadingItineraryIdRef.current}`);
+        return;
+      }
+
       if (res.success) {
+        // 【預防卡住】再次檢查是否是當前行程
+        if (!isBackgroundUpdate && loadingItineraryIdRef.current !== id) return;
+
         setCurrentItinerary(res.itinerary);
+        // 【截圖 36 修復】更新快取
+        itineraryCache.current[id] = res.itinerary;
 
         // 【截圖 9-15 #13】載入已保存的對話記錄
         const savedMessages = await loadMessages(id);
@@ -446,15 +483,16 @@ export function ItineraryScreenV2() {
     }
   }, [currentItinerary, getToken, fetchItineraryDetail, isZh, showToastMessage]);
 
-  // 【截圖 9-15 #5 #13】切換行程 - 優先使用快取，提升體驗
+  // 【截圖 9-15 #5 #13】【截圖 36 修復】切換行程 - 使用快取但同時背景更新
   const handleSelectItinerary = useCallback(async (id: number) => {
     setActiveItineraryId(id);
     setAiContext(undefined);
     setAiSuggestions([]);
 
-    // 【截圖 9-15 #5】優先使用快取
+    // 【截圖 36 修復】快取僅用於快速顯示，同時在背景載入最新資料
     const cached = itineraryCache.current[id];
-    if (cached) {
+    if (cached && cached.places && cached.places.length > 0) {
+      // 有有效快取：先顯示快取，再背景更新
       setCurrentItinerary(cached);
       // 載入保存的對話記錄
       const savedMessages = await loadMessages(id);
@@ -469,9 +507,12 @@ export function ItineraryScreenV2() {
         setMessages([welcomeMessage]);
         saveMessages(id, [welcomeMessage]);
       }
+      // 背景更新（不 await，不阻塞 UI）
+      // 【預防卡住】標記為背景更新，不會影響狀態檢查
+      fetchItineraryDetail(id, true);
     } else {
-      // 沒有快取時正常載入
-      await fetchItineraryDetail(id);
+      // 沒有有效快取時正常載入
+      await fetchItineraryDetail(id, false);
     }
     closeLeftDrawer();
   }, [fetchItineraryDetail, loadMessages, saveMessages]);
@@ -544,20 +585,21 @@ export function ItineraryScreenV2() {
   }, [currentItinerary, selectedCollectionIds, getToken, fetchItineraryDetail, isZh, showToastMessage]);
 
   // 移動景點（上/下）
+  // 【預防卡住】失敗時直接還原本地狀態，不重新載入整個行程
   const handleMovePlace = useCallback(async (itemId: number, direction: 'up' | 'down') => {
     if (!currentItinerary) return;
     const token = await getToken();
     if (!token) return;
 
-    const places = currentItinerary.places;
-    const currentIndex = places.findIndex(p => p.id === itemId);
+    const oldPlaces = currentItinerary.places;
+    const currentIndex = oldPlaces.findIndex(p => p.id === itemId);
     if (currentIndex === -1) return;
 
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= places.length) return;
+    if (newIndex < 0 || newIndex >= oldPlaces.length) return;
 
     // 重新排序陣列
-    const newPlaces = [...places];
+    const newPlaces = [...oldPlaces];
     const [movedItem] = newPlaces.splice(currentIndex, 1);
     newPlaces.splice(newIndex, 0, movedItem);
 
@@ -569,23 +611,34 @@ export function ItineraryScreenV2() {
       const itemIds = newPlaces.map(p => p.id);
       const res = await itineraryApi.reorderPlaces(currentItinerary.id, { itemIds }, token);
       if (!res.success) {
-        // 失敗時還原
-        await fetchItineraryDetail(currentItinerary.id);
+        // 【預防卡住】失敗時直接還原本地狀態
+        setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
+      } else {
+        // 更新快取
+        if (itineraryCache.current[currentItinerary.id]) {
+          itineraryCache.current[currentItinerary.id] = {
+            ...itineraryCache.current[currentItinerary.id],
+            places: newPlaces,
+          };
+        }
       }
     } catch (error) {
       console.error('Reorder error:', error);
-      await fetchItineraryDetail(currentItinerary.id);
+      // 【預防卡住】失敗時直接還原本地狀態
+      setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
     }
-  }, [currentItinerary, getToken, fetchItineraryDetail]);
+  }, [currentItinerary, getToken]);
 
   // 【截圖 9-15 #9】拖曳重新排序
+  // 【預防卡住】失敗時直接還原本地狀態，不重新載入整個行程
   const handleDragReorder = useCallback(async (newPlaces: ItineraryPlaceItem[]) => {
     if (!currentItinerary) return;
     const token = await getToken();
     if (!token) return;
 
     // 檢查順序是否有變化
-    const oldIds = currentItinerary.places.map(p => p.id);
+    const oldPlaces = currentItinerary.places;
+    const oldIds = oldPlaces.map(p => p.id);
     const newIds = newPlaces.map(p => p.id);
     if (JSON.stringify(oldIds) === JSON.stringify(newIds)) {
       return; // 順序沒變，不需要更新
@@ -599,18 +652,26 @@ export function ItineraryScreenV2() {
       const itemIds = newPlaces.map(p => p.id);
       const res = await itineraryApi.reorderPlaces(currentItinerary.id, { itemIds }, token);
       if (!res.success) {
-        // 失敗時還原
-        await fetchItineraryDetail(currentItinerary.id);
+        // 【預防卡住】失敗時直接還原本地狀態，不發起新的網路請求
+        setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
         showToastMessage(isZh ? '排序失敗，請重試' : 'Reorder failed, please try again');
       } else {
+        // 更新快取
+        if (itineraryCache.current[currentItinerary.id]) {
+          itineraryCache.current[currentItinerary.id] = {
+            ...itineraryCache.current[currentItinerary.id],
+            places: newPlaces,
+          };
+        }
         showToastMessage(isZh ? '已更新順序' : 'Order updated');
       }
     } catch (error) {
       console.error('Drag reorder error:', error);
-      await fetchItineraryDetail(currentItinerary.id);
+      // 【預防卡住】失敗時直接還原本地狀態
+      setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
       showToastMessage(isZh ? '排序失敗，請重試' : 'Reorder failed, please try again');
     }
-  }, [currentItinerary, getToken, fetchItineraryDetail, isZh, showToastMessage]);
+  }, [currentItinerary, getToken, isZh, showToastMessage]);
 
   // 載入國家列表
   const loadCountries = useCallback(async () => {
@@ -710,7 +771,8 @@ export function ItineraryScreenV2() {
   }, [newItinerary, getToken, fetchItineraries, isZh]);
 
   /**
-   * 【截圖 9-15 #12】保存行程標題
+   * 【截圖 9-15 #12】【截圖 36 修復】保存行程標題
+   * 修復：更新標題後同時更新快取和列表
    */
   const handleSaveTitle = useCallback(async () => {
     if (!currentItinerary || !titleInput.trim()) {
@@ -720,23 +782,34 @@ export function ItineraryScreenV2() {
     const token = await getToken();
     if (!token) return;
 
+    const newTitle = titleInput.trim();
+
     try {
       const res = await itineraryApi.updateItinerary(
         currentItinerary.id,
-        { title: titleInput.trim() },
+        { title: newTitle },
         token
       );
       if (res.success) {
-        // 更新本地狀態
-        setCurrentItinerary(prev => prev ? { ...prev, title: titleInput.trim() } : null);
-        // 更新列表中的標題
-        setItineraries(prev =>
-          prev.map(item =>
+        // 【截圖 36 修復】更新本地狀態
+        setCurrentItinerary(prev => prev ? { ...prev, title: newTitle } : null);
+
+        // 【截圖 36 修復】更新快取
+        if (itineraryCache.current[currentItinerary.id]) {
+          itineraryCache.current[currentItinerary.id] = {
+            ...itineraryCache.current[currentItinerary.id],
+            title: newTitle,
+          };
+        }
+
+        // 【截圖 36 修復】更新列表中的標題（強制重新建立陣列以觸發重新渲染）
+        setItineraries(prev => [
+          ...prev.map(item =>
             item.id === currentItinerary.id
-              ? { ...item, title: titleInput.trim() }
+              ? { ...item, title: newTitle }
               : item
           )
-        );
+        ]);
         showToastMessage(isZh ? '標題已更新' : 'Title updated');
       }
     } catch (error) {
@@ -894,11 +967,36 @@ export function ItineraryScreenV2() {
     }
   }, [newItinerary.countryId, loadRegions]);
 
+  // 【預防卡住】組件卸載時清理所有 timers，避免記憶體洩漏
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
+      if (helpTimerRef.current) {
+        clearTimeout(helpTimerRef.current);
+        helpTimerRef.current = null;
+      }
+    };
+  }, []);
+
   /**
    * 【截圖 9】顯示使用說明 Tooltip（淡入淡出，持續 3 秒）
+   * 【預防卡住】正確清理 timer 避免記憶體洩漏
    */
   const showHelpInfo = useCallback(() => {
+    // 清理之前的 timer
+    if (helpTimerRef.current) {
+      clearTimeout(helpTimerRef.current);
+      helpTimerRef.current = null;
+    }
+    // 停止之前的動畫
+    helpTooltipOpacity.stopAnimation();
+
     setShowHelpTooltip(true);
+    // 重置動畫值
+    helpTooltipOpacity.setValue(0);
     // 淡入
     Animated.timing(helpTooltipOpacity, {
       toValue: 1,
@@ -906,7 +1004,7 @@ export function ItineraryScreenV2() {
       useNativeDriver: true,
     }).start(() => {
       // 持續 3 秒後淡出
-      setTimeout(() => {
+      helpTimerRef.current = setTimeout(() => {
         Animated.timing(helpTooltipOpacity, {
           toValue: 0,
           duration: 300,
@@ -969,8 +1067,13 @@ export function ItineraryScreenV2() {
 
   /**
    * 開啟左側 Drawer（行程列表）
+   * 【截圖 36 修復】改用 timing 動畫避免 spring 卡住 + 防抖機制
    */
   const openLeftDrawer = () => {
+    // 【截圖 36 修復】防止動畫中重複觸發
+    if (drawerAnimating.current || leftDrawerOpen) return;
+    drawerAnimating.current = true;
+
     // 停止進行中的動畫，避免動畫衝突
     leftDrawerAnim.stopAnimation();
     overlayAnim.stopAnimation();
@@ -979,48 +1082,60 @@ export function ItineraryScreenV2() {
     // 【截圖 9-15 #5】背景預先載入所有行程詳情
     preloadItineraries();
     Animated.parallel([
-      Animated.spring(leftDrawerAnim, {
+      Animated.timing(leftDrawerAnim, {
         toValue: 0,
+        duration: 280,
         useNativeDriver: true,
-        tension: 65,
-        friction: 11,
       }),
       Animated.timing(overlayAnim, {
         toValue: 1,
         duration: 250,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      drawerAnimating.current = false;
+    });
   };
 
   /**
    * 關閉左側 Drawer
+   * 【截圖 36 修復】改用 timing 動畫，並在動畫完成後才設置狀態
    */
   const closeLeftDrawer = () => {
+    // 【截圖 36 修復】防止動畫中重複觸發
+    if (drawerAnimating.current || !leftDrawerOpen) return;
+    drawerAnimating.current = true;
+
     // 停止進行中的動畫
     leftDrawerAnim.stopAnimation();
     overlayAnim.stopAnimation();
-    // 立即設定狀態（重要！不要放在 .start() callback 裡）
-    setLeftDrawerOpen(false);
     Animated.parallel([
-      Animated.spring(leftDrawerAnim, {
+      Animated.timing(leftDrawerAnim, {
         toValue: -DRAWER_WIDTH,
+        duration: 250,
         useNativeDriver: true,
-        tension: 65,
-        friction: 11,
       }),
       Animated.timing(overlayAnim, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      // 【截圖 36 修復】動畫完成後才設置狀態
+      setLeftDrawerOpen(false);
+      drawerAnimating.current = false;
+    });
   };
 
   /**
    * 開啟右側 Drawer（景點列表）
+   * 【截圖 36 修復】改用 timing 動畫避免 spring 卡住 + 防抖機制
    */
   const openRightDrawer = () => {
+    // 【截圖 36 修復】防止動畫中重複觸發
+    if (drawerAnimating.current || rightDrawerOpen) return;
+    drawerAnimating.current = true;
+
     // 停止進行中的動畫
     rightDrawerAnim.stopAnimation();
     overlayAnim.stopAnimation();
@@ -1028,42 +1143,49 @@ export function ItineraryScreenV2() {
     // 【截圖 9-15 #5】背景預先載入該城市的圖鑑內容
     preloadCollection();
     Animated.parallel([
-      Animated.spring(rightDrawerAnim, {
+      Animated.timing(rightDrawerAnim, {
         toValue: 0,
+        duration: 280,
         useNativeDriver: true,
-        tension: 65,
-        friction: 11,
       }),
       Animated.timing(overlayAnim, {
         toValue: 1,
         duration: 250,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      drawerAnimating.current = false;
+    });
   };
 
   /**
    * 關閉右側 Drawer
+   * 【截圖 36 修復】改用 timing 動畫，並在動畫完成後才設置狀態 + 防抖機制
    */
   const closeRightDrawer = () => {
+    // 【截圖 36 修復】防止動畫中重複觸發
+    if (drawerAnimating.current || !rightDrawerOpen) return;
+    drawerAnimating.current = true;
+
     // 停止進行中的動畫
     rightDrawerAnim.stopAnimation();
     overlayAnim.stopAnimation();
-    // 立即設定狀態
-    setRightDrawerOpen(false);
     Animated.parallel([
-      Animated.spring(rightDrawerAnim, {
+      Animated.timing(rightDrawerAnim, {
         toValue: DRAWER_WIDTH,
+        duration: 250,
         useNativeDriver: true,
-        tension: 65,
-        friction: 11,
       }),
       Animated.timing(overlayAnim, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      // 【截圖 36 修復】動畫完成後才設置狀態，避免提前隱藏 overlay
+      setRightDrawerOpen(false);
+      drawerAnimating.current = false;
+    });
   };
 
   // ===== 未登入狀態 =====
@@ -1485,8 +1607,9 @@ export function ItineraryScreenV2() {
           </TouchableOpacity>
         </View>
 
-        {/* 【截圖 9-15 #9】景點卡片列表 - 支援長按拖曳排序 */}
-        {currentItinerary?.places && currentItinerary.places.length > 0 ? (
+        {/* 【截圖 9-15 #9】【截圖 36 修復】景點卡片列表 - 支援長按拖曳排序 */}
+        {/* 修復：更穩健的條件判斷，確保 places 陣列存在且有內容 */}
+        {Array.isArray(currentItinerary?.places) && currentItinerary.places.length > 0 ? (
           <DraggableFlatList
             data={currentItinerary.places}
             keyExtractor={(item) => String(item.id)}
@@ -2957,7 +3080,7 @@ const styles = StyleSheet.create({
 
   // ===== 【截圖 9】使用說明 Tooltip 樣式（淡入淡出） =====
   helpTooltip: {
-    backgroundColor: MibuBrand.brownDark,
+    backgroundColor: 'rgba(128, 128, 128, 0.5)',  // 灰色 50% 透明度
     borderRadius: Radius.lg,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
@@ -2965,7 +3088,7 @@ const styles = StyleSheet.create({
   },
   helpTooltipText: {
     fontSize: FontSize.sm,
-    color: MibuBrand.warmWhite,
+    color: '#FFFFFF',  // 白色文字
     lineHeight: 20,
     textAlign: 'center',
   },

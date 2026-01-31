@@ -331,9 +331,14 @@ export function GachaScreen() {
 
   /**
    * 檢查是否還有每日扭蛋次數
-   * 特殊帳號（UNLIMITED_EMAILS）不受限制
+   * 超級管理員或特殊帳號（UNLIMITED_EMAILS）不受限制
    */
   const checkDailyLimit = async (): Promise<boolean> => {
+    // 超級管理員不限次數
+    if (state.user?.isSuperAdmin) {
+      return true;
+    }
+
     // 特殊帳號不限次數
     if (state.user?.email && UNLIMITED_EMAILS.includes(state.user.email)) {
       return true;
@@ -858,7 +863,15 @@ export function GachaScreen() {
           options={countryOptions}
           value={selectedCountryId}
           onChange={(value) => {
-            setSelectedCountryId(value as number);
+            const newCountryId = value as number;
+
+            // 如果選擇相同的國家，不做任何處理
+            // 避免 loadingRegions 被設為 true 但 useEffect 不觸發的問題
+            if (newCountryId === selectedCountryId) {
+              return;
+            }
+
+            setSelectedCountryId(newCountryId);
             setSelectedRegionId(null);
             setRegions([]);
             // 【截圖 3 修復】立即設定 loading 狀態
@@ -870,7 +883,7 @@ export function GachaScreen() {
           }}
           placeholder={t.selectCountry}
           loading={loadingCountries}
-          footerContent={
+          footerContent={(closeModal) => (
             // 國家選單底部：解鎖全球地圖 CTA
             // 【截圖 2 修改】文字放大 13px → 15px，行高 20 → 24，間距增加
             <View style={{ alignItems: 'center', paddingTop: 24, paddingBottom: 8 }}>
@@ -880,7 +893,10 @@ export function GachaScreen() {
                   : 'We\'re working on adding more countries.\nNow you can help us too!'}
               </Text>
               <TouchableOpacity
-                onPress={() => router.push('/crowdfunding')}
+                onPress={() => {
+                  closeModal(); // 先關閉 Modal
+                  router.push('/crowdfunding');
+                }}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -897,7 +913,7 @@ export function GachaScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          }
+          )}
         />
 
         {/* 城市下拉選單（選擇國家後才顯示） */}
@@ -963,7 +979,7 @@ export function GachaScreen() {
                     position: 'absolute',
                     left: 0,
                     top: 28,
-                    backgroundColor: MibuBrand.brownDark,
+                    backgroundColor: 'rgba(128, 128, 128, 0.5)',  // 灰色 50% 透明度
                     paddingHorizontal: 12,
                     paddingVertical: 8,
                     borderRadius: 8,
@@ -972,7 +988,7 @@ export function GachaScreen() {
                     minWidth: 180,
                   }}
                 >
-                  <Text style={{ fontSize: 13, color: MibuBrand.warmWhite, fontWeight: '500' }}>
+                  <Text style={{ fontSize: 13, color: '#FFFFFF', fontWeight: '500' }}>
                     {state.language === 'zh-TW' ? '每日扭蛋限額最高36次' : 'Daily limit: 36 pulls'}
                   </Text>
                 </Animated.View>

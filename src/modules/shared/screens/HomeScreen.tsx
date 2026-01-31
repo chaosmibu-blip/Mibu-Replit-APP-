@@ -25,16 +25,36 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 取得螢幕高度，用於計算活動內容區最小高度
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
+
+/** AsyncStorage key for avatar preference（與 ProfileScreen 共用）*/
+const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';
+
+/**
+ * 預設頭像選項
+ * 與 ProfileScreen 保持一致
+ */
+const AVATAR_PRESETS = [
+  { id: 'default', icon: 'person', color: MibuBrand.brown },
+  { id: 'cat', icon: 'paw', color: '#F59E0B' },
+  { id: 'star', icon: 'star', color: '#8B5CF6' },
+  { id: 'heart', icon: 'heart', color: '#EF4444' },
+  { id: 'leaf', icon: 'leaf', color: '#10B981' },
+  { id: 'compass', icon: 'compass', color: '#3B82F6' },
+  { id: 'flame', icon: 'flame', color: '#F97316' },
+  { id: 'diamond', icon: 'diamond', color: '#EC4899' },
+];
 
 // ============================================================
 // 型別定義
@@ -86,6 +106,9 @@ export function HomeScreen() {
 
   // 活動 Tab 當前選中項（公告/在地/限時）
   const [activeEventTab, setActiveEventTab] = useState<'announcements' | 'local' | 'flash'>('announcements');
+
+  // 用戶頭像設定（從 AsyncStorage 讀取）
+  const [userAvatar, setUserAvatar] = useState<string>('default');
 
   // 用戶等級資料（預設值）
   const [userLevel, setUserLevel] = useState<UserLevelData>({
@@ -202,6 +225,31 @@ export function HomeScreen() {
   }, [loadData]);
 
   /**
+   * 載入用戶頭像設定
+   * 從 AsyncStorage 讀取用戶在個人資料中設定的頭像
+   */
+  const loadUserAvatar = useCallback(async () => {
+    try {
+      const savedAvatar = await AsyncStorage.getItem(AVATAR_STORAGE_KEY);
+      if (savedAvatar) {
+        setUserAvatar(savedAvatar);
+      }
+    } catch (error) {
+      console.log('Failed to load user avatar:', error);
+    }
+  }, []);
+
+  /**
+   * 每次畫面獲得焦點時重新載入頭像
+   * 確保用戶在個人資料中更新頭像後，首頁能即時反映
+   */
+  useFocusEffect(
+    useCallback(() => {
+      loadUserAvatar();
+    }, [loadUserAvatar])
+  );
+
+  /**
    * 下拉刷新處理
    */
   const onRefresh = useCallback(() => {
@@ -296,10 +344,33 @@ export function HomeScreen() {
         <View style={styles.levelHeader}>
           {/* 圓形頭像 + 等級徽章 */}
           <View style={styles.avatarWithBadge}>
-            <Image
-              source={require('../../../../assets/images/icon.png')}
-              style={styles.levelAvatar}
-            />
+            {/* 根據用戶設定顯示對應頭像 */}
+            {(() => {
+              const avatarPreset = AVATAR_PRESETS.find(a => a.id === userAvatar);
+              const avatarColor = avatarPreset?.color || MibuBrand.brown;
+
+              if (userAvatar === 'default') {
+                // 預設頭像：顯示用戶名稱首字
+                return (
+                  <View style={[styles.levelAvatar, { backgroundColor: avatarColor }]}>
+                    <Text style={styles.avatarInitial}>
+                      {state.user?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
+                    </Text>
+                  </View>
+                );
+              } else {
+                // 其他頭像：顯示對應 icon
+                return (
+                  <View style={[styles.levelAvatar, { backgroundColor: avatarColor }]}>
+                    <Ionicons
+                      name={avatarPreset?.icon as any || 'person'}
+                      size={32}
+                      color="#ffffff"
+                    />
+                  </View>
+                );
+              }
+            })()}
             <View style={styles.levelBadgeCircle}>
               <Text style={styles.levelBadgeText}>Lv.{userLevel.level}</Text>
             </View>
@@ -635,28 +706,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  /** 頭像 + 等級徽章容器 */
   avatarWithBadge: {
     position: 'relative',
     width: 64,
     height: 64,
+    marginRight: 4, // 給 badge 一點右側空間
   },
+  /** 圓形頭像（支援 icon 或首字母） */
   levelAvatar: {
     width: 64,
     height: 64,
     borderRadius: 32,
     backgroundColor: MibuBrand.cream,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  /** 頭像首字母文字 */
+  avatarInitial: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  /** Lv badge，置於頭像右下角（不擋住頭像） */
   levelBadgeCircle: {
     position: 'absolute',
-    bottom: -4,
-    left: '50%',
-    transform: [{ translateX: -24 }],
+    bottom: -6,
+    right: -12,
     backgroundColor: MibuBrand.brown,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 10,
-    minWidth: 48,
+    minWidth: 40,
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: MibuBrand.creamLight,
   },
   levelBadgeText: {
     fontSize: 12,

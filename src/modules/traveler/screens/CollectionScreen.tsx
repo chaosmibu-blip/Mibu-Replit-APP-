@@ -894,126 +894,200 @@ export function CollectionScreen() {
                                       </TouchableOpacity>
 
                                       {/* 景點列表（展開時顯示）*/}
+                                      {/* 【截圖 34-35】重新設計卡片樣式 */}
                                       {isCategoryOpen && (
-                                        <View style={{ marginTop: Spacing.xs, gap: Spacing.xs }}>
+                                        <ScrollView
+                                          style={{
+                                            marginTop: Spacing.xs,
+                                            maxHeight: 400,  // 增加最大高度以容納更大的卡片
+                                          }}
+                                          contentContainerStyle={{ gap: Spacing.md }}
+                                          nestedScrollEnabled={true}
+                                          showsVerticalScrollIndicator={true}
+                                        >
                                           {categoryItems.map((item, idx) => {
                                             const placeName = getPlaceName(item);
                                             const description = getDescription(item);
                                             const date = formatDate(item.collectedAt);
                                             const isUnread = item.isRead === false;
 
-                                            const hasCoupon = item.isCoupon && item.couponData;
-                                            // #028 優惠更新通知
-                                            const hasPromoUpdate = item.collectionId ? promoUpdateIds.has(item.collectionId) : false;
+                                            // 優惠資訊（預留，目前可能還沒有商家登錄）
+                                            const hasPromoInfo = item.isCoupon && item.couponData;
+                                            const promoTitle = item.couponData?.title;
+                                            const promoCode = item.couponData?.code;
+
+                                            // 建議停留時間（預留欄位，後端尚未提供）
+                                            const suggestedDuration = (item as any).suggestedDuration;
 
                                             const isMerchantPro = item.merchant?.isPro && item.merchant?.brandColor;
                                             const merchantScheme = isMerchantPro
                                               ? deriveMerchantScheme(item.merchant!.brandColor!)
                                               : null;
-                                            const stripeColor = merchantScheme ? merchantScheme.accent : catToken.stripe;
+                                            // 卡片邊框和標題顏色使用分類色
+                                            const accentColor = merchantScheme ? merchantScheme.accent : catToken.stripe;
 
                                             return (
                                               <TouchableOpacity
                                                 key={`${item.id}-${idx}`}
                                                 style={{
                                                   backgroundColor: MibuBrand.warmWhite,
-                                                  borderRadius: Radius.md,
+                                                  borderRadius: Radius.xl,
                                                   overflow: 'hidden',
-                                                  flexDirection: 'row',
-                                                  borderWidth: isUnread ? 1 : 0,
-                                                  borderColor: isUnread ? MibuBrand.tierSP : 'transparent',
+                                                  borderWidth: 1.5,
+                                                  borderColor: isUnread ? accentColor : MibuBrand.tanLight,
+                                                  padding: Spacing.lg,
                                                 }}
                                                 onPress={() => handleItemPress(item)}
                                                 activeOpacity={0.7}
                                               >
-                                                {/* 左側分類色條 */}
-                                                <View style={{ width: 3, backgroundColor: stripeColor }} />
+                                                {/* ===== 第一行：日期/停留時間 + 分類標籤 + 未讀紅點 ===== */}
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
+                                                  {/* 左側：日期 或 建議停留時間 */}
+                                                  <View style={{
+                                                    backgroundColor: MibuBrand.creamLight,
+                                                    paddingHorizontal: Spacing.sm,
+                                                    paddingVertical: 4,
+                                                    borderRadius: Radius.full,
+                                                  }}>
+                                                    <Text style={{ fontSize: FontSize.xs, color: MibuBrand.brownLight }}>
+                                                      {suggestedDuration || date}
+                                                    </Text>
+                                                  </View>
 
-                                                {/* 卡片內容 */}
-                                                <View style={{ flex: 1, padding: Spacing.sm }}>
-                                                  {/* 第一行：名稱 + 標籤 */}
-                                                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
-                                                    <Text
-                                                      style={{
-                                                        flex: 1,
+                                                  {/* 右側：分類標籤 + 未讀紅點 */}
+                                                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.xs }}>
+                                                    {/* 未讀紅點 */}
+                                                    {isUnread && (
+                                                      <View style={{
+                                                        width: 8,
+                                                        height: 8,
+                                                        borderRadius: 4,
+                                                        backgroundColor: MibuBrand.tierSP,
+                                                      }} />
+                                                    )}
+                                                    {/* 分類標籤 */}
+                                                    <View style={{
+                                                      backgroundColor: catToken.badge,
+                                                      paddingHorizontal: Spacing.md,
+                                                      paddingVertical: 6,
+                                                      borderRadius: Radius.full,
+                                                    }}>
+                                                      <Text style={{
                                                         fontSize: FontSize.sm,
                                                         fontWeight: '600',
-                                                        color: merchantScheme ? merchantScheme.accent : MibuBrand.brownDark,
-                                                      }}
-                                                      numberOfLines={1}
-                                                    >
-                                                      {placeName}
-                                                    </Text>
+                                                        color: catToken.badgeText,
+                                                      }}>
+                                                        {getCategoryLabel(category, language)}
+                                                      </Text>
+                                                    </View>
+                                                  </View>
+                                                </View>
 
-                                                    {/* 標籤區 */}
-                                                    <View style={{ flexDirection: 'row', gap: 3, marginLeft: Spacing.xs }}>
-                                                      {isUnread && (
-                                                        <View style={{
-                                                          backgroundColor: MibuBrand.tierSP,
-                                                          paddingHorizontal: 4,
-                                                          paddingVertical: 1,
-                                                          borderRadius: Radius.xs,
+                                                {/* ===== 第二行：景點名稱 ===== */}
+                                                <Text style={{
+                                                  fontSize: FontSize.xl,
+                                                  fontWeight: '800',
+                                                  color: accentColor,
+                                                  marginBottom: Spacing.xs,
+                                                }}>
+                                                  {placeName}
+                                                </Text>
+
+                                                {/* ===== 第三行：描述（最多 3 行）===== */}
+                                                {description && (
+                                                  <Text
+                                                    style={{
+                                                      fontSize: FontSize.md,
+                                                      color: MibuBrand.brownLight,
+                                                      lineHeight: 22,
+                                                      marginBottom: Spacing.md,
+                                                    }}
+                                                    numberOfLines={3}
+                                                  >
+                                                    {description}
+                                                  </Text>
+                                                )}
+
+                                                {/* ===== 優惠資訊區塊（預留）===== */}
+                                                {/* 當商家登錄優惠資訊時顯示 */}
+                                                {hasPromoInfo && promoTitle && (
+                                                  <View style={{
+                                                    borderWidth: 1.5,
+                                                    borderStyle: 'dashed',
+                                                    borderColor: MibuBrand.tanLight,
+                                                    borderRadius: Radius.lg,
+                                                    padding: Spacing.md,
+                                                    marginBottom: Spacing.md,
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    gap: Spacing.md,
+                                                  }}>
+                                                    {/* 優惠圖示 */}
+                                                    <View style={{
+                                                      width: 44,
+                                                      height: 44,
+                                                      borderRadius: 22,
+                                                      backgroundColor: MibuBrand.copper,
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center',
+                                                    }}>
+                                                      <Ionicons name="pricetag" size={20} color="#ffffff" />
+                                                    </View>
+
+                                                    {/* 優惠資訊文字 */}
+                                                    <View style={{ flex: 1 }}>
+                                                      <Text style={{
+                                                        fontSize: FontSize.md,
+                                                        fontWeight: '600',
+                                                        color: MibuBrand.brownDark,
+                                                        marginBottom: 2,
+                                                      }}>
+                                                        {typeof promoTitle === 'string' ? promoTitle : promoTitle?.['zh-TW'] || promoTitle?.en || ''}
+                                                      </Text>
+                                                      {promoCode && (
+                                                        <Text style={{
+                                                          fontSize: FontSize.sm,
+                                                          color: MibuBrand.brownLight,
                                                         }}>
-                                                          <Text style={{ fontSize: 8, fontWeight: '700', color: '#ffffff' }}>
-                                                            NEW
-                                                          </Text>
-                                                        </View>
-                                                      )}
-                                                      {hasPromoUpdate && !isUnread && (
-                                                        <View style={{
-                                                          backgroundColor: MibuBrand.copper,
-                                                          paddingHorizontal: 4,
-                                                          paddingVertical: 1,
-                                                          borderRadius: Radius.xs,
-                                                        }}>
-                                                          <Ionicons name="gift" size={8} color="#ffffff" />
-                                                        </View>
-                                                      )}
-                                                      {hasCoupon && (
-                                                        <View style={{
-                                                          backgroundColor: MibuBrand.success,
-                                                          paddingHorizontal: 4,
-                                                          paddingVertical: 1,
-                                                          borderRadius: Radius.xs,
-                                                        }}>
-                                                          <Ionicons name="ticket" size={8} color="#ffffff" />
-                                                        </View>
+                                                          CODE：{promoCode}
+                                                        </Text>
                                                       )}
                                                     </View>
                                                   </View>
+                                                )}
 
-                                                  {/* 第二行：描述（最多1行）*/}
-                                                  {description && (
-                                                    <Text
-                                                      style={{
-                                                        fontSize: FontSize.xs,
-                                                        color: MibuBrand.brownLight,
-                                                        lineHeight: 16,
-                                                      }}
-                                                      numberOfLines={1}
-                                                    >
-                                                      {description}
-                                                    </Text>
-                                                  )}
-
-                                                  {/* 第三行：日期 + 商家（如果有）*/}
-                                                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                                                    <Text style={{ fontSize: 10, color: MibuBrand.tan }}>{date}</Text>
-                                                    {item.merchant && (
-                                                      <>
-                                                        <Text style={{ marginHorizontal: 4, color: MibuBrand.tanLight }}>•</Text>
-                                                        <Ionicons name="storefront-outline" size={9} color={MibuBrand.copper} />
-                                                        <Text style={{ fontSize: 10, color: MibuBrand.copper, marginLeft: 2 }}>
-                                                          {item.merchant.name}
-                                                        </Text>
-                                                      </>
-                                                    )}
-                                                  </View>
-                                                </View>
+                                                {/* ===== 在 Google 地圖中查看按鈕 ===== */}
+                                                <TouchableOpacity
+                                                  style={{
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: Spacing.sm,
+                                                    backgroundColor: MibuBrand.creamLight,
+                                                    paddingVertical: Spacing.md,
+                                                    borderRadius: Radius.lg,
+                                                  }}
+                                                  onPress={() => {
+                                                    // 使用 Google Search 搜尋店名
+                                                    const query = [placeName, item.districtDisplay || item.district, item.cityDisplay || item.city].filter(Boolean).join(' ');
+                                                    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                                                    Linking.openURL(url);
+                                                  }}
+                                                  activeOpacity={0.7}
+                                                >
+                                                  <Ionicons name="location-outline" size={18} color={MibuBrand.brown} />
+                                                  <Text style={{
+                                                    fontSize: FontSize.md,
+                                                    fontWeight: '600',
+                                                    color: MibuBrand.brown,
+                                                  }}>
+                                                    {language === 'zh-TW' ? '在 Google 地圖中查看' : 'View on Google Maps'}
+                                                  </Text>
+                                                </TouchableOpacity>
                                               </TouchableOpacity>
                                             );
                                           })}
-                                        </View>
+                                        </ScrollView>
                                       )}
                                     </View>
                                   );

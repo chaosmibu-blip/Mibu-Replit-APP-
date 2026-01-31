@@ -471,7 +471,7 @@ export function ItemsScreen() {
       >
         {items.map((item, index) => (
           <ItemCard
-            key={item.id || index}
+            key={`${item.id}-${index}`}
             item={item}
             translations={t}
             language={state.language}

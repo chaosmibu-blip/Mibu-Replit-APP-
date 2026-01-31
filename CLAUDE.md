@@ -5,52 +5,39 @@
 
 溝通用口語繁中，像朋友聊天。改東西前先說想法。
 
-
-
 ---
 
-## 啟動儀式
+## 核心規則（不可違反）
 
-**執行任何任務前，先說：「我先閱讀 CLAUDE.md」**
-
-這不是形式。是確保你知道：
-- 你是誰（角色與價值觀）
-- 怎麼思考（框架）
-- 前人踩過什麼坑（教訓）
-- 品牌長什麼樣（設計規範）
-
-讀完再動手。
+| 規則 | 說明 |
+|------|------|
+| **先讀再做** | 執行任務前先讀 CLAUDE.md、契約、相關 memory |
+| **契約優先** | API 串接必須先確認契約（`APP.md`），不能自己假設格式 |
+| **安全底線** | Token 驗證、敏感資料保護、權限檢查 |
+| **繁中溝通** | 全程繁體中文，含 Git commit、註解 |
 
 ### 共用套件檢查
 
 每次開工前，確認 `@chaosmibu-blip/mibu-shared` 是否為最新版本：
 
 ```bash
-# 查看目前安裝版本
-npm list @chaosmibu-blip/mibu-shared
-
-# 查看最新版本（需要 NPM_TOKEN）
-npm view @chaosmibu-blip/mibu-shared version
-
-# 更新到最新版
-npm update @chaosmibu-blip/mibu-shared
+npm list @chaosmibu-blip/mibu-shared    # 目前版本
+npm view @chaosmibu-blip/mibu-shared version  # 最新版本
+npm update @chaosmibu-blip/mibu-shared  # 更新
 ```
-
-**注意**：需要設定 `NPM_TOKEN` 環境變數才能存取 GitHub Packages。
 
 ---
 
-## 我的價值觀
+## 價值觀
 
-**用戶第一** — 寫的每一行 code 最終都是給用戶用的。流程順不順、出錯懂不懂、等待煩不煩，這些比 code 漂不漂亮重要。
-
-**做完整** — 型別、串接、畫面、loading、error、empty。少一塊就是沒做完。「能動」不等於「做好」。
-
-**一致優先** — 同樣的元件、同樣的間距、同樣的顏色。用戶不該在同一個 App 裡看到兩種風格。改之前先看現有的怎麼做。
-
-**守邊界** — 商業邏輯不碰，API 規格不改。發現問題回報，不自己通融。越界幫倒忙。
-
-**遵守契約** — `APP.md` 是前後端的聖經。請求格式、回應結構、錯誤碼都照契約來。契約沒寫的不要猜，契約有寫的不能改。動手前先讀契約，不確定就問後端。
+| 價值觀 | 說明 |
+|--------|------|
+| **用戶第一** | 流程順不順、出錯懂不懂、等待煩不煩，比 code 漂不漂亮重要 |
+| **做完整** | 型別、串接、畫面、loading、error、empty，少一塊就是沒做完 |
+| **一致優先** | 同樣的元件、間距、顏色，改之前先看現有的怎麼做 |
+| **守邊界** | 商業邏輯不碰，API 規格不改，發現問題回報不自己通融 |
+| **預防大於治療** | 花 5 分鐘預防，省 5 小時修復（詳見思考框架） |
+| **舉一反三** | 發現問題時，檢查專案中是否有同類問題（詳見思考框架） |
 
 ---
 
@@ -63,61 +50,6 @@ npm update @chaosmibu-blip/mibu-shared
 3. 有沒有現成的可以用？（先查 memory，別重造輪子）
 ```
 
-### 遇到問題時
-```
-1. 看 Network — request 送了什麼？response 回了什麼？
-2. 對契約 — 跟 APP.md 寫的一樣嗎？
-3. 定責任 — 前端參數錯？後端回傳錯？契約沒寫？
-4. 該問就問 — 不確定就問，猜錯成本更高
-```
-
-### 做完之後
-```
-1. 用戶路徑走一遍 — 進得來、用得順、出得去、爆了會怎樣
-2. 該記的記 — 新知識更新 memory，踩的坑寫進教訓
-3. 該刪的刪 — 過時資訊移除，別讓未來的自己被誤導
-4. 加註解 — 改過的程式碼要加中文註解（見下方規範）
-```
-
-### 程式碼註解規範
-
-每次修改程式碼後，必須加上中文註解：
-
-**函數/方法**
-```typescript
-/**
- * 函數用途說明
- *
- * @param paramName - 參數說明
- * @returns 回傳值說明
- */
-```
-
-**區塊/邏輯**
-```typescript
-// ========== 區塊標題 ==========
-// 這段邏輯在做什麼
-// - 步驟 1
-// - 步驟 2
-```
-
-**樣式**
-```typescript
-/** 樣式用途說明 */
-styleName: {
-  // 特殊屬性說明
-  propertyName: value,
-},
-```
-
-**重要變更**
-```typescript
-// 變更說明（#issue編號 或日期）
-// - 原本：舊做法
-// - 現在：新做法
-// - 原因：為什麼改
-```
-
 ### 接到 UI 任務時
 ```
 1. 有沒有現成元件？（先查 memory-components.md）
@@ -126,11 +58,74 @@ styleName: {
 4. 跟現有頁面風格一致嗎？
 ```
 
+### 遇到問題時
+```
+1. 看 Network — request 送了什麼？response 回了什麼？
+2. 對契約 — 跟 APP.md 寫的一樣嗎？
+3. 定責任 — 前端參數錯？後端回傳錯？契約沒寫？
+4. 該問就問 — 不確定就問，猜錯成本更高
+```
+
+### 預防大於治療
+
+| 情境 | 預防做法 |
+|------|---------|
+| 寫新功能 | 先考慮邊界條件、錯誤處理、loading/empty 狀態 |
+| 改現有程式 | 先確認影響範圍，有無其他呼叫點 |
+| 刪除程式碼 | 先全域搜尋確認無引用 |
+| 串接 API | 先讀契約，確認格式 |
+| 動畫/互動 | 考慮快速操作、重複觸發、邊界情況 |
+
+### 舉一反三
+
+發現問題時，必須思考：
+1. **同類檢查**：專案中是否有相同模式的程式碼？
+2. **根因分析**：這是個案還是系統性問題？
+3. **批量修復**：能否一次修復所有同類問題？
+
+| 發現問題 | 舉一反三 |
+|---------|---------|
+| 某處動畫卡住 | 檢查所有動畫是否有同樣問題 |
+| 某處缺少 loading | 檢查同層其他畫面 |
+| 某處 timer 未清理 | 搜尋所有 setTimeout/setInterval |
+| 某處硬編碼數值 | 搜尋其他魔術數字，改用 Design Token |
+
+**執行方式**：修復前 `grep -r "相關模式"` 找出所有相似處
+
+---
+
+## 收尾清單（每次任務結束前必跑）
+
+### 完成標準
+
+- [ ] 程式碼可運行，無錯誤
+- [ ] loading、error、empty 狀態都處理了
+- [ ] 用戶路徑走過一遍（進得來、用得順、出得去、爆了會怎樣）
+- [ ] 註解已加上（中文）
+- [ ] 告知用戶生效方式
+
+### 連動更新
+
+| 我改了 | 必須更新 |
+|--------|---------|
+| 畫面/路由 | `docs/memory-screens.md` |
+| 元件/樣式 | `docs/memory-components.md` |
+| 狀態管理 | `docs/memory-state.md` |
+| API 串接 | 確認契約、記錄到對應 memory |
+| 需要後端配合 | `docs/sync-backend.md` |
+| 踩坑了 | CLAUDE.md 教訓區 |
+
+### 生效方式標註
+
+| 類型 | 生效方式 |
+|------|----------|
+| 前端修改（UI、元件、樣式） | Hot reload 或重新載入 App |
+| 後端修改（API、資料庫） | 需要後端重新部署 |
+| 需後端確認（缺 API 或欄位） | 記錄到 sync-backend.md |
+
 ---
 
 ## 用戶路徑檢驗
-
-每個功能上線前，問自己：
 
 | 檢查點 | 問什麼 |
 |--------|--------|
@@ -144,107 +139,83 @@ styleName: {
 
 ---
 
-## Mibu 品牌設計系統
+## 程式碼註解規範
 
-### 品牌精神
-溫暖、療癒、大地色調。像一杯好咖啡，讓人放鬆探索世界。
-
-### 核心色彩
-```
-主色（棕色系）
-├── brown: #7A5230      ← 主要按鈕、強調
-├── brownLight: #9A7250 ← 次要文字
-└── brownDark: #5A3820  ← 深色標題
-
-輔色（銅色系）
-├── copper: #B08860     ← icon、裝飾
-└── copperLight: #C9A580
-
-背景色
-├── warmWhite: #FFFDF9  ← 卡片背景（最亮）
-├── creamLight: #F5EDE3 ← 頁面背景
-├── cream: #F5E6D3      ← 輸入框背景
-└── tanLight: #E8DCC8   ← 邊框、分隔線
-
-狀態色
-├── success: #5D8A66    ← 成功（綠）
-├── warning: #D4A24C    ← 警告（金）
-├── error: #C45C5C      ← 錯誤（紅）
-└── info: #6B8CAE       ← 資訊（藍）
-```
-
-### 稀有度色彩（扭蛋系統）
-| 等級 | 顏色 | 背景 |
-|------|------|------|
-| SP | #D4A24C（金） | #FFF3D4 |
-| SSR | #B08860（紫銅） | #F5E6D3 |
-| SR | #9A7250（深銅） | #EDE0D4 |
-| S | #C9A580（淺銅） | #F8F0E8 |
-| R | #D4B896（米黃） | #FDFBF8 |
-
-### 間距系統（4px 基準）
-| Token | 值 | 用途 |
-|-------|-----|------|
-| xs | 4px | 極小間距 |
-| sm | 8px | 小間距 |
-| md | 12px | 中間距 |
-| lg | 16px | 大間距（常用） |
-| xl | 24px | 區塊間距 |
-| xxl | 32px | 大區塊 |
-
-### 圓角系統
-| Token | 值 | 用途 |
-|-------|-----|------|
-| xs | 4px | tag、badge |
-| sm | 8px | 按鈕、輸入框 |
-| md | 12px | 卡片內元素 |
-| lg | 16px | 小卡片 |
-| xl | 20px | 大卡片（常用） |
-| full | 999px | 圓形頭像 |
-
-### 字體大小
-| Token | 值 | 用途 |
-|-------|-----|------|
-| xs | 10px | badge |
-| sm | 12px | 輔助說明 |
-| md | 14px | 正文 |
-| lg | 16px | 標題 |
-| xl | 18px | 大標題 |
-| xxl | 22px | 頁面標題 |
-
-### UI 寫法規範
-| 不要這樣 | 要這樣 |
-|----------|--------|
-| `color: '#7A5230'` | `color: MibuBrand.brown` |
-| `padding: 16` | `padding: Spacing.lg` |
-| `borderRadius: 20` | `borderRadius: Radius.xl` |
-| `fontSize: 14` | `fontSize: FontSize.md` |
-| 同樣卡片樣式寫 3 次 | 用 `CommonStyles.card` |
-
-### 引入方式
+**檔案標頭（重要檔案必要）**
 ```typescript
-import { MibuBrand, SemanticColors } from '@/constants/Colors';
-import { Spacing, Radius, FontSize, Shadow, CommonStyles } from '@/theme/designTokens';
+/**
+ * ============================================================
+ * 模組名稱 (檔名.tsx)
+ * ============================================================
+ * 此模組提供: 一句話描述用途
+ *
+ * 主要功能:
+ * - 功能 1
+ * - 功能 2
+ *
+ * 更新日期：YYYY-MM-DD（變更摘要）
+ */
 ```
+
+**函數/方法**
+```typescript
+/**
+ * 函數用途說明
+ * @param paramName - 參數說明
+ * @returns 回傳值說明
+ */
+```
+
+**區塊/邏輯**
+```typescript
+// ========== 區塊標題 ==========
+// 這段邏輯在做什麼
+```
+
+**重要變更**
+```typescript
+// 變更說明（#issue編號 或日期）
+// - 原本：舊做法
+// - 現在：新做法
+// - 原因：為什麼改
+```
+
+**行內註解原則**：解釋「為什麼」而非「做什麼」，說明魔術數字和決策邏輯
+
+---
+
+## 禁止修改的檔案
+
+| 檔案 | 原因 |
+|------|------|
+| `app.json`、`eas.json` | Expo/EAS 設定，改錯會影響 build |
+| `babel.config.js`、`tsconfig.json` | 編譯設定 |
+| `.env*` | 環境變數，含敏感資訊 |
+| `package-lock.json` | 依賴鎖定，手動改會出問題 |
 
 ---
 
 ## 記憶系統
 
 ### 知識索引
+
+| 我要做什麼 | 讀這個 |
+|-----------|--------|
+| 理解 API 規格 | 後端 `docs/contracts/APP.md`（v1.4.0） |
+| 改畫面/路由 | `docs/memory-screens.md` |
+| 改元件/樣式 | `docs/memory-components.md` |
+| 改狀態管理 | `docs/memory-state.md` |
+| 改登入流程 | `docs/memory-auth-flow.md` |
+| 查三大 Tab 功能 | `docs/memory-tabs.md` |
+| 查同步任務 | 後端 `docs/SYNC_QUEUE.md` |
+
+### 快速參考
+
 | 要找什麼 | 去哪裡 |
 |----------|--------|
-| API 規格、請求回應格式 | 後端 `docs/contracts/APP.md`（v1.4.0） |
-| 同步任務清單 | 後端 `docs/SYNC_QUEUE.md` |
-| 畫面架構、路由、導航 | `docs/memory-screens.md` |
-| **三大 Tab 功能地圖** | `docs/memory-tabs.md` |
-| 登入、Token、OAuth | `docs/memory-auth-flow.md` |
-| 元件、樣式、顏色 | `docs/memory-components.md` |
-| 狀態管理、Context | `docs/memory-state.md` |
-| 圖片、字體、i18n | `docs/memory-assets.md` |
-| Design Token 定義 | `src/theme/designTokens.ts` |
-| 品牌色彩定義 | `constants/Colors.ts` |
-| **共用型別套件** | `@chaosmibu-blip/mibu-shared`（v1.0.1） |
+| Design Token | `src/theme/designTokens.ts` |
+| 品牌色彩 | `constants/Colors.ts` |
+| 共用型別 | `@chaosmibu-blip/mibu-shared` |
 
 ### 更新原則
 - **新的取代舊的** — 發現過時資訊，直接改
@@ -253,46 +224,85 @@ import { Spacing, Radius, FontSize, Shadow, CommonStyles } from '@/theme/designT
 
 ---
 
-## 教訓
+## Mibu 品牌設計系統
 
-> 每次踩坑都記在這。這是真正的成長。
+### 核心色彩
+```
+主色：brown #7A5230 | brownLight #9A7250 | brownDark #5A3820
+輔色：copper #B08860 | copperLight #C9A580
+背景：warmWhite #FFFDF9 | creamLight #F5EDE3 | cream #F5E6D3 | tanLight #E8DCC8
+狀態：success #5D8A66 | warning #D4A24C | error #C45C5C | info #6B8CAE
+```
 
-### #001 API 不存在就開始寫前端
-- **日期**：2026-01-26
-- **問題**：寫了 `/api/itinerary` 的完整前端，但後端根本沒實作
-- **原因**：沒先確認契約，假設後端已經做好了
-- **以後**：改 API 服務前，先 grep 後端 repo 確認 endpoint 存在
+### 稀有度色彩
+| 等級 | 顏色 | 背景 |
+|------|------|------|
+| SP | #D4A24C | #FFF3D4 |
+| SSR | #B08860 | #F5E6D3 |
+| SR | #9A7250 | #EDE0D4 |
+| S | #C9A580 | #F8F0E8 |
+| R | #D4B896 | #FDFBF8 |
 
-### #002 假設所有 API 都回傳 `{ success: true, ... }`
-- **日期**：2026-01-26
-- **問題**：行程列表顯示為空，但資料庫有 65 筆資料
-- **原因**：前端檢查 `res.success`，但後端很多 API 不回傳 `success` 欄位
-- **根本原因**：沒按照 API 契約實作，自己假設格式
-- **解法**：在 API 服務層統一包裝，HTTP 200 視為成功，catch 視為失敗
-- **以後**：看契約！後端 #030 已整理哪些 API 有/沒有 `success`
+### Design Token
+| 類型 | Token |
+|------|-------|
+| 間距 | xs:4 sm:8 md:12 lg:16 xl:24 xxl:32 |
+| 圓角 | xs:4 sm:8 md:12 lg:16 xl:20 full:999 |
+| 字體 | xs:10 sm:12 md:14 lg:16 xl:18 xxl:22 |
+
+### UI 寫法規範
+```typescript
+// 不要硬編碼
+color: MibuBrand.brown      // 不要 '#7A5230'
+padding: Spacing.lg         // 不要 16
+borderRadius: Radius.xl     // 不要 20
+fontSize: FontSize.md       // 不要 14
+```
 
 ---
 
-## 三端協作
+## 教訓
 
-| 專案 | GitHub | 負責 |
-|------|--------|------|
-| 後端 | github.com/chaosmibu-blip/MIBU_REPLIT | API、商業邏輯 |
-| APP | github.com/chaosmibu-blip/Mibu-Replit-APP- | 這個 repo |
-| 官網 | github.com/chaosmibu-blip/Mibu-Pages | SEO、Landing |
+> 每次踩坑都記在這，格式：日期、問題、原因、解法、舉一反三
+
+### #001 API 不存在就開始寫前端（2026-01-26）
+- **問題**：寫了完整前端，但後端沒實作
+- **解法**：改 API 服務前，先確認 endpoint 存在
+- **舉一反三**：所有 API 串接前先讀契約
+
+### #002 假設 API 格式（2026-01-26）
+- **問題**：前端檢查 `res.success`，但後端不回傳此欄位
+- **解法**：HTTP 200 視為成功，catch 視為失敗
+- **舉一反三**：看契約！不要自己假設格式
+
+### #003 動畫用 spring 導致 UI 卡住（2026-01-31）
+- **問題**：抽屜開關後 UI 卡住
+- **解法**：改用 `Animated.timing` + 防抖機制
+- **舉一反三**：優先使用 timing，除非確實需要彈性效果
+
+### #004 setTimeout 未清理（2026-01-31）
+- **問題**：組件卸載後 timer 仍在執行
+- **解法**：用 ref 追蹤 timer ID，cleanup useEffect 中清理
+- **舉一反三**：搜尋所有 setTimeout/setInterval 確保有清理
+
+---
+
+## 協作
+
+### 三端分工
+| 專案 | 負責 |
+|------|------|
+| 後端 MIBU_REPLIT | API、商業邏輯 |
+| APP（本 repo） | UI、前端邏輯 |
+| 官網 Mibu-Pages | SEO、Landing |
 
 ### 協作流程
 ```
-後端發任務 → docs/sync-app.md（標記 📱）
+後端發任務 → docs/sync-app.md
 我回報問題 → docs/sync-backend.md
 ```
 
----
-
-## 回報格式
-
-發現問題要回報後端時，用這個格式：
-
+### 回報格式
 ```
 問題：一句話描述
 重現：怎麼觸發
@@ -306,57 +316,42 @@ import { Spacing, Radius, FontSize, Shadow, CommonStyles } from '@/theme/designT
 ## 技術防呆
 
 ### React Native 語法
-| 寫了這個會爆 | 改用這個 |
-|-------------|---------|
+| 會爆 | 改用 |
+|------|------|
 | `<div>` | `<View>` |
-| `<span>`, `<p>` | `<Text>` |
+| `<span>`/`<p>` | `<Text>` |
 | `<img>` | `<Image>` |
 | `<button>` | `<TouchableOpacity>` |
-| `<input>` | `<TextInput>` |
 | `onClick` | `onPress` |
 
-### 常見錯誤碼
-| 範圍 | 類型 | 查 |
-|------|------|-----|
-| E1xxx | 認證 | Token 過期、未授權 |
-| E2xxx | 扭蛋 | 額度用完 |
-| E4xxx | 商家 | 優惠券問題 |
-| E5xxx | 驗證 | 參數錯誤 |
-
-詳細定義在 `src/types/errors.ts`
+### 錯誤碼
+| 範圍 | 類型 |
+|------|------|
+| E1xxx | 認證（Token 過期、未授權） |
+| E2xxx | 扭蛋（額度用完） |
+| E4xxx | 商家（優惠券問題） |
+| E5xxx | 驗證（參數錯誤） |
 
 ---
 
 ## 開發指令
 
 ```bash
-# 日常開發
-npm start
-npx expo start --web --port 5000 --tunnel --go  # Replit 用這個
-
-# 正式版
-eas build --platform ios --profile production
-eas submit --platform ios
+npm start                                    # 日常開發
+npx expo start --web --port 5000 --tunnel   # Replit
+eas build --platform ios --profile production  # 正式版
 ```
 
 ---
 
 ## Git 工作流
 
-### Commit 後要做的事
-每次 commit 完成後，輸出摘要表格：
-
+Commit 後輸出摘要：
 ```
 | # | Commit | 說明 | 檔案數 | 行數變化 |
 |---|--------|------|--------|----------|
-| 1 | `abc1234` | 簡短說明 | 5 | +100 / -50 |
+| 1 | abc1234 | 簡短說明 | 5 | +100/-50 |
 ```
-
-如果是多個 commit（例如當日摘要），額外加總計：
-- Commit 總數
-- 變更檔案數
-- 淨增/減行數
-- 主要成果（2-3 點）
 
 ---
 
@@ -364,11 +359,10 @@ eas submit --platform ios
 
 | 事項 | 說明 |
 |------|------|
-| iPhone only | iPad 跑 2x 模式，Apple 會測 |
+| iPhone only | iPad 跑 2x 模式 |
 | AI 扭蛋很慢 | 1-2 分鐘，UI 要讓用戶知道在等 |
-| Token 儲存 | iOS 用 SecureStore，Web 用 AsyncStorage |
+| Token 儲存 | iOS: SecureStore / Web: AsyncStorage |
 
 ---
 
-*最後更新：2026-01-30*
-*API 契約版本：v1.4.0（2026-01-19）*
+*最後更新：2026-01-31 | API 契約：v1.4.0*

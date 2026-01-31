@@ -49,8 +49,8 @@ interface SelectProps {
   label?: string;
   /** 是否顯示載入狀態（選項載入中） */
   loading?: boolean;
-  /** Modal 底部的自訂內容（例如新增按鈕） */
-  footerContent?: ReactNode;
+  /** Modal 底部的自訂內容（例如新增按鈕），接收 closeModal 函數 */
+  footerContent?: ReactNode | ((closeModal: () => void) => ReactNode);
 }
 
 // ============ 主元件 ============
@@ -152,7 +152,13 @@ export function Select({ options, value, onChange, placeholder, label, loading, 
                   </TouchableOpacity>
                 )}
                 style={styles.optionsList}
-                ListFooterComponent={footerContent ? <View style={styles.footerContainer}>{footerContent}</View> : null}
+                ListFooterComponent={footerContent ? (
+                  <View style={styles.footerContainer}>
+                    {typeof footerContent === 'function'
+                      ? footerContent(() => setIsOpen(false))
+                      : footerContent}
+                  </View>
+                ) : null}
               />
             )}
           </View>

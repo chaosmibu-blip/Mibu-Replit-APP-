@@ -18,11 +18,15 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Modal, Image, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
+
+/** AsyncStorage key for avatar preference */
+const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';
 
 // ============ 常數定義 ============
 
@@ -155,7 +159,35 @@ export function ProfileScreen() {
 
   useEffect(() => {
     loadProfile();
+    loadSavedAvatar();
   }, []);
+
+  /**
+   * 載入已儲存的頭像設定
+   * 從 AsyncStorage 讀取用戶之前選擇的頭像
+   */
+  const loadSavedAvatar = async () => {
+    try {
+      const savedAvatar = await AsyncStorage.getItem(AVATAR_STORAGE_KEY);
+      if (savedAvatar) {
+        setSelectedAvatar(savedAvatar);
+      }
+    } catch (error) {
+      console.log('Failed to load saved avatar:', error);
+    }
+  };
+
+  /**
+   * 儲存頭像選擇到 AsyncStorage
+   * 讓其他頁面（如首頁）可以讀取
+   */
+  const saveAvatarChoice = async (avatarId: string) => {
+    try {
+      await AsyncStorage.setItem(AVATAR_STORAGE_KEY, avatarId);
+    } catch (error) {
+      console.log('Failed to save avatar choice:', error);
+    }
+  };
 
   // ============ 資料載入 ============
 
@@ -553,6 +585,7 @@ export function ProfileScreen() {
                   ]}
                   onPress={() => {
                     setSelectedAvatar(preset.id);
+                    saveAvatarChoice(preset.id); // 儲存到 AsyncStorage
                     setShowAvatarModal(false);
                   }}
                 >
