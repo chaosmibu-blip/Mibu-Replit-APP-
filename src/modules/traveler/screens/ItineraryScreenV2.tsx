@@ -832,9 +832,7 @@ export function ItineraryScreenV2() {
         token
       );
       console.log('[handleSaveTitle] API response:', res);
-      if (res.success) {
-        showToastMessage(isZh ? '標題已更新' : 'Title updated');
-      } else {
+      if (!res.success) {
         console.warn('[handleSaveTitle] API returned success: false', res.message);
         // API 失敗，回滾到舊標題
         setCurrentItinerary(prev => prev ? { ...prev, title: oldTitle } : null);
@@ -1034,6 +1032,23 @@ export function ItineraryScreenV2() {
         clearTimeout(helpTimerRef.current);
         helpTimerRef.current = null;
       }
+    };
+  }, []);
+
+  // 鍵盤顯示時自動滾動聊天區域到底部，避免訊息被擋住
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        // 延遲滾動，等待 KeyboardAvoidingView 調整完成
+        setTimeout(() => {
+          chatScrollRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
     };
   }, []);
 
