@@ -94,15 +94,9 @@ const DRAWER_WIDTH = SCREEN_WIDTH * 0.88;
  * @param lng 經度
  * @param name 景點名稱
  */
-const openInMaps = (lat: number, lng: number, name: string) => {
-  const url = Platform.select({
-    ios: `maps:?q=${encodeURIComponent(name)}&ll=${lat},${lng}`,
-    android: `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(name)})`,
-    default: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
-  });
-  if (url) {
-    Linking.openURL(url).catch(err => console.warn('無法開啟地圖:', err));
-  }
+const openInGoogleSearch = (name: string) => {
+  const url = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
+  Linking.openURL(url).catch(err => console.warn('無法開啟 Google 搜尋:', err));
 };
 
 /**
@@ -226,6 +220,7 @@ export function ItineraryScreenV2() {
   // 【截圖 9-15 #12】編輯標題狀態
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState('');
+  const [savingTitle, setSavingTitle] = useState(false); // 防止重複保存
   const [newItinerary, setNewItinerary] = useState({
     date: new Date().toISOString().split('T')[0],
     countryId: null as number | null,
@@ -773,52 +768,67 @@ export function ItineraryScreenV2() {
   /**
    * 【截圖 9-15 #12】【截圖 36 修復】保存行程標題
    * 修復：更新標題後同時更新快取和列表
+   * 2026-02-01 修復：防止 onBlur + onSubmitEditing 重複觸發
    */
   const handleSaveTitle = useCallback(async () => {
+    // 防止重複保存（onBlur 和 onSubmitEditing 可能同時觸發）
+    if (savingTitle) return;
+
     if (!currentItinerary || !titleInput.trim()) {
       setEditingTitle(false);
       return;
     }
+
+    // 標題沒有變化則不需要保存
+    if (titleInput.trim() === currentItinerary.title) {
+      setEditingTitle(false);
+      return;
+    }
+
     const token = await getToken();
     if (!token) return;
 
     const newTitle = titleInput.trim();
+    const itineraryId = currentItinerary.id;
+
+    setSavingTitle(true);
+    setEditingTitle(false); // 先關閉編輯模式
 
     try {
       const res = await itineraryApi.updateItinerary(
-        currentItinerary.id,
+        itineraryId,
         { title: newTitle },
         token
       );
       if (res.success) {
-        // 【截圖 36 修復】更新本地狀態
+        // 更新本地狀態（立即反映在 UI 上）
         setCurrentItinerary(prev => prev ? { ...prev, title: newTitle } : null);
 
-        // 【截圖 36 修復】更新快取
-        if (itineraryCache.current[currentItinerary.id]) {
-          itineraryCache.current[currentItinerary.id] = {
-            ...itineraryCache.current[currentItinerary.id],
+        // 更新快取
+        if (itineraryCache.current[itineraryId]) {
+          itineraryCache.current[itineraryId] = {
+            ...itineraryCache.current[itineraryId],
             title: newTitle,
           };
         }
 
-        // 【截圖 36 修復】更新列表中的標題（強制重新建立陣列以觸發重新渲染）
-        setItineraries(prev => [
-          ...prev.map(item =>
-            item.id === currentItinerary.id
+        // 更新列表中的標題
+        setItineraries(prev =>
+          prev.map(item =>
+            item.id === itineraryId
               ? { ...item, title: newTitle }
               : item
           )
-        ]);
+        );
         showToastMessage(isZh ? '標題已更新' : 'Title updated');
       }
     } catch (error) {
       console.error('Update title error:', error);
       showToastMessage(isZh ? '更新失敗' : 'Update failed');
     } finally {
-      setEditingTitle(false);
+      setSavingTitle(false);
     }
-  }, [currentItinerary, titleInput, getToken, isZh, showToastMessage]);
+  }, [currentItinerary, titleInput, getToken, isZh, showToastMessage, savingTitle]);
 
   /**
    * 【截圖 9-15 #12】開始編輯標題
@@ -1622,23 +1632,10 @@ export function ItineraryScreenV2() {
             renderItem={({ item: place, getIndex, drag, isActive }: RenderItemParams<ItineraryPlaceItem>) => {
               const index = getIndex() ?? 0;
               const categoryToken = getCategoryToken(getPlaceCategory(place));
-              const coords = getPlaceCoords(place);
               const description = getPlaceDescription(place);
               const name = getPlaceName(place);
               const isFirst = index === 0;
               const isLast = index === (currentItinerary?.places.length ?? 1) - 1;
-
-              // 【截圖 9-15 #10】根據分類估算遊玩時間（與扭蛋卡片一致）
-              const categoryStr = getPlaceCategory(place).toLowerCase();
-              const getDurationText = () => {
-                if (categoryStr.includes('food') || categoryStr.includes('美食') || categoryStr === 'f') {
-                  return '0.5-1h';
-                }
-                if (categoryStr.includes('shop') || categoryStr.includes('購物') || categoryStr === 's') {
-                  return '1-2h';
-                }
-                return '2-3h';
-              };
 
               return (
                 <ScaleDecorator>
@@ -1706,12 +1703,8 @@ export function ItineraryScreenV2() {
                         <Ionicons name="close" size={16} color={MibuBrand.copper} />
                       </TouchableOpacity>
 
-                      {/* 【對齊扭蛋】頂部：時間預估 + 順序 + 類別 */}
+                      {/* 頂部：順序 + 類別 */}
                       <View style={styles.placeTopRow}>
-                        {/* 時間預估 badge（跟扭蛋卡片一致） */}
-                        <View style={styles.placeDurationBadge}>
-                          <Text style={styles.placeDurationText}>{getDurationText()}</Text>
-                        </View>
                         {/* 順序編號 */}
                         <View style={styles.placeOrderBadge}>
                           <Text style={styles.placeOrderText}>{index + 1}</Text>
@@ -1742,32 +1735,19 @@ export function ItineraryScreenV2() {
                         <Text style={styles.placeDescription}>{description}</Text>
                       )}
 
-                      {/* 【對齊扭蛋】底部：地圖按鈕 */}
+                      {/* 底部：Google 搜尋按鈕 */}
                       <TouchableOpacity
-                        style={[
-                          styles.placeMapButton,
-                          !(coords.lat && coords.lng) && styles.placeMapButtonDisabled,
-                        ]}
+                        style={styles.placeMapButton}
                         activeOpacity={0.7}
-                        disabled={!(coords.lat && coords.lng)}
-                        onPress={() => {
-                          if (coords.lat && coords.lng) {
-                            openInMaps(coords.lat, coords.lng, name);
-                          }
-                        }}
+                        onPress={() => openInGoogleSearch(name)}
                       >
                         <Ionicons
-                          name="location-outline"
+                          name="search-outline"
                           size={16}
-                          color={coords.lat && coords.lng ? MibuBrand.copper : MibuBrand.tanLight}
+                          color={MibuBrand.copper}
                         />
-                        <Text
-                          style={[
-                            styles.placeMapText,
-                            !(coords.lat && coords.lng) && { color: MibuBrand.tanLight },
-                          ]}
-                        >
-                          {isZh ? '在地圖中查看' : 'View on Map'}
+                        <Text style={styles.placeMapText}>
+                          {isZh ? '在 Google 中查看' : 'View on Google'}
                         </Text>
                       </TouchableOpacity>
                     </View>
