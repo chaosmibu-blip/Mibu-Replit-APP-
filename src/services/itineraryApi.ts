@@ -202,11 +202,16 @@ class ItineraryApi extends ApiBase {
     token: string
   ): Promise<ItineraryMutationResponse> {
     try {
-      return await this.request<ItineraryMutationResponse>(`/api/itinerary/${id}`, {
+      const res = await this.request<ItineraryMutationResponse>(`/api/itinerary/${id}`, {
         method: 'PUT',
         headers: this.authHeaders(token),
         body: JSON.stringify(data),
       });
+      // 確保 success 欄位存在（後端可能不回傳 success，HTTP 200 視為成功）
+      if (res.success === undefined && res.itinerary) {
+        return { ...res, success: true };
+      }
+      return res;
     } catch (error) {
       console.error('[ItineraryApi] updateItinerary error:', error);
       let serverMessage: string | undefined;
