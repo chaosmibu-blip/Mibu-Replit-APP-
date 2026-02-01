@@ -285,6 +285,12 @@ fontSize: FontSize.md       // 不要 14
 - **解法**：用 ref 追蹤 timer ID，cleanup useEffect 中清理
 - **舉一反三**：搜尋所有 setTimeout/setInterval 確保有清理
 
+### #005 DraggableFlatList 在 flex 容器中不顯示（2026-02-01）
+- **問題**：行程表有景點時，列表區域空白不顯示內容
+- **原因**：`react-native-draggable-flatlist` 在 flex 容器中需要明確設置 `containerStyle={{ flex: 1 }}`
+- **解法**：添加 `containerStyle={{ flex: 1 }}` 和 `contentContainerStyle={{ flexGrow: 1 }}`
+- **舉一反三**：使用第三方 FlatList 類套件時，檢查是否需要額外的 container 設置
+
 ---
 
 ## 協作

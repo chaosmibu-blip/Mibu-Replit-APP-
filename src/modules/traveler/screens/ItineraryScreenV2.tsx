@@ -1609,12 +1609,14 @@ export function ItineraryScreenV2() {
 
         {/* 【截圖 9-15 #9】【截圖 36 修復】景點卡片列表 - 支援長按拖曳排序 */}
         {/* 修復：更穩健的條件判斷，確保 places 陣列存在且有內容 */}
+        {/* 2026-02-01 修復：添加 containerStyle={{ flex: 1 }} 確保 DraggableFlatList 在 flex 容器中正確計算高度 */}
         {Array.isArray(currentItinerary?.places) && currentItinerary.places.length > 0 ? (
           <DraggableFlatList
             data={currentItinerary.places}
             keyExtractor={(item) => String(item.id)}
             onDragEnd={({ data }) => handleDragReorder(data)}
-            contentContainerStyle={{ paddingBottom: Spacing.xxl }}
+            contentContainerStyle={{ paddingBottom: Spacing.xxl, flexGrow: 1 }}
+            containerStyle={{ flex: 1 }}
             showsVerticalScrollIndicator={false}
             style={styles.drawerScroll}
             renderItem={({ item: place, getIndex, drag, isActive }: RenderItemParams<ItineraryPlaceItem>) => {
