@@ -220,6 +220,7 @@ export function ItineraryScreenV2() {
   // 【截圖 9-15 #12】編輯標題狀態
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState('');
+  const [savingTitle, setSavingTitle] = useState(false); // 防止重複保存
   const [newItinerary, setNewItinerary] = useState({
     date: new Date().toISOString().split('T')[0],
     countryId: null as number | null,
@@ -767,52 +768,67 @@ export function ItineraryScreenV2() {
   /**
    * 【截圖 9-15 #12】【截圖 36 修復】保存行程標題
    * 修復：更新標題後同時更新快取和列表
+   * 2026-02-01 修復：防止 onBlur + onSubmitEditing 重複觸發
    */
   const handleSaveTitle = useCallback(async () => {
+    // 防止重複保存（onBlur 和 onSubmitEditing 可能同時觸發）
+    if (savingTitle) return;
+
     if (!currentItinerary || !titleInput.trim()) {
       setEditingTitle(false);
       return;
     }
+
+    // 標題沒有變化則不需要保存
+    if (titleInput.trim() === currentItinerary.title) {
+      setEditingTitle(false);
+      return;
+    }
+
     const token = await getToken();
     if (!token) return;
 
     const newTitle = titleInput.trim();
+    const itineraryId = currentItinerary.id;
+
+    setSavingTitle(true);
+    setEditingTitle(false); // 先關閉編輯模式
 
     try {
       const res = await itineraryApi.updateItinerary(
-        currentItinerary.id,
+        itineraryId,
         { title: newTitle },
         token
       );
       if (res.success) {
-        // 【截圖 36 修復】更新本地狀態
+        // 更新本地狀態（立即反映在 UI 上）
         setCurrentItinerary(prev => prev ? { ...prev, title: newTitle } : null);
 
-        // 【截圖 36 修復】更新快取
-        if (itineraryCache.current[currentItinerary.id]) {
-          itineraryCache.current[currentItinerary.id] = {
-            ...itineraryCache.current[currentItinerary.id],
+        // 更新快取
+        if (itineraryCache.current[itineraryId]) {
+          itineraryCache.current[itineraryId] = {
+            ...itineraryCache.current[itineraryId],
             title: newTitle,
           };
         }
 
-        // 【截圖 36 修復】更新列表中的標題（強制重新建立陣列以觸發重新渲染）
-        setItineraries(prev => [
-          ...prev.map(item =>
-            item.id === currentItinerary.id
+        // 更新列表中的標題
+        setItineraries(prev =>
+          prev.map(item =>
+            item.id === itineraryId
               ? { ...item, title: newTitle }
               : item
           )
-        ]);
+        );
         showToastMessage(isZh ? '標題已更新' : 'Title updated');
       }
     } catch (error) {
       console.error('Update title error:', error);
       showToastMessage(isZh ? '更新失敗' : 'Update failed');
     } finally {
-      setEditingTitle(false);
+      setSavingTitle(false);
     }
-  }, [currentItinerary, titleInput, getToken, isZh, showToastMessage]);
+  }, [currentItinerary, titleInput, getToken, isZh, showToastMessage, savingTitle]);
 
   /**
    * 【截圖 9-15 #12】開始編輯標題
