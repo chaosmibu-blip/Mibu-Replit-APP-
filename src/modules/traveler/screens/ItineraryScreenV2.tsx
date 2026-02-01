@@ -1035,6 +1035,23 @@ export function ItineraryScreenV2() {
     };
   }, []);
 
+  // 鍵盤顯示時自動滾動聊天區域到底部，避免訊息被擋住
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        // 延遲滾動，等待 KeyboardAvoidingView 調整完成
+        setTimeout(() => {
+          chatScrollRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
   /**
    * 【截圖 9】顯示使用說明 Tooltip（淡入淡出，持續 3 秒）
    * 【預防卡住】正確清理 timer 避免記憶體洩漏
