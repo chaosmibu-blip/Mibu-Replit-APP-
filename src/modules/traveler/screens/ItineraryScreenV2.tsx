@@ -832,9 +832,7 @@ export function ItineraryScreenV2() {
         token
       );
       console.log('[handleSaveTitle] API response:', res);
-      if (res.success) {
-        showToastMessage(isZh ? '標題已更新' : 'Title updated');
-      } else {
+      if (!res.success) {
         console.warn('[handleSaveTitle] API returned success: false', res.message);
         // API 失敗，回滾到舊標題
         setCurrentItinerary(prev => prev ? { ...prev, title: oldTitle } : null);
