@@ -291,6 +291,15 @@ fontSize: FontSize.md       // 不要 14
 - **解法**：添加 `containerStyle={{ flex: 1 }}` 和 `contentContainerStyle={{ flexGrow: 1 }}`
 - **舉一反三**：使用第三方 FlatList 類套件時，檢查是否需要額外的 container 設置
 
+### #006 useState 防止重複呼叫失效（2026-02-01）
+- **問題**：用 `useState` 的 `saving` 狀態防止 `onBlur` + `onSubmitEditing` 重複觸發，但無效
+- **原因**：React 狀態更新是**異步**的，兩個事件幾乎同時觸發時，第二次檢查時狀態還沒更新
+- **解法**：改用 `useRef`，因為 ref 的更新是**同步**的
+- **舉一反三**：
+  - 需要「立即生效」的鎖定機制，用 `useRef` 而非 `useState`
+  - `useState` 適合觸發重新渲染，`useRef` 適合儲存不需觸發渲染的值
+  - 在 `useCallback` 依賴陣列中加入狀態變數會導致函數重建，可能造成閉包問題
+
 ---
 
 ## 協作

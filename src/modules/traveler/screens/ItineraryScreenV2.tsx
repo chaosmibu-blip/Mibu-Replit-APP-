@@ -220,7 +220,7 @@ export function ItineraryScreenV2() {
   // 【截圖 9-15 #12】編輯標題狀態
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState('');
-  const [savingTitle, setSavingTitle] = useState(false); // 防止重複保存
+  const savingTitleRef = useRef(false); // 使用 ref 防止重複保存（同步更新）
   const [newItinerary, setNewItinerary] = useState({
     date: new Date().toISOString().split('T')[0],
     countryId: null as number | null,
@@ -766,13 +766,12 @@ export function ItineraryScreenV2() {
   }, [newItinerary, getToken, fetchItineraries, isZh]);
 
   /**
-   * 【截圖 9-15 #12】【截圖 36 修復】保存行程標題
-   * 修復：更新標題後同時更新快取和列表
-   * 2026-02-01 修復：防止 onBlur + onSubmitEditing 重複觸發
+   * 【截圖 9-15 #12】保存行程標題
+   * 使用 ref 防止 onBlur + onSubmitEditing 重複觸發（ref 是同步更新）
    */
   const handleSaveTitle = useCallback(async () => {
-    // 防止重複保存（onBlur 和 onSubmitEditing 可能同時觸發）
-    if (savingTitle) return;
+    // 使用 ref 檢查是否正在保存（同步，不會有閉包問題）
+    if (savingTitleRef.current) return;
 
     if (!currentItinerary || !titleInput.trim()) {
       setEditingTitle(false);
@@ -791,8 +790,9 @@ export function ItineraryScreenV2() {
     const newTitle = titleInput.trim();
     const itineraryId = currentItinerary.id;
 
-    setSavingTitle(true);
-    setEditingTitle(false); // 先關閉編輯模式
+    // 立即標記為保存中（同步）
+    savingTitleRef.current = true;
+    setEditingTitle(false);
 
     try {
       const res = await itineraryApi.updateItinerary(
@@ -826,9 +826,9 @@ export function ItineraryScreenV2() {
       console.error('Update title error:', error);
       showToastMessage(isZh ? '更新失敗' : 'Update failed');
     } finally {
-      setSavingTitle(false);
+      savingTitleRef.current = false;
     }
-  }, [currentItinerary, titleInput, getToken, isZh, showToastMessage, savingTitle]);
+  }, [currentItinerary, titleInput, getToken, isZh, showToastMessage]);
 
   /**
    * 【截圖 9-15 #12】開始編輯標題
