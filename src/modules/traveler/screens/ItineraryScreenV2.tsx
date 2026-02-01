@@ -394,16 +394,26 @@ export function ItineraryScreenV2() {
     setAiLoading(true);
 
     try {
+      // v2.3.0: 組裝 lastSuggestedPlaces（從上一輪的 aiSuggestions 轉換）
+      const lastSuggestedPlaces = aiSuggestions.length > 0
+        ? aiSuggestions.map(s => ({
+            collectionId: s.collectionId,
+            placeName: s.placeName || s.name || '',
+          }))
+        : undefined;
+
       const res = await itineraryApi.aiChat(
         currentItinerary.id,
         {
           message: userMessage.content,
-          context: aiContext ? {
-            currentFilters: aiContext.currentFilters,
-            excludedPlaces: aiContext.excludedPlaces,
+          context: {
+            currentFilters: aiContext?.currentFilters,
+            excludedPlaces: aiContext?.excludedPlaces,
             // v2.2.0: 傳送用戶偏好（未來可從本地統計取得）
-            userPreferences: aiContext.userPreferences,
-          } : undefined,
+            userPreferences: aiContext?.userPreferences,
+            // v2.3.0: 傳遞上一輪推薦，讓 AI 可以理解「好啊」等確認回覆
+            lastSuggestedPlaces,
+          },
         },
         token
       );
@@ -457,7 +467,7 @@ export function ItineraryScreenV2() {
     } finally {
       setAiLoading(false);
     }
-  }, [currentItinerary, inputText, getToken, aiContext, fetchItineraryDetail, isZh]);
+  }, [currentItinerary, inputText, getToken, aiContext, aiSuggestions, fetchItineraryDetail, isZh]);
 
   // 【截圖 9-15 #11】移除景點 - 不使用彈窗確認，直接移除並顯示 Toast
   const handleRemovePlace = useCallback(async (itemId: number, placeName?: string) => {
