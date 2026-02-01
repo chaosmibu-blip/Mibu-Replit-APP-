@@ -209,6 +209,10 @@ export interface AiChatContext {
     recentDistricts?: string[];     // 最近瀏覽的區域
     collectionCount?: number;       // 圖鑑收藏數量
   };
+  lastSuggestedPlaces?: Array<{     // v2.3.0 上一輪 AI 推薦的景點（用於「好啊」等確認回覆）
+    collectionId: number;           // 圖鑑收藏 ID
+    placeName: string;              // 地點名稱
+  }>;
 }
 
 /**
@@ -320,6 +324,7 @@ export interface AiSuggestedPlace {
   reason: string;                    // AI 推薦理由
   locationLat?: number | null;       // 緯度（v2.1.0）
   locationLng?: number | null;       // 經度（v2.1.0）
+  insertAfterCollectionId?: number | null; // v2.3.0 AI 指定的插入位置（插入在此 collectionId 之後，null 表示插入最後）
 }
 
 // ============ V2.2 AI 意圖與動作型別 ============
@@ -390,6 +395,7 @@ export interface AiChatResponse {
     };
   };
   remainingCount?: number;           // 篩選後剩餘的候選景點數量
+  placesToRemove?: number[];         // v2.3.0 AI 要刪除的景點 collectionId 陣列
   itineraryUpdated?: boolean;        // 行程表是否有更新
   updatedItinerary?: Array<{         // 更新後的行程
     id: number;                      // 項目 ID
