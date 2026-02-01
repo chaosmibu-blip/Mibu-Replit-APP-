@@ -1628,18 +1628,6 @@ export function ItineraryScreenV2() {
               const isFirst = index === 0;
               const isLast = index === (currentItinerary?.places.length ?? 1) - 1;
 
-              // 【截圖 9-15 #10】根據分類估算遊玩時間（與扭蛋卡片一致）
-              const categoryStr = getPlaceCategory(place).toLowerCase();
-              const getDurationText = () => {
-                if (categoryStr.includes('food') || categoryStr.includes('美食') || categoryStr === 'f') {
-                  return '0.5-1h';
-                }
-                if (categoryStr.includes('shop') || categoryStr.includes('購物') || categoryStr === 's') {
-                  return '1-2h';
-                }
-                return '2-3h';
-              };
-
               return (
                 <ScaleDecorator>
                   <View
@@ -1706,12 +1694,8 @@ export function ItineraryScreenV2() {
                         <Ionicons name="close" size={16} color={MibuBrand.copper} />
                       </TouchableOpacity>
 
-                      {/* 【對齊扭蛋】頂部：時間預估 + 順序 + 類別 */}
+                      {/* 頂部：順序 + 類別 */}
                       <View style={styles.placeTopRow}>
-                        {/* 時間預估 badge（跟扭蛋卡片一致） */}
-                        <View style={styles.placeDurationBadge}>
-                          <Text style={styles.placeDurationText}>{getDurationText()}</Text>
-                        </View>
                         {/* 順序編號 */}
                         <View style={styles.placeOrderBadge}>
                           <Text style={styles.placeOrderText}>{index + 1}</Text>
