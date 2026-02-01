@@ -768,6 +768,7 @@ export function ItineraryScreenV2() {
   /**
    * 【截圖 9-15 #12】保存行程標題
    * 使用 ref 防止 onBlur + onSubmitEditing 重複觸發（ref 是同步更新）
+   * 使用樂觀更新確保 UI 立即反映變更
    */
   const handleSaveTitle = useCallback(async () => {
     // 使用 ref 檢查是否正在保存（同步，不會有閉包問題）
@@ -779,7 +780,8 @@ export function ItineraryScreenV2() {
     }
 
     // 標題沒有變化則不需要保存
-    if (titleInput.trim() === currentItinerary.title) {
+    const newTitle = titleInput.trim();
+    if (newTitle === currentItinerary.title) {
       setEditingTitle(false);
       return;
     }
@@ -787,11 +789,30 @@ export function ItineraryScreenV2() {
     const token = await getToken();
     if (!token) return;
 
-    const newTitle = titleInput.trim();
     const itineraryId = currentItinerary.id;
+    const oldTitle = currentItinerary.title;
 
     // 立即標記為保存中（同步）
     savingTitleRef.current = true;
+
+    // 【關鍵修復】樂觀更新：先更新 UI，再呼叫 API
+    // 這樣當 editingTitle 變成 false 時，UI 會立即顯示新標題
+    setCurrentItinerary(prev => prev ? { ...prev, title: newTitle } : null);
+    setItineraries(prev =>
+      prev.map(item =>
+        item.id === itineraryId
+          ? { ...item, title: newTitle }
+          : item
+      )
+    );
+    if (itineraryCache.current[itineraryId]) {
+      itineraryCache.current[itineraryId] = {
+        ...itineraryCache.current[itineraryId],
+        title: newTitle,
+      };
+    }
+
+    // 關閉編輯模式（此時 UI 已顯示新標題）
     setEditingTitle(false);
 
     try {
@@ -801,29 +822,42 @@ export function ItineraryScreenV2() {
         token
       );
       if (res.success) {
-        // 更新本地狀態（立即反映在 UI 上）
-        setCurrentItinerary(prev => prev ? { ...prev, title: newTitle } : null);
-
-        // 更新快取
-        if (itineraryCache.current[itineraryId]) {
-          itineraryCache.current[itineraryId] = {
-            ...itineraryCache.current[itineraryId],
-            title: newTitle,
-          };
-        }
-
-        // 更新列表中的標題
+        showToastMessage(isZh ? '標題已更新' : 'Title updated');
+      } else {
+        // API 失敗，回滾到舊標題
+        setCurrentItinerary(prev => prev ? { ...prev, title: oldTitle } : null);
         setItineraries(prev =>
           prev.map(item =>
             item.id === itineraryId
-              ? { ...item, title: newTitle }
+              ? { ...item, title: oldTitle }
               : item
           )
         );
-        showToastMessage(isZh ? '標題已更新' : 'Title updated');
+        if (itineraryCache.current[itineraryId]) {
+          itineraryCache.current[itineraryId] = {
+            ...itineraryCache.current[itineraryId],
+            title: oldTitle,
+          };
+        }
+        showToastMessage(isZh ? '更新失敗' : 'Update failed');
       }
     } catch (error) {
       console.error('Update title error:', error);
+      // API 錯誤，回滾到舊標題
+      setCurrentItinerary(prev => prev ? { ...prev, title: oldTitle } : null);
+      setItineraries(prev =>
+        prev.map(item =>
+          item.id === itineraryId
+            ? { ...item, title: oldTitle }
+            : item
+        )
+      );
+      if (itineraryCache.current[itineraryId]) {
+        itineraryCache.current[itineraryId] = {
+          ...itineraryCache.current[itineraryId],
+          title: oldTitle,
+        };
+      }
       showToastMessage(isZh ? '更新失敗' : 'Update failed');
     } finally {
       savingTitleRef.current = false;
