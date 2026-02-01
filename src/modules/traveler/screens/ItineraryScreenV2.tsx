@@ -94,15 +94,9 @@ const DRAWER_WIDTH = SCREEN_WIDTH * 0.88;
  * @param lng 經度
  * @param name 景點名稱
  */
-const openInMaps = (lat: number, lng: number, name: string) => {
-  const url = Platform.select({
-    ios: `maps:?q=${encodeURIComponent(name)}&ll=${lat},${lng}`,
-    android: `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(name)})`,
-    default: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
-  });
-  if (url) {
-    Linking.openURL(url).catch(err => console.warn('無法開啟地圖:', err));
-  }
+const openInGoogleSearch = (name: string) => {
+  const url = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
+  Linking.openURL(url).catch(err => console.warn('無法開啟 Google 搜尋:', err));
 };
 
 /**
@@ -1622,7 +1616,6 @@ export function ItineraryScreenV2() {
             renderItem={({ item: place, getIndex, drag, isActive }: RenderItemParams<ItineraryPlaceItem>) => {
               const index = getIndex() ?? 0;
               const categoryToken = getCategoryToken(getPlaceCategory(place));
-              const coords = getPlaceCoords(place);
               const description = getPlaceDescription(place);
               const name = getPlaceName(place);
               const isFirst = index === 0;
@@ -1726,32 +1719,19 @@ export function ItineraryScreenV2() {
                         <Text style={styles.placeDescription}>{description}</Text>
                       )}
 
-                      {/* 【對齊扭蛋】底部：地圖按鈕 */}
+                      {/* 底部：Google 搜尋按鈕 */}
                       <TouchableOpacity
-                        style={[
-                          styles.placeMapButton,
-                          !(coords.lat && coords.lng) && styles.placeMapButtonDisabled,
-                        ]}
+                        style={styles.placeMapButton}
                         activeOpacity={0.7}
-                        disabled={!(coords.lat && coords.lng)}
-                        onPress={() => {
-                          if (coords.lat && coords.lng) {
-                            openInMaps(coords.lat, coords.lng, name);
-                          }
-                        }}
+                        onPress={() => openInGoogleSearch(name)}
                       >
                         <Ionicons
-                          name="location-outline"
+                          name="search-outline"
                           size={16}
-                          color={coords.lat && coords.lng ? MibuBrand.copper : MibuBrand.tanLight}
+                          color={MibuBrand.copper}
                         />
-                        <Text
-                          style={[
-                            styles.placeMapText,
-                            !(coords.lat && coords.lng) && { color: MibuBrand.tanLight },
-                          ]}
-                        >
-                          {isZh ? '在地圖中查看' : 'View on Map'}
+                        <Text style={styles.placeMapText}>
+                          {isZh ? '在 Google 中查看' : 'View on Google'}
                         </Text>
                       </TouchableOpacity>
                     </View>
