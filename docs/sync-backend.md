@@ -6,6 +6,36 @@
 
 ## 最新回報
 
+### 2026-02-02 🐛 BUG：AI 對話時間錯誤
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | APP 端測試發現 |
+| 狀態 | 🟡 待後端修復 |
+| 嚴重度 | 低（不影響功能，但體驗不佳） |
+
+**問題描述**
+- 今天是禮拜二，但 AI 說今天是禮拜一
+- AI 不知道當前的日期時間
+
+**建議修復**
+
+在呼叫 AI 時，將當前日期時間作為 system prompt 的一部分傳給 AI：
+
+```typescript
+// 後端 AI prompt 範例
+const systemPrompt = `
+你是一個旅遊助手。
+當前時間：${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}
+今天是：${new Date().toLocaleDateString('zh-TW', { weekday: 'long', timeZone: 'Asia/Taipei' })}
+...其他 prompt
+`;
+```
+
+這樣 AI 就能正確知道今天是什麼日期、星期幾。
+
+---
+
 ### 2026-01-30 📱 請求：上傳頭像 API
 
 | 項目 | 內容 |

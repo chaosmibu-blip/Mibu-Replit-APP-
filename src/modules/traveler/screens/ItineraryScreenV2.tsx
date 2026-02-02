@@ -89,14 +89,22 @@ const DRAWER_WIDTH = SCREEN_WIDTH * 0.88;
 // ============================================================
 
 /**
- * #033: 開啟原生地圖導航
- * @param lat 緯度
- * @param lng 經度
+ * 在 Google Maps 中查看景點
+ * 用名稱搜尋，如果有經緯度會加上座標讓搜尋更精確
  * @param name 景點名稱
+ * @param lat 緯度（可選）
+ * @param lng 經度（可選）
  */
-const openInGoogleSearch = (name: string) => {
-  const url = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
-  Linking.openURL(url).catch(err => console.warn('無法開啟 Google 搜尋:', err));
+const openInGoogleMaps = (name: string, lat?: number | null, lng?: number | null) => {
+  let url: string;
+  if (lat && lng) {
+    // 有經緯度：用名稱 + 座標搜尋，精確定位到該地點
+    url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}+${lat},${lng}`;
+  } else {
+    // 沒有經緯度：只用名稱搜尋
+    url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
+  }
+  Linking.openURL(url).catch(err => console.warn('無法開啟 Google Maps:', err));
 };
 
 /**
@@ -402,6 +410,10 @@ export function ItineraryScreenV2() {
           }))
         : undefined;
 
+      // 🔍 DEBUG: 追蹤 lastSuggestedPlaces 傳遞
+      console.log('[AI Chat] 目前 aiSuggestions:', aiSuggestions.length, '筆');
+      console.log('[AI Chat] 傳送 lastSuggestedPlaces:', lastSuggestedPlaces);
+
       const res = await itineraryApi.aiChat(
         currentItinerary.id,
         {
@@ -438,6 +450,11 @@ export function ItineraryScreenV2() {
         // v2.2.0: 根據 detectedIntent 決定是否顯示推薦
         // chitchat 和 unsupported 不顯示推薦卡片
         const shouldShowSuggestions = res.detectedIntent !== 'chitchat' && res.detectedIntent !== 'unsupported';
+
+        // 🔍 DEBUG: 追蹤 AI 回傳的 suggestions
+        console.log('[AI Chat] 收到 suggestions:', res.suggestions?.length || 0, '筆', res.suggestions);
+        console.log('[AI Chat] detectedIntent:', res.detectedIntent, '→ shouldShowSuggestions:', shouldShowSuggestions);
+
         setAiSuggestions(shouldShowSuggestions ? (res.suggestions || []) : []);
 
         // 保存篩選條件
@@ -520,7 +537,7 @@ export function ItineraryScreenV2() {
       await fetchItineraryDetail(id, false);
     }
     closeLeftDrawer();
-  }, [fetchItineraryDetail, loadMessages, saveMessages]);
+  }, [fetchItineraryDetail, loadMessages, saveMessages, closeLeftDrawer]);
 
   // 【截圖 9-15 #5】開啟「從圖鑑加入」Modal - 優先使用快取
   const openAddPlacesModal = useCallback(async () => {
@@ -578,8 +595,7 @@ export function ItineraryScreenV2() {
       if (res.success) {
         await fetchItineraryDetail(currentItinerary.id);
         setAddPlacesModalVisible(false);
-        // 使用 Toast 通知而不是 Alert 彈窗
-        showToastMessage(isZh ? `已加入 ${res.addedCount} 個景點` : `Added ${res.addedCount} places`);
+        // 用戶操作不跳通知，直接關閉 Modal 即可
       }
     } catch (error) {
       console.error('Failed to add places:', error);
@@ -668,7 +684,7 @@ export function ItineraryScreenV2() {
             places: newPlaces,
           };
         }
-        showToastMessage(isZh ? '已更新順序' : 'Order updated');
+        // 用戶操作不跳通知
       }
     } catch (error) {
       console.error('Drag reorder error:', error);
@@ -757,7 +773,24 @@ export function ItineraryScreenV2() {
         setMessages([]);
         setAiContext(undefined);
         setAiSuggestions([]);
-        closeLeftDrawer();
+        // 延遲關閉抽屜，等 Modal 完全關閉後再執行
+        setTimeout(() => {
+          drawerAnimating.current = false;
+          Animated.parallel([
+            Animated.timing(leftDrawerAnim, {
+              toValue: -DRAWER_WIDTH,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(overlayAnim, {
+              toValue: 0,
+              duration: 150,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setLeftDrawerOpen(false);
+          });
+        }, 100);
       } else {
         Alert.alert(
           isZh ? '建立失敗' : 'Create Failed',
@@ -773,7 +806,7 @@ export function ItineraryScreenV2() {
     } finally {
       setCreating(false);
     }
-  }, [newItinerary, getToken, fetchItineraries, isZh]);
+  }, [newItinerary, getToken, fetchItineraries, isZh, leftDrawerAnim, overlayAnim]);
 
   /**
    * 【截圖 9-15 #12】保存行程標題
@@ -1139,8 +1172,9 @@ export function ItineraryScreenV2() {
   /**
    * 開啟左側 Drawer（行程列表）
    * 【截圖 36 修復】改用 timing 動畫避免 spring 卡住 + 防抖機制
+   * 【修復】改用 useCallback 避免閉包問題
    */
-  const openLeftDrawer = () => {
+  const openLeftDrawer = useCallback(() => {
     // 【截圖 36 修復】防止動畫中重複觸發
     if (drawerAnimating.current || leftDrawerOpen) return;
     drawerAnimating.current = true;
@@ -1166,15 +1200,16 @@ export function ItineraryScreenV2() {
     ]).start(() => {
       drawerAnimating.current = false;
     });
-  };
+  }, [leftDrawerOpen, leftDrawerAnim, overlayAnim, preloadItineraries]);
 
   /**
    * 關閉左側 Drawer
    * 【截圖 36 修復】改用 timing 動畫，並在動畫完成後才設置狀態
+   * 【修復】移除 leftDrawerOpen 狀態檢查，避免閉包問題導致無法關閉
    */
-  const closeLeftDrawer = () => {
-    // 【截圖 36 修復】防止動畫中重複觸發
-    if (drawerAnimating.current || !leftDrawerOpen) return;
+  const closeLeftDrawer = useCallback(() => {
+    // 防止動畫中重複觸發
+    if (drawerAnimating.current) return;
     drawerAnimating.current = true;
 
     // 停止進行中的動畫
@@ -1192,17 +1227,18 @@ export function ItineraryScreenV2() {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // 【截圖 36 修復】動畫完成後才設置狀態
+      // 動畫完成後設置狀態
       setLeftDrawerOpen(false);
       drawerAnimating.current = false;
     });
-  };
+  }, [leftDrawerAnim, overlayAnim]);
 
   /**
    * 開啟右側 Drawer（景點列表）
    * 【截圖 36 修復】改用 timing 動畫避免 spring 卡住 + 防抖機制
+   * 【修復】改用 useCallback 避免閉包問題
    */
-  const openRightDrawer = () => {
+  const openRightDrawer = useCallback(() => {
     // 【截圖 36 修復】防止動畫中重複觸發
     if (drawerAnimating.current || rightDrawerOpen) return;
     drawerAnimating.current = true;
@@ -1227,15 +1263,16 @@ export function ItineraryScreenV2() {
     ]).start(() => {
       drawerAnimating.current = false;
     });
-  };
+  }, [rightDrawerOpen, rightDrawerAnim, overlayAnim, preloadCollection]);
 
   /**
    * 關閉右側 Drawer
    * 【截圖 36 修復】改用 timing 動畫，並在動畫完成後才設置狀態 + 防抖機制
+   * 【修復】移除 rightDrawerOpen 狀態檢查，避免閉包問題導致無法關閉
    */
-  const closeRightDrawer = () => {
-    // 【截圖 36 修復】防止動畫中重複觸發
-    if (drawerAnimating.current || !rightDrawerOpen) return;
+  const closeRightDrawer = useCallback(() => {
+    // 防止動畫中重複觸發
+    if (drawerAnimating.current) return;
     drawerAnimating.current = true;
 
     // 停止進行中的動畫
@@ -1253,11 +1290,11 @@ export function ItineraryScreenV2() {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // 【截圖 36 修復】動畫完成後才設置狀態，避免提前隱藏 overlay
+      // 動畫完成後設置狀態
       setRightDrawerOpen(false);
       drawerAnimating.current = false;
     });
-  };
+  }, [rightDrawerAnim, overlayAnim]);
 
   // ===== 未登入狀態 =====
   if (!state.isAuthenticated) {
@@ -1287,17 +1324,26 @@ export function ItineraryScreenV2() {
   }
 
   // ===== 無行程狀態 =====
-  if (itineraries.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Ionicons name="map-outline" size={64} color={MibuBrand.tanLight} />
-        <Text style={styles.emptyTitle}>{isZh ? '還沒有行程' : 'No itineraries yet'}</Text>
-        <Text style={styles.emptySubtitle}>
-          {isZh ? '在「行程」頁籤建立你的第一個行程' : 'Create your first itinerary in the Itinerary tab'}
+  // 注意：Modal 在下方的 renderCreateModal 統一渲染，這裡只渲染空狀態 UI
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="map-outline" size={64} color={MibuBrand.tanLight} />
+      <Text style={styles.emptyTitle}>{isZh ? '還沒有行程' : 'No itineraries yet'}</Text>
+      <Text style={styles.emptySubtitle}>
+        {isZh ? '建立你的第一個行程吧！' : 'Create your first itinerary!'}
+      </Text>
+      <TouchableOpacity
+        style={styles.emptyCreateButton}
+        onPress={openCreateModal}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="add-circle-outline" size={24} color={MibuBrand.warmWhite} />
+        <Text style={styles.emptyCreateButtonText}>
+          {isZh ? '建立行程' : 'Create Itinerary'}
         </Text>
-      </View>
-    );
-  }
+      </TouchableOpacity>
+    </View>
+  );
 
   // ===== 主畫面：AI 對話 =====
   // 【截圖 9-15 #3 #4】修復輸入框被底部導航欄和鍵盤擋住的問題
@@ -1396,8 +1442,8 @@ export function ItineraryScreenV2() {
           <Animated.View style={[styles.helpTooltip, { opacity: helpTooltipOpacity }]}>
             <Text style={styles.helpTooltipText}>
               {isZh
-                ? '告訴我你的旅遊偏好，我會推薦景點並加入行程。點擊左上角查看行程列表，點擊右上角查看行程表'
-                : 'Tell me your preferences, I\'ll recommend places. Tap top-left for trip list, top-right for itinerary'}
+                ? '告訴我你的旅遊偏好，我會推薦景點並加入行程\n點擊左上角查看行程列表，點擊右上角查看行程表'
+                : 'Tell me your preferences, I\'ll recommend places\nTap top-left for trip list, top-right for itinerary'}
             </Text>
           </Animated.View>
         )}
@@ -1796,19 +1842,23 @@ export function ItineraryScreenV2() {
                         <Text style={styles.placeDescription}>{description}</Text>
                       )}
 
-                      {/* 底部：Google 搜尋按鈕 */}
+                      {/* 底部：Google Maps 按鈕 */}
                       <TouchableOpacity
                         style={styles.placeMapButton}
                         activeOpacity={0.7}
-                        onPress={() => openInGoogleSearch(name)}
+                        onPress={() => openInGoogleMaps(
+                          name,
+                          place.locationLat ?? place.place?.locationLat,
+                          place.locationLng ?? place.place?.locationLng
+                        )}
                       >
                         <Ionicons
-                          name="search-outline"
+                          name="location-outline"
                           size={16}
                           color={MibuBrand.copper}
                         />
                         <Text style={styles.placeMapText}>
-                          {isZh ? '在 Google 中查看' : 'View on Google'}
+                          {isZh ? '在 Google Maps 查看' : 'View on Google Maps'}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -2209,13 +2259,19 @@ export function ItineraryScreenV2() {
       </Animated.View>
     );
 
+  // 無行程時顯示空狀態，有行程時顯示主畫面
   return (
     <View style={styles.container}>
-      {renderMainContent()}
-      {renderOverlay()}
-      {renderLeftDrawer()}
-      {renderRightDrawer()}
-      {renderAddPlacesModal()}
+      {itineraries.length === 0 ? renderEmptyState() : (
+        <>
+          {renderMainContent()}
+          {renderOverlay()}
+          {renderLeftDrawer()}
+          {renderRightDrawer()}
+          {renderAddPlacesModal()}
+        </>
+      )}
+      {/* Modal 不管有沒有行程都要渲染，這樣空狀態也能建立行程 */}
       {renderCreateModal()}
       {renderToast()}
     </View>
@@ -2249,6 +2305,21 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
     marginTop: Spacing.sm,
     textAlign: 'center',
+  },
+  emptyCreateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: MibuBrand.brown,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.lg,
+    marginTop: Spacing.xl,
+    gap: Spacing.sm,
+  },
+  emptyCreateButtonText: {
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    color: MibuBrand.warmWhite,
   },
   loadingText: {
     fontSize: FontSize.md,
@@ -3136,22 +3207,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // ===== 【截圖 9-15 #8 #11】Toast 通知樣式（淡入淡出） =====
+  // ===== Toast 通知樣式（參考扭蛋說明風格） =====
   toastContainer: {
     position: 'absolute',
     left: Spacing.xl,
     right: Spacing.xl,
-    backgroundColor: MibuBrand.brownDark,
-    borderRadius: Radius.lg,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.lg,
+    backgroundColor: 'rgba(128, 128, 128, 0.5)',  // 灰色半透明（同扭蛋說明）
+    borderRadius: Radius.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     alignItems: 'center',
     zIndex: 1000,
-    ...Shadow.lg,
   },
   toastText: {
-    fontSize: FontSize.md,
-    color: MibuBrand.warmWhite,
+    fontSize: FontSize.sm,
+    fontWeight: '500',
+    color: '#FFFFFF',
     textAlign: 'center',
   },
 });
