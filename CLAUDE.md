@@ -361,12 +361,18 @@ eas build --platform ios --profile production  # 正式版
 
 ## Git 工作流
 
-Commit 後輸出摘要：
+**Commit 後必須輸出摘要表格：**
 ```
 | # | Commit | 說明 | 檔案數 | 行數變化 |
 |---|--------|------|--------|----------|
 | 1 | abc1234 | 簡短說明 | 5 | +100/-50 |
 ```
+
+**Commit message 格式：**
+- 類型：`fix`、`feat`、`refactor`、`docs`、`style`
+- 範圍：`(itinerary)`、`(gacha)`、`(auth)` 等
+- 說明：簡短描述做了什麼
+- 範例：`fix(itinerary): 修復建立行程後抽屜無法關閉的問題`
 
 ---
 
