@@ -85,6 +85,53 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DRAWER_WIDTH = SCREEN_WIDTH * 0.88;
 
 // ============================================================
+// 打字機效果組件
+// ============================================================
+
+interface TypewriterTextProps {
+  text: string;
+  onComplete?: () => void;
+  style?: any;
+  speed?: number;  // 每個字的間隔（毫秒）
+}
+
+/**
+ * 打字機效果文字組件
+ * 讓文字一個一個字出現，像真人打字一樣
+ */
+const TypewriterText: React.FC<TypewriterTextProps> = ({
+  text,
+  onComplete,
+  style,
+  speed = 30,  // 預設每 30ms 顯示一個字
+}) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const indexRef = useRef(0);
+
+  useEffect(() => {
+    // 重置
+    setDisplayedText('');
+    indexRef.current = 0;
+
+    if (!text) return;
+
+    const timer = setInterval(() => {
+      if (indexRef.current < text.length) {
+        setDisplayedText(text.slice(0, indexRef.current + 1));
+        indexRef.current++;
+      } else {
+        clearInterval(timer);
+        onComplete?.();
+      }
+    }, speed);
+
+    return () => clearInterval(timer);
+  }, [text, speed, onComplete]);
+
+  return <Text style={style}>{displayedText}</Text>;
+};
+
+// ============================================================
 // 輔助函數
 // ============================================================
 
@@ -181,6 +228,8 @@ export function ItineraryScreenV2() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiContext, setAiContext] = useState<AiChatContext | undefined>(undefined);
   const [aiSuggestions, setAiSuggestions] = useState<AiSuggestedPlace[]>([]);
+  // 打字機效果：正在打字的訊息索引（-1 表示沒有）
+  const [typingMessageIndex, setTypingMessageIndex] = useState<number>(-1);
 
   // Drawer 狀態
   const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
@@ -444,6 +493,8 @@ export function ItineraryScreenV2() {
           const newMessages = [...prev, assistantMessage];
           // 【截圖 9-15 #13】保存對話記錄
           saveMessages(currentItinerary.id, newMessages);
+          // 觸發打字機效果（設定為新訊息的索引）
+          setTypingMessageIndex(newMessages.length - 1);
           return newMessages;
         });
 
@@ -1473,14 +1524,24 @@ export function ItineraryScreenV2() {
                 msg.role === 'user' ? styles.userBubble : styles.assistantBubble,
               ]}
             >
-              <Text
-                style={[
-                  styles.messageText,
-                  msg.role === 'user' && styles.userMessageText,
-                ]}
-              >
-                {msg.content}
-              </Text>
+              {/* AI 訊息使用打字機效果（僅對正在打字的訊息） */}
+              {msg.role === 'assistant' && index === typingMessageIndex ? (
+                <TypewriterText
+                  text={msg.content}
+                  style={styles.messageText}
+                  speed={25}
+                  onComplete={() => setTypingMessageIndex(-1)}
+                />
+              ) : (
+                <Text
+                  style={[
+                    styles.messageText,
+                    msg.role === 'user' && styles.userMessageText,
+                  ]}
+                >
+                  {msg.content}
+                </Text>
+              )}
             </View>
           </View>
         ))}
