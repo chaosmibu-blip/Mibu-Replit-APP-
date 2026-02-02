@@ -426,9 +426,96 @@ class AuthApiService extends ApiBase {
       headers: this.authHeaders(token),
     });
   }
+
+  // ============ #038 頭像上傳 ============
+
+  /**
+   * 上傳自訂頭像
+   *
+   * 使用 multipart/form-data 上傳圖片檔案
+   * 支援 jpg/png/webp 格式，限制 5MB
+   *
+   * @param token - JWT Token
+   * @param imageUri - 本地圖片 URI（來自 expo-image-picker）
+   * @returns 上傳結果和新的頭像 URL
+   *
+   * @example
+   * const result = await authApi.uploadAvatar(token, imageResult.assets[0].uri);
+   * if (result.success) {
+   *   console.log('新頭像:', result.avatarUrl);
+   * }
+   */
+  async uploadAvatar(
+    token: string,
+    imageUri: string
+  ): Promise<UploadAvatarResponse> {
+    try {
+      // 建立 FormData
+      const formData = new FormData();
+
+      // 從 URI 取得檔案名稱和類型
+      const filename = imageUri.split('/').pop() || 'avatar.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+      // 添加圖片檔案到 FormData
+      formData.append('file', {
+        uri: imageUri,
+        name: filename,
+        type,
+      } as any);
+
+      // 使用原生 fetch 因為需要 multipart/form-data
+      const url = `${this.baseUrl}/api/avatar/upload`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // 不設定 Content-Type，讓 fetch 自動設定 multipart/form-data boundary
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: result.message || '上傳失敗',
+          code: result.code,
+        };
+      }
+
+      return {
+        success: true,
+        avatarUrl: result.avatarUrl,
+        message: result.message || '上傳成功',
+      };
+    } catch (error) {
+      console.error('Upload avatar error:', error);
+      return {
+        success: false,
+        message: '上傳失敗，請稍後再試',
+      };
+    }
+  }
 }
 
 // ============ 類型定義 ============
+
+/**
+ * #038 頭像上傳回應
+ */
+export interface UploadAvatarResponse {
+  /** 是否成功 */
+  success: boolean;
+  /** 新頭像 URL（成功時） */
+  avatarUrl?: string;
+  /** 訊息 */
+  message?: string;
+  /** 錯誤碼（失敗時） */
+  code?: string;
+}
 
 /**
  * 綁定身份資料

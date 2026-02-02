@@ -6,11 +6,12 @@
  * - 包含基本資訊（姓名、性別、生日、電話）
  * - 健康資訊（飲食禁忌、疾病史）
  * - 緊急聯絡人設定
- * - 頭像選擇功能
+ * - 頭像選擇功能（含自訂頭像上傳）
  *
  * 串接的 API：
  * - GET /api/user/profile - 取得個人資料
  * - PUT /api/user/profile - 更新個人資料
+ * - POST /api/avatar/upload - 上傳自訂頭像 (#038)
  *
  * @see 後端合約: contracts/APP.md Phase 2
  */
@@ -19,8 +20,10 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert,
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
+import { authApi } from '../../../services/authApi';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
@@ -125,6 +128,10 @@ export function ProfileScreen() {
   // 【截圖 19-21】頭像選項（支援動態載入）
   const [avatarPresets, setAvatarPresets] = useState<AvatarPreset[]>(DEFAULT_AVATAR_PRESETS);
 
+  // #038 自訂頭像上傳
+  const [customAvatarUrl, setCustomAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
   // 【截圖 19】Toast 訊息（取代彈窗）
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -164,13 +171,18 @@ export function ProfileScreen() {
 
   /**
    * 載入已儲存的頭像設定
-   * 從 AsyncStorage 讀取用戶之前選擇的頭像
+   * 從 AsyncStorage 讀取用戶之前選擇的頭像和自訂頭像 URL
    */
   const loadSavedAvatar = async () => {
     try {
       const savedAvatar = await AsyncStorage.getItem(AVATAR_STORAGE_KEY);
       if (savedAvatar) {
         setSelectedAvatar(savedAvatar);
+      }
+      // #038 載入自訂頭像 URL
+      const savedCustomUrl = await AsyncStorage.getItem('@mibu_custom_avatar_url');
+      if (savedCustomUrl) {
+        setCustomAvatarUrl(savedCustomUrl);
       }
     } catch (error) {
       console.log('Failed to load saved avatar:', error);
@@ -186,6 +198,65 @@ export function ProfileScreen() {
       await AsyncStorage.setItem(AVATAR_STORAGE_KEY, avatarId);
     } catch (error) {
       console.log('Failed to save avatar choice:', error);
+    }
+  };
+
+  /**
+   * #038 上傳自訂頭像
+   * 使用 expo-image-picker 選擇圖片並上傳到後端
+   */
+  const handleUploadAvatar = async () => {
+    try {
+      // 請求相簿權限
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        showToastMessage(isZh ? '需要相簿存取權限' : 'Photo library permission required');
+        return;
+      }
+
+      // 開啟圖片選擇器
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],  // 正方形裁切
+        quality: 0.8,    // 壓縮品質
+      });
+
+      if (result.canceled || !result.assets?.[0]) {
+        return;
+      }
+
+      const imageUri = result.assets[0].uri;
+      setShowAvatarModal(false);
+      setUploadingAvatar(true);
+
+      // 取得 token
+      const token = await getToken();
+      if (!token) {
+        showToastMessage(isZh ? '請先登入' : 'Please login first');
+        setUploadingAvatar(false);
+        return;
+      }
+
+      // 上傳圖片
+      const uploadResult = await authApi.uploadAvatar(token, imageUri);
+
+      if (uploadResult.success && uploadResult.avatarUrl) {
+        // 更新自訂頭像 URL
+        setCustomAvatarUrl(uploadResult.avatarUrl);
+        setSelectedAvatar('custom');
+        await saveAvatarChoice('custom');
+        // 儲存自訂頭像 URL 到 AsyncStorage
+        await AsyncStorage.setItem('@mibu_custom_avatar_url', uploadResult.avatarUrl);
+        showToastMessage(isZh ? '頭像上傳成功' : 'Avatar uploaded successfully');
+      } else {
+        showToastMessage(uploadResult.message || (isZh ? '上傳失敗' : 'Upload failed'));
+      }
+    } catch (error) {
+      console.error('Upload avatar error:', error);
+      showToastMessage(isZh ? '上傳失敗，請稍後再試' : 'Upload failed, please try again');
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -337,26 +408,42 @@ export function ProfileScreen() {
           <TouchableOpacity
             style={styles.avatarContainer}
             onPress={() => setShowAvatarModal(true)}
+            disabled={uploadingAvatar}
           >
-            <View style={[styles.avatar, { backgroundColor: avatarPresets.find(a => a.id === selectedAvatar)?.color || MibuBrand.brown }]}>
-              {selectedAvatar === 'default' ? (
-                <Text style={styles.avatarText}>
-                  {firstName?.charAt(0) || profile?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
-                </Text>
-              ) : (
-                <Ionicons
-                  name={avatarPresets.find(a => a.id === selectedAvatar)?.icon as any || 'person'}
-                  size={44}
-                  color="#ffffff"
-                />
-              )}
-            </View>
+            {/* #038 支援自訂頭像顯示 */}
+            {selectedAvatar === 'custom' && customAvatarUrl ? (
+              <Image
+                source={{ uri: customAvatarUrl }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={[styles.avatar, { backgroundColor: avatarPresets.find(a => a.id === selectedAvatar)?.color || MibuBrand.brown }]}>
+                {selectedAvatar === 'default' ? (
+                  <Text style={styles.avatarText}>
+                    {firstName?.charAt(0) || profile?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
+                  </Text>
+                ) : (
+                  <Ionicons
+                    name={avatarPresets.find(a => a.id === selectedAvatar)?.icon as any || 'person'}
+                    size={44}
+                    color="#ffffff"
+                  />
+                )}
+              </View>
+            )}
             <View style={styles.avatarEditBadge}>
-              <Ionicons name="camera" size={14} color="#ffffff" />
+              {uploadingAvatar ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Ionicons name="camera" size={14} color="#ffffff" />
+              )}
             </View>
           </TouchableOpacity>
           <Text style={styles.avatarHint}>
-            {isZh ? '點擊更換頭像' : 'Tap to change avatar'}
+            {uploadingAvatar
+              ? (isZh ? '上傳中...' : 'Uploading...')
+              : (isZh ? '點擊更換頭像' : 'Tap to change avatar')
+            }
           </Text>
         </View>
 
@@ -607,21 +694,22 @@ export function ProfileScreen() {
               ))}
             </View>
 
-            {/* 【截圖 20】上傳自訂頭像按鈕（功能尚未實作，改用 Toast） */}
+            {/* #038 上傳自訂頭像按鈕 */}
             <TouchableOpacity
-              style={styles.avatarUploadButton}
-              onPress={() => {
-                setShowAvatarModal(false);
-                // TODO: 實作圖片選擇和上傳功能
-                // 1. 使用 expo-image-picker 選擇圖片
-                // 2. 上傳到後端 POST /api/avatar/upload
-                // 3. 更新 avatarPresets 或 selectedAvatar
-                showToastMessage(isZh ? '自訂頭像功能即將開放' : 'Custom avatar upload coming soon');
-              }}
+              style={[styles.avatarUploadButton, uploadingAvatar && { opacity: 0.5 }]}
+              onPress={handleUploadAvatar}
+              disabled={uploadingAvatar}
             >
-              <Ionicons name="cloud-upload-outline" size={20} color={MibuBrand.brown} />
+              {uploadingAvatar ? (
+                <ActivityIndicator size="small" color={MibuBrand.brown} />
+              ) : (
+                <Ionicons name="cloud-upload-outline" size={20} color={MibuBrand.brown} />
+              )}
               <Text style={styles.avatarUploadText}>
-                {isZh ? '上傳自訂頭像' : 'Upload Custom Avatar'}
+                {uploadingAvatar
+                  ? (isZh ? '上傳中...' : 'Uploading...')
+                  : (isZh ? '上傳自訂頭像' : 'Upload Custom Avatar')
+                }
               </Text>
             </TouchableOpacity>
           </View>
