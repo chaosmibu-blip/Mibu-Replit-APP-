@@ -33,7 +33,8 @@
       "Bash(npm view:*)",
       "Bash(npm show:*)",
       "Bash(npm install:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(npx eslint:*)"
     ]
   }
 }
