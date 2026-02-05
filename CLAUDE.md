@@ -423,6 +423,16 @@ fontSize: FontSize.md       // 不要 14
   - `useState` 適合觸發重新渲染，`useRef` 適合儲存不需觸發渲染的值
   - 在 `useCallback` 依賴陣列中加入狀態變數會導致函數重建，可能造成閉包問題
 
+### #007 後端 API 未部署就改前端（2026-02-05）
+- **問題**：#039 經濟系統重構，前端改用 `/api/user/coins` 和 `/api/user/perks`，但後端還沒部署這些 API，導致 404 錯誤
+- **原因**：sync-app.md 說要做重構，但後端實際 API 還沒上線
+- **解法**：
+  1. 先確認後端 API 已部署再改前端
+  2. 或在前端加入 fallback 機制（API 失敗時用預設值）
+- **舉一反三**：
+  - 收到後端任務時，先用 curl 或 Postman 測試 API 是否存在
+  - 新 API 上線前，保留舊 API 的呼叫作為 fallback
+
 ---
 
 ## 協作

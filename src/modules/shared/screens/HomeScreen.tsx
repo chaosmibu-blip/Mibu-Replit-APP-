@@ -3,14 +3,17 @@
  *
  * 功能：
  * - 用戶問候（根據語言顯示不同文字）
- * - 等級卡片（顯示 Lv、稱號、階段、連續登入、XP 進度）
+ * - 用戶卡片（顯示金幣餘額、稱號、權益、連續登入）
  * - 每日任務卡片（點擊跳轉 /economy）
  * - 活動 Tab 切換（公告 / 在地活動 / 限時活動）
  *
  * 串接 API：
  * - eventApi.getHomeEvents() - 取得首頁活動
- * - economyApi.getLevelInfo() - 取得用戶等級資料
+ * - economyApi.getCoins() - 取得金幣資訊（#039 重構）
+ * - economyApi.getPerks() - 取得權益資訊（#039 重構）
  * - economyApi.getDailyTasks() - 取得每日任務進度
+ *
+ * @updated 2026-02-05 #039 經濟系統重構（等級 → 金幣）
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import {
@@ -61,17 +64,23 @@ const AVATAR_PRESETS = [
 // ============================================================
 
 /**
- * 用戶等級資料介面
- * 用於顯示等級卡片的各項數據
+ * 用戶金幣資料介面（#039 重構）
+ * 用於顯示用戶卡片的金幣相關數據
  */
-interface UserLevelData {
-  level: number;        // 當前等級
-  title: string;        // 等級稱號（如：旅行新手、探索者）
-  phase: number;        // 階段（用於顯示進度）
-  currentXp: number;    // 當前經驗值
-  nextLevelXp: number;  // 升級所需經驗值
-  totalXp: number;      // 總經驗值
+interface UserCoinsData {
+  balance: number;      // 當前金幣餘額
+  totalEarned: number;  // 累計獲得金幣
+  title: string;        // 稱號（根據累計金幣決定）
   loginStreak: number;  // 連續登入天數
+}
+
+/**
+ * 用戶權益資料介面（#039 重構）
+ */
+interface UserPerksData {
+  dailyPullLimit: number;    // 每日扭蛋上限
+  inventorySlots: number;    // 背包格數
+  canApplySpecialist: boolean; // 是否可申請策劃師
 }
 
 /**
@@ -81,7 +90,7 @@ interface UserLevelData {
 interface DailyTaskSummary {
   completed: number;  // 已完成任務數
   total: number;      // 總任務數
-  earnedXp: number;   // 已獲得經驗值
+  earnedCoins: number; // 已獲得金幣（#039：XP → 金幣）
 }
 
 // ============================================================
@@ -110,22 +119,26 @@ export function HomeScreen() {
   // 用戶頭像設定（從 AsyncStorage 讀取）
   const [userAvatar, setUserAvatar] = useState<string>('default');
 
-  // 用戶等級資料（預設值）
-  const [userLevel, setUserLevel] = useState<UserLevelData>({
-    level: 1,
+  // 用戶金幣資料（#039 重構）
+  const [userCoins, setUserCoins] = useState<UserCoinsData>({
+    balance: 0,
+    totalEarned: 0,
     title: isZh ? '旅行新手' : 'Newbie',
-    phase: 1,
-    currentXp: 0,
-    nextLevelXp: 100,
-    totalXp: 0,
     loginStreak: 1,
+  });
+
+  // 用戶權益資料（#039 重構）
+  const [userPerks, setUserPerks] = useState<UserPerksData>({
+    dailyPullLimit: 36,
+    inventorySlots: 30,
+    canApplySpecialist: false,
   });
 
   // 每日任務資料（預設值）
   const [dailyTask, setDailyTask] = useState<DailyTaskSummary>({
     completed: 0,
     total: 5,
-    earnedXp: 0,
+    earnedCoins: 0,
   });
 
   // 活動資料（公告、節日、限時活動）
@@ -155,41 +168,47 @@ export function HomeScreen() {
       }));
       setEvents(eventsRes);
 
-      // 載入用戶等級資料（需要登入）
+      // 載入用戶金幣和權益資料（#039 重構）
       if (token) {
         try {
-          const levelResponse = await economyApi.getLevelInfo(token);
-          if (levelResponse) {
-            // 處理後端 API 回應格式（可能是 { level: {...} } 或直接 {...}）
-            const rawLevel = (levelResponse as any)?.level || levelResponse;
+          // 並行呼叫金幣和權益 API
+          const [coinsResponse, perksResponse] = await Promise.all([
+            economyApi.getCoins(token),
+            economyApi.getPerks(token),
+          ]);
 
-            // 後端返回 currentLevel，前端需要映射
-            const userLv = rawLevel?.currentLevel ?? rawLevel?.level ?? 1;
+          /**
+           * 根據累計金幣決定稱號
+           * 5000+ = 傳奇旅者
+           * 2000+ = 資深冒險家
+           * 500+  = 旅行達人
+           * 100+  = 探索者
+           * 0+    = 旅行新手
+           */
+          const getCoinTitle = (totalEarned: number): string => {
+            if (totalEarned >= 5000) return isZh ? '傳奇旅者' : 'Legendary';
+            if (totalEarned >= 2000) return isZh ? '資深冒險家' : 'Expert';
+            if (totalEarned >= 500) return isZh ? '旅行達人' : 'Traveler';
+            if (totalEarned >= 100) return isZh ? '探索者' : 'Explorer';
+            return isZh ? '旅行新手' : 'Newbie';
+          };
 
-            /**
-             * 根據等級決定稱號
-             * Lv 50+ = 傳奇旅者
-             * Lv 30+ = 資深冒險家
-             * Lv 15+ = 旅行達人
-             * Lv 5+  = 探索者
-             * Lv 1+  = 旅行新手
-             */
-            const getLevelTitle = (level: number): string => {
-              if (level >= 50) return isZh ? '傳奇旅者' : 'Legendary';
-              if (level >= 30) return isZh ? '資深冒險家' : 'Expert';
-              if (level >= 15) return isZh ? '旅行達人' : 'Traveler';
-              if (level >= 5) return isZh ? '探索者' : 'Explorer';
-              return isZh ? '旅行新手' : 'Newbie';
-            };
+          if (coinsResponse) {
+            // loginStreak 可能在 perksResponse 或 coinsResponse 中
+            const streak = (coinsResponse as any).loginStreak ?? (perksResponse as any)?.loginStreak ?? 1;
+            setUserCoins({
+              balance: coinsResponse.balance ?? 0,
+              totalEarned: coinsResponse.totalEarned ?? 0,
+              title: getCoinTitle(coinsResponse.totalEarned ?? 0),
+              loginStreak: streak,
+            });
+          }
 
-            setUserLevel({
-              level: userLv,
-              title: getLevelTitle(userLv),
-              phase: rawLevel?.tier ?? 1,
-              currentXp: rawLevel?.currentExp ?? 0,
-              nextLevelXp: rawLevel?.nextLevelExp ?? 100,
-              totalXp: rawLevel?.totalExp ?? rawLevel?.currentExp ?? 0,
-              loginStreak: rawLevel?.loginStreak ?? 1,
+          if (perksResponse) {
+            setUserPerks({
+              dailyPullLimit: perksResponse.dailyPullLimit ?? 36,
+              inventorySlots: perksResponse.inventorySlots ?? 30,
+              canApplySpecialist: perksResponse.canApplySpecialist ?? false,
             });
           }
         } catch {
@@ -203,12 +222,12 @@ export function HomeScreen() {
             setDailyTask({
               completed: dailyTasksRes.summary.completedTasks || 0,
               total: dailyTasksRes.summary.totalTasks || 5,
-              earnedXp: dailyTasksRes.summary.claimedRewards || 0,
+              earnedCoins: dailyTasksRes.summary.claimedRewards || 0,
             });
           }
         } catch {
           // 使用預設值
-          setDailyTask({ completed: 0, total: 5, earnedXp: 0 });
+          setDailyTask({ completed: 0, total: 5, earnedCoins: 0 });
         }
       }
     } catch (error) {
@@ -289,11 +308,6 @@ export function HomeScreen() {
     return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
   };
 
-  // 計算 XP 進度條百分比
-  const xpProgress = userLevel.nextLevelXp > 0
-    ? (userLevel.currentXp / userLevel.nextLevelXp) * 100
-    : 0;
-
   // 計算任務進度條百分比
   const taskProgress = dailyTask.total > 0
     ? (dailyTask.completed / dailyTask.total) * 100
@@ -338,11 +352,11 @@ export function HomeScreen() {
         </View>
       </View>
 
-      {/* ========== 用戶等級卡片（純顯示，不可點擊）========== */}
+      {/* ========== 用戶卡片（#039 重構：金幣系統）========== */}
       <View style={styles.levelCard}>
-        {/* 等級卡片頭部：頭像 + 等級徽章 + 稱號 + 連續登入 */}
+        {/* 卡片頭部：頭像 + 金幣徽章 + 稱號 + 連續登入 */}
         <View style={styles.levelHeader}>
-          {/* 圓形頭像 + 等級徽章 */}
+          {/* 圓形頭像 + 金幣徽章 */}
           <View style={styles.avatarWithBadge}>
             {/* 根據用戶設定顯示對應頭像 */}
             {(() => {
@@ -371,16 +385,18 @@ export function HomeScreen() {
                 );
               }
             })()}
-            <View style={styles.levelBadgeCircle}>
-              <Text style={styles.levelBadgeText}>Lv.{userLevel.level}</Text>
+            {/* 金幣徽章（取代等級徽章） */}
+            <View style={styles.coinBadgeCircle}>
+              <Ionicons name="logo-bitcoin" size={10} color="#fff" />
+              <Text style={styles.coinBadgeText}>{userCoins.balance.toLocaleString()}</Text>
             </View>
           </View>
 
-          {/* 等級資訊：稱號 + 階段 */}
+          {/* 用戶資訊：稱號 + 累計金幣 */}
           <View style={styles.levelInfo}>
-            <Text style={styles.levelTitle}>{userLevel.title}</Text>
+            <Text style={styles.levelTitle}>{userCoins.title}</Text>
             <Text style={styles.levelPhase}>
-              {isZh ? `第 ${userLevel.phase} 階段` : `Phase ${userLevel.phase}`}
+              {isZh ? `累計 ${userCoins.totalEarned.toLocaleString()} 金幣` : `${userCoins.totalEarned.toLocaleString()} coins earned`}
             </Text>
           </View>
 
@@ -391,34 +407,33 @@ export function HomeScreen() {
             </Text>
             <View style={styles.loginStreakValue}>
               <Ionicons name="flame" size={16} color="#F97316" />
-              <Text style={styles.loginStreakNumber}>{userLevel.loginStreak} {isZh ? '天' : 'd'}</Text>
+              <Text style={styles.loginStreakNumber}>{userCoins.loginStreak} {isZh ? '天' : 'd'}</Text>
             </View>
           </View>
         </View>
 
-        {/* XP 進度區塊 */}
-        <View style={styles.xpSection}>
-          {/* XP 進度條 */}
-          <View style={styles.xpProgressBg}>
-            <View style={[styles.xpProgressFill, { width: `${xpProgress}%` }]} />
-          </View>
-
-          {/* XP 數值顯示 */}
-          <View style={styles.xpRow}>
-            <Text style={styles.xpText}>
-              {userLevel.currentXp} / {userLevel.nextLevelXp} XP
-            </Text>
-            <Text style={styles.xpNextLevel}>
-              Lv.{userLevel.level} → Lv.{userLevel.level + 1}
+        {/* 權益資訊區塊（取代 XP 進度條） */}
+        <View style={styles.perksSection}>
+          <View style={styles.perkItem}>
+            <Ionicons name="dice-outline" size={16} color={MibuBrand.copper} />
+            <Text style={styles.perkText}>
+              {isZh ? `每日扭蛋 ${userPerks.dailyPullLimit} 次` : `${userPerks.dailyPullLimit} pulls/day`}
             </Text>
           </View>
-
-          {/* 還需多少 XP 升級 */}
-          <Text style={styles.xpNeeded}>
-            {isZh
-              ? `還需 ${userLevel.nextLevelXp - userLevel.currentXp} XP 升級`
-              : `${userLevel.nextLevelXp - userLevel.currentXp} XP to level up`}
-          </Text>
+          <View style={styles.perkItem}>
+            <Ionicons name="cube-outline" size={16} color={MibuBrand.copper} />
+            <Text style={styles.perkText}>
+              {isZh ? `背包 ${userPerks.inventorySlots} 格` : `${userPerks.inventorySlots} slots`}
+            </Text>
+          </View>
+          {userPerks.canApplySpecialist && (
+            <View style={styles.perkItem}>
+              <Ionicons name="ribbon-outline" size={16} color={MibuBrand.success} />
+              <Text style={[styles.perkText, { color: MibuBrand.success }]}>
+                {isZh ? '可申請策劃師' : 'Specialist Ready'}
+              </Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -443,10 +458,10 @@ export function HomeScreen() {
           </View>
         </View>
 
-        {/* 右側：已獲得 XP */}
+        {/* 右側：已獲得金幣 */}
         <View style={styles.taskRight}>
           <Text style={styles.taskEarnedLabel}>{isZh ? '已獲得' : 'Earned'}</Text>
-          <Text style={styles.taskEarnedXp}>+{dailyTask.earnedXp} XP</Text>
+          <Text style={styles.taskEarnedXp}>+{dailyTask.earnedCoins} {isZh ? '金幣' : 'coins'}</Text>
         </View>
 
         {/* 箭頭圖示 */}
@@ -780,39 +795,49 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
   },
 
-  // XP 進度區
-  xpSection: {
-    marginTop: 14,
-  },
-  xpProgressBg: {
-    height: 8,
-    backgroundColor: MibuBrand.tanLight,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  xpProgressFill: {
-    height: '100%',
-    backgroundColor: MibuBrand.brown,
-    borderRadius: 4,
-  },
-  xpRow: {
+  // 金幣徽章（#039 新增）
+  coinBadgeCircle: {
+    position: 'absolute',
+    bottom: -6,
+    right: -12,
+    backgroundColor: MibuBrand.warning,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    minWidth: 40,
+    alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
+    justifyContent: 'center',
+    gap: 2,
+    borderWidth: 2,
+    borderColor: MibuBrand.creamLight,
   },
-  xpText: {
-    fontSize: 13,
-    color: MibuBrand.copper,
+  coinBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#fff',
   },
-  xpNextLevel: {
-    fontSize: 13,
-    color: MibuBrand.copper,
+
+  // 權益區塊（#039 新增，取代 XP 進度區）
+  perksSection: {
+    marginTop: 14,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
   },
-  xpNeeded: {
+  perkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: MibuBrand.warmWhite,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  perkText: {
     fontSize: 12,
-    color: MibuBrand.tan,
-    textAlign: 'center',
-    marginTop: 6,
+    color: MibuBrand.copper,
+    fontWeight: '500',
   },
 
   // 每日任務卡片
