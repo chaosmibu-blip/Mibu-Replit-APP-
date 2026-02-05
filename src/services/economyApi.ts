@@ -1,19 +1,29 @@
 /**
  * 經濟系統 API 服務
  *
- * 處理用戶等級、經驗值、成就、每日任務等功能
+ * 處理用戶金幣、權益、成就、每日任務等功能
+ * #039 重構：等級制 → 金幣制
  *
  * @module services/economyApi
  * @see 後端契約: contracts/APP.md Phase 5
+ * @updated 2026-02-05 #039 經濟系統重構
  *
  * ============ 串接端點 ============
- * - GET  /api/user/level                    - 取得用戶等級資訊
- * - GET  /api/user/experience/history       - 取得經驗值歷史記錄
+ * 金幣系統（#039 新增）:
+ * - GET  /api/user/coins                    - 取得用戶金幣資訊
+ * - GET  /api/user/coins/history            - 取得金幣交易記錄
+ * - GET  /api/user/perks                    - 取得用戶權益資訊
+ * - GET  /api/user/specialist/eligibility   - 取得策劃師申請資格
+ *
+ * 成就與任務:
  * - GET  /api/user/achievements             - 取得成就列表
  * - POST /api/user/achievements/:id/claim   - 領取成就獎勵
- * - POST /api/user/specialist/apply         - 申請成為策劃師
  * - GET  /api/user/daily-tasks              - 取得每日任務列表
  * - POST /api/user/daily-tasks/:id/complete - 領取每日任務獎勵
+ *
+ * 向後兼容（已棄用）:
+ * - GET  /api/user/level                    - 固定回傳 level: 1
+ * - GET  /api/user/experience/history       - 已棄用
  */
 import { ApiBase } from './base';
 import {
@@ -24,6 +34,10 @@ import {
   ClaimAchievementResponse,
   DailyTasksResponse,
   CompleteDailyTaskResponse,
+  UserCoinsResponse,
+  UserPerksResponse,
+  CoinHistoryResponse,
+  SpecialistEligibilityResponse,
 } from '../types/economy';
 
 // ============ API 服務類別 ============
@@ -31,15 +45,80 @@ import {
 /**
  * 經濟系統 API 服務類別
  *
- * 管理用戶的遊戲化系統：等級、經驗、成就
+ * 管理用戶的遊戲化系統：金幣、權益、成就
+ * #039 重構：等級制 → 金幣制
  */
 class EconomyApiService extends ApiBase {
 
+  // ============ 金幣系統（#039 新增） ============
+
   /**
-   * 取得用戶等級資訊
+   * 取得用戶金幣資訊
    *
-   * 包含當前等級、經驗值、升級所需經驗等
+   * @param token - JWT Token
+   * @returns 金幣餘額和累計數據
+   */
+  async getCoins(token: string): Promise<UserCoinsResponse> {
+    return this.request<UserCoinsResponse>('/api/user/coins', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 取得金幣交易記錄
    *
+   * @param token - JWT Token
+   * @param params - 分頁參數
+   * @returns 交易記錄列表
+   */
+  async getCoinsHistory(
+    token: string,
+    params?: { page?: number; limit?: number }
+  ): Promise<CoinHistoryResponse> {
+    const query = new URLSearchParams();
+    if (params?.page) query.append('page', String(params.page));
+    if (params?.limit) query.append('limit', String(params.limit));
+
+    const queryString = query.toString();
+    const endpoint = `/api/user/coins/history${queryString ? `?${queryString}` : ''}`;
+
+    return this.request<CoinHistoryResponse>(endpoint, {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 取得用戶權益資訊
+   *
+   * @param token - JWT Token
+   * @returns 權益內容（每日扭蛋上限、背包格數等）
+   */
+  async getPerks(token: string): Promise<UserPerksResponse> {
+    return this.request<UserPerksResponse>('/api/user/perks', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 取得策劃師申請資格
+   * #039: 改用 hasInvitation 取代等級要求
+   *
+   * @param token - JWT Token
+   * @returns 申請資格狀態
+   */
+  async getSpecialistEligibility(token: string): Promise<SpecialistEligibilityResponse> {
+    return this.request<SpecialistEligibilityResponse>('/api/user/specialist/eligibility', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  // ============ 向後兼容（已棄用） ============
+
+  /**
+   * 取得用戶等級資訊（已棄用）
+   * #039: 後端固定回傳 level: 1，保留向後兼容
+   *
+   * @deprecated 請改用 getCoins() 和 getPerks()
    * @param token - JWT Token
    * @returns 等級資訊
    */

@@ -2,15 +2,80 @@
  * @fileoverview 經濟系統型別定義
  *
  * 定義經濟系統相關的資料結構，包含：
- * - 等級系統
- * - 經驗值記錄
+ * - 金幣系統（#039 重構：等級制 → 金幣制）
+ * - 權益系統
  * - 成就系統
  * - 每日任務
  *
  * @module types/economy
+ * @updated 2026-02-05 #039 經濟系統重構
  */
 
-// ============ 等級系統 ============
+// ============ 金幣系統（#039 新增） ============
+
+/**
+ * 用戶金幣資訊
+ * GET /api/user/coins
+ */
+export interface UserCoinsResponse {
+  balance: number;       // 當前金幣餘額
+  totalEarned: number;   // 累計獲得金幣
+  totalSpent: number;    // 累計消費金幣
+}
+
+/**
+ * 用戶權益資訊
+ * GET /api/user/perks
+ */
+export interface UserPerksResponse {
+  dailyPullLimit: number;       // 每日扭蛋上限
+  inventorySlots: number;       // 背包格數
+  dailyPullBonus: number;       // 每日扭蛋加成
+  inventoryBonus: number;       // 背包加成格數
+  canApplySpecialist: boolean;  // 是否可申請策劃師
+  specialistInvitedAt: string | null;  // 受邀成為策劃師時間
+}
+
+/**
+ * 金幣交易記錄
+ */
+export interface CoinTransaction {
+  id: number;                          // 交易 ID
+  amount: number;                      // 金額（正數=獲得，負數=消費）
+  balanceAfter: number;                // 交易後餘額
+  transactionType: 'earn' | 'spend';   // 交易類型
+  eventType: string;                   // 事件類型（gacha, achievement, daily_task 等）
+  description: string;                 // 描述
+  createdAt: string;                   // 交易時間（ISO 8601）
+}
+
+/**
+ * 金幣歷史回應
+ * GET /api/user/coins/history
+ */
+export interface CoinHistoryResponse {
+  transactions: CoinTransaction[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+  };
+}
+
+/**
+ * 策劃師申請資格
+ * GET /api/user/specialist/eligibility
+ * #039: 改用 hasInvitation 取代 currentLevel/requiredLevel
+ */
+export interface SpecialistEligibilityResponse {
+  hasInvitation: boolean;              // 是否有邀請資格
+  canApply: boolean;                   // 是否可申請
+  reason?: string;                     // 不可申請原因
+  invitedAt?: string;                  // 邀請時間
+}
+
+// ============ 等級系統（向後兼容，#039 後固定回傳 level: 1） ============
 
 /**
  * 用戶等級資訊
@@ -114,11 +179,25 @@ export interface Achievement {
 
 /**
  * 成就獎勵
+ * #039: expReward → coinReward，新增 perksReward
  */
 export interface AchievementReward {
-  exp: number;         // 經驗值獎勵
-  credits?: number;    // 點數獎勵
-  badge?: string;      // 徽章獎勵
+  coinReward: number;              // 金幣獎勵（#039 新增）
+  perksReward?: PerksReward;       // 權益獎勵（#039 新增）
+  badge?: string;                  // 徽章獎勵
+  // 向後兼容欄位
+  exp?: number;                    // 經驗值獎勵（已棄用，保留向後兼容）
+  credits?: number;                // 點數獎勵（已棄用）
+}
+
+/**
+ * 權益獎勵內容
+ * #039 新增
+ */
+export interface PerksReward {
+  dailyPullBonus?: number;         // 每日扭蛋加成
+  inventoryBonus?: number;         // 背包格數加成
+  specialistInvitation?: boolean;  // 策劃師邀請資格
 }
 
 /**
@@ -137,14 +216,18 @@ export interface AchievementsResponse {
 
 /**
  * 領取成就獎勵回應
- * POST /api/economy/achievements/:id/claim
+ * POST /api/user/achievements/:id/claim
+ * #039: 移除 newExp/newLevel，改為 coins/perks
  */
 export interface ClaimAchievementResponse {
   success: boolean;            // 是否成功
   message: string;             // 回應訊息
   reward: AchievementReward;   // 獲得的獎勵
-  newExp: number;              // 領取後的總經驗值
-  newLevel?: number;           // 如果升級，新等級
+  coins: UserCoinsResponse;    // 領取後的金幣狀態（#039 新增）
+  perks: UserPerksResponse;    // 領取後的權益狀態（#039 新增）
+  // 向後兼容欄位（已棄用）
+  newExp?: number;             // 領取後的總經驗值（已棄用）
+  newLevel?: number;           // 如果升級，新等級（已棄用）
 }
 
 // ============ 每日任務系統 ============

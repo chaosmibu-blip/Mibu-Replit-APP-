@@ -6,6 +6,44 @@
 
 ## 最新回報
 
+### 2026-02-05 #039：經濟系統重構（等級 → 金幣）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #039 |
+| 狀態 | ✅ 完成 |
+
+**破壞性變更**
+- 等級系統移除，改為金幣系統
+- 經驗值（XP）改為金幣（Coins）
+
+**型別更新** (`src/types/economy.ts`)
+- [x] 新增 `UserCoinsResponse` - 金幣餘額資訊
+- [x] 新增 `UserPerksResponse` - 用戶權益資訊
+- [x] 新增 `CoinTransaction` - 金幣交易記錄
+- [x] 新增 `CoinHistoryResponse` - 金幣歷史回應
+- [x] 新增 `SpecialistEligibilityResponse` - 策劃師申請資格
+- [x] 新增 `PerksReward` - 權益獎勵內容
+- [x] 更新 `AchievementReward`：`exp` → `coinReward`，新增 `perksReward`
+- [x] 更新 `ClaimAchievementResponse`：改為回傳 `coins` + `perks`
+
+**API 服務更新** (`src/services/economyApi.ts`)
+- [x] 新增 `getCoins()` - `GET /api/user/coins`
+- [x] 新增 `getCoinsHistory()` - `GET /api/user/coins/history`
+- [x] 新增 `getPerks()` - `GET /api/user/perks`
+- [x] 新增 `getSpecialistEligibility()` - `GET /api/user/specialist/eligibility`
+- [x] 保留 `getLevelInfo()` 向後兼容（已標記 @deprecated）
+
+**UI 更新** (`EconomyScreen.tsx`)
+- [x] User Card：等級 → 金幣餘額
+- [x] Stats Cards：等級/階段 → 金幣/成就/每日抽數
+- [x] Tab：「等級」 → 「權益」
+- [x] 權益 Tab：顯示每日扭蛋上限、背包格數、策劃師資格
+- [x] 任務獎勵：XP → 金幣圖示
+- [x] 成就獎勵：`exp` → `coinReward`
+
+---
+
 ### 2026-02-02 🐛 BUG：AI 對話時間錯誤
 
 | 項目 | 內容 |
@@ -287,14 +325,14 @@ import {
 
 ---
 
-### 2026-01-29 🐛 BUG：行程「選擇景點」顯示空（圖鑑有資料）【持續追蹤】
+### 2026-01-29 🐛 BUG：行程「選擇景點」顯示空（圖鑑有資料）【已修復】
 
 | 項目 | 內容 |
 |------|------|
 | 來源 | APP 端發現 |
-| 狀態 | 🔴 待後端修復 |
+| 狀態 | ✅ 已修復（#035） |
 | 嚴重度 | **緊急**（核心功能完全失效） |
-| 更新 | 2026-01-29 補充技術細節 |
+| 修復日期 | 2026-02-05 確認後端已部署模糊比對修復 |
 
 **問題描述**
 - 用戶圖鑑有 **1023 個景點**（宜蘭縣 442、台北市 367、高雄市 112、新北市 35...）
@@ -531,13 +569,14 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 039 | 02-05 | 經濟系統重構（等級 → 金幣） | ✅ |
 | 038 | 02-02 | 頭像上傳功能 | ✅ |
 | BUG | 02-02 | AI 對話時間錯誤（星期幾判斷錯誤） | 🟡 待後端 |
+| 035 | 02-05 | 選擇景點空白修復（後端模糊比對） | ✅ |
 | 027-V2.2 | 01-30 | AI 對話升級 V2.2（意圖識別 + Function Calling） | ✅ |
 | BUG | 01-30 | AI 對話無法自動加入景點到行程 | 🟡 待後端 |
 | 036 | 01-29 | 帳號合併功能 | ✅ |
 | 034 | 01-29 | 共用型別套件（@shared 模組） | ✅ |
-| BUG | 01-29 | 行程「選擇景點」顯示空（城市名稱不一致） | 🔴 **緊急** |
 | 033 | 01-28 | 行程詳情新增景點座標與描述 + V2 完整功能 | ✅ |
 | 030-032 | 01-28 | API 回應格式修正 + 扭蛋防刷 + 契約對齊 | ✅ |
 | 026-029 | 01-26 | 行程規劃 V2 + AI 助手 + 優惠通知 + 用詞統一 | ✅ |

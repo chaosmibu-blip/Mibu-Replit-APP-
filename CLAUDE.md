@@ -305,11 +305,11 @@ fontSize: FontSize.md       // 不要 14
 ## 協作
 
 ### 三端分工
-| 專案 | 負責 |
-|------|------|
-| 後端 MIBU_REPLIT | API、商業邏輯 |
-| APP（本 repo） | UI、前端邏輯 |
-| 官網 Mibu-Pages | SEO、Landing |
+| 專案 | 負責 | GitHub |
+|------|------|--------|
+| 後端 MIBU_REPLIT | API、商業邏輯 | https://github.com/chaosmibu-blip/MIBU_REPLIT.git |
+| APP（本 repo） | UI、前端邏輯 | https://github.com/chaosmibu-blip/Mibu-Replit-APP-.git |
+| 官網 Mibu-Pages | SEO、Landing | https://github.com/chaosmibu-blip/Mibu-Pages.git |
 
 ### 協作流程
 ```
@@ -386,4 +386,4 @@ eas build --platform ios --profile production  # 正式版
 
 ---
 
-*最後更新：2026-01-31 | API 契約：v1.4.0*
+*最後更新：2026-02-05 | API 契約：v1.4.0*

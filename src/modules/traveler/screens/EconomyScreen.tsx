@@ -2,17 +2,19 @@
  * EconomyScreen - 成就與任務畫面
  *
  * 功能：
- * - 顯示用戶等級和經驗值進度條
+ * - 顯示用戶金幣餘額和權益（#039 重構：等級 → 金幣）
  * - 每日任務列表（簽到、扭蛋、瀏覽圖鑑等）
  * - 新手任務列表（一次性任務）
  * - 成就徽章列表（累計任務進度）
- * - 統計數據卡片（已解鎖成就、階段、連續登入）
+ * - 統計數據卡片（金幣、已解鎖成就、連續登入）
  *
  * 串接 API：
- * - economyApi.getLevelInfo() - 取得等級資訊
+ * - economyApi.getCoins() - 取得金幣資訊（#039 新增）
+ * - economyApi.getPerks() - 取得權益資訊（#039 新增）
  * - economyApi.getAchievements() - 取得成就列表
  *
  * @see 後端合約: contracts/APP.md Phase 5
+ * @updated 2026-02-05 #039 經濟系統重構
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -30,7 +32,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { economyApi } from '../../../services/economyApi';
 import { MibuBrand } from '../../../../constants/Colors';
-import { LevelInfo, Achievement } from '../../../types/economy';
+import { UserCoinsResponse, UserPerksResponse, Achievement } from '../../../types/economy';
 
 // ============================================================
 // 常數定義
@@ -105,8 +107,11 @@ export function EconomyScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // 用戶等級資訊
-  const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null);
+  // 用戶金幣資訊（#039 新增）
+  const [coinsInfo, setCoinsInfo] = useState<UserCoinsResponse | null>(null);
+
+  // 用戶權益資訊（#039 新增）
+  const [perksInfo, setPerksInfo] = useState<UserPerksResponse | null>(null);
 
   // 成就列表
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -123,7 +128,8 @@ export function EconomyScreen() {
   // ============================================================
 
   /**
-   * 載入等級和成就資料
+   * 載入金幣、權益和成就資料
+   * #039: 改用 getCoins() 和 getPerks() 取代 getLevelInfo()
    */
   const loadData = useCallback(async () => {
     try {
@@ -133,29 +139,15 @@ export function EconomyScreen() {
         return;
       }
 
-      const [levelResponse, achievementsData] = await Promise.all([
-        economyApi.getLevelInfo(token),
+      // 並行呼叫三個 API
+      const [coinsResponse, perksResponse, achievementsData] = await Promise.all([
+        economyApi.getCoins(token),
+        economyApi.getPerks(token),
         economyApi.getAchievements(token),
       ]);
 
-      // 處理後端 API 回應格式
-      // 後端可能回傳 { level: {...} } 或直接 {...}，需要統一處理
-      const rawLevel = (levelResponse as any)?.level || levelResponse;
-
-      // 映射後端欄位名稱到前端格式
-      // 處理欄位名稱不一致的情況（如 currentLevel vs level）
-      const mappedLevel: LevelInfo = {
-        level: rawLevel?.currentLevel ?? rawLevel?.level ?? 1,
-        currentExp: rawLevel?.currentExp ?? 0,
-        nextLevelExp: rawLevel?.nextLevelExp ?? 100,
-        totalExp: rawLevel?.totalExp ?? rawLevel?.currentExp ?? 0,
-        dailyQuota: rawLevel?.dailyPullLimit ?? 10,
-        tier: rawLevel?.tier ?? 1,
-        loginStreak: rawLevel?.loginStreak ?? 0,
-        recentExp: rawLevel?.recentExp ?? [],
-      };
-
-      setLevelInfo(mappedLevel);
+      setCoinsInfo(coinsResponse);
+      setPerksInfo(perksResponse);
       setAchievements(achievementsData.achievements);
     } catch (error) {
       console.error('Failed to load economy data:', error);
@@ -182,24 +174,16 @@ export function EconomyScreen() {
   // 計算衍生數據
   // ============================================================
 
-  // 經驗值進度百分比
-  const expProgress = levelInfo
-    ? (levelInfo.currentExp / levelInfo.nextLevelExp) * 100
-    : 0;
+  // 金幣餘額（#039 新增）
+  const coinBalance = coinsInfo?.balance || 0;
+  const totalEarned = coinsInfo?.totalEarned || 0;
 
-  // 距離下一級所需經驗
-  const xpToNextLevel = levelInfo
-    ? levelInfo.nextLevelExp - levelInfo.currentExp
-    : 0;
+  // 權益資訊（#039 新增）
+  const dailyPullLimit = perksInfo?.dailyPullLimit || 36;
+  const inventorySlots = perksInfo?.inventorySlots || 30;
 
   // 已解鎖成就數量
   const unlockedCount = achievements.filter(a => a.isUnlocked).length;
-
-  // 當前階段
-  const currentTier = levelInfo?.tier || 1;
-
-  // 連續登入天數
-  const loginStreak = levelInfo?.loginStreak || 0;
 
   // 每日任務完成統計
   const completedDailyCount = dailyTasks.filter(t => t.isCompleted).length;
@@ -237,7 +221,10 @@ export function EconomyScreen() {
           <Ionicons name="checkmark" size={16} color={MibuBrand.warmWhite} />
         </View>
       ) : (
-        <Text style={styles.taskXp}>+{task.xp} XP</Text>
+        <View style={styles.taskRewardBadge}>
+          <Ionicons name="logo-bitcoin" size={12} color={MibuBrand.warning} />
+          <Text style={styles.taskXp}>+{task.xp}</Text>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -353,8 +340,8 @@ export function EconomyScreen() {
                           </View>
                         </View>
                         <View style={styles.achievementReward}>
-                          <Ionicons name="flash" size={12} color={MibuBrand.warning} />
-                          <Text style={styles.achievementRewardText}>+{achievement.reward.exp}</Text>
+                          <Ionicons name="logo-bitcoin" size={12} color={MibuBrand.warning} />
+                          <Text style={styles.achievementRewardText}>+{achievement.reward.coinReward || achievement.reward.exp || 0}</Text>
                         </View>
                       </View>
                       {index < achievements.length - 1 && <View style={styles.taskDivider} />}
@@ -373,14 +360,87 @@ export function EconomyScreen() {
           </>
         );
       case 'level':
-        // ===== 等級獎勵 Tab（尚未開放） =====
+        // ===== 權益 Tab（#039 重構） =====
         return (
-          <View style={styles.emptyState}>
-            <Ionicons name="ribbon-outline" size={48} color={MibuBrand.tan} />
-            <Text style={styles.emptyText}>
-              {isZh ? '等級獎勵即將推出' : 'Level rewards coming soon'}
-            </Text>
-          </View>
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{isZh ? '我的權益' : 'My Perks'}</Text>
+            </View>
+            <View style={styles.taskGroup}>
+              {/* 每日扭蛋上限 */}
+              <View style={styles.perkDetailItem}>
+                <View style={styles.perkDetailIcon}>
+                  <Ionicons name="dice" size={20} color={MibuBrand.copper} />
+                </View>
+                <View style={styles.perkDetailContent}>
+                  <Text style={styles.perkDetailTitle}>
+                    {isZh ? '每日扭蛋上限' : 'Daily Pull Limit'}
+                  </Text>
+                  <Text style={styles.perkDetailDesc}>
+                    {isZh ? '每天可以扭蛋的次數' : 'Number of pulls per day'}
+                  </Text>
+                </View>
+                <Text style={styles.perkDetailValue}>{dailyPullLimit}</Text>
+              </View>
+              <View style={styles.taskDivider} />
+
+              {/* 背包格數 */}
+              <View style={styles.perkDetailItem}>
+                <View style={styles.perkDetailIcon}>
+                  <Ionicons name="cube" size={20} color={MibuBrand.copper} />
+                </View>
+                <View style={styles.perkDetailContent}>
+                  <Text style={styles.perkDetailTitle}>
+                    {isZh ? '背包容量' : 'Inventory Slots'}
+                  </Text>
+                  <Text style={styles.perkDetailDesc}>
+                    {isZh ? '可存放的道具數量' : 'Number of items you can hold'}
+                  </Text>
+                </View>
+                <Text style={styles.perkDetailValue}>{inventorySlots}</Text>
+              </View>
+              <View style={styles.taskDivider} />
+
+              {/* 策劃師資格 */}
+              <View style={styles.perkDetailItem}>
+                <View style={styles.perkDetailIcon}>
+                  <Ionicons
+                    name={perksInfo?.canApplySpecialist ? "ribbon" : "ribbon-outline"}
+                    size={20}
+                    color={perksInfo?.canApplySpecialist ? MibuBrand.success : MibuBrand.copper}
+                  />
+                </View>
+                <View style={styles.perkDetailContent}>
+                  <Text style={styles.perkDetailTitle}>
+                    {isZh ? '策劃師資格' : 'Specialist Eligibility'}
+                  </Text>
+                  <Text style={styles.perkDetailDesc}>
+                    {perksInfo?.canApplySpecialist
+                      ? (isZh ? '已獲得申請資格！' : 'You can apply now!')
+                      : (isZh ? '達成「資深旅人」成就並累計 1,500 金幣後解鎖' : 'Unlock by earning 1,500 coins and "Veteran Traveler" achievement')}
+                  </Text>
+                </View>
+                {perksInfo?.canApplySpecialist && (
+                  <Ionicons name="checkmark-circle" size={24} color={MibuBrand.success} />
+                )}
+              </View>
+            </View>
+
+            {/* 金幣說明 */}
+            <View style={[styles.sectionHeader, { marginTop: 16 }]}>
+              <Text style={styles.sectionTitle}>{isZh ? '金幣說明' : 'About Coins'}</Text>
+            </View>
+            <View style={styles.taskGroup}>
+              <View style={styles.coinInfoItem}>
+                <Ionicons name="information-circle-outline" size={20} color={MibuBrand.copper} />
+                <Text style={styles.coinInfoText}>
+                  {isZh
+                    ? '金幣可透過完成任務、解鎖成就獲得。累積金幣可解鎖更多權益！'
+                    : 'Earn coins by completing tasks and unlocking achievements. Accumulate coins to unlock more perks!'}
+                </Text>
+              </View>
+            </View>
+          </>
         );
     }
   };
@@ -434,7 +494,7 @@ export function EconomyScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* User Level Card */}
+        {/* User Coins Card（#039 重構：等級 → 金幣） */}
         <View style={styles.levelCard}>
           {/* 裝飾元素 */}
           <View style={styles.levelCardDecor}>
@@ -451,73 +511,73 @@ export function EconomyScreen() {
                   <Ionicons name="person" size={32} color={MibuBrand.copper} />
                 </View>
               </View>
+              {/* 金幣徽章取代等級徽章 */}
               <View style={styles.levelBadge}>
-                <Ionicons name="shield" size={10} color="#fff" style={{ marginRight: 2 }} />
-                <Text style={styles.levelBadgeText}>Lv.{levelInfo?.level || 1}</Text>
+                <Ionicons name="logo-bitcoin" size={10} color="#fff" style={{ marginRight: 2 }} />
+                <Text style={styles.levelBadgeText}>{coinBalance.toLocaleString()}</Text>
               </View>
             </View>
 
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{state.user?.firstName || (isZh ? '旅行萌新' : 'Traveler')}</Text>
+              {/* 權益標籤：每日扭蛋上限 */}
               <View style={styles.tierBadge}>
-                <Ionicons name="layers" size={12} color={MibuBrand.brown} />
+                <Ionicons name="dice-outline" size={12} color={MibuBrand.brown} />
                 <Text style={styles.userTier}>
-                  {isZh ? `第 ${currentTier} 階段` : `Tier ${currentTier}`}
+                  {isZh ? `每日 ${dailyPullLimit} 抽` : `${dailyPullLimit} pulls/day`}
                 </Text>
               </View>
             </View>
 
+            {/* 累計獲得金幣 */}
             <View style={styles.totalXpBox}>
               <View style={styles.xpIconRow}>
-                <Ionicons name="flash" size={14} color={MibuBrand.warning} />
-                <Text style={styles.totalXpLabel}>{isZh ? '總經驗' : 'Total XP'}</Text>
+                <Ionicons name="trending-up" size={14} color={MibuBrand.warning} />
+                <Text style={styles.totalXpLabel}>{isZh ? '累計獲得' : 'Total Earned'}</Text>
               </View>
-              <Text style={styles.totalXpValue}>{levelInfo?.totalExp?.toLocaleString() || 0}</Text>
+              <Text style={styles.totalXpValue}>{totalEarned.toLocaleString()}</Text>
             </View>
           </View>
 
-          <View style={styles.levelProgress}>
-            <View style={styles.progressBarContainer}>
-              <View style={styles.progressBarBg}>
-                <View style={[styles.progressBarFill, { width: `${Math.min(expProgress, 100)}%` }]} />
-              </View>
-              <View style={styles.progressPercentBadge}>
-                <Text style={styles.progressPercentText}>{Math.round(expProgress)}%</Text>
-              </View>
-            </View>
-            <View style={styles.progressLabels}>
-              <Text style={styles.progressCurrent}>
-                {levelInfo?.currentExp || 0} / {levelInfo?.nextLevelExp || 0} XP
+          {/* 權益資訊區塊（取代等級進度條） */}
+          <View style={styles.perksRow}>
+            <View style={styles.perkItem}>
+              <Ionicons name="cube-outline" size={16} color={MibuBrand.copper} />
+              <Text style={styles.perkText}>
+                {isZh ? `背包 ${inventorySlots} 格` : `${inventorySlots} slots`}
               </Text>
-              <View style={styles.progressNextBadge}>
-                <Text style={styles.progressNext}>
-                  Lv.{levelInfo?.level || 1} → Lv.{(levelInfo?.level || 1) + 1}
+            </View>
+            {perksInfo?.canApplySpecialist && (
+              <View style={styles.perkItem}>
+                <Ionicons name="ribbon-outline" size={16} color={MibuBrand.success} />
+                <Text style={[styles.perkText, { color: MibuBrand.success }]}>
+                  {isZh ? '可申請策劃師' : 'Can apply specialist'}
                 </Text>
               </View>
-            </View>
+            )}
           </View>
         </View>
 
-        {/* Stats Cards */}
+        {/* Stats Cards（#039 重構：移除階段，加入金幣） */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Ionicons name="trophy" size={20} color={MibuBrand.warning} />
+            <Ionicons name="logo-bitcoin" size={20} color={MibuBrand.warning} />
+            <Text style={styles.statNumber}>{coinBalance.toLocaleString()}</Text>
+            <Text style={styles.statLabel}>{isZh ? '金幣' : 'Coins'}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Ionicons name="trophy" size={20} color={MibuBrand.copper} />
             <Text style={styles.statNumber}>{unlockedCount}</Text>
-            <Text style={styles.statLabel}>{isZh ? '已解鎖' : 'Unlocked'}</Text>
+            <Text style={styles.statLabel}>{isZh ? '成就' : 'Achievements'}</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="star" size={20} color={MibuBrand.copper} />
-            <Text style={styles.statNumber}>{currentTier}</Text>
-            <Text style={styles.statLabel}>{isZh ? '當前階段' : 'Tier'}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Ionicons name="flame" size={20} color="#f97316" />
-            <Text style={styles.statNumber}>{loginStreak}</Text>
-            <Text style={styles.statLabel}>{isZh ? '連續登入' : 'Streak'}</Text>
+            <Ionicons name="dice" size={20} color="#f97316" />
+            <Text style={styles.statNumber}>{dailyPullLimit}</Text>
+            <Text style={styles.statLabel}>{isZh ? '每日抽數' : 'Daily Pulls'}</Text>
           </View>
         </View>
 
-        {/* Tab Switcher */}
+        {/* Tab Switcher（#039：等級 → 權益） */}
         <View style={styles.tabContainer}>
           {(['daily', 'onetime', 'cumulative', 'level'] as TaskCategory[]).map(tab => (
             <TouchableOpacity
@@ -529,7 +589,7 @@ export function EconomyScreen() {
                 {tab === 'daily' && (isZh ? '每日' : 'Daily')}
                 {tab === 'onetime' && (isZh ? '一次性' : 'Once')}
                 {tab === 'cumulative' && (isZh ? '累計' : 'Total')}
-                {tab === 'level' && (isZh ? '等級' : 'Level')}
+                {tab === 'level' && (isZh ? '權益' : 'Perks')}
               </Text>
             </TouchableOpacity>
           ))}
@@ -883,10 +943,19 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
     marginTop: 2,
   },
+  taskRewardBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: `${MibuBrand.warning}15`,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
   taskXp: {
     fontSize: 14,
     fontWeight: '600',
-    color: MibuBrand.copper,
+    color: MibuBrand.warning,
   },
   taskCheckmark: {
     width: 28,
@@ -1012,6 +1081,75 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: MibuBrand.tan,
     marginTop: 12,
+  },
+
+  // ===== #039 新增：權益相關樣式 =====
+  perksRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: MibuBrand.tanLight,
+  },
+  perkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: MibuBrand.cream,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  perkText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: MibuBrand.copper,
+  },
+  perkDetailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  perkDetailIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: MibuBrand.cream,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  perkDetailContent: {
+    flex: 1,
+  },
+  perkDetailTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: MibuBrand.brownDark,
+    marginBottom: 2,
+  },
+  perkDetailDesc: {
+    fontSize: 12,
+    color: MibuBrand.copper,
+  },
+  perkDetailValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: MibuBrand.brown,
+  },
+  coinInfoItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 16,
+    gap: 12,
+  },
+  coinInfoText: {
+    flex: 1,
+    fontSize: 14,
+    color: MibuBrand.copper,
+    lineHeight: 20,
   },
 
   bottomSpacer: {
