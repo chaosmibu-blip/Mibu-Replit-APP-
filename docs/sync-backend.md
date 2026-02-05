@@ -111,9 +111,10 @@ const systemPrompt = `
 
 **實作內容**
 - [x] 安裝 `expo-image-picker` 套件
-- [x] `authApi.ts` 新增 `uploadAvatar()` 方法（multipart/form-data）
+- [x] `authApi.ts` 新增 `uploadAvatar()` 方法（Base64 JSON 格式）
 - [x] `authApi.ts` 新增 `UploadAvatarResponse` 型別
 - [x] `ProfileScreen.tsx` 實作圖片選擇和上傳功能
+- [x] ImagePicker 設定 `base64: true` 直接取得 base64
 - [x] 支援正方形裁切（1:1）和壓縮（0.8 品質）
 - [x] 自訂頭像 URL 儲存到 AsyncStorage
 - [x] 頭像區塊支援顯示自訂頭像圖片
@@ -121,10 +122,13 @@ const systemPrompt = `
 **API 端點**
 ```
 POST /api/avatar/upload
-Content-Type: multipart/form-data
+Content-Type: application/json
 
 Request:
-- file: 圖片檔案
+{
+  "image": "base64字串...",
+  "mimeType": "image/jpeg"  // 可選，支援 jpeg/png/webp
+}
 
 Response:
 {
@@ -132,6 +136,8 @@ Response:
   "avatarUrl": "https://..."
 }
 ```
+
+**限制**：最大 2MB
 
 ---
 

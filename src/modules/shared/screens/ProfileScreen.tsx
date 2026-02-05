@@ -214,19 +214,27 @@ export function ProfileScreen() {
         return;
       }
 
-      // 開啟圖片選擇器
+      // 開啟圖片選擇器（含 base64 輸出）
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],  // 正方形裁切
         quality: 0.8,    // 壓縮品質
+        base64: true,    // 直接取得 base64
       });
 
       if (result.canceled || !result.assets?.[0]) {
         return;
       }
 
-      const imageUri = result.assets[0].uri;
+      const asset = result.assets[0];
+
+      // 檢查是否有 base64 資料
+      if (!asset.base64) {
+        showToastMessage(isZh ? '無法讀取圖片資料' : 'Cannot read image data');
+        return;
+      }
+
       setShowAvatarModal(false);
       setUploadingAvatar(true);
 
@@ -238,8 +246,13 @@ export function ProfileScreen() {
         return;
       }
 
-      // 上傳圖片
-      const uploadResult = await authApi.uploadAvatar(token, imageUri);
+      // 判斷 mimeType（從副檔名判斷）
+      const mimeType = asset.uri?.match(/\.png$/i) ? 'image/png'
+        : asset.uri?.match(/\.webp$/i) ? 'image/webp'
+        : 'image/jpeg';
+
+      // 上傳圖片（Base64 JSON 格式）
+      const uploadResult = await authApi.uploadAvatar(token, asset.base64, mimeType);
 
       if (uploadResult.success && uploadResult.avatarUrl) {
         // 更新自訂頭像 URL

@@ -432,48 +432,37 @@ class AuthApiService extends ApiBase {
   /**
    * 上傳自訂頭像
    *
-   * 使用 multipart/form-data 上傳圖片檔案
-   * 支援 jpg/png/webp 格式，限制 5MB
+   * 使用 Base64 JSON 格式上傳圖片
+   * 支援 jpg/png/webp 格式，限制 2MB
    *
    * @param token - JWT Token
-   * @param imageUri - 本地圖片 URI（來自 expo-image-picker）
+   * @param base64 - 圖片的 Base64 字串（不含 data:image/xxx;base64, 前綴）
+   * @param mimeType - 圖片 MIME 類型，預設 image/jpeg
    * @returns 上傳結果和新的頭像 URL
    *
    * @example
-   * const result = await authApi.uploadAvatar(token, imageResult.assets[0].uri);
+   * const result = await authApi.uploadAvatar(token, imageResult.assets[0].base64, 'image/jpeg');
    * if (result.success) {
    *   console.log('新頭像:', result.avatarUrl);
    * }
    */
   async uploadAvatar(
     token: string,
-    imageUri: string
+    base64: string,
+    mimeType: string = 'image/jpeg'
   ): Promise<UploadAvatarResponse> {
     try {
-      // 建立 FormData
-      const formData = new FormData();
-
-      // 從 URI 取得檔案名稱和類型
-      const filename = imageUri.split('/').pop() || 'avatar.jpg';
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
-
-      // 添加圖片檔案到 FormData
-      formData.append('file', {
-        uri: imageUri,
-        name: filename,
-        type,
-      } as any);
-
-      // 使用原生 fetch 因為需要 multipart/form-data
       const url = `${this.baseUrl}/api/avatar/upload`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
-          // 不設定 Content-Type，讓 fetch 自動設定 multipart/form-data boundary
         },
-        body: formData,
+        body: JSON.stringify({
+          image: base64,
+          mimeType,
+        }),
       });
 
       const result = await response.json();
