@@ -236,7 +236,7 @@ export function CrowdfundingDetailScreen() {
         );
       } else if (result.error === 'USER_CANCELLED') {
         // 用戶取消，不顯示錯誤
-        console.log('User cancelled purchase');
+        // 用戶取消購買，不需處理
       } else {
         Alert.alert(
           isZh ? '購買失敗' : 'Purchase Failed',

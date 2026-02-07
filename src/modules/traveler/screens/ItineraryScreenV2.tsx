@@ -261,6 +261,7 @@ export function ItineraryScreenV2() {
   // 使用 ReturnType<typeof setTimeout> 避免 Node.js 與瀏覽器環境型別衝突
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const helpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const keyboardScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 從圖鑑加入景點 Modal 狀態
   const [addPlacesModalVisible, setAddPlacesModalVisible] = useState(false);
@@ -403,7 +404,7 @@ export function ItineraryScreenV2() {
 
       // 【預防卡住】如果用戶已切換到其他行程，忽略這次結果
       if (!isBackgroundUpdate && loadingItineraryIdRef.current !== id) {
-        console.log(`[fetchItineraryDetail] Ignoring stale result for id ${id}, current is ${loadingItineraryIdRef.current}`);
+        // 過期的請求結果，忽略
         return;
       }
 
@@ -462,10 +463,6 @@ export function ItineraryScreenV2() {
           }))
         : undefined;
 
-      // 🔍 DEBUG: 追蹤 lastSuggestedPlaces 傳遞
-      console.log('[AI Chat] 目前 aiSuggestions:', aiSuggestions.length, '筆');
-      console.log('[AI Chat] 傳送 lastSuggestedPlaces:', lastSuggestedPlaces);
-
       const res = await itineraryApi.aiChat(
         currentItinerary.id,
         {
@@ -504,10 +501,6 @@ export function ItineraryScreenV2() {
         // v2.2.0: 根據 detectedIntent 決定是否顯示推薦
         // chitchat 和 unsupported 不顯示推薦卡片
         const shouldShowSuggestions = res.detectedIntent !== 'chitchat' && res.detectedIntent !== 'unsupported';
-
-        // 🔍 DEBUG: 追蹤 AI 回傳的 suggestions
-        console.log('[AI Chat] 收到 suggestions:', res.suggestions?.length || 0, '筆', res.suggestions);
-        console.log('[AI Chat] detectedIntent:', res.detectedIntent, '→ shouldShowSuggestions:', shouldShowSuggestions);
 
         setAiSuggestions(shouldShowSuggestions ? (res.suggestions || []) : []);
 
@@ -952,9 +945,7 @@ export function ItineraryScreenV2() {
         { title: newTitle },
         token
       );
-      console.log('[handleSaveTitle] API response:', res);
       if (!res.success) {
-        console.warn('[handleSaveTitle] API returned success: false', res.message);
         // API 失敗，回滾到舊標題
         setCurrentItinerary(prev => prev ? { ...prev, title: oldTitle } : null);
         setItineraries(prev =>
@@ -1153,6 +1144,10 @@ export function ItineraryScreenV2() {
         clearTimeout(helpTimerRef.current);
         helpTimerRef.current = null;
       }
+      if (keyboardScrollTimerRef.current) {
+        clearTimeout(keyboardScrollTimerRef.current);
+        keyboardScrollTimerRef.current = null;
+      }
     };
   }, []);
 
@@ -1162,7 +1157,8 @@ export function ItineraryScreenV2() {
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
       () => {
         // 延遲滾動，等待 KeyboardAvoidingView 調整完成
-        setTimeout(() => {
+        // 用 ref 追蹤 timer，避免組件卸載後 timer 仍執行
+        keyboardScrollTimerRef.current = setTimeout(() => {
           chatScrollRef.current?.scrollToEnd({ animated: true });
         }, 100);
       }
@@ -1412,6 +1408,7 @@ export function ItineraryScreenV2() {
         style={styles.emptyCreateButton}
         onPress={openCreateModal}
         activeOpacity={0.8}
+        accessibilityLabel={isZh ? '建立第一個行程' : 'Create first itinerary'}
       >
         <Ionicons name="add-circle-outline" size={24} color={MibuBrand.warmWhite} />
         <Text style={styles.emptyCreateButtonText}>
@@ -1437,6 +1434,7 @@ export function ItineraryScreenV2() {
           onPress={openLeftDrawer}
           style={styles.headerIconButton}
           activeOpacity={0.7}
+          accessibilityLabel={isZh ? '開啟行程列表' : 'Open itinerary list'}
         >
           <Ionicons name="menu-outline" size={26} color={MibuBrand.brown} />
         </TouchableOpacity>
@@ -1479,6 +1477,7 @@ export function ItineraryScreenV2() {
           onPress={openRightDrawer}
           style={styles.headerIconButton}
           activeOpacity={0.7}
+          accessibilityLabel={isZh ? '查看行程詳情' : 'View itinerary details'}
         >
           <View style={styles.itineraryBadge}>
             <Text style={styles.itineraryBadgeText}>
@@ -1613,6 +1612,7 @@ export function ItineraryScreenV2() {
             disabled={!inputText.trim() || aiLoading}
             onPress={sendAiMessage}
             activeOpacity={0.8}
+            accessibilityLabel={isZh ? '發送訊息' : 'Send message'}
           >
             <Ionicons
               name="send"
@@ -1652,6 +1652,7 @@ export function ItineraryScreenV2() {
               }}
               style={styles.selectModeButton}
               activeOpacity={0.7}
+              accessibilityLabel={isZh ? (selectMode ? '取消選擇' : '選擇行程') : (selectMode ? 'Cancel selection' : 'Select itineraries')}
             >
               <Text style={styles.selectModeText}>
                 {selectMode ? (isZh ? '取消' : 'Cancel') : (isZh ? '選擇' : 'Select')}
@@ -1673,6 +1674,7 @@ export function ItineraryScreenV2() {
             style={styles.deleteSelectedButton}
             onPress={handleDeleteSelectedItineraries}
             activeOpacity={0.8}
+            accessibilityLabel={isZh ? '刪除已選行程' : 'Delete selected itineraries'}
           >
             <Ionicons name="trash-outline" size={18} color={MibuBrand.warmWhite} />
             <Text style={styles.deleteSelectedText}>

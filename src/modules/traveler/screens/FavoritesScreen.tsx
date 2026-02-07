@@ -295,6 +295,10 @@ export function FavoritesScreen() {
             />
           }
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+          windowSize={10}
+          maxToRenderPerBatch={10}
+          initialNumToRender={8}
         />
       ) : (
         <View style={styles.emptyContainer}>

@@ -884,7 +884,7 @@ export function ItemBoxScreen() {
                   <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark }}>
                     {state.language === 'zh-TW' ? '核銷優惠券' : 'Redeem Coupon'}
                   </Text>
-                  <TouchableOpacity onPress={() => setRedeemModalVisible(false)}>
+                  <TouchableOpacity onPress={() => setRedeemModalVisible(false)} accessibilityLabel={state.language === 'zh-TW' ? '關閉核銷' : 'Close redeem'}>
                     <Ionicons name="close" size={24} color={MibuBrand.brownLight} />
                   </TouchableOpacity>
                 </View>
@@ -987,6 +987,7 @@ export function ItemBoxScreen() {
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity
                 onPress={() => setDeleteModalVisible(false)}
+                accessibilityLabel={state.language === 'zh-TW' ? '取消刪除' : 'Cancel delete'}
                 style={{ flex: 1, backgroundColor: MibuBrand.tan, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
               >
                 <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark }}>
@@ -997,6 +998,7 @@ export function ItemBoxScreen() {
               <TouchableOpacity
                 onPress={handleDelete}
                 disabled={deleting}
+                accessibilityLabel={state.language === 'zh-TW' ? '確認刪除優惠券' : 'Confirm delete coupon'}
                 style={{ flex: 1, backgroundColor: MibuBrand.error, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
               >
                 {deleting ? (

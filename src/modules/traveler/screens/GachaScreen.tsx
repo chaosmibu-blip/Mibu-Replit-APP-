@@ -110,6 +110,7 @@ export function GachaScreen() {
   // ============================================================
   const router = useRouter();
   const { state, t, addToCollection, setResult, getToken, setUser } = useApp();
+  const isZh = state.language === 'zh-TW';
 
   // ============================================================
   // 狀態管理 - 選擇區域
@@ -1117,6 +1118,7 @@ export function GachaScreen() {
         }}
         onPress={handleGacha}
         disabled={!canSubmit || showLoadingAd}
+        accessibilityLabel={isZh ? '開始扭蛋' : 'Start gacha'}
       >
         <Text style={{
           fontSize: 20,

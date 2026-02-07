@@ -129,7 +129,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
     try {
       await WebBrowser.openBrowserAsync(url);
     } catch (error) {
-      console.log('Failed to open URL:', error);
+      // 靜默處理，URL 開啟失敗不影響主流程
     }
   };
 

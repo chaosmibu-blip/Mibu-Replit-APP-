@@ -13,7 +13,7 @@
  * - 道具箱優惠券列表
  * - 優惠券詳情預覽
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -103,7 +103,7 @@ const TIER_PROBABILITY: Record<CouponTier, string> = {
 // 主元件
 // ============================================================
 
-export default function CouponPreviewCard({
+const CouponPreviewCard = React.memo(function CouponPreviewCard({
   tier,
   name,
   content,
@@ -113,8 +113,8 @@ export default function CouponPreviewCard({
   isCompact = false,
   language = 'zh-TW',
 }: CouponPreviewCardProps) {
-  // 根據稀有度和緊湊模式生成樣式
-  const styles = createStyles(TIER_STYLES[tier], isCompact);
+  // 根據稀有度和緊湊模式生成樣式（useMemo 避免每次渲染重建 StyleSheet）
+  const styles = useMemo(() => createStyles(TIER_STYLES[tier], isCompact), [tier, isCompact]);
 
   // 語言判斷
   const isZh = language === 'zh-TW';
@@ -202,7 +202,9 @@ export default function CouponPreviewCard({
       )}
     </CardWrapper>
   );
-}
+});
+
+export default CouponPreviewCard;
 
 // ============================================================
 // 樣式工廠函數

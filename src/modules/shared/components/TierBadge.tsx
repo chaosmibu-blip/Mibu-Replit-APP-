@@ -42,6 +42,14 @@ interface TierBadgeProps {
   showProbability?: boolean;
 }
 
+// ============ 尺寸常數（元件外定義，避免重複建立） ============
+
+const SIZE_STYLES = {
+  small: { paddingHorizontal: 6, paddingVertical: 2, fontSize: 10 },
+  medium: { paddingHorizontal: 10, paddingVertical: 4, fontSize: 12 },
+  large: { paddingHorizontal: 14, paddingVertical: 6, fontSize: 14 },
+} as const;
+
 // ============ 主元件 ============
 
 /**
@@ -50,18 +58,11 @@ interface TierBadgeProps {
  * 透過 getTierStyle 取得對應等級的配色，
  * 包含背景色、邊框色、文字色和機率數值。
  */
-export function TierBadge({ tier, isZh = true, size = 'medium', showProbability = false }: TierBadgeProps) {
+export const TierBadge = React.memo(function TierBadge({ tier, isZh = true, size = 'medium', showProbability = false }: TierBadgeProps) {
   // 取得該等級的樣式配置
   const style = getTierStyle(tier);
 
-  // 各尺寸的樣式數值
-  const sizeStyles = {
-    small: { paddingHorizontal: 6, paddingVertical: 2, fontSize: 10 },
-    medium: { paddingHorizontal: 10, paddingVertical: 4, fontSize: 12 },
-    large: { paddingHorizontal: 14, paddingVertical: 6, fontSize: 14 },
-  };
-
-  const currentSize = sizeStyles[size];
+  const currentSize = SIZE_STYLES[size];
 
   return (
     <View style={[
@@ -85,7 +86,7 @@ export function TierBadge({ tier, isZh = true, size = 'medium', showProbability 
       )}
     </View>
   );
-}
+});
 
 // ============ 樣式定義 ============
 
