@@ -980,8 +980,8 @@ export function GachaScreen() {
                   style={{
                     position: 'absolute',
                     left: 0,
-                    top: 28,
-                    backgroundColor: 'rgba(128, 128, 128, 0.5)',  // 灰色 50% 透明度
+                    bottom: 28,  // 改為向上顯示，避免擋住滑桿
+                    backgroundColor: 'rgba(128, 128, 128, 0.5)',
                     paddingHorizontal: 12,
                     paddingVertical: 8,
                     borderRadius: 8,

@@ -50,13 +50,14 @@ const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';
  */
 const AVATAR_PRESETS = [
   { id: 'default', icon: 'person', color: MibuBrand.brown },
-  { id: 'cat', icon: 'paw', color: '#F59E0B' },
-  { id: 'star', icon: 'star', color: '#8B5CF6' },
-  { id: 'heart', icon: 'heart', color: '#EF4444' },
-  { id: 'leaf', icon: 'leaf', color: '#10B981' },
-  { id: 'compass', icon: 'compass', color: '#3B82F6' },
-  { id: 'flame', icon: 'flame', color: '#F97316' },
-  { id: 'diamond', icon: 'diamond', color: '#EC4899' },
+  { id: 'chef', image: require('../../../../assets/images/avatars/avatar-chef.png'), color: '#F5E6D3' },
+  { id: 'artist', image: require('../../../../assets/images/avatars/avatar-artist.png'), color: '#F5E6D3' },
+  { id: 'musician', image: require('../../../../assets/images/avatars/avatar-musician.png'), color: '#F5E6D3' },
+  { id: 'gardener', image: require('../../../../assets/images/avatars/avatar-gardener.png'), color: '#F5E6D3' },
+  { id: 'explorer', image: require('../../../../assets/images/avatars/avatar-explorer.png'), color: '#F5E6D3' },
+  { id: 'astronaut', image: require('../../../../assets/images/avatars/avatar-astronaut.png'), color: '#F5E6D3' },
+  { id: 'diver', image: require('../../../../assets/images/avatars/avatar-diver.png'), color: '#F5E6D3' },
+  { id: 'camper', image: require('../../../../assets/images/avatars/avatar-camper.png'), color: '#F5E6D3' },
 ];
 
 // ============================================================
@@ -325,7 +326,7 @@ export function HomeScreen() {
   // ============================================================
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={MibuBrand.brown} />
         </View>
@@ -337,7 +338,7 @@ export function HomeScreen() {
   // 主畫面渲染
   // ============================================================
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -667,6 +668,7 @@ const styles = StyleSheet.create({
 
   // 頂部問候區
   header: {
+    marginTop: 12,
     marginBottom: 20,
   },
   greeting: {

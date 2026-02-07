@@ -63,6 +63,7 @@ import { locationApi } from '../../../services/locationApi';
 import { MibuBrand, getCategoryToken } from '../../../../constants/Colors';
 import type { Country, Region } from '../../../types';
 import { Spacing, Radius, FontSize, Shadow } from '../../../theme/designTokens';
+import { Select } from '../../shared/components/ui/Select';
 import {
   Itinerary,
   ItinerarySummary,
@@ -2230,78 +2231,40 @@ export function ItineraryScreenV2() {
             placeholderTextColor={MibuBrand.copper}
           />
 
-          {/* 國家選擇 */}
-          <Text style={styles.createInputLabel}>{isZh ? '國家' : 'Country'}</Text>
-          {loadingCountries ? (
-            <View style={styles.createLoadingRow}>
-              <ActivityIndicator size="small" color={MibuBrand.brown} />
-              <Text style={styles.createLoadingText}>{isZh ? '載入中...' : 'Loading...'}</Text>
-            </View>
-          ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.createChipScroll}
-              contentContainerStyle={styles.createChipContainer}
-            >
-              {countries.map((country) => {
-                const isSelected = newItinerary.countryId === country.id;
-                return (
-                  <TouchableOpacity
-                    key={country.id}
-                    style={[styles.createChip, isSelected && styles.createChipSelected]}
-                    onPress={() => setNewItinerary(prev => ({
-                      ...prev,
-                      countryId: country.id,
-                      countryName: getLocalizedName(country),
-                    }))}
-                  >
-                    <Text style={[styles.createChipText, isSelected && styles.createChipTextSelected]}>
-                      {getLocalizedName(country)}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          )}
+          {/* 國家選擇（下拉式選單） */}
+          <Select
+            label={isZh ? '國家' : 'Country'}
+            options={countries.map(c => ({ label: getLocalizedName(c), value: c.id }))}
+            value={newItinerary.countryId || null}
+            onChange={(value) => {
+              const country = countries.find(c => c.id === value);
+              setNewItinerary(prev => ({
+                ...prev,
+                countryId: value as number,
+                countryName: country ? getLocalizedName(country) : '',
+              }));
+            }}
+            placeholder={isZh ? '選擇國家' : 'Select Country'}
+            loading={loadingCountries}
+          />
 
-          {/* 城市選擇 */}
+          {/* 城市選擇（下拉式選單） */}
           {newItinerary.countryId && (
-            <>
-              <Text style={styles.createInputLabel}>{isZh ? '城市' : 'City'}</Text>
-              {loadingRegions ? (
-                <View style={styles.createLoadingRow}>
-                  <ActivityIndicator size="small" color={MibuBrand.brown} />
-                  <Text style={styles.createLoadingText}>{isZh ? '載入中...' : 'Loading...'}</Text>
-                </View>
-              ) : (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.createChipScroll}
-                  contentContainerStyle={styles.createChipContainer}
-                >
-                  {regions.map((region) => {
-                    const isSelected = newItinerary.regionId === region.id;
-                    return (
-                      <TouchableOpacity
-                        key={region.id}
-                        style={[styles.createChip, isSelected && styles.createChipSelected]}
-                        onPress={() => setNewItinerary(prev => ({
-                          ...prev,
-                          regionId: region.id,
-                          regionName: region.nameZh || '',
-                        }))}
-                      >
-                        <Text style={[styles.createChipText, isSelected && styles.createChipTextSelected]}>
-                          {getLocalizedName(region)}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-              )}
-            </>
+            <Select
+              label={isZh ? '城市' : 'City'}
+              options={regions.map(r => ({ label: getLocalizedName(r), value: r.id }))}
+              value={newItinerary.regionId || null}
+              onChange={(value) => {
+                const region = regions.find(r => r.id === value);
+                setNewItinerary(prev => ({
+                  ...prev,
+                  regionId: value as number,
+                  regionName: region?.nameZh || '',
+                }));
+              }}
+              placeholder={isZh ? '選擇城市' : 'Select City'}
+              loading={loadingRegions}
+            />
           )}
         </ScrollView>
       </View>

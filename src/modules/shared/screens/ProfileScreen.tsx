@@ -35,29 +35,29 @@ const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';
 
 /**
  * 頭像選項型別
- * 【截圖 19-21】準備支援動態載入頭像
+ * 支援本地圖片或 Ionicons 圖示
  */
 interface AvatarPreset {
   id: string;
   icon?: string;      // Ionicons 圖示名稱（預設頭像用）
+  image?: any;        // require() 本地圖片
   imageUrl?: string;  // 圖片網址（自訂頭像用）
   color: string;
 }
 
 /**
- * 預設頭像選項（fallback）
- * 【截圖 19-21】之後會從 API 載入，這裡作為備用
- * TODO: 改為從 GET /api/avatars 載入可用頭像列表
+ * 預設頭像選項 — 貓咪系列插畫
  */
 const DEFAULT_AVATAR_PRESETS: AvatarPreset[] = [
   { id: 'default', icon: 'person', color: MibuBrand.brown },
-  { id: 'cat', icon: 'paw', color: '#F59E0B' },
-  { id: 'star', icon: 'star', color: '#8B5CF6' },
-  { id: 'heart', icon: 'heart', color: '#EF4444' },
-  { id: 'leaf', icon: 'leaf', color: '#10B981' },
-  { id: 'compass', icon: 'compass', color: '#3B82F6' },
-  { id: 'flame', icon: 'flame', color: '#F97316' },
-  { id: 'diamond', icon: 'diamond', color: '#EC4899' },
+  { id: 'chef', image: require('../../../../assets/images/avatars/avatar-chef.png'), color: '#F5E6D3' },
+  { id: 'artist', image: require('../../../../assets/images/avatars/avatar-artist.png'), color: '#F5E6D3' },
+  { id: 'musician', image: require('../../../../assets/images/avatars/avatar-musician.png'), color: '#F5E6D3' },
+  { id: 'gardener', image: require('../../../../assets/images/avatars/avatar-gardener.png'), color: '#F5E6D3' },
+  { id: 'explorer', image: require('../../../../assets/images/avatars/avatar-explorer.png'), color: '#F5E6D3' },
+  { id: 'astronaut', image: require('../../../../assets/images/avatars/avatar-astronaut.png'), color: '#F5E6D3' },
+  { id: 'diver', image: require('../../../../assets/images/avatars/avatar-diver.png'), color: '#F5E6D3' },
+  { id: 'camper', image: require('../../../../assets/images/avatars/avatar-camper.png'), color: '#F5E6D3' },
 ];
 
 /** 性別選項 */
@@ -701,6 +701,8 @@ export function ProfileScreen() {
                       <Text style={styles.avatarOptionText}>
                         {firstName?.charAt(0) || '?'}
                       </Text>
+                    ) : preset.image ? (
+                      <Image source={preset.image} style={{ width: 56, height: 56, borderRadius: 28 }} />
                     ) : (
                       <Ionicons name={preset.icon as any} size={28} color="#ffffff" />
                     )}
