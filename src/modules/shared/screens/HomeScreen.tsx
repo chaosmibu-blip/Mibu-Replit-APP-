@@ -118,6 +118,8 @@ export function HomeScreen() {
 
   // 用戶頭像設定（從 AsyncStorage 讀取）
   const [userAvatar, setUserAvatar] = useState<string>('default');
+  // #038 自訂頭像 URL（上傳的照片）
+  const [customAvatarUrl, setCustomAvatarUrl] = useState<string | null>(null);
 
   // 用戶金幣資料（#039 重構）
   const [userCoins, setUserCoins] = useState<UserCoinsData>({
@@ -253,6 +255,11 @@ export function HomeScreen() {
       if (savedAvatar) {
         setUserAvatar(savedAvatar);
       }
+      // #038 載入自訂頭像 URL
+      const savedCustomUrl = await AsyncStorage.getItem('@mibu_custom_avatar_url');
+      if (savedCustomUrl) {
+        setCustomAvatarUrl(savedCustomUrl);
+      }
     } catch (error) {
       console.log('Failed to load user avatar:', error);
     }
@@ -360,6 +367,16 @@ export function HomeScreen() {
           <View style={styles.avatarWithBadge}>
             {/* 根據用戶設定顯示對應頭像 */}
             {(() => {
+              // #038 自訂頭像：顯示上傳的照片
+              if (userAvatar === 'custom' && customAvatarUrl) {
+                return (
+                  <Image
+                    source={{ uri: customAvatarUrl }}
+                    style={styles.levelAvatar}
+                  />
+                );
+              }
+
               const avatarPreset = AVATAR_PRESETS.find(a => a.id === userAvatar);
               const avatarColor = avatarPreset?.color || MibuBrand.brown;
 
