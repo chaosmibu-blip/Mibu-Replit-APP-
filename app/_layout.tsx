@@ -29,6 +29,16 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AppProvider } from '../src/context/AppContext';
 import { NetworkBanner } from '../src/modules/shared/components/ui/NetworkBanner';
+import { MibuBrand } from '../constants/Colors';
+
+// 覆蓋 React Navigation 預設背景色，統一使用 Mibu warmWhite
+const MibuLightTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: MibuBrand.warmWhite,
+  },
+};
 
 // ============================================================
 // 全域靜態圖片預載入
@@ -75,7 +85,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : MibuLightTheme}>
           <Stack>
             <Stack.Screen name="login" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

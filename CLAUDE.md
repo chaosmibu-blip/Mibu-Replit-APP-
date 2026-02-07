@@ -341,6 +341,7 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 | Design Token | `src/theme/designTokens.ts` |
 | 品牌色彩 | `constants/Colors.ts` |
 | 共用型別 | `@chaosmibu-blip/mibu-shared` |
+| 用戶截圖/設計參考 | `截圖/` 資料夾（根目錄） |
 
 ### 更新原則
 - **新的取代舊的** — 發現過時資訊，直接改

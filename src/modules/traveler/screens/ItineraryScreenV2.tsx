@@ -2177,99 +2177,138 @@ export function ItineraryScreenV2() {
     );
   };
 
-  // ===== 建立行程 Modal =====
-  const renderCreateModal = () => (
-    <Modal
-      visible={createModalVisible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={() => setCreateModalVisible(false)}
-    >
-      <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
-        {/* Modal Header */}
-        <View style={styles.modalHeader}>
-          <TouchableOpacity
-            onPress={() => setCreateModalVisible(false)}
-            style={styles.modalCloseButton}
+  // ===== 建立行程 Modal（方案 A 卡片式）=====
+  const renderCreateModal = () => {
+    const canCreate = !!newItinerary.countryId && !!newItinerary.regionId;
+    return (
+      <Modal
+        visible={createModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setCreateModalVisible(false)}
+      >
+        <View style={[styles.createModalContainer, { paddingTop: insets.top }]}>
+          {/* Header：關閉 + 標題 */}
+          <View style={styles.createModalHeader}>
+            <TouchableOpacity
+              onPress={() => setCreateModalVisible(false)}
+              style={styles.modalCloseButton}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="close" size={24} color={MibuBrand.copper} />
+            </TouchableOpacity>
+            <Text style={styles.createModalTitle}>
+              {isZh ? '新增行程' : 'New Itinerary'}
+            </Text>
+            {/* 佔位，讓標題置中 */}
+            <View style={{ width: 44 }} />
+          </View>
+
+          {/* 卡片區 */}
+          <ScrollView
+            style={styles.modalScroll}
+            contentContainerStyle={styles.createCardScroll}
+            keyboardShouldPersistTaps="handled"
           >
-            <Ionicons name="close" size={24} color={MibuBrand.copper} />
-          </TouchableOpacity>
-          <Text style={styles.modalTitle}>
-            {isZh ? '新增行程' : 'New Itinerary'}
-          </Text>
-          <TouchableOpacity
-            onPress={handleCreateItinerary}
-            style={[
-              styles.modalConfirmButton,
-              (!newItinerary.countryId || !newItinerary.regionId) && styles.modalConfirmButtonDisabled,
-            ]}
-            disabled={!newItinerary.countryId || !newItinerary.regionId || creating}
-          >
-            {creating ? (
-              <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
-            ) : (
-              <Text style={styles.modalConfirmText}>
-                {isZh ? '建立' : 'Create'}
-              </Text>
-            )}
-          </TouchableOpacity>
+            <View style={styles.createCard}>
+              {/* 日期 */}
+              <View style={styles.createFieldGroup}>
+                <View style={styles.createFieldIcon}>
+                  <Ionicons name="calendar-outline" size={18} color={MibuBrand.copper} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.createFieldLabel}>{isZh ? '日期' : 'Date'}</Text>
+                  <TextInput
+                    style={styles.createFieldInput}
+                    value={newItinerary.date}
+                    onChangeText={(text) => setNewItinerary(prev => ({ ...prev, date: text }))}
+                    placeholder="YYYY-MM-DD"
+                    placeholderTextColor={MibuBrand.tan}
+                  />
+                </View>
+              </View>
+
+              {/* 分隔線 */}
+              <View style={styles.createDivider} />
+
+              {/* 國家 + 城市並排 */}
+              <View style={styles.createFieldGroup}>
+                <View style={styles.createFieldIcon}>
+                  <Ionicons name="globe-outline" size={18} color={MibuBrand.copper} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.createLocationRow}>
+                    {/* 國家 */}
+                    <View style={{ flex: 1, marginRight: Spacing.sm }}>
+                      <Select
+                        label={isZh ? '國家' : 'Country'}
+                        options={countries.map(c => ({ label: getLocalizedName(c), value: c.id }))}
+                        value={newItinerary.countryId || null}
+                        onChange={(value) => {
+                          const country = countries.find(c => c.id === value);
+                          setNewItinerary(prev => ({
+                            ...prev,
+                            countryId: value as number,
+                            countryName: country ? getLocalizedName(country) : '',
+                            regionId: null,
+                            regionName: '',
+                          }));
+                        }}
+                        placeholder={isZh ? '選擇國家' : 'Country'}
+                        loading={loadingCountries}
+                      />
+                    </View>
+                    {/* 城市 */}
+                    <View style={{ flex: 1, marginLeft: Spacing.sm }}>
+                      <Select
+                        label={isZh ? '城市' : 'City'}
+                        options={regions.map(r => ({ label: getLocalizedName(r), value: r.id }))}
+                        value={newItinerary.regionId || null}
+                        onChange={(value) => {
+                          const region = regions.find(r => r.id === value);
+                          setNewItinerary(prev => ({
+                            ...prev,
+                            regionId: value as number,
+                            regionName: region?.nameZh || '',
+                          }));
+                        }}
+                        placeholder={isZh ? '選擇城市' : 'City'}
+                        loading={loadingRegions || !newItinerary.countryId}
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+
+          {/* 底部建立按鈕 */}
+          <View style={[styles.createBottomBar, { paddingBottom: insets.bottom + Spacing.lg }]}>
+            <TouchableOpacity
+              onPress={handleCreateItinerary}
+              style={[
+                styles.createBottomButton,
+                !canCreate && styles.createBottomButtonDisabled,
+              ]}
+              disabled={!canCreate || creating}
+              activeOpacity={0.8}
+            >
+              {creating ? (
+                <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
+              ) : (
+                <>
+                  <Ionicons name="sparkles" size={20} color={MibuBrand.warmWhite} style={{ marginRight: Spacing.sm }} />
+                  <Text style={styles.createBottomButtonText}>
+                    {isZh ? '建立行程' : 'Create Itinerary'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
-
-        {/* Modal Content */}
-        <ScrollView
-          style={styles.modalScroll}
-          contentContainerStyle={styles.createModalContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* 日期 */}
-          <Text style={styles.createInputLabel}>{isZh ? '日期' : 'Date'}</Text>
-          <TextInput
-            style={styles.createInput}
-            value={newItinerary.date}
-            onChangeText={(text) => setNewItinerary(prev => ({ ...prev, date: text }))}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={MibuBrand.copper}
-          />
-
-          {/* 國家選擇（下拉式選單） */}
-          <Select
-            label={isZh ? '國家' : 'Country'}
-            options={countries.map(c => ({ label: getLocalizedName(c), value: c.id }))}
-            value={newItinerary.countryId || null}
-            onChange={(value) => {
-              const country = countries.find(c => c.id === value);
-              setNewItinerary(prev => ({
-                ...prev,
-                countryId: value as number,
-                countryName: country ? getLocalizedName(country) : '',
-              }));
-            }}
-            placeholder={isZh ? '選擇國家' : 'Select Country'}
-            loading={loadingCountries}
-          />
-
-          {/* 城市選擇（下拉式選單） */}
-          {newItinerary.countryId && (
-            <Select
-              label={isZh ? '城市' : 'City'}
-              options={regions.map(r => ({ label: getLocalizedName(r), value: r.id }))}
-              value={newItinerary.regionId || null}
-              onChange={(value) => {
-                const region = regions.find(r => r.id === value);
-                setNewItinerary(prev => ({
-                  ...prev,
-                  regionId: value as number,
-                  regionName: region?.nameZh || '',
-                }));
-              }}
-              placeholder={isZh ? '選擇城市' : 'Select City'}
-              loading={loadingRegions}
-            />
-          )}
-        </ScrollView>
-      </View>
-    </Modal>
-  );
+      </Modal>
+    );
+  };
 
   // 【截圖 9-15 #8 #11】Toast 通知組件
   const renderToast = () =>
@@ -3159,11 +3198,104 @@ const styles = StyleSheet.create({
     borderColor: MibuBrand.brown,
   },
 
-  // ===== Create Modal =====
-  createModalContent: {
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
+  // ===== Create Modal（方案 A 卡片式）=====
+  createModalContainer: {
+    flex: 1,
+    backgroundColor: MibuBrand.warmWhite,
   },
+  createModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+  },
+  createModalTitle: {
+    fontSize: FontSize.xl,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+  },
+  createCardScroll: {
+    padding: Spacing.lg,
+    paddingTop: Spacing.md,
+  },
+  createCard: {
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: Radius.xl,
+    padding: Spacing.xl,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+    shadowColor: MibuBrand.brown,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  createFieldGroup: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  createFieldIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: MibuBrand.warmWhite,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
+    marginTop: 2,
+  },
+  createFieldLabel: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: MibuBrand.copper,
+    marginBottom: Spacing.xs,
+  },
+  createFieldInput: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 2,
+    fontSize: FontSize.md,
+    color: MibuBrand.brownDark,
+  },
+  createDivider: {
+    height: 1,
+    backgroundColor: MibuBrand.tanLight,
+    marginVertical: Spacing.lg,
+  },
+  createLocationRow: {
+    flexDirection: 'row',
+  },
+  createBottomBar: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    backgroundColor: MibuBrand.warmWhite,
+  },
+  createBottomButton: {
+    backgroundColor: MibuBrand.brown,
+    borderRadius: Radius.lg,
+    paddingVertical: Spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: MibuBrand.brown,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  createBottomButtonDisabled: {
+    backgroundColor: MibuBrand.tanLight,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  createBottomButtonText: {
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    color: MibuBrand.warmWhite,
+  },
+  // 相容舊 style 引用
   createInputLabel: {
     fontSize: FontSize.sm,
     fontWeight: '600',

@@ -974,13 +974,14 @@ export function GachaScreen() {
               {/* Tooltip（淡入淡出）
                   - 取代原本的 Alert.alert 彈窗
                   - 點擊 ! 按鈕後顯示 3 秒自動淡出
-                  - 使用 Animated.View 實現淡入淡出效果 */}
+                  - 顯示在標題行上方，避免擋住滑桿 */}
               {showInfoTooltip && (
                 <Animated.View
                   style={{
                     position: 'absolute',
                     left: 0,
-                    bottom: 28,  // 改為向上顯示，避免擋住滑桿
+                    bottom: '100%',  // 完全顯示在父容器上方
+                    marginBottom: 6,
                     backgroundColor: 'rgba(128, 128, 128, 0.5)',
                     paddingHorizontal: 12,
                     paddingVertical: 8,

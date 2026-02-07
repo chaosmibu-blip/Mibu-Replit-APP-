@@ -666,10 +666,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
 
-  // 頂部問候區
+  // 頂部問候區（下移避免頂部太擠、下方太空）
   header: {
-    marginTop: 12,
-    marginBottom: 20,
+    marginTop: 40,
+    marginBottom: 28,
   },
   greeting: {
     flex: 1,
