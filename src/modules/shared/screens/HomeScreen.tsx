@@ -402,19 +402,11 @@ export function HomeScreen() {
                 );
               }
             })()}
-            {/* 金幣徽章（取代等級徽章） */}
-            <View style={styles.coinBadgeCircle}>
-              <Ionicons name="logo-bitcoin" size={10} color="#fff" />
-              <Text style={styles.coinBadgeText}>{userCoins.balance.toLocaleString()}</Text>
-            </View>
           </View>
 
-          {/* 用戶資訊：稱號 + 累計金幣 */}
+          {/* 用戶資訊：稱號 */}
           <View style={styles.levelInfo}>
             <Text style={styles.levelTitle}>{userCoins.title}</Text>
-            <Text style={styles.levelPhase}>
-              {isZh ? `累計 ${userCoins.totalEarned.toLocaleString()} 金幣` : `${userCoins.totalEarned.toLocaleString()} coins earned`}
-            </Text>
           </View>
 
           {/* 連續登入天數 */}
@@ -429,29 +421,17 @@ export function HomeScreen() {
           </View>
         </View>
 
-        {/* 權益資訊區塊（取代 XP 進度條） */}
-        <View style={styles.perksSection}>
-          <View style={styles.perkItem}>
-            <Ionicons name="dice-outline" size={16} color={MibuBrand.copper} />
-            <Text style={styles.perkText}>
-              {isZh ? `每日扭蛋 ${userPerks.dailyPullLimit} 次` : `${userPerks.dailyPullLimit} pulls/day`}
-            </Text>
-          </View>
-          <View style={styles.perkItem}>
-            <Ionicons name="cube-outline" size={16} color={MibuBrand.copper} />
-            <Text style={styles.perkText}>
-              {isZh ? `背包 ${userPerks.inventorySlots} 格` : `${userPerks.inventorySlots} slots`}
-            </Text>
-          </View>
-          {userPerks.canApplySpecialist && (
+        {/* 權益資訊區塊：僅顯示策劃師資格（已取得時） */}
+        {userPerks.canApplySpecialist && (
+          <View style={styles.perksSection}>
             <View style={styles.perkItem}>
               <Ionicons name="ribbon-outline" size={16} color={MibuBrand.success} />
               <Text style={[styles.perkText, { color: MibuBrand.success }]}>
                 {isZh ? '可申請策劃師' : 'Specialist Ready'}
               </Text>
             </View>
-          )}
-        </View>
+          </View>
+        )}
       </View>
 
       {/* ========== 每日任務卡片（可點擊，跳轉 /economy）========== */}

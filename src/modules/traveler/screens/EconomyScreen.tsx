@@ -228,7 +228,7 @@ export function EconomyScreen() {
         </View>
       ) : (
         <View style={styles.taskRewardBadge}>
-          <Ionicons name="logo-bitcoin" size={12} color={MibuBrand.warning} />
+          <Ionicons name="cash-outline" size={12} color={MibuBrand.warning} />
           <Text style={styles.taskXp}>+{task.xp}</Text>
         </View>
       )}
@@ -346,7 +346,7 @@ export function EconomyScreen() {
                           </View>
                         </View>
                         <View style={styles.achievementReward}>
-                          <Ionicons name="logo-bitcoin" size={12} color={MibuBrand.warning} />
+                          <Ionicons name="cash-outline" size={12} color={MibuBrand.warning} />
                           <Text style={styles.achievementRewardText}>+{achievement.reward.coinReward || achievement.reward.exp || 0}</Text>
                         </View>
                       </View>
@@ -500,90 +500,12 @@ export function EconomyScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* User Coins Card（#039 重構：等級 → 金幣） */}
-        <View style={styles.levelCard}>
-          {/* 裝飾元素 */}
-          <View style={styles.levelCardDecor}>
-            <Ionicons name="sparkles" size={16} color={MibuBrand.tanLight} />
-          </View>
-          <View style={[styles.levelCardDecor, styles.levelCardDecorRight]}>
-            <Ionicons name="star" size={14} color={MibuBrand.tanLight} />
-          </View>
-
-          <View style={styles.levelTop}>
-            <View style={styles.avatarContainer}>
-              <View style={styles.avatarRing}>
-                <View style={styles.avatar}>
-                  <Ionicons name="person" size={32} color={MibuBrand.copper} />
-                </View>
-              </View>
-              {/* 金幣徽章取代等級徽章 */}
-              <View style={styles.levelBadge}>
-                <Ionicons name="logo-bitcoin" size={10} color="#fff" style={{ marginRight: 2 }} />
-                <Text style={styles.levelBadgeText}>{coinBalance.toLocaleString()}</Text>
-              </View>
-            </View>
-
-            <View style={styles.userInfo}>
-              <Text style={styles.userName}>{state.user?.firstName || (isZh ? '旅行萌新' : 'Traveler')}</Text>
-              {/* 權益標籤：每日扭蛋上限 */}
-              <View style={styles.tierBadge}>
-                <Ionicons name="dice-outline" size={12} color={MibuBrand.brown} />
-                <Text style={styles.userTier}>
-                  {isUnlimitedPulls
-                  ? (isZh ? '無限抽' : 'Unlimited pulls')
-                  : (isZh ? `每日 ${rawDailyPullLimit} 抽` : `${rawDailyPullLimit} pulls/day`)}
-                </Text>
-              </View>
-            </View>
-
-            {/* 累計獲得金幣 */}
-            <View style={styles.totalXpBox}>
-              <View style={styles.xpIconRow}>
-                <Ionicons name="trending-up" size={14} color={MibuBrand.warning} />
-                <Text style={styles.totalXpLabel}>{isZh ? '累計獲得' : 'Total Earned'}</Text>
-              </View>
-              <Text style={styles.totalXpValue}>{totalEarned.toLocaleString()}</Text>
-            </View>
-          </View>
-
-          {/* 權益資訊區塊（取代等級進度條） */}
-          <View style={styles.perksRow}>
-            <View style={styles.perkItem}>
-              <Ionicons name="cube-outline" size={16} color={MibuBrand.copper} />
-              <Text style={styles.perkText}>
-                {isUnlimitedSlots
-                  ? (isZh ? '背包無限' : 'Unlimited slots')
-                  : (isZh ? `背包 ${rawInventorySlots} 格` : `${rawInventorySlots} slots`)}
-              </Text>
-            </View>
-            {perksInfo?.canApplySpecialist && (
-              <View style={styles.perkItem}>
-                <Ionicons name="ribbon-outline" size={16} color={MibuBrand.success} />
-                <Text style={[styles.perkText, { color: MibuBrand.success }]}>
-                  {isZh ? '可申請策劃師' : 'Can apply specialist'}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* Stats Cards（#039 重構：移除階段，加入金幣） */}
+        {/* Stats Card：僅顯示成就 */}
         <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Ionicons name="logo-bitcoin" size={20} color={MibuBrand.warning} />
-            <Text style={styles.statNumber}>{coinBalance.toLocaleString()}</Text>
-            <Text style={styles.statLabel}>{isZh ? '金幣' : 'Coins'}</Text>
-          </View>
           <View style={styles.statCard}>
             <Ionicons name="trophy" size={20} color={MibuBrand.copper} />
             <Text style={styles.statNumber}>{unlockedCount}</Text>
             <Text style={styles.statLabel}>{isZh ? '成就' : 'Achievements'}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Ionicons name="dice" size={20} color="#f97316" />
-            <Text style={styles.statNumber}>{dailyPullLimitDisplay}</Text>
-            <Text style={styles.statLabel}>{isZh ? '每日抽數' : 'Daily Pulls'}</Text>
           </View>
         </View>
 
