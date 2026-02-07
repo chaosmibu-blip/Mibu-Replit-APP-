@@ -60,6 +60,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { itineraryApi } from '../../../services/itineraryApi';
 import { locationApi } from '../../../services/locationApi';
+import { preloadService } from '../../../services/preloadService';
 import { MibuBrand, getCategoryToken } from '../../../../constants/Colors';
 import type { Country, Region } from '../../../types';
 import { Spacing, Radius, FontSize, Shadow } from '../../../theme/designTokens';
@@ -783,7 +784,8 @@ export function ItineraryScreenV2() {
   const loadCountries = useCallback(async () => {
     setLoadingCountries(true);
     try {
-      const data = await locationApi.getCountries();
+      // 使用預載入快取，避免重複請求
+      const data = await preloadService.getCountries();
       setCountries(data);
     } catch (error) {
       console.error('Failed to load countries:', error);
@@ -798,7 +800,8 @@ export function ItineraryScreenV2() {
     setRegions([]);
     setNewItinerary(prev => ({ ...prev, regionId: null, regionName: '' }));
     try {
-      const data = await locationApi.getRegions(countryId);
+      // 使用預載入快取
+      const data = await preloadService.getRegions(countryId);
       setRegions(data);
     } catch (error) {
       console.error('Failed to load regions:', error);

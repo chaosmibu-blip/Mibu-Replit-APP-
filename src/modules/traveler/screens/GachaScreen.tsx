@@ -48,6 +48,7 @@ import { Select } from '../../shared/components/ui/Select';
 import { LoadingAdScreen } from '../../shared/components/LoadingAdScreen';
 import { TutorialOverlay, GACHA_TUTORIAL_STEPS } from '../../shared/components/TutorialOverlay';
 import { apiService } from '../../../services/api';
+import { preloadService } from '../../../services/preloadService';
 import { gachaApi, getDeviceId } from '../../../services/gachaApi';
 import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse, ItineraryItemRaw, LocalizedContent, GachaMeta, CouponWon } from '../../../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../../../constants/translations';
@@ -256,7 +257,8 @@ export function GachaScreen() {
   const loadCountries = async () => {
     try {
       setCountriesError(false);
-      const data = await apiService.getCountries();
+      // 使用預載入快取，避免重複請求
+      const data = await preloadService.getCountries();
       setCountries(data);
     } catch (error) {
       console.error('🌍 Failed to load countries:', error);
@@ -285,8 +287,9 @@ export function GachaScreen() {
         setTimeout(() => reject(new Error('Request timeout')), 10000);
       });
 
+      // 使用預載入快取，避免重複請求
       const data = await Promise.race([
-        apiService.getRegions(countryId),
+        preloadService.getRegions(countryId),
         timeoutPromise,
       ]);
       setRegions(data);

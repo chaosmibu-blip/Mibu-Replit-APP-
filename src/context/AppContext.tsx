@@ -25,6 +25,7 @@ import { AppState, Language, User, GachaItem, GachaResponse, UserRole } from '..
 import { TRANSLATIONS, DEFAULT_LEVEL } from '../constants/translations';
 import { apiService } from '../services/api';
 import { pushNotificationService } from '../services/pushNotificationService';
+import { preloadService } from '../services/preloadService';
 
 // ============ Token 安全儲存工具 ============
 // iOS/Android 使用 SecureStore（加密儲存）
@@ -213,8 +214,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
             updates.isAuthenticated = true;
             // 更新本地快取
             await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(freshUser));
-            // 註冊推播通知
+            // 註冊推播通知 + 背景預載入常用資料
             pushNotificationService.registerTokenWithBackend(storedToken).catch(console.error);
+            preloadService.preloadAfterAuth();
           } else {
             // Token 無效，清除登入狀態
             await removeToken();
@@ -309,9 +311,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (currentToken) {
         pushNotificationService.unregisterToken(currentToken).catch(console.error);
       }
-      // 清除本地資料
+      // 清除本地資料 + 預載入快取
       await AsyncStorage.removeItem(STORAGE_KEYS.USER);
       await removeToken();
+      preloadService.clearCache();
     }
   }, []);
 
