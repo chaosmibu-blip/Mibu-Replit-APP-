@@ -256,8 +256,9 @@ export function ItineraryScreenV2() {
   const [showToast, setShowToast] = useState(false);
   const toastOpacity = useRef(new Animated.Value(0)).current;
   // 【預防卡住】Timer refs 用於清理 setTimeout
-  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const helpTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // 使用 ReturnType<typeof setTimeout> 避免 Node.js 與瀏覽器環境型別衝突
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const helpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 從圖鑑加入景點 Modal 狀態
   const [addPlacesModalVisible, setAddPlacesModalVisible] = useState(false);
@@ -555,6 +556,38 @@ export function ItineraryScreenV2() {
       showToastMessage(isZh ? '移除失敗，請稍後再試' : 'Failed to remove, please try again');
     }
   }, [currentItinerary, getToken, fetchItineraryDetail, isZh, showToastMessage]);
+
+  /**
+   * 關閉左側 Drawer
+   * 【截圖 36 修復】改用 timing 動畫，並在動畫完成後才設置狀態
+   * 【修復】移除 leftDrawerOpen 狀態檢查，避免閉包問題導致無法關閉
+   * 【修正】提前定義，避免 handleSelectItinerary 在宣告前引用
+   */
+  const closeLeftDrawer = useCallback(() => {
+    // 防止動畫中重複觸發
+    if (drawerAnimating.current) return;
+    drawerAnimating.current = true;
+
+    // 停止進行中的動畫
+    leftDrawerAnim.stopAnimation();
+    overlayAnim.stopAnimation();
+    Animated.parallel([
+      Animated.timing(leftDrawerAnim, {
+        toValue: -DRAWER_WIDTH,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(overlayAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // 動畫完成後設置狀態
+      setLeftDrawerOpen(false);
+      drawerAnimating.current = false;
+    });
+  }, [leftDrawerAnim, overlayAnim]);
 
   // 【截圖 9-15 #5 #13】【截圖 36 修復】切換行程 - 使用快取但同時背景更新
   const handleSelectItinerary = useCallback(async (id: number) => {
@@ -1252,37 +1285,6 @@ export function ItineraryScreenV2() {
       drawerAnimating.current = false;
     });
   }, [leftDrawerOpen, leftDrawerAnim, overlayAnim, preloadItineraries]);
-
-  /**
-   * 關閉左側 Drawer
-   * 【截圖 36 修復】改用 timing 動畫，並在動畫完成後才設置狀態
-   * 【修復】移除 leftDrawerOpen 狀態檢查，避免閉包問題導致無法關閉
-   */
-  const closeLeftDrawer = useCallback(() => {
-    // 防止動畫中重複觸發
-    if (drawerAnimating.current) return;
-    drawerAnimating.current = true;
-
-    // 停止進行中的動畫
-    leftDrawerAnim.stopAnimation();
-    overlayAnim.stopAnimation();
-    Animated.parallel([
-      Animated.timing(leftDrawerAnim, {
-        toValue: -DRAWER_WIDTH,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(overlayAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      // 動畫完成後設置狀態
-      setLeftDrawerOpen(false);
-      drawerAnimating.current = false;
-    });
-  }, [leftDrawerAnim, overlayAnim]);
 
   /**
    * 開啟右側 Drawer（景點列表）

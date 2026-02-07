@@ -885,37 +885,36 @@ export function GachaScreen() {
           }}
           placeholder={t.selectCountry}
           loading={loadingCountries}
-          footerContent={(closeModal) => (
-            // 國家選單底部：解鎖全球地圖 CTA
-            // 【截圖 2 修改】文字放大 13px → 15px，行高 20 → 24，間距增加
-            <View style={{ alignItems: 'center', paddingTop: 24, paddingBottom: 8 }}>
-              <Text style={{ fontSize: 15, color: MibuBrand.copper, lineHeight: 24, textAlign: 'center' }}>
-                {state.language === 'zh-TW'
-                  ? '我們正在努力增加更多國家\n現在你也可以一起幫助我們！'
-                  : 'We\'re working on adding more countries.\nNow you can help us too!'}
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  closeModal(); // 先關閉 Modal
-                  router.push('/crowdfunding');
-                }}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginTop: 16,
-                  backgroundColor: MibuBrand.brown,
-                  paddingVertical: 10,
-                  paddingHorizontal: 14,
-                  borderRadius: 10,
-                }}
-              >
-                <Ionicons name="globe-outline" size={16} color={MibuBrand.warmWhite} />
-                <Text style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.warmWhite, marginLeft: 6 }}>
-                  {state.language === 'zh-TW' ? '解鎖全球地圖' : 'Unlock Global Map'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          // [HIDDEN] 送審隱藏 #11 解鎖全球地圖 CTA
+          // footerContent={(closeModal) => (
+          //   <View style={{ alignItems: 'center', paddingTop: 24, paddingBottom: 8 }}>
+          //     <Text style={{ fontSize: 15, color: MibuBrand.copper, lineHeight: 24, textAlign: 'center' }}>
+          //       {state.language === 'zh-TW'
+          //         ? '我們正在努力增加更多國家\n現在你也可以一起幫助我們！'
+          //         : 'We\'re working on adding more countries.\nNow you can help us too!'}
+          //     </Text>
+          //     <TouchableOpacity
+          //       onPress={() => {
+          //         closeModal();
+          //         router.push('/crowdfunding');
+          //       }}
+          //       style={{
+          //         flexDirection: 'row',
+          //         alignItems: 'center',
+          //         marginTop: 16,
+          //         backgroundColor: MibuBrand.brown,
+          //         paddingVertical: 10,
+          //         paddingHorizontal: 14,
+          //         borderRadius: 10,
+          //       }}
+          //     >
+          //       <Ionicons name="globe-outline" size={16} color={MibuBrand.warmWhite} />
+          //       <Text style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.warmWhite, marginLeft: 6 }}>
+          //         {state.language === 'zh-TW' ? '解鎖全球地圖' : 'Unlock Global Map'}
+          //       </Text>
+          //     </TouchableOpacity>
+          //   </View>
+          // )}
         />
 
         {/* 城市下拉選單（選擇國家後才顯示） */}

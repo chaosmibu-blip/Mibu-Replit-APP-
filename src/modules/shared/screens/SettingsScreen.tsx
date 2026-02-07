@@ -297,15 +297,16 @@ export function SettingsScreen() {
           iconBg: '#FEF3C7',
           iconColor: '#D97706',
         },
-        {
-          icon: 'gift-outline',
-          label: isZh ? '推薦領好禮' : 'Refer & Earn',
-          action: () => router.push('/referral' as any),
-          hasArrow: true,
-          highlight: true,  // 高亮顯示
-          iconBg: '#ECFDF5',
-          iconColor: '#059669',
-        },
+        // [HIDDEN] 送審隱藏 #1 推薦領好禮
+        // {
+        //   icon: 'gift-outline',
+        //   label: isZh ? '推薦領好禮' : 'Refer & Earn',
+        //   action: () => router.push('/referral' as any),
+        //   hasArrow: true,
+        //   highlight: true,
+        //   iconBg: '#ECFDF5',
+        //   iconColor: '#059669',
+        // },
         {
           icon: 'globe-outline',
           label: isZh ? '語言設定' : 'Language',
@@ -317,72 +318,75 @@ export function SettingsScreen() {
         },
       ],
     },
-    {
-      title: isZh ? '探索' : 'Explore',
-      items: [
-        {
-          icon: 'map-outline',
-          label: isZh ? '解鎖全球地圖' : 'Unlock World Map',
-          action: () => router.push('/map' as any),
-          hasArrow: true,
-          badge: isZh ? '1 已解鎖' : '1 Unlocked',
-          iconBg: '#FEF3C7',
-          iconColor: '#D97706',
-        },
-        {
-          icon: 'trophy-outline',
-          label: isZh ? '等級與成就' : 'Level & Achievements',
-          action: () => router.push('/economy' as any),
-          hasArrow: true,
-          badge: '2/10',
-          iconBg: '#FFF3D4',
-          iconColor: '#D4A24C',
-        },
-      ],
-    },
-    {
-      title: isZh ? '偏好設定' : 'Preferences',
-      items: [
-        {
-          icon: 'heart-outline',
-          label: isZh ? '我的最愛/黑名單' : 'Favorites & Blacklist',
-          action: () => router.push('/favorites-management' as any),
-          hasArrow: true,
-          iconBg: '#FEE2E2',
-          iconColor: MibuBrand.tierSP,
-        },
-        {
-          icon: 'notifications-outline',
-          label: isZh ? '推播通知' : 'Push Notifications',
-          toggle: true,
-          checked: notifications,
-          onChange: setNotifications,
-          iconBg: '#FFF7ED',
-          iconColor: '#EA580C',
-        },
-      ],
-    },
-    {
-      title: isZh ? '更多功能' : 'More Features',
-      items: [
-        {
-          icon: 'link-outline',
-          label: isZh ? '帳號綁定' : 'Linked Accounts',
-          action: () => router.push('/account' as any),
-          hasArrow: true,
-          iconBg: '#EEF2FF',
-          iconColor: '#6366f1',
-        },
-        {
-          icon: 'hand-left-outline',
-          label: isZh ? '社群貢獻' : 'Contributions',
-          action: () => router.push('/contribution' as any),
-          hasArrow: true,
-          iconBg: '#F0FDF4',
-          iconColor: '#16a34a',
-        },
-      ],
-    },
+    // [HIDDEN] 送審隱藏 #2 #3 探索群組（解鎖全球地圖 + 等級與成就）
+    // {
+    //   title: isZh ? '探索' : 'Explore',
+    //   items: [
+    //     {
+    //       icon: 'map-outline',
+    //       label: isZh ? '解鎖全球地圖' : 'Unlock World Map',
+    //       action: () => router.push('/map' as any),
+    //       hasArrow: true,
+    //       badge: isZh ? '1 已解鎖' : '1 Unlocked',
+    //       iconBg: '#FEF3C7',
+    //       iconColor: '#D97706',
+    //     },
+    //     {
+    //       icon: 'trophy-outline',
+    //       label: isZh ? '等級與成就' : 'Level & Achievements',
+    //       action: () => router.push('/economy' as any),
+    //       hasArrow: true,
+    //       badge: '2/10',
+    //       iconBg: '#FFF3D4',
+    //       iconColor: '#D4A24C',
+    //     },
+    //   ],
+    // },
+    // [HIDDEN] 送審隱藏 #4 #5 偏好設定群組（我的最愛/黑名單 + 推播通知）
+    // {
+    //   title: isZh ? '偏好設定' : 'Preferences',
+    //   items: [
+    //     {
+    //       icon: 'heart-outline',
+    //       label: isZh ? '我的最愛/黑名單' : 'Favorites & Blacklist',
+    //       action: () => router.push('/favorites-management' as any),
+    //       hasArrow: true,
+    //       iconBg: '#FEE2E2',
+    //       iconColor: MibuBrand.tierSP,
+    //     },
+    //     {
+    //       icon: 'notifications-outline',
+    //       label: isZh ? '推播通知' : 'Push Notifications',
+    //       toggle: true,
+    //       checked: notifications,
+    //       onChange: setNotifications,
+    //       iconBg: '#FFF7ED',
+    //       iconColor: '#EA580C',
+    //     },
+    //   ],
+    // },
+    // [HIDDEN] 送審隱藏 #6 #7 更多功能群組（帳號綁定 + 社群貢獻）
+    // {
+    //   title: isZh ? '更多功能' : 'More Features',
+    //   items: [
+    //     {
+    //       icon: 'link-outline',
+    //       label: isZh ? '帳號綁定' : 'Linked Accounts',
+    //       action: () => router.push('/account' as any),
+    //       hasArrow: true,
+    //       iconBg: '#EEF2FF',
+    //       iconColor: '#6366f1',
+    //     },
+    //     {
+    //       icon: 'hand-left-outline',
+    //       label: isZh ? '社群貢獻' : 'Contributions',
+    //       action: () => router.push('/contribution' as any),
+    //       hasArrow: true,
+    //       iconBg: '#F0FDF4',
+    //       iconColor: '#16a34a',
+    //     },
+    //   ],
+    // },
     {
       title: isZh ? '關於' : 'About',
       items: [
@@ -566,8 +570,8 @@ export function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '帳號管理' : 'Account Management'}</Text>
           <View style={styles.card}>
-            {/* #036 帳號合併 */}
-            <TouchableOpacity
+            {/* [HIDDEN] 送審隱藏 #8 合併帳號 */}
+            {/* <TouchableOpacity
               style={[styles.settingItem, styles.settingItemBorder]}
               onPress={handleOpenMergeModal}
             >
@@ -576,7 +580,7 @@ export function SettingsScreen() {
               </View>
               <Text style={styles.itemLabel}>{isZh ? '合併帳號' : 'Merge Accounts'}</Text>
               <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* 登出 */}
             <TouchableOpacity

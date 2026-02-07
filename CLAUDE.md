@@ -187,11 +187,43 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 
 ---
 
+## 技能（Skill）
+
+### /tsc-fix — 發現既有錯誤時自動修復
+
+**觸發時機**：執行 `npx tsc --noEmit` 發現既有 TypeScript 錯誤時
+
+**流程**：
+```
+1. 執行 npx tsc --noEmit 取得完整錯誤列表
+2. 分類錯誤（依檔案分組）
+3. 派除錯員並行修復（每個檔案一個子代理人）
+4. 修復完成後重跑 tsc 驗證 0 errors
+5. 回報修復摘要
+```
+
+**修復原則**：
+- 最小改動，不改業務邏輯
+- 優先使用 RN/TS 官方型別（如 `StyleProp<ViewStyle>`、`DimensionValue`、`ReturnType<typeof setTimeout>`）
+- 變數宣告順序問題 → 搬移定義位置，不改邏輯
+- 用繁體中文寫註解
+
+**常見 TS 錯誤速查**：
+
+| 錯誤模式 | 修法 |
+|----------|------|
+| `string \| number` 不可指派給 style | 改用 `DimensionValue` |
+| `ViewStyle` 不接受陣列 | 改用 `StyleProp<ViewStyle>` |
+| `number` 不可指派給 `Timeout` | useRef 泛型改 `ReturnType<typeof setTimeout> \| null` |
+| 變數在宣告前使用 | 搬移定義到使用點之前 |
+
+---
+
 ## 收尾清單（每次任務結束前必跑）
 
 ### 完成標準
 
-- [ ] 程式碼可運行，無錯誤
+- [ ] 程式碼可運行，`npx tsc --noEmit` 零錯誤（發現既有錯誤 → 跑 /tsc-fix）
 - [ ] loading、error、empty 狀態都處理了
 - [ ] 用戶路徑走過一遍（進得來、用得順、出得去、爆了會怎樣）
 - [ ] 註解已加上（中文）
@@ -450,6 +482,19 @@ fontSize: FontSize.md       // 不要 14
 ```
 後端發任務 → docs/sync-app.md
 我回報問題 → docs/sync-backend.md
+```
+
+### 共用型別發布工作流程
+
+```
+後端 shared/api-types.ts 修正
+  → 自動發布到 @chaosmibu-blip/mibu-shared（GitHub Packages）
+  → APP 端執行 npm update @chaosmibu-blip/mibu-shared 即可取得最新型別
+
+重點：
+- 型別定義的源頭在後端 repo 的 shared/api-types.ts
+- APP 端不要自己改型別，要等後端發布新版
+- 更新後用 npx tsc --noEmit 確認型別無誤
 ```
 
 ### 查新任務工作流程（任務完成後必做）

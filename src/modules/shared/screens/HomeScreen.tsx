@@ -363,15 +363,11 @@ export function HomeScreen() {
         </View>
       </View>
 
-      {/* ========== 用戶卡片（#039 重構：金幣系統）========== */}
-      <View style={styles.levelCard}>
-        {/* 卡片頭部：頭像 + 金幣徽章 + 稱號 + 連續登入 */}
+      {/* [HIDDEN] 送審隱藏 #9 用戶卡片（稱號+連續登入） */}
+      {/* <View style={styles.levelCard}>
         <View style={styles.levelHeader}>
-          {/* 圓形頭像 + 金幣徽章 */}
           <View style={styles.avatarWithBadge}>
-            {/* 根據用戶設定顯示對應頭像 */}
             {(() => {
-              // #038 自訂頭像：顯示上傳的照片
               if (userAvatar === 'custom' && customAvatarUrl) {
                 return (
                   <Image
@@ -380,12 +376,9 @@ export function HomeScreen() {
                   />
                 );
               }
-
               const avatarPreset = AVATAR_PRESETS.find(a => a.id === userAvatar);
               const avatarColor = avatarPreset?.color || MibuBrand.brown;
-
               if (userAvatar === 'default') {
-                // 預設頭像：顯示用戶名稱首字
                 return (
                   <View style={[styles.levelAvatar, { backgroundColor: avatarColor }]}>
                     <Text style={styles.avatarInitial}>
@@ -394,7 +387,6 @@ export function HomeScreen() {
                   </View>
                 );
               } else {
-                // 其他頭像：顯示對應 icon
                 return (
                   <View style={[styles.levelAvatar, { backgroundColor: avatarColor }]}>
                     <Ionicons
@@ -407,13 +399,9 @@ export function HomeScreen() {
               }
             })()}
           </View>
-
-          {/* 用戶資訊：稱號 */}
           <View style={styles.levelInfo}>
             <Text style={styles.levelTitle}>{userCoins.title}</Text>
           </View>
-
-          {/* 連續登入天數 */}
           <View style={styles.loginStreak}>
             <Text style={styles.loginStreakLabel}>
               {isZh ? '連續登入' : 'Streak'}
@@ -424,8 +412,6 @@ export function HomeScreen() {
             </View>
           </View>
         </View>
-
-        {/* 權益資訊區塊：僅顯示策劃師資格（已取得時） */}
         {userPerks.canApplySpecialist && (
           <View style={styles.perksSection}>
             <View style={styles.perkItem}>
@@ -436,15 +422,14 @@ export function HomeScreen() {
             </View>
           </View>
         )}
-      </View>
+      </View> */}
 
-      {/* ========== 每日任務卡片（可點擊，跳轉 /economy）========== */}
-      <TouchableOpacity
+      {/* [HIDDEN] 送審隱藏 #10 每日任務卡片 */}
+      {/* <TouchableOpacity
         style={styles.taskCard}
         onPress={() => router.push('/economy')}
         activeOpacity={0.8}
       >
-        {/* 左側：圖示 + 任務資訊 */}
         <View style={styles.taskLeft}>
           <View style={styles.taskIcon}>
             <Ionicons name="calendar-outline" size={24} color={MibuBrand.brown} />
@@ -458,23 +443,17 @@ export function HomeScreen() {
             </Text>
           </View>
         </View>
-
-        {/* 右側：已獲得金幣 */}
         <View style={styles.taskRight}>
           <Text style={styles.taskEarnedLabel}>{isZh ? '已獲得' : 'Earned'}</Text>
           <Text style={styles.taskEarnedCoins}>+{dailyTask.earnedCoins} {isZh ? '金幣' : 'coins'}</Text>
         </View>
-
-        {/* 箭頭圖示 */}
         <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
       </TouchableOpacity>
-
-      {/* 任務進度條 */}
       <View style={styles.taskProgressContainer}>
         <View style={styles.taskProgressBg}>
           <View style={[styles.taskProgressFill, { width: `${taskProgress}%` }]} />
         </View>
-      </View>
+      </View> */}
 
       {/* ========== 活動 Tab 導航（公告/在地/限時）========== */}
       <View style={styles.eventTabsContainer}>

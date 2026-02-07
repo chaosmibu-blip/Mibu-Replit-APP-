@@ -19,21 +19,21 @@
  * <LoadingSkeleton.CardList count={3} />
  */
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
+import { View, StyleSheet, Animated, ViewStyle, StyleProp, DimensionValue } from 'react-native';
 import { MibuBrand } from '../../../../../constants/Colors';
 import { Spacing, Radius } from '@/src/theme/designTokens';
 
 // ========== 基礎骨架方塊 ==========
 
 interface SkeletonBlockProps {
-  /** 寬度（數字或百分比字串） */
-  width?: number | string;
+  /** 寬度（數字或百分比字串，符合 RN DimensionValue 型別） */
+  width?: DimensionValue;
   /** 高度 */
   height?: number;
   /** 圓角 */
   borderRadius?: number;
-  /** 自訂樣式 */
-  style?: ViewStyle;
+  /** 自訂樣式（支援陣列寫法） */
+  style?: StyleProp<ViewStyle>;
 }
 
 function SkeletonBlock({
@@ -86,16 +86,16 @@ type SkeletonVariant = 'rect' | 'circle' | 'text';
 interface LoadingSkeletonProps {
   /** 形狀類型 */
   variant?: SkeletonVariant;
-  /** 寬度（rect/text 用） */
-  width?: number | string;
+  /** 寬度（rect/text 用，符合 RN DimensionValue 型別） */
+  width?: DimensionValue;
   /** 高度（rect 用） */
   height?: number;
   /** 尺寸（circle 用，同時設定寬高） */
   size?: number;
   /** 圓角 */
   borderRadius?: number;
-  /** 自訂樣式 */
-  style?: ViewStyle;
+  /** 自訂樣式（支援陣列寫法） */
+  style?: StyleProp<ViewStyle>;
 }
 
 export function LoadingSkeleton({
