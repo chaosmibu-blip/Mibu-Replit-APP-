@@ -253,7 +253,7 @@ export function MerchantProductsScreen() {
               <View key={product.id} style={styles.productCard}>
                 {/* 產品資訊區 */}
                 <View style={styles.productInfo}>
-                  <Text style={styles.productName}>{product.name}</Text>
+                  <Text style={styles.productName} numberOfLines={2} ellipsizeMode="tail">{product.name}</Text>
                   {product.description && (
                     <Text style={styles.productDesc} numberOfLines={2}>
                       {product.description}
@@ -437,8 +437,8 @@ const styles = StyleSheet.create({
   },
   // 返回按鈕
   backButton: {
-    width: 40,
-    height: 40,
+    minWidth: 44,
+    minHeight: 44,
     borderRadius: 12,
     backgroundColor: MibuBrand.warmWhite,
     alignItems: 'center',
@@ -564,8 +564,8 @@ const styles = StyleSheet.create({
   },
   // 操作按鈕
   actionButton: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     borderRadius: 10,
     backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',

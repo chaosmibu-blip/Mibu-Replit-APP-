@@ -826,8 +826,8 @@ const styles = StyleSheet.create({
     borderBottomColor: MibuBrand.cream,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    minWidth: 44,
+    minHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -839,6 +839,8 @@ const styles = StyleSheet.create({
   saveButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   saveButtonText: {
     fontSize: 16,

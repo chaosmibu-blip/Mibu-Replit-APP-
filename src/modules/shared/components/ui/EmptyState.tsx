@@ -92,6 +92,8 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     marginTop: Spacing.lg,
+    minHeight: 44,
+    justifyContent: 'center',
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.xl,
     backgroundColor: MibuBrand.brown,

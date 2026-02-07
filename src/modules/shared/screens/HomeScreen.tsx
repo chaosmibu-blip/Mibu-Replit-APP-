@@ -25,7 +25,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Image,
-  Platform,
+  SafeAreaView,
   Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -326,9 +326,11 @@ export function HomeScreen() {
   // ============================================================
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={MibuBrand.brown} />
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={MibuBrand.brown} />
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -336,6 +338,7 @@ export function HomeScreen() {
   // 主畫面渲染
   // ============================================================
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -344,6 +347,7 @@ export function HomeScreen() {
           refreshing={refreshing}
           onRefresh={onRefresh}
           tintColor={MibuBrand.brown}
+          colors={[MibuBrand.brown]}
         />
       }
       showsVerticalScrollIndicator={false}
@@ -659,6 +663,7 @@ export function HomeScreen() {
         )}
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -679,7 +684,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
   },
 

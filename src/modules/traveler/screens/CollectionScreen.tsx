@@ -28,6 +28,7 @@ import {
   Modal,
   RefreshControl,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
@@ -547,33 +548,38 @@ export function CollectionScreen() {
   // 錯誤狀態：API 載入失敗且沒有本地資料時顯示
   if (loadError && collection.length === 0) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', backgroundColor: MibuBrand.warmWhite }}>
-        <ErrorState
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+        <View style={{ flex: 1, justifyContent: 'center', backgroundColor: MibuBrand.warmWhite }}>
+          <ErrorState
           icon="cloud-offline-outline"
           message={language === 'zh-TW' ? '圖鑑載入失敗' : 'Failed to load collection'}
           detail={language === 'zh-TW' ? '請檢查網路連線後再試' : 'Please check your connection and try again'}
-          onRetry={loadCollections}
-        />
-      </View>
+            onRetry={loadCollections}
+          />
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (collection.length === 0) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', backgroundColor: MibuBrand.warmWhite }}>
-        <EmptyState
-          icon="albums-outline"
-          title={t.noCollection}
-          description={t.startToCollect}
-        />
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+        <View style={{ flex: 1, justifyContent: 'center', backgroundColor: MibuBrand.warmWhite }}>
+          <EmptyState
+            icon="albums-outline"
+            title={t.noCollection}
+            description={t.startToCollect}
+          />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
     <ScrollView
       style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}
-      contentContainerStyle={{ paddingHorizontal: Spacing.lg, paddingTop: 60, paddingBottom: 120 }}
+      contentContainerStyle={{ paddingHorizontal: Spacing.lg, paddingBottom: 120 }}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -1135,6 +1141,7 @@ export function CollectionScreen() {
         />
       )}
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

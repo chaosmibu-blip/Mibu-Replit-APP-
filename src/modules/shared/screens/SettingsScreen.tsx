@@ -26,7 +26,7 @@
  * - /login - 登出後
  */
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch, ActivityIndicator, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
@@ -521,6 +521,7 @@ export function SettingsScreen() {
   // ============================================================
 
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* ========== 頁面標題 ========== */}
       <View style={styles.header}>
@@ -843,6 +844,7 @@ export function SettingsScreen() {
         </View>
       </Modal>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -858,7 +860,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingTop: 60,
     paddingBottom: 100,
   },
 
