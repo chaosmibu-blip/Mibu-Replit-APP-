@@ -30,6 +30,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { crowdfundingApi } from '../../../services/crowdfundingApi';
 import { MibuBrand } from '../../../../constants/Colors';
+import { EmptyState } from '../../shared/components/ui/EmptyState';
 import { Campaign, MyContribution } from '../../../types/crowdfunding';
 
 // ============================================================
@@ -355,6 +356,15 @@ export function CrowdfundingScreen() {
             </View>
             {regions.filter(r => r.status === 'stay_tuned').map(renderRegionCard)}
           </View>
+        )}
+
+        {/* 空狀態：當沒有任何募資活動時顯示 */}
+        {campaigns.length === 0 && regions.filter(r => r.status === 'fundraising').length === 0 && (
+          <EmptyState
+            icon="megaphone-outline"
+            title={isZh ? '目前沒有進行中的募資活動' : 'No crowdfunding projects'}
+            description={isZh ? '敬請期待新的探索地區開放' : 'Stay tuned for new regions to explore'}
+          />
         )}
 
         {/* My Contributions Section */}

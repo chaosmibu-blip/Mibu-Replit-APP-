@@ -30,6 +30,8 @@ import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantPlace, PlaceSearchResult } from '../../../types';
 import { MibuBrand } from '../../../../constants/Colors';
+import { EmptyState } from '../../shared/components/ui/EmptyState';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============ 主元件 ============
 export function MerchantPlacesScreen() {
@@ -52,6 +54,8 @@ export function MerchantPlacesScreen() {
   const [claiming, setClaiming] = useState<string | null>(null);
   // showSearch: 是否顯示搜尋模式
   const [showSearch, setShowSearch] = useState(false);
+  // loadError: API 載入錯誤狀態
+  const [loadError, setLoadError] = useState(false);
 
   // isZh: 判斷是否為中文語系
   const isZh = state.language === 'zh-TW';
@@ -110,6 +114,7 @@ export function MerchantPlacesScreen() {
    */
   const loadPlaces = async () => {
     try {
+      setLoadError(false);
       setLoading(true);
       const token = await getToken();
       if (!token) return;
@@ -117,6 +122,7 @@ export function MerchantPlacesScreen() {
       setPlaces(data.places || []);
     } catch (error) {
       console.error('Failed to load places:', error);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -192,6 +198,20 @@ export function MerchantPlacesScreen() {
     );
   }
 
+  // ============ 錯誤狀態畫面 ============
+  if (loadError && places.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          icon="cloud-offline-outline"
+          message={isZh ? '店家資料載入失敗' : 'Failed to load places'}
+          detail={isZh ? '請檢查網路連線後再試' : 'Please check your connection and try again'}
+          onRetry={loadPlaces}
+        />
+      </View>
+    );
+  }
+
   // ============ 主要 JSX 渲染 ============
   return (
     <KeyboardAvoidingView
@@ -227,10 +247,10 @@ export function MerchantPlacesScreen() {
             {/* 店家列表或空狀態 */}
             {places.length === 0 ? (
               // 空狀態
-              <View style={styles.emptyCard}>
-                <Ionicons name="storefront-outline" size={48} color={MibuBrand.tan} />
-                <Text style={styles.emptyText}>{translations.noPlaces}</Text>
-              </View>
+              <EmptyState
+                icon="location-outline"
+                title={translations.noPlaces}
+              />
             ) : (
               // 店家卡片列表
               <View style={styles.placesList}>

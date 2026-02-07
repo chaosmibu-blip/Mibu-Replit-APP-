@@ -40,6 +40,7 @@ import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
+import { ErrorState } from '../components/ui/ErrorState';
 
 /** AsyncStorage key for avatar preference（與 ProfileScreen 共用）*/
 const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';

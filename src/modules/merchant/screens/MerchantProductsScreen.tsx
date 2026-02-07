@@ -32,6 +32,7 @@ import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantProduct } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { EmptyState } from '../../shared/components/ui/EmptyState';
 
 // ============ 主元件 ============
 export function MerchantProductsScreen() {
@@ -241,10 +242,10 @@ export function MerchantProductsScreen() {
         {/* ============ 產品列表 ============ */}
         {products.length === 0 ? (
           // 空狀態
-          <View style={styles.emptyCard}>
-            <Ionicons name="cube-outline" size={48} color={MibuBrand.tan} />
-            <Text style={styles.emptyText}>{translations.noProducts}</Text>
-          </View>
+          <EmptyState
+            icon="cube-outline"
+            title={translations.noProducts}
+          />
         ) : (
           // 產品卡片列表
           <View style={styles.productsList}>
@@ -474,21 +475,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: MibuBrand.brownDark,
     marginBottom: 16,
-  },
-  // 空狀態卡片
-  emptyCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 40,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
-  },
-  // 空狀態文字
-  emptyText: {
-    fontSize: 16,
-    color: MibuBrand.copper,
-    marginTop: 12,
   },
   // 產品列表
   productsList: {

@@ -38,6 +38,7 @@ import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============================================================
 // 型別定義
@@ -234,6 +235,8 @@ export function CollectionScreen() {
   const [hasLoadedFromApi, setHasLoadedFromApi] = useState(false);
   // #028 優惠更新通知
   const [promoUpdateIds, setPromoUpdateIds] = useState<Set<number>>(new Set());
+  // 錯誤狀態（API 載入失敗時顯示）
+  const [loadError, setLoadError] = useState(false);
 
   // 使用 API 資料或本地資料
   const collection = hasLoadedFromApi ? apiCollection : localCollection as GachaItemWithRead[];
@@ -263,6 +266,7 @@ export function CollectionScreen() {
   // 從後端載入圖鑑資料，使用 sort=unread 排序
   const loadCollections = useCallback(async () => {
     try {
+      setLoadError(false);
       const token = await getToken();
       if (!token) return;
 
@@ -296,6 +300,7 @@ export function CollectionScreen() {
       }
     } catch (error) {
       console.error('Failed to load collections:', error);
+      setLoadError(true);
     }
   }, [getToken]);
 
@@ -538,6 +543,20 @@ export function CollectionScreen() {
 
     return countryMap;
   }, [collection]);
+
+  // 錯誤狀態：API 載入失敗且沒有本地資料時顯示
+  if (loadError && collection.length === 0) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', backgroundColor: MibuBrand.warmWhite }}>
+        <ErrorState
+          icon="cloud-offline-outline"
+          message={language === 'zh-TW' ? '圖鑑載入失敗' : 'Failed to load collection'}
+          detail={language === 'zh-TW' ? '請檢查網路連線後再試' : 'Please check your connection and try again'}
+          onRetry={loadCollections}
+        />
+      </View>
+    );
+  }
 
   if (collection.length === 0) {
     return (
