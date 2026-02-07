@@ -33,6 +33,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { Announcement, AnnouncementType, CreateAnnouncementParams } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 
@@ -340,7 +341,7 @@ export function AdminAnnouncementsScreen() {
       {/* 日期範圍（如果有設定） */}
       {(item.startDate || item.endDate) && (
         <View style={styles.dateRow}>
-          <Ionicons name="calendar-outline" size={14} color="#64748b" />
+          <Ionicons name="calendar-outline" size={14} color={UIColors.textSecondary} />
           <Text style={styles.dateText}>
             {item.startDate?.split('T')[0] || '—'} ~ {item.endDate?.split('T')[0] || '—'}
           </Text>
@@ -363,7 +364,7 @@ export function AdminAnnouncementsScreen() {
             <Ionicons
               name={item.isActive ? 'eye-off-outline' : 'eye-outline'}
               size={18}
-              color="#64748b"
+              color={UIColors.textSecondary}
             />
           </TouchableOpacity>
 
@@ -413,7 +414,7 @@ export function AdminAnnouncementsScreen() {
               {editingAnnouncement ? translations.editTitle : translations.addTitle}
             </Text>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Ionicons name="close" size={24} color="#64748b" />
+              <Ionicons name="close" size={24} color={UIColors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -647,7 +648,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
 
   // 內容區樣式
@@ -718,7 +719,7 @@ const styles = StyleSheet.create({
     color: '#16a34a',
   },
   statusTextInactive: {
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
 
   // 卡片內容樣式
@@ -730,7 +731,7 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -744,7 +745,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
 
   // 卡片底部樣式
@@ -843,7 +844,7 @@ const styles = StyleSheet.create({
   typeButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   typeButtonTextActive: {
     color: '#ffffff',
@@ -880,7 +881,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   saveButton: {
     flex: 1,

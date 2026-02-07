@@ -19,7 +19,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantCoupon, MerchantCouponTier } from '../../../types';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 const TIERS: { id: MerchantCouponTier; label: string; prob: string; color: string }[] = [
   { id: 'SP', label: 'SP', prob: '0.1%', color: MibuBrand.tierSP },
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 16,
   },
   header: {
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   input: {
     backgroundColor: '#ffffff',
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
   tierLabel: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   tierProb: {
     fontSize: 11,

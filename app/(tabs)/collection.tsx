@@ -6,6 +6,6 @@
  *
  * 注意：此 Tab 在 _layout.tsx 中設為 href: null（隱藏）
  */
-import { CollectionScreen } from '../../src/screens/CollectionScreen';
+import { CollectionScreen } from '../../src/modules/traveler/screens/CollectionScreen';
 
 export default CollectionScreen;

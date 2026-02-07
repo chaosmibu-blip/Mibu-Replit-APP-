@@ -36,6 +36,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { AdminUser, PlaceDraft, GlobalExclusion } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 型別定義 ============
 
@@ -735,7 +736,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   activeTabText: {
     color: '#ffffff',
@@ -763,7 +764,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 16,
   },
 
@@ -783,7 +784,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 12,
   },
 
@@ -920,7 +921,7 @@ const styles = StyleSheet.create({
   },
   draftLocation: {
     fontSize: 13,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 8,
   },
   categoryBadge: {
@@ -962,7 +963,7 @@ const styles = StyleSheet.create({
   },
   exclusionLocation: {
     fontSize: 13,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 4,
   },
   exclusionScore: {

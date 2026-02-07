@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
+import { UIColors } from '../../../../constants/Colors';
 
 const CATEGORIES = [
   { id: 'food', label: '美食', labelEn: 'Food', icon: 'restaurant' },
@@ -158,7 +159,7 @@ export function NewPlaceScreen() {
                   <Ionicons
                     name={cat.icon as any}
                     size={20}
-                    color={formData.category === cat.id ? '#6366f1' : '#64748b'}
+                    color={formData.category === cat.id ? '#6366f1' : UIColors.textSecondary}
                   />
                   <Text
                     style={[
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 2,
   },
   form: {
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   categoryTextActive: {
     color: '#6366f1',

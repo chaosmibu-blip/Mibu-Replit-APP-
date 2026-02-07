@@ -4,7 +4,7 @@
  * 對應 Screen: AdminAnnouncementsScreen
  * 功能：管理系統公告，包含新增、編輯、刪除公告
  */
-import { AdminAnnouncementsScreen } from '@/src/screens/AdminAnnouncementsScreen';
+import { AdminAnnouncementsScreen } from '@/src/modules/admin/screens/AdminAnnouncementsScreen';
 
 export default function AdminAnnouncementsPage() {
   return <AdminAnnouncementsScreen />;

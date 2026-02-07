@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CouponTier } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============================================================
 // Props 介面定義
@@ -289,7 +290,7 @@ const createStyles = (tierStyle: typeof TIER_STYLES.SP, isCompact: boolean) =>
     },
     couponContent: {
       fontSize: 13,
-      color: '#64748b',
+      color: UIColors.textSecondary,
       lineHeight: 18,
       marginBottom: 8,
     },
@@ -305,7 +306,7 @@ const createStyles = (tierStyle: typeof TIER_STYLES.SP, isCompact: boolean) =>
     },
     metaText: {
       fontSize: 11,
-      color: '#64748b',
+      color: UIColors.textSecondary,
       maxWidth: 100,
     },
     arrowSection: {

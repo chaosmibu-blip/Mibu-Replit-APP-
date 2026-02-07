@@ -13,6 +13,7 @@ import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-nativ
 import { router, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../src/context/AppContext';
 import { API_BASE_URL } from '../../src/constants/translations';
+import { UIColors } from '../../constants/Colors';
 
 export default function AuthCallback() {
   const { setUser } = useApp();
@@ -107,6 +108,6 @@ const styles = StyleSheet.create({
   text: {
     marginTop: 16,
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
 });

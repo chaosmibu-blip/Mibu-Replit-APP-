@@ -4,7 +4,7 @@
  * 對應 Screen: SpecialistHistoryScreen
  * 功能：查看專員過往的服務紀錄
  */
-import { SpecialistHistoryScreen } from '../../src/screens/SpecialistHistoryScreen';
+import { SpecialistHistoryScreen } from '../../src/modules/specialist/screens/SpecialistHistoryScreen';
 
 export default function SpecialistHistoryPage() {
   return <SpecialistHistoryScreen />;

@@ -6,6 +6,6 @@
  *
  * 以 modal 方式呈現
  */
-import { ItemsScreen } from '../../../src/screens/ItemsScreen';
+import { ItemsScreen } from '../../../src/modules/traveler/screens/ItemsScreen';
 
 export default ItemsScreen;

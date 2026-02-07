@@ -23,6 +23,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { ServiceRelation } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 元件主體 ============
 export function SpecialistHistoryScreen() {
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 16,
   },
   // 頁面標題樣式
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
   filterText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   filterTextActive: {
     color: '#ffffff',
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 12,
   },
   // 服務列表樣式
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
   },
   serviceDate: {
     fontSize: 13,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   // 狀態標籤樣式
   statusBadge: {

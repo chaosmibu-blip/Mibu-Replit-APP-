@@ -31,6 +31,7 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../../constants/translations';
 import { useApp } from '../../../context/AppContext';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
 
@@ -252,7 +253,7 @@ export function LocationScreen() {
       {/* ===== 位置分享開關 ===== */}
       <View style={styles.sharingToggle}>
         <View style={styles.sharingInfo}>
-          <Ionicons name="people" size={20} color="#64748b" />
+          <Ionicons name="people" size={20} color={UIColors.textSecondary} />
           <Text style={styles.sharingText}>{t.shareLocationToPlanner}</Text>
         </View>
         <Switch
@@ -300,7 +301,7 @@ export function LocationScreen() {
 
         {/* ===== Web 版提示訊息 ===== */}
         <View style={styles.webNotice}>
-          <Ionicons name="information-circle-outline" size={20} color="#64748b" />
+          <Ionicons name="information-circle-outline" size={20} color={UIColors.textSecondary} />
           <Text style={styles.webNoticeText}>
             Map view is only available on mobile devices
           </Text>
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   // 錯誤狀態
   errorContainer: {
@@ -369,7 +370,7 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     textAlign: 'center',
   },
   retryButton: {
@@ -418,7 +419,7 @@ const styles = StyleSheet.create({
   },
   locationCoords: {
     fontSize: 13,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontFamily: 'monospace',
   },
   // 策畫師區塊
@@ -428,7 +429,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -465,6 +466,6 @@ const styles = StyleSheet.create({
   },
   webNoticeText: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
 });

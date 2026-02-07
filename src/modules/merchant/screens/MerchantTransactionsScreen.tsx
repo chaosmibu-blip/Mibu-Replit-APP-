@@ -24,6 +24,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantTransaction } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function MerchantTransactionsScreen() {
@@ -132,7 +133,7 @@ export function MerchantTransactionsScreen() {
       case 'purchase': return '#22c55e'; // 綠色：購買
       case 'usage': return '#ef4444';    // 紅色：使用
       case 'refund': return '#f59e0b';   // 橘色：退款
-      default: return '#64748b';
+      default: return UIColors.textSecondary;
     }
   };
 
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
   // 載入中文字
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 16,
   },
   // 空狀態卡片
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   // 空狀態文字
   emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 12,
   },
   // 交易列表
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
   // 交易日期
   transactionDate: {
     fontSize: 13,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   // 交易說明
   transactionDesc: {

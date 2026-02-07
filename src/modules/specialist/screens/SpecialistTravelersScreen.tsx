@@ -25,6 +25,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { ServiceRelation } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 型別定義 ============
 
@@ -255,7 +256,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 16,
   },
   // 空狀態樣式
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 12,
   },
   // 旅客列表樣式
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
   },
   travelerDate: {
     fontSize: 13,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 6,
   },
   // 狀態標籤樣式

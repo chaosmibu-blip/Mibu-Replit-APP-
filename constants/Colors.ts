@@ -368,6 +368,52 @@ export const deriveMerchantScheme = (hex: string): MerchantColorScheme => {
   };
 };
 
+/**
+ * 角色色彩系統
+ * 用於登入頁面、角色標籤等需要區分角色的 UI
+ */
+export const RoleColors = {
+  /** 商家 - 綠色系 */
+  merchant: {
+    main: '#10b981',
+    light: '#d1fae5',
+    dark: '#059669',
+  },
+  /** 專員 - 紫色系 */
+  specialist: {
+    main: '#a855f7',
+    light: '#f3e8ff',
+    dark: '#7c3aed',
+  },
+  /** 管理員 - 藍色系 */
+  admin: {
+    main: '#3b82f6',
+    light: '#dbeafe',
+    dark: '#2563eb',
+  },
+};
+
+/**
+ * 通用 UI Token
+ * 高頻使用的 UI 色彩，避免硬編碼
+ */
+export const UIColors = {
+  /** 次要文字色（slate gray） */
+  textSecondary: '#64748b',
+  /** 遮罩層 - 淺 */
+  overlayLight: 'rgba(0,0,0,0.4)',
+  /** 遮罩層 - 中 */
+  overlayMedium: 'rgba(0,0,0,0.5)',
+  /** 遮罩層 - 深 */
+  overlayDark: 'rgba(0,0,0,0.7)',
+  /** 純白 */
+  white: '#ffffff',
+  /** 純黑 */
+  black: '#000000',
+  /** Tab Bar iOS 背景（暖白半透明） */
+  tabBarBg: 'rgba(255, 253, 249, 0.98)',
+};
+
 /** 淺色模式強調色（棕色） */
 const tintColorLight = MibuBrand.brown;
 /** 深色模式強調色（奶油色） */

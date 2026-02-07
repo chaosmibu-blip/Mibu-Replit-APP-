@@ -25,6 +25,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function MerchantVerifyScreen() {
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 8,
   },
   // 輸入框
@@ -334,7 +335,7 @@ const styles = StyleSheet.create({
   // 結果訊息
   resultMessage: {
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
   },

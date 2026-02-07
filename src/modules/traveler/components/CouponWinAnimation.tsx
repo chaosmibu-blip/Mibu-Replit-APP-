@@ -32,6 +32,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { CouponTier } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============================================================
 // 常數定義
@@ -513,7 +514,7 @@ const styles = StyleSheet.create({
   },
   placeName: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     textAlign: 'center',
     marginBottom: 16,
   },

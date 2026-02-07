@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantApplyParams } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 interface MerchantRegistrationFormProps {
   onSuccess: () => void;
@@ -102,7 +103,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
     >
       <View style={styles.header}>
         <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
-          <Ionicons name="close" size={24} color="#64748b" />
+          <Ionicons name="close" size={24} color={UIColors.textSecondary} />
         </TouchableOpacity>
         <View style={styles.headerIcon}>
           <Ionicons name="storefront" size={32} color="#6366f1" />
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     textAlign: 'center',
     paddingHorizontal: 32,
   },
@@ -329,7 +330,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   categoryTextActive: {
     color: '#6366f1',
@@ -358,7 +359,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   submitButton: {
     flex: 2,

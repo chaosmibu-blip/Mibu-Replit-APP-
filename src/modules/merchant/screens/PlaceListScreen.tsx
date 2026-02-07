@@ -26,6 +26,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantPlace } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function PlaceListScreen() {
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
   // 載入中文字
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 16,
   },
   // 頂部標題區
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   // 副標題
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 2,
   },
   // 操作按鈕區
@@ -331,13 +332,13 @@ const styles = StyleSheet.create({
   // 空狀態副標題
   emptySubtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     textAlign: 'center',
   },
   // 店家數量文字
   countText: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 12,
   },
   // 店家列表
@@ -378,7 +379,7 @@ const styles = StyleSheet.create({
   // 店家位置
   placeLocation: {
     fontSize: 13,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   // 右側區域
   placeRight: {

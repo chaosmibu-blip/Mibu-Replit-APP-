@@ -18,7 +18,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantCoupon, MerchantCouponTier } from '../../../types';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 const TIER_COLORS: Record<MerchantCouponTier, { bg: string; text: string; border: string }> = {
   SP: { bg: MibuBrand.tierSPBg, text: MibuBrand.tierSP, border: MibuBrand.tierSP },
@@ -127,7 +127,7 @@ export function CouponListScreen() {
       return { label: t.expired, color: '#ef4444' };
     }
     if (!coupon.isActive) {
-      return { label: t.inactive, color: '#64748b' };
+      return { label: t.inactive, color: UIColors.textSecondary };
     }
     return { label: t.active, color: '#16a34a' };
   };
@@ -208,14 +208,14 @@ export function CouponListScreen() {
                   </Text>
                   <View style={styles.couponMeta}>
                     <View style={styles.metaItem}>
-                      <Ionicons name="cube-outline" size={14} color="#64748b" />
+                      <Ionicons name="cube-outline" size={14} color={UIColors.textSecondary} />
                       <Text style={styles.metaText}>
                         {t.remaining}: {coupon.remainingQuantity}/{coupon.quantity}
                       </Text>
                     </View>
                     {coupon.validUntil && (
                       <View style={styles.metaItem}>
-                        <Ionicons name="calendar-outline" size={14} color="#64748b" />
+                        <Ionicons name="calendar-outline" size={14} color={UIColors.textSecondary} />
                         <Text style={styles.metaText}>
                           {coupon.validUntil.split('T')[0]}
                         </Text>

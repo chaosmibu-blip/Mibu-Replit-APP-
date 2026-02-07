@@ -29,6 +29,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { merchantApi } from '../../../services/merchantApi';
 import { MerchantPlace, UpdateMerchantPlaceParams, MerchantPlaceOpeningHours } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function PlaceEditScreen() {
@@ -424,7 +425,7 @@ const styles = StyleSheet.create({
   // 載入中文字
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 16,
   },
   // 頂部標題區
@@ -473,7 +474,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 12,
   },
   // 唯讀卡片
@@ -496,7 +497,7 @@ const styles = StyleSheet.create({
   // 唯讀標籤
   readOnlyLabel: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   // 唯讀數值
   readOnlyValue: {

@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { PlaceSearchResult } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 export function ClaimPlaceScreen() {
   const { state, getToken } = useApp();
@@ -176,7 +177,7 @@ export function ClaimPlaceScreen() {
                 </View>
                 {place.isClaimed ? (
                   <View style={styles.claimedBadge}>
-                    <Ionicons name="checkmark-circle" size={16} color="#64748b" />
+                    <Ionicons name="checkmark-circle" size={16} color={UIColors.textSecondary} />
                     <Text style={styles.claimedText}>{t.claimed}</Text>
                   </View>
                 ) : (
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 2,
   },
   searchBox: {
@@ -286,7 +287,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 16,
     textAlign: 'center',
   },
@@ -343,7 +344,7 @@ const styles = StyleSheet.create({
   },
   placeLocation: {
     fontSize: 13,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   claimedBadge: {
     flexDirection: 'row',
@@ -357,7 +358,7 @@ const styles = StyleSheet.create({
   claimedText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   claimButton: {
     paddingHorizontal: 20,

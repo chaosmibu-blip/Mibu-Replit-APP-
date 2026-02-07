@@ -31,7 +31,7 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../src/context/AppContext';
 import { apiService } from '../src/services/api';
-import { MibuBrand } from '../constants/Colors';
+import { MibuBrand, UIColors } from '../constants/Colors';
 import { MerchantApplyParams } from '../src/types';
 
 const BUSINESS_CATEGORIES = [
@@ -215,7 +215,7 @@ export default function MerchantRegisterScreen() {
             <Ionicons 
               name={showCategoryPicker ? 'chevron-up' : 'chevron-down'} 
               size={20} 
-              color="#64748b" 
+              color={UIColors.textSecondary} 
             />
           </TouchableOpacity>
           {showCategoryPicker && (
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   submitButton: {
     flex: 2,

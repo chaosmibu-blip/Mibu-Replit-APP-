@@ -32,6 +32,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { GlobalExclusion } from '../../../types';
 import { apiService } from '../../../services/api';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 
@@ -422,7 +423,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 4,
   },
 
@@ -482,7 +483,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   addButton: {
     flex: 1,
@@ -508,7 +509,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 12,
   },
 
@@ -520,7 +521,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginTop: 16,
   },
 
@@ -555,7 +556,7 @@ const styles = StyleSheet.create({
   },
   exclusionLocation: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 4,
   },
   exclusionDate: {
