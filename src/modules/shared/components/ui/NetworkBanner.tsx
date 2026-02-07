@@ -12,9 +12,9 @@
  * <NetworkBanner offlineMessage="目前離線中，部分功能無法使用" />
  */
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
+import { Text, StyleSheet, Animated, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MibuBrand, SemanticColors } from '../../../../../constants/Colors';
+import { SemanticColors } from '../../../../../constants/Colors';
 import { Spacing, FontSize } from '@/src/theme/designTokens';
 
 // React Native 的 NetInfo 需要 @react-native-community/netinfo
@@ -40,7 +40,10 @@ export function NetworkBanner({
 }: NetworkBannerProps) {
   const [isConnected, setIsConnected] = useState(true);
   const [showBanner, setShowBanner] = useState(false);
-  const [wasDisconnected, setWasDisconnected] = useState(false);
+  // 用 useRef 追蹤是否曾斷線（同步讀取，避免閉包過時 — 教訓 #006）
+  const wasDisconnectedRef = useRef(false);
+  // 追蹤動畫是否已完成隱藏（避免存取 Animated 私有 _value）
+  const animHiddenRef = useRef(true);
   const translateY = useRef(new Animated.Value(-60)).current;
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -49,7 +52,7 @@ export function NetworkBanner({
     if (Platform.OS === 'web') {
       const handleOnline = () => {
         setIsConnected(true);
-        if (wasDisconnected) {
+        if (wasDisconnectedRef.current) {
           // 顯示「已恢復」後自動隱藏
           setShowBanner(true);
           hideTimer.current = setTimeout(() => setShowBanner(false), 3000);
@@ -57,7 +60,7 @@ export function NetworkBanner({
       };
       const handleOffline = () => {
         setIsConnected(false);
-        setWasDisconnected(true);
+        wasDisconnectedRef.current = true;
         setShowBanner(true);
       };
 
@@ -84,9 +87,9 @@ export function NetworkBanner({
         const connected = state.isConnected ?? true;
         if (!connected) {
           setIsConnected(false);
-          setWasDisconnected(true);
+          wasDisconnectedRef.current = true;
           setShowBanner(true);
-        } else if (wasDisconnected) {
+        } else if (wasDisconnectedRef.current) {
           setIsConnected(true);
           setShowBanner(true);
           hideTimer.current = setTimeout(() => setShowBanner(false), 3000);
@@ -97,27 +100,38 @@ export function NetworkBanner({
         if (hideTimer.current) clearTimeout(hideTimer.current);
       };
     }
-  }, [wasDisconnected]);
+  }, []);
 
   // 動畫控制
   useEffect(() => {
+    animHiddenRef.current = false;
     Animated.timing(translateY, {
       toValue: showBanner ? 0 : -60,
       duration: 300,
       useNativeDriver: true,
-    }).start();
+    }).start(() => {
+      // 動畫完成後更新隱藏狀態
+      if (!showBanner) {
+        animHiddenRef.current = true;
+      }
+    });
   }, [showBanner, translateY]);
 
-  if (!showBanner && translateY._value === -60) {
+  // 完全隱藏時不渲染（使用 ref 而非私有 _value）
+  if (!showBanner && animHiddenRef.current) {
     return null;
   }
 
   const bannerColor = isConnected
     ? SemanticColors.successMain
     : SemanticColors.errorMain;
-  const bannerBg = isConnected ? '#DCFCE7' : '#FEE2E2';
+  const bannerBg = isConnected
+    ? SemanticColors.successLight
+    : SemanticColors.errorLight;
   const message = isConnected ? onlineMessage : offlineMessage;
-  const iconName = isConnected ? 'wifi' : 'cloud-offline-outline';
+  const iconName: keyof typeof Ionicons.glyphMap = isConnected
+    ? 'wifi'
+    : 'cloud-offline-outline';
 
   return (
     <Animated.View
@@ -126,7 +140,7 @@ export function NetworkBanner({
         { backgroundColor: bannerBg, transform: [{ translateY }] },
       ]}
     >
-      <Ionicons name={iconName as any} size={16} color={bannerColor} />
+      <Ionicons name={iconName} size={16} color={bannerColor} />
       <Text style={[styles.text, { color: bannerColor }]}>{message}</Text>
     </Animated.View>
   );

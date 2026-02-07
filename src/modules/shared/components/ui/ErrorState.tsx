@@ -85,8 +85,10 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: Spacing.lg,
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: Spacing.sm,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.xl,
