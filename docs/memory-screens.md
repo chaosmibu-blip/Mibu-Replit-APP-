@@ -140,7 +140,7 @@ app/
 | `GachaModuleScreen.tsx` | - | 扭蛋模組入口 |
 | `ItemsScreen.tsx` | `/gacha/items` | 扭蛋結果 |
 | `ItemBoxScreen.tsx` | - | 物品盒 |
-| `CollectionScreen.tsx` | `/collection` | 收藏庫/圖鑑 |
+| `CollectionScreen.tsx` | `/collection` | 收藏庫/圖鑑（麵包屑導航 + 搜尋 + 網格卡片） |
 | `EconomyScreen.tsx` | `/economy` | 等級、經驗、成就 |
 
 ### 社群功能模組 (Phase 2-4)
