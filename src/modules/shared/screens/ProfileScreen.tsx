@@ -355,7 +355,7 @@ export function ProfileScreen() {
         setEmergencyContactPhone(data.emergencyContactPhone || '');
         setEmergencyContactRelation(data.emergencyContactRelation || '');
 
-        // 同步更新全域用戶狀態（修復 #017 用戶名消失問題）
+        // 同步更新全域用戶狀態（#017 修復用戶名消失、#040 merge 完整欄位）
         if (state.user) {
           const updatedUser = {
             ...state.user,
@@ -364,8 +364,15 @@ export function ProfileScreen() {
             name: data.firstName && data.lastName
               ? `${data.firstName} ${data.lastName}`
               : data.firstName || data.lastName || state.user.name,
+            email: data.email || state.user.email,
+            // 直接使用後端回傳值（UserProfile 必含此欄位，null 代表用戶刪除頭像）
+            profileImageUrl: data.profileImageUrl,
+            role: data.role || state.user.role,
+            // #040: merge 後端補齊的欄位，防止不完整回應覆蓋本地狀態
+            ...(data.isSuperAdmin !== undefined && { isSuperAdmin: data.isSuperAdmin }),
+            ...(data.roles && { accessibleRoles: data.roles }),
           };
-          setUser(updatedUser);
+          setUser(updatedUser, response.token || undefined);
         }
       }
 

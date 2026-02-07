@@ -62,6 +62,7 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 | **偵察兵** | 搜尋現有程式碼、確認有沒有可複用的、確認影響範圍 | 任務開始前必派 |
 | **開發者** | 實際撰寫程式碼、執行指令 | 設計確認後進入實作 |
 | **測試員** | 執行測試、驗證功能正確性 | 實作完成後 |
+| **除錯員** | 專門處理既有錯誤、技術債、審查員回報的問題 | 發現 bug 或技術債時 |
 | **文件員** | 更新 memory 文件、CLAUDE.md、程式碼註解 | 任務完成收尾時 |
 
 ### 指揮官工作流程
@@ -84,6 +85,16 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 - 有依賴關係的任務 → 依序執行
 - 子代理人回報後 → 指揮官決定下一步
 - 小任務可跳過部分角色（但偵察兵和審查員不可跳過）
+
+### 請用戶協助原則（不可違反）
+
+當遇到以下情況，**立即告知用戶**，不要硬幹：
+- 需要在手機/模擬器上實際測試 UI 效果
+- 需要操作 Expo/EAS 控制台
+- 需要第三方服務的帳號密碼或設定
+- 需要確認設計稿或產品決策
+- 網路請求被阻擋、環境設定問題
+- 任何用戶 5 分鐘能搞定但我要花 30 分鐘繞路的事
 
 ---
 
@@ -427,6 +438,18 @@ fontSize: FontSize.md       // 不要 14
 ```
 後端發任務 → docs/sync-app.md
 我回報問題 → docs/sync-backend.md
+```
+
+### 查新任務工作流程（任務完成後必做）
+
+```
+1. 從後端 repo 拉取 sync-app.md
+   → https://raw.githubusercontent.com/chaosmibu-blip/MIBU_REPLIT/main/docs/sync-app.md
+2. 比對 sync-backend.md，找出「後端有派但我們還沒做」的任務
+3. 同時讀 API 契約確認技術細節
+   → https://raw.githubusercontent.com/chaosmibu-blip/MIBU_REPLIT/main/docs/contracts/APP.md
+4. 列出新任務清單，向用戶確認後執行
+5. 完成後更新 sync-backend.md 回報狀態
 ```
 
 ### 回報格式

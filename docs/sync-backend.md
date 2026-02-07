@@ -6,6 +6,43 @@
 
 ## 最新回報
 
+### 2026-02-07 #041：超管無限額度支援
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #041 |
+| 狀態 | ✅ 完成 |
+
+**實作內容**
+- [x] EconomyScreen：`dailyPullLimit === -1` 時顯示「∞」和「無限抽」
+- [x] EconomyScreen：`inventorySlots >= 999` 時顯示「∞」和「背包無限」
+- [x] 所有 4 個顯示位置統一處理（權益標籤、底部權益行、統計卡片、權益 Tab 詳情）
+- [x] `||` 改 `??` 避免 `0` 值被錯誤 fallback
+
+**注意**：GachaScreen 的 `checkDailyLimit()` 已在先前版本支援 `isSuperAdmin` 無限抽卡，無需額外修改。
+
+---
+
+### 2026-02-07 #040-B：PATCH profile 回應欄位補齊
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #040 |
+| 狀態 | ✅ 完成 |
+
+**型別更新** (`src/types/auth.ts`)
+- [x] `UserProfile` 新增 `roles?: string[]` — 角色陣列
+- [x] `UserProfile` 新增 `isSuperAdmin?: boolean` — 超管標記
+- [x] `UserProfile` 新增 `createdAt?: string` — 帳號建立時間
+- [x] `ProfileResponse` 新增 `token?: string` — 更新 name/email 時回傳新 token
+
+**ProfileScreen 更新** (`ProfileScreen.tsx`)
+- [x] `handleSave` merge 完整欄位：email、profileImageUrl、role、isSuperAdmin、roles
+- [x] 回傳新 token 時正確儲存（`setUser(updatedUser, response.token)`）
+- [x] 修正 `profileImageUrl` 使用直接賦值（允許後端回傳 null 清除頭像）
+
+---
+
 ### 2026-02-05 #040：AI 對話體驗優化
 
 | 項目 | 內容 |
@@ -603,6 +640,8 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 041 | 02-07 | 超管無限額度支援（dailyPullLimit=-1、inventorySlots=999） | ✅ |
+| 040-B | 02-07 | PATCH profile 回應欄位補齊（isSuperAdmin、roles、createdAt、token） | ✅ |
 | 040 | 02-05 | AI 對話體驗優化（打字機效果 + V2.3 API） | ✅ |
 | 039 | 02-05 | 經濟系統重構（等級 → 金幣） | ✅ |
 | 038 | 02-02 | 頭像上傳功能 | ✅ |
