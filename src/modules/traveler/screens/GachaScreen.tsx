@@ -972,6 +972,7 @@ export function GachaScreen() {
               {/* 說明按鈕（點擊顯示 Tooltip） */}
               <TouchableOpacity
                 onPress={showGachaInfoTooltip}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 style={{
                   marginLeft: 6,
                   width: 20,
@@ -1201,6 +1202,7 @@ export function GachaScreen() {
               </Text>
               <TouchableOpacity
                 onPress={() => setPoolModalVisible(false)}
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                 style={{
                   width: 32,
                   height: 32,
@@ -1275,13 +1277,13 @@ export function GachaScreen() {
                           </View>
                         </View>
 
-                        <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.dark, marginBottom: 4 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.dark, marginBottom: 4 }} numberOfLines={2} ellipsizeMode="tail">
                           {coupon.title}
                         </Text>
 
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                           <Ionicons name="location-outline" size={12} color={MibuBrand.tan} />
-                          <Text style={{ fontSize: 11, color: MibuBrand.tan, marginLeft: 4 }}>
+                          <Text style={{ fontSize: 11, color: MibuBrand.tan, marginLeft: 4, flexShrink: 1 }} numberOfLines={1} ellipsizeMode="tail">
                             {coupon.placeName}
                           </Text>
                         </View>
@@ -1331,14 +1333,14 @@ export function GachaScreen() {
                           )}
                         </View>
 
-                        <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.dark, marginBottom: 2 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: MibuBrand.dark, marginBottom: 2 }} numberOfLines={2} ellipsizeMode="tail">
                           {coupon.title}
                         </Text>
 
                         {coupon.merchantName && (
                           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Ionicons name="storefront-outline" size={12} color={MibuBrand.tan} />
-                            <Text style={{ fontSize: 11, color: MibuBrand.tan, marginLeft: 4 }}>
+                            <Text style={{ fontSize: 11, color: MibuBrand.tan, marginLeft: 4, flexShrink: 1 }} numberOfLines={1} ellipsizeMode="tail">
                               {coupon.merchantName}
                             </Text>
                           </View>

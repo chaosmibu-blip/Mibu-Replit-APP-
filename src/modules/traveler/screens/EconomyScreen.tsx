@@ -25,13 +25,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Platform,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { economyApi } from '../../../services/economyApi';
 import { CoinReward } from '../../shared/components/ui/CoinReward';
+import { SectionHeader } from '../../shared/components/ui/SectionHeader';
 import { MibuBrand } from '../../../../constants/Colors';
 import { UserCoinsResponse, UserPerksResponse, Achievement } from '../../../types/economy';
 
@@ -255,10 +256,10 @@ export function EconomyScreen() {
             </View>
 
             {/* 新手任務區塊 */}
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{isZh ? '新手任務' : 'Beginner Tasks'}</Text>
-              <Text style={styles.sectionCount}>{completedOnetimeCount}/{totalOnetimeCount} {isZh ? '完成' : 'done'}</Text>
-            </View>
+            <SectionHeader
+              title={isZh ? '新手任務' : 'Beginner Tasks'}
+              subtitle={`${completedOnetimeCount}/${totalOnetimeCount} ${isZh ? '完成' : 'done'}`}
+            />
             <View style={styles.taskGroup}>
               {onetimeTasks.map((task, index) => (
                 <React.Fragment key={task.id}>
@@ -273,10 +274,10 @@ export function EconomyScreen() {
         // ===== 一次性任務 Tab =====
         return (
           <>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{isZh ? '新手任務' : 'Beginner Tasks'}</Text>
-              <Text style={styles.sectionCount}>{completedOnetimeCount}/{totalOnetimeCount} {isZh ? '完成' : 'done'}</Text>
-            </View>
+            <SectionHeader
+              title={isZh ? '新手任務' : 'Beginner Tasks'}
+              subtitle={`${completedOnetimeCount}/${totalOnetimeCount} ${isZh ? '完成' : 'done'}`}
+            />
             <View style={styles.taskGroup}>
               {onetimeTasks.map((task, index) => (
                 <React.Fragment key={task.id}>
@@ -291,10 +292,10 @@ export function EconomyScreen() {
         // ===== 累計成就 Tab（顯示進度條） =====
         return (
           <>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{isZh ? '成就進度' : 'Achievement Progress'}</Text>
-              <Text style={styles.sectionCount}>{unlockedCount}/{achievements.length} {isZh ? '解鎖' : 'unlocked'}</Text>
-            </View>
+            <SectionHeader
+              title={isZh ? '成就進度' : 'Achievement Progress'}
+              subtitle={`${unlockedCount}/${achievements.length} ${isZh ? '解鎖' : 'unlocked'}`}
+            />
             {achievements.length > 0 ? (
               <View style={styles.taskGroup}>
                 {achievements.map((achievement, index) => {
@@ -362,9 +363,7 @@ export function EconomyScreen() {
         // ===== 權益 Tab（#039 重構） =====
         return (
           <>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{isZh ? '我的權益' : 'My Perks'}</Text>
-            </View>
+            <SectionHeader title={isZh ? '我的權益' : 'My Perks'} />
             <View style={styles.taskGroup}>
               {/* 每日扭蛋上限 */}
               <View style={styles.perkDetailItem}>
@@ -426,8 +425,8 @@ export function EconomyScreen() {
             </View>
 
             {/* 金幣說明 */}
-            <View style={[styles.sectionHeader, { marginTop: 16 }]}>
-              <Text style={styles.sectionTitle}>{isZh ? '金幣說明' : 'About Coins'}</Text>
+            <View style={{ marginTop: 16 }}>
+              <SectionHeader title={isZh ? '金幣說明' : 'About Coins'} />
             </View>
             <View style={styles.taskGroup}>
               <View style={styles.coinInfoItem}>
@@ -450,9 +449,11 @@ export function EconomyScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={MibuBrand.brown} />
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={MibuBrand.brown} />
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -461,8 +462,9 @@ export function EconomyScreen() {
   // ============================================================
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+      <View style={styles.container}>
+        <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
@@ -480,6 +482,7 @@ export function EconomyScreen() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor={MibuBrand.brown}
+            colors={[MibuBrand.brown]}
           />
         }
         showsVerticalScrollIndicator={false}
@@ -518,7 +521,8 @@ export function EconomyScreen() {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -542,7 +546,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
     backgroundColor: MibuBrand.warmWhite,
@@ -795,21 +798,6 @@ const styles = StyleSheet.create({
 
   // Tab Content
   tabContent: {},
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
-  sectionCount: {
-    fontSize: 14,
-    color: MibuBrand.copper,
-  },
 
   // Task Group (grouped card container)
   taskGroup: {
