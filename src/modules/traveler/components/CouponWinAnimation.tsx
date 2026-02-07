@@ -379,7 +379,7 @@ export default function CouponWinAnimation({
         >
           {/* 稀有度 badge */}
           <View style={[styles.tierBadge, { backgroundColor: config.glowColor }]}>
-            <Text style={[styles.tierText, { color: '#ffffff' }]}>{tier}</Text>
+            <Text style={[styles.tierText, { color: UIColors.white }]}>{tier}</Text>
           </View>
 
           {/* 稀有度圖示 */}
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   closeButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     paddingHorizontal: 40,
     paddingVertical: 14,
     borderRadius: 25,

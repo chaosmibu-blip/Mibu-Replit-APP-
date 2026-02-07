@@ -61,7 +61,7 @@ import { useApp } from '../../../context/AppContext';
 import { itineraryApi } from '../../../services/itineraryApi';
 import { locationApi } from '../../../services/locationApi';
 import { preloadService } from '../../../services/preloadService';
-import { MibuBrand, getCategoryToken } from '../../../../constants/Colors';
+import { MibuBrand, getCategoryToken, UIColors } from '../../../../constants/Colors';
 import type { Country, Region } from '../../../types';
 import { Spacing, Radius, FontSize, Shadow } from '../../../theme/designTokens';
 import { Select } from '../../shared/components/ui/Select';
@@ -1384,11 +1384,30 @@ export function ItineraryScreenV2() {
   // 注意：Modal 在下方的 renderCreateModal 統一渲染，這裡只渲染空狀態 UI
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="map-outline" size={64} color={MibuBrand.tanLight} />
+      {/* 主視覺區 */}
+      <View style={styles.emptyIconCircle}>
+        <Ionicons name="map-outline" size={48} color={MibuBrand.brown} />
+      </View>
       <Text style={styles.emptyTitle}>{isZh ? '還沒有行程' : 'No itineraries yet'}</Text>
       <Text style={styles.emptySubtitle}>
-        {isZh ? '建立你的第一個行程吧！' : 'Create your first itinerary!'}
+        {isZh ? '建立行程，讓 AI 幫你規劃完美旅途' : 'Create a trip and let AI plan for you'}
       </Text>
+
+      {/* 功能提示卡片 */}
+      <View style={styles.emptyTipsCard}>
+        {[
+          { icon: 'sparkles' as const, text: isZh ? 'AI 智慧推薦景點' : 'AI recommends spots' },
+          { icon: 'calendar-outline' as const, text: isZh ? '自動安排每日行程' : 'Auto daily planning' },
+          { icon: 'navigate-outline' as const, text: isZh ? '即時導航帶你走' : 'Real-time navigation' },
+        ].map((tip, i) => (
+          <View key={i} style={styles.emptyTipRow}>
+            <Ionicons name={tip.icon} size={18} color={MibuBrand.copper} />
+            <Text style={styles.emptyTipText}>{tip.text}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* 建立按鈕 */}
       <TouchableOpacity
         style={styles.emptyCreateButton}
         onPress={openCreateModal}
@@ -1396,7 +1415,7 @@ export function ItineraryScreenV2() {
       >
         <Ionicons name="add-circle-outline" size={24} color={MibuBrand.warmWhite} />
         <Text style={styles.emptyCreateButtonText}>
-          {isZh ? '建立行程' : 'Create Itinerary'}
+          {isZh ? '建立第一個行程' : 'Create First Itinerary'}
         </Text>
       </TouchableOpacity>
     </View>
@@ -2361,11 +2380,19 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.creamLight,
     padding: Spacing.xl,
   },
+  emptyIconCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: MibuBrand.cream,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.lg,
+  },
   emptyTitle: {
-    fontSize: FontSize.xl,
+    fontSize: FontSize.xxl,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    marginTop: Spacing.lg,
     textAlign: 'center',
   },
   emptySubtitle: {
@@ -2373,6 +2400,27 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
     marginTop: Spacing.sm,
     textAlign: 'center',
+  },
+  emptyTipsCard: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
+    marginTop: Spacing.xl,
+    width: '100%',
+    maxWidth: 280,
+    gap: Spacing.md,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+  },
+  emptyTipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  emptyTipText: {
+    fontSize: FontSize.sm,
+    color: MibuBrand.brownLight,
+    flex: 1,
   },
   emptyCreateButton: {
     flexDirection: 'row',
@@ -3363,7 +3411,7 @@ const styles = StyleSheet.create({
   },
   helpTooltipText: {
     fontSize: FontSize.sm,
-    color: '#FFFFFF',  // 白色文字
+    color: UIColors.white,  // 白色文字
     lineHeight: 20,
     textAlign: 'center',
   },
@@ -3383,7 +3431,7 @@ const styles = StyleSheet.create({
   toastText: {
     fontSize: FontSize.sm,
     fontWeight: '500',
-    color: '#FFFFFF',
+    color: UIColors.white,
     textAlign: 'center',
   },
 });

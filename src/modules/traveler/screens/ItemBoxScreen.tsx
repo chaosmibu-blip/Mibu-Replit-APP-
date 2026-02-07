@@ -209,7 +209,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
             borderRadius: 6,
             backgroundColor: '#ef4444',
             borderWidth: 2,
-            borderColor: '#ffffff',
+            borderColor: UIColors.white,
             zIndex: 10,
           }}
         />
@@ -246,7 +246,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
             borderRadius: 4,
           }}
         >
-          <Text style={{ fontSize: 7, color: '#ffffff', fontWeight: '700' }}>
+          <Text style={{ fontSize: 7, color: UIColors.white, fontWeight: '700' }}>
             {language === 'zh-TW' ? '過期' : 'EXP'}
           </Text>
         </View>
@@ -265,10 +265,10 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
             borderRadius: 6,
             zIndex: 10,
             borderWidth: 1,
-            borderColor: '#ffffff',
+            borderColor: UIColors.white,
           }}
         >
-          <Text style={{ fontSize: 7, color: '#ffffff', fontWeight: '800' }}>
+          <Text style={{ fontSize: 7, color: UIColors.white, fontWeight: '800' }}>
             {timeRemaining.text}
           </Text>
         </View>
@@ -286,7 +286,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
             borderRadius: 4,
           }}
         >
-          <Text style={{ fontSize: 7, color: '#ffffff', fontWeight: '700' }}>
+          <Text style={{ fontSize: 7, color: UIColors.white, fontWeight: '700' }}>
             {language === 'zh-TW' ? '已用' : 'USED'}
           </Text>
         </View>
@@ -795,7 +795,7 @@ export function ItemBoxScreen() {
                 {/* 有效期限 */}
                 {selectedItem.expiresAt && (
                   <View style={{ backgroundColor: selIsExpired ? MibuBrand.error : MibuBrand.cream, padding: 12, borderRadius: 12, marginBottom: 20 }}>
-                    <Text style={{ fontSize: 12, color: selIsExpired ? '#ffffff' : MibuBrand.brown, textAlign: 'center' }}>
+                    <Text style={{ fontSize: 12, color: selIsExpired ? UIColors.white : MibuBrand.brown, textAlign: 'center' }}>
                       {selIsExpired
                         ? (state.language === 'zh-TW' ? '已過期' : 'Expired')
                         : `${state.language === 'zh-TW' ? '有效期至' : 'Valid until'} ${new Date(selectedItem.expiresAt).toLocaleDateString()}`
@@ -821,7 +821,7 @@ export function ItemBoxScreen() {
                       onPress={handleOpenRedeem}
                       style={{ flex: 1, backgroundColor: MibuBrand.brown, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
                     >
-                      <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
+                      <Text style={{ fontSize: 16, fontWeight: '700', color: UIColors.white }}>
                         {state.language === 'zh-TW' ? '核銷' : 'Redeem'}
                       </Text>
                     </TouchableOpacity>
@@ -846,7 +846,7 @@ export function ItemBoxScreen() {
               // ===== 核銷成功畫面 =====
               <View style={{ alignItems: 'center' }}>
                 <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: MibuBrand.success, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                  <Ionicons name="checkmark-circle" size={48} color="#ffffff" />
+                  <Ionicons name="checkmark-circle" size={48} color={UIColors.white} />
                 </View>
                 <Text style={{ fontSize: 20, fontWeight: '800', color: MibuBrand.success, marginBottom: 8 }}>
                   {state.language === 'zh-TW' ? '核銷成功！' : 'Redeemed!'}
@@ -858,7 +858,7 @@ export function ItemBoxScreen() {
                 {/* 倒數計時 */}
                 {countdown !== null && (
                   <View style={{ backgroundColor: MibuBrand.brown, paddingHorizontal: 32, paddingVertical: 20, borderRadius: 16, marginBottom: 20 }}>
-                    <Text style={{ fontSize: 48, fontWeight: '900', color: '#ffffff', textAlign: 'center' }}>
+                    <Text style={{ fontSize: 48, fontWeight: '900', color: UIColors.white, textAlign: 'center' }}>
                       {formatCountdown(countdown)}
                     </Text>
                     <Text style={{ fontSize: 12, color: MibuBrand.cream, textAlign: 'center', marginTop: 4 }}>
@@ -939,9 +939,9 @@ export function ItemBoxScreen() {
                   }}
                 >
                   {redeeming ? (
-                    <ActivityIndicator color="#ffffff" />
+                    <ActivityIndicator color={UIColors.white} />
                   ) : (
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: redemptionCode.length >= 8 ? '#ffffff' : MibuBrand.brownLight }}>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: redemptionCode.length >= 8 ? UIColors.white : MibuBrand.brownLight }}>
                       {state.language === 'zh-TW' ? '確認核銷' : 'Confirm Redemption'}
                     </Text>
                   )}
@@ -1000,9 +1000,9 @@ export function ItemBoxScreen() {
                 style={{ flex: 1, backgroundColor: MibuBrand.error, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
               >
                 {deleting ? (
-                  <ActivityIndicator color="#ffffff" />
+                  <ActivityIndicator color={UIColors.white} />
                 ) : (
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: UIColors.white }}>
                     {state.language === 'zh-TW' ? '刪除' : 'Delete'}
                   </Text>
                 )}

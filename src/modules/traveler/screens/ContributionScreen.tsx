@@ -37,7 +37,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { contributionApi } from '../../../services/contributionApi';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import {
   MyReport,
   MySuggestion,
@@ -204,12 +204,12 @@ export function ContributionScreen() {
     switch (status) {
       case 'pending':
       case 'voting':
-        return { bg: '#FEF3C7', text: '#D97706' };
+        return { bg: SemanticColors.warningLight, text: SemanticColors.warningDark };
       case 'verified':
       case 'approved':
-        return { bg: '#D1FAE5', text: '#059669' };
+        return { bg: SemanticColors.successLight, text: '#059669' };
       case 'rejected':
-        return { bg: '#FEE2E2', text: '#DC2626' };
+        return { bg: SemanticColors.errorLight, text: '#DC2626' };
       default:
         return { bg: '#F3F4F6', text: '#6B7280' };
     }
@@ -454,10 +454,10 @@ export function ContributionScreen() {
                     disabled={votingId === place.placeId}
                   >
                     {votingId === place.placeId ? (
-                      <ActivityIndicator size="small" color="#ffffff" />
+                      <ActivityIndicator size="small" color={UIColors.white} />
                     ) : (
                       <>
-                        <Ionicons name="close" size={18} color="#ffffff" />
+                        <Ionicons name="close" size={18} color={UIColors.white} />
                         <Text style={styles.voteBtnText}>{isZh ? '排除' : 'Exclude'}</Text>
                       </>
                     )}
@@ -468,10 +468,10 @@ export function ContributionScreen() {
                     disabled={votingId === place.placeId}
                   >
                     {votingId === place.placeId ? (
-                      <ActivityIndicator size="small" color="#ffffff" />
+                      <ActivityIndicator size="small" color={UIColors.white} />
                     ) : (
                       <>
-                        <Ionicons name="checkmark" size={18} color="#ffffff" />
+                        <Ionicons name="checkmark" size={18} color={UIColors.white} />
                         <Text style={styles.voteBtnText}>{isZh ? '保留' : 'Keep'}</Text>
                       </>
                     )}
@@ -539,10 +539,10 @@ export function ContributionScreen() {
                     disabled={votingId === suggestion.id}
                   >
                     {votingId === suggestion.id ? (
-                      <ActivityIndicator size="small" color="#ffffff" />
+                      <ActivityIndicator size="small" color={UIColors.white} />
                     ) : (
                       <>
-                        <Ionicons name="thumbs-up" size={18} color="#ffffff" />
+                        <Ionicons name="thumbs-up" size={18} color={UIColors.white} />
                         <Text style={styles.voteBtnText}>{isZh ? '贊成' : 'Approve'}</Text>
                       </>
                     )}
@@ -553,10 +553,10 @@ export function ContributionScreen() {
                     disabled={votingId === suggestion.id}
                   >
                     {votingId === suggestion.id ? (
-                      <ActivityIndicator size="small" color="#ffffff" />
+                      <ActivityIndicator size="small" color={UIColors.white} />
                     ) : (
                       <>
-                        <Ionicons name="thumbs-down" size={18} color="#ffffff" />
+                        <Ionicons name="thumbs-down" size={18} color={UIColors.white} />
                         <Text style={styles.voteBtnText}>{isZh ? '反對' : 'Reject'}</Text>
                       </>
                     )}
@@ -705,7 +705,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
   },
   tabTextActive: {
-    color: '#ffffff',
+    color: UIColors.white,
   },
   content: {
     flex: 1,
@@ -853,7 +853,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: SemanticColors.errorLight,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -892,7 +892,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   reasonTag: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: SemanticColors.warningLight,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -900,7 +900,7 @@ const styles = StyleSheet.create({
   reasonText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#D97706',
+    color: SemanticColors.warningDark,
   },
   voteBarContainer: {
     marginBottom: 12,
@@ -960,7 +960,7 @@ const styles = StyleSheet.create({
   voteBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   emptyState: {
     alignItems: 'center',

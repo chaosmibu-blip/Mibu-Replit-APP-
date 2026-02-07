@@ -710,7 +710,7 @@ export function GachaScreen() {
       <View
         style={{
           width: (SCREEN_WIDTH - 60) / 2,
-          backgroundColor: '#ffffff',
+          backgroundColor: UIColors.white,
           borderRadius: 16,
           marginBottom: 12,
           marginHorizontal: 6,
@@ -736,7 +736,7 @@ export function GachaScreen() {
               justifyContent: 'center',
             }}
           >
-            <Ionicons name="location" size={32} color="#ffffff" />
+            <Ionicons name="location" size={32} color={UIColors.white} />
           </View>
         )}
 
@@ -994,7 +994,7 @@ export function GachaScreen() {
                     minWidth: 180,
                   }}
                 >
-                  <Text style={{ fontSize: 13, color: '#FFFFFF', fontWeight: '500' }}>
+                  <Text style={{ fontSize: 13, color: UIColors.white, fontWeight: '500' }}>
                     {state.language === 'zh-TW' ? '每日扭蛋限額最高36次' : 'Daily limit: 36 pulls'}
                   </Text>
                 </Animated.View>
@@ -1073,7 +1073,7 @@ export function GachaScreen() {
               borderRadius: 12,
             }}
           >
-            <Text style={{ fontSize: 13, fontWeight: '700', color: '#ffffff' }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: UIColors.white }}>
               {state.language === 'zh-TW' ? '前往' : 'Go'}
             </Text>
           </TouchableOpacity>
@@ -1169,7 +1169,7 @@ export function GachaScreen() {
         >
           <View
             style={{
-              backgroundColor: '#ffffff',
+              backgroundColor: UIColors.white,
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               maxHeight: '85%',
@@ -1261,7 +1261,7 @@ export function GachaScreen() {
                               marginRight: 8,
                             }}
                           >
-                            <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>
+                            <Text style={{ fontSize: 11, fontWeight: '800', color: UIColors.white }}>
                               {coupon.rarity}
                             </Text>
                           </View>
@@ -1303,7 +1303,7 @@ export function GachaScreen() {
                               marginRight: 8,
                             }}
                           >
-                            <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>
+                            <Text style={{ fontSize: 11, fontWeight: '800', color: UIColors.white }}>
                               {coupon.rarity}
                             </Text>
                           </View>
@@ -1316,7 +1316,7 @@ export function GachaScreen() {
                                 borderRadius: 4,
                               }}
                             >
-                              <Text style={{ fontSize: 10, fontWeight: '700', color: '#ffffff' }}>
+                              <Text style={{ fontSize: 10, fontWeight: '700', color: UIColors.white }}>
                                 {coupon.discount}
                               </Text>
                             </View>

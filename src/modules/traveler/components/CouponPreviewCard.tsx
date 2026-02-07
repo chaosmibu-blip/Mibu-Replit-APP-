@@ -238,7 +238,7 @@ const createStyles = (tierStyle: typeof TIER_STYLES.SP, isCompact: boolean) =>
       marginBottom: 4,
     },
     tierText: {
-      color: '#ffffff',
+      color: UIColors.white,
       fontSize: 14,
       fontWeight: '900',
     },
@@ -265,7 +265,7 @@ const createStyles = (tierStyle: typeof TIER_STYLES.SP, isCompact: boolean) =>
       width: 12,
       height: 12,
       borderRadius: 6,
-      backgroundColor: '#ffffff',
+      backgroundColor: UIColors.white,
     },
     separatorCircleBottom: {
       position: 'absolute',
@@ -274,7 +274,7 @@ const createStyles = (tierStyle: typeof TIER_STYLES.SP, isCompact: boolean) =>
       width: 12,
       height: 12,
       borderRadius: 6,
-      backgroundColor: '#ffffff',
+      backgroundColor: UIColors.white,
     },
     infoSection: {
       flex: 1,

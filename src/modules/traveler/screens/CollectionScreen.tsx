@@ -221,8 +221,8 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
               style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: MibuBrand.brown, paddingVertical: 16, borderRadius: 16 }}
               onPress={handleNavigate}
             >
-              <Ionicons name="search" size={20} color="#ffffff" />
-              <Text style={{ fontSize: 16, fontWeight: '700', color: '#ffffff' }}>在 Google 中查看</Text>
+              <Ionicons name="search" size={20} color={UIColors.white} />
+              <Text style={{ fontSize: 16, fontWeight: '700', color: UIColors.white }}>在 Google 中查看</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -252,13 +252,15 @@ export function CollectionScreen() {
   // 使用 API 資料或本地資料
   const collection = hasLoadedFromApi ? apiCollection : localCollection as GachaItemWithRead[];
 
-  // 統計資料
-  const totalSpots = collection.length;
-  const uniqueCities = new Set(collection.map(item => item.city || 'Unknown')).size;
-  const uniqueCategories = new Set(collection.map(item =>
-    (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other'
-  )).size;
-  const unreadCount = collection.filter(item => item.isRead === false).length;
+  // 統計資料（useMemo 避免每次渲染重算）
+  const { totalSpots, uniqueCities, uniqueCategories, unreadCount } = useMemo(() => ({
+    totalSpots: collection.length,
+    uniqueCities: new Set(collection.map(item => item.city || 'Unknown')).size,
+    uniqueCategories: new Set(collection.map(item =>
+      (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other'
+    )).size,
+    unreadCount: collection.filter(item => item.isRead === false).length,
+  }), [collection]);
 
   // #028 載入優惠更新通知
   const loadPromoUpdates = useCallback(async () => {
@@ -929,7 +931,7 @@ export function CollectionScreen() {
                             borderWidth: 2,
                             borderColor: MibuBrand.warmWhite,
                           }}>
-                            <Text style={{ color: '#ffffff', fontSize: 10, fontWeight: '700' }}>
+                            <Text style={{ color: UIColors.white, fontSize: 10, fontWeight: '700' }}>
                               {countryData.unreadCount > 9 ? '9+' : countryData.unreadCount}
                             </Text>
                           </View>
@@ -1000,7 +1002,7 @@ export function CollectionScreen() {
                             borderWidth: 1.5,
                             borderColor: MibuBrand.warmWhite,
                           }}>
-                            <Text style={{ color: '#ffffff', fontSize: 9, fontWeight: '700' }}>
+                            <Text style={{ color: UIColors.white, fontSize: 9, fontWeight: '700' }}>
                               {cityData.unreadCount > 9 ? '9+' : cityData.unreadCount}
                             </Text>
                           </View>

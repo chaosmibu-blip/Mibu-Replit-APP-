@@ -29,7 +29,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { crowdfundingApi } from '../../../services/crowdfundingApi';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
 import { Campaign, MyContribution } from '../../../types/crowdfunding';
 
@@ -401,7 +401,7 @@ export function CrowdfundingScreen() {
             }
           }}
         >
-          <Ionicons name="heart" size={20} color="#fff" />
+          <Ionicons name="heart" size={20} color={UIColors.white} />
           <Text style={styles.ctaText}>
             {isZh ? '支持我們的理念' : 'Support Our Vision'}
           </Text>
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: UIColors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 4,
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     borderColor: MibuBrand.tanLight,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: UIColors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
         shadowRadius: 4,
@@ -647,6 +647,6 @@ const styles = StyleSheet.create({
   ctaText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 });
