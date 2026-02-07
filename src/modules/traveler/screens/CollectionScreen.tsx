@@ -35,7 +35,7 @@ import { collectionApi } from '../../../services/collectionApi';
 import { contributionApi } from '../../../services/contributionApi';
 import { GachaItem, Language, CollectionItem } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
-import { MibuBrand, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
+import { MibuBrand, getCategoryToken, deriveMerchantScheme, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 
 // ============================================================
@@ -142,7 +142,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
   return (
     <Modal visible transparent animationType="slide">
       <TouchableOpacity
-        style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)', justifyContent: 'flex-end' }}
+        style={{ flex: 1, backgroundColor: UIColors.overlayLight, justifyContent: 'flex-end' }}
         activeOpacity={1}
         onPress={onClose}
       >

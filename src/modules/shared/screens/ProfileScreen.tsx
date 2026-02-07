@@ -953,7 +953,7 @@ const styles = StyleSheet.create({
   // 頭像 Modal 樣式
   avatarModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: UIColors.overlayMedium,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,

@@ -31,7 +31,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantProduct } from '../../../types';
-import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function MerchantProductsScreen() {
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
   // 彈窗遮罩
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: UIColors.overlayMedium,
     justifyContent: 'flex-end',
   },
   // 彈窗內容

@@ -780,7 +780,7 @@ const styles = StyleSheet.create({
   // Modal 樣式
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: UIColors.overlayMedium,
     justifyContent: 'flex-end',
   },
   modalContent: {

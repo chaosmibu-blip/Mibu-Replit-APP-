@@ -34,7 +34,7 @@ import { apiService } from '../../../services/api';
 import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../../../types';
 import { TierBadge } from '../../shared/components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
-import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function MerchantCouponsScreen() {
@@ -773,7 +773,7 @@ const styles = StyleSheet.create({
   // 彈窗遮罩
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: UIColors.overlayMedium,
     justifyContent: 'flex-end',
   },
   // 彈窗內容

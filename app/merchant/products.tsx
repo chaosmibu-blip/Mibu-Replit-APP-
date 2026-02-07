@@ -4,7 +4,7 @@
  * 對應 Screen: MerchantProductsScreen
  * 功能：管理商家的商品或服務項目
  */
-import { MerchantProductsScreen } from '../../src/screens/MerchantProductsScreen';
+import { MerchantProductsScreen } from '../../src/modules/merchant/screens/MerchantProductsScreen';
 
 export default function MerchantProductsPage() {
   return <MerchantProductsScreen />;

@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   /** Modal 背景遮罩 */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: UIColors.overlayMedium,
     justifyContent: 'center',
     alignItems: 'center',
   },

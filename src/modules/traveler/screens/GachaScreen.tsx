@@ -52,7 +52,7 @@ import { gachaApi, getDeviceId } from '../../../services/gachaApi';
 import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse, ItineraryItemRaw, LocalizedContent, GachaMeta, CouponWon } from '../../../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../../../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorCode, isAuthError } from '../../../shared/errors';
 
 // ============================================================
@@ -1157,7 +1157,7 @@ export function GachaScreen() {
         <View
           style={{
             flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: UIColors.overlayMedium,
             justifyContent: 'flex-end',
           }}
         >

@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   // 遮罩層
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: UIColors.overlayDark,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -34,7 +34,7 @@ import { Language } from '../../../types';
 import { AuthScreen } from './AuthScreen';
 import { apiService } from '../../../services/api';
 import { authApi, MergeSummary } from '../../../services/authApi';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 // ============================================================
 // 常數定義
@@ -1003,7 +1003,7 @@ const styles = StyleSheet.create({
   // Modal 通用
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: UIColors.overlayMedium,
     justifyContent: 'center',
     alignItems: 'center',
   },
