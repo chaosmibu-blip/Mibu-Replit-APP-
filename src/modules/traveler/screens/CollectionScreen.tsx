@@ -37,6 +37,7 @@ import { GachaItem, Language, CollectionItem } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
+import { EmptyState } from '../../shared/components/ui/EmptyState';
 
 // ============================================================
 // 型別定義
@@ -540,10 +541,12 @@ export function CollectionScreen() {
 
   if (collection.length === 0) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, backgroundColor: MibuBrand.warmWhite }}>
-        <Ionicons name="location-outline" size={64} color={MibuBrand.tanLight} />
-        <Text style={{ fontSize: 18, fontWeight: '700', color: MibuBrand.brownLight, marginTop: 16 }}>{t.noCollection}</Text>
-        <Text style={{ fontSize: 14, color: MibuBrand.tan, marginTop: 8 }}>{t.startToCollect}</Text>
+      <View style={{ flex: 1, justifyContent: 'center', backgroundColor: MibuBrand.warmWhite }}>
+        <EmptyState
+          icon="albums-outline"
+          title={t.noCollection}
+          description={t.startToCollect}
+        />
       </View>
     );
   }

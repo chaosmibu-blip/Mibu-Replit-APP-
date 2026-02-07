@@ -28,6 +28,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AppProvider } from '../src/context/AppContext';
+import { NetworkBanner } from '../src/modules/shared/components/ui/NetworkBanner';
 
 // ============================================================
 // 全域靜態圖片預載入
@@ -93,6 +94,7 @@ export default function RootLayout() {
             <Stack.Screen name="sos" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
+          <NetworkBanner />
           <StatusBar style="auto" />
         </ThemeProvider>
       </AppProvider>
