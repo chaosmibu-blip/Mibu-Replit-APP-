@@ -36,7 +36,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { Announcement, AnnouncementType } from '../../../types';
-import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 型別定義 ============
 
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   deleteButtonText: { fontSize: 13, fontWeight: '600', color: SemanticColors.errorDark },
 
   // Modal 樣式
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalOverlay: { flex: 1, backgroundColor: UIColors.overlayLight, justifyContent: 'flex-end' },
   modalContent: { backgroundColor: MibuBrand.warmWhite, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '90%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: MibuBrand.tanLight },
   modalTitle: { fontSize: 18, fontWeight: '800', color: MibuBrand.brownDark },

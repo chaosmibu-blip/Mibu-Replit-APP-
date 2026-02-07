@@ -21,14 +21,9 @@
  * - GET  /api/user/daily-tasks              - 取得每日任務列表
  * - POST /api/user/daily-tasks/:id/complete - 領取每日任務獎勵
  *
- * 向後兼容（已棄用）:
- * - GET  /api/user/level                    - 固定回傳 level: 1
- * - GET  /api/user/experience/history       - 已棄用
  */
 import { ApiBase } from './base';
 import {
-  LevelInfo,
-  ExperienceHistoryResponse,
   AchievementsResponse,
   AchievementCategory,
   ClaimAchievementResponse,
@@ -108,48 +103,6 @@ class EconomyApiService extends ApiBase {
    */
   async getSpecialistEligibility(token: string): Promise<SpecialistEligibilityResponse> {
     return this.request<SpecialistEligibilityResponse>('/api/user/specialist/eligibility', {
-      headers: this.authHeaders(token),
-    });
-  }
-
-  // ============ 向後兼容（已棄用） ============
-
-  /**
-   * 取得用戶等級資訊（已棄用）
-   * #039: 後端固定回傳 level: 1，保留向後兼容
-   *
-   * @deprecated 請改用 getCoins() 和 getPerks()
-   * @param token - JWT Token
-   * @returns 等級資訊
-   */
-  async getLevelInfo(token: string): Promise<LevelInfo> {
-    return this.request<LevelInfo>('/api/user/level', {
-      headers: this.authHeaders(token),
-    });
-  }
-
-  /**
-   * 取得經驗值歷史記錄
-   *
-   * 查看用戶過去獲得經驗值的來源和時間
-   *
-   * @param token - JWT Token
-   * @param params - 分頁參數
-   * @returns 經驗值歷史記錄列表
-   */
-  async getExperienceHistory(
-    token: string,
-    params?: { page?: number; limit?: number }
-  ): Promise<ExperienceHistoryResponse> {
-    // 組裝查詢參數
-    const query = new URLSearchParams();
-    if (params?.page) query.append('page', String(params.page));
-    if (params?.limit) query.append('limit', String(params.limit));
-
-    const queryString = query.toString();
-    const endpoint = `/api/user/experience/history${queryString ? `?${queryString}` : ''}`;
-
-    return this.request<ExperienceHistoryResponse>(endpoint, {
       headers: this.authHeaders(token),
     });
   }

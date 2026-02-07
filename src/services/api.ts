@@ -334,10 +334,6 @@ class ApiService {
 
   // ============ Economy 經濟系統 (Phase 5) ============
 
-  /** 取得等級資訊 */
-  getLevelInfo = economyApi.getLevelInfo.bind(economyApi);
-  /** 取得經驗值歷史 */
-  getExperienceHistory = economyApi.getExperienceHistory.bind(economyApi);
   /** 取得成就列表 */
   getAchievements = economyApi.getAchievements.bind(economyApi);
   /** 領取成就獎勵 */

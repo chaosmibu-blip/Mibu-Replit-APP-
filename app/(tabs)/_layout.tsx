@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useApp } from '../../src/context/AppContext';
-import { MibuBrand } from '../../constants/Colors';
+import { MibuBrand, UIColors } from '../../constants/Colors';
 
 function TabIconWithBadge({ 
   icon, 
@@ -39,7 +39,7 @@ function TabIconWithBadge({
           position: 'absolute',
           top: -4,
           right: -8,
-          backgroundColor: '#ef4444',
+          backgroundColor: MibuBrand.error,
           borderRadius: 10,
           minWidth: 16,
           height: 16,
@@ -47,7 +47,7 @@ function TabIconWithBadge({
           justifyContent: 'center',
           paddingHorizontal: 4,
         }}>
-          <Text style={{ color: '#ffffff', fontSize: 10, fontWeight: '700' }}>
+          <Text style={{ color: UIColors.white, fontSize: 10, fontWeight: '700' }}>
             {badgeCount > 99 ? '99+' : badgeCount}
           </Text>
         </View>
@@ -76,7 +76,7 @@ export default function TabLayout() {
         tabBarStyle: Platform.select({
           ios: {
             position: 'absolute',
-            backgroundColor: 'rgba(253, 248, 243, 0.98)',
+            backgroundColor: UIColors.tabBarBg,
             borderTopWidth: 0,
             height: 88,
             paddingBottom: 24,

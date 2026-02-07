@@ -52,8 +52,9 @@ import { gachaApi, getDeviceId } from '../../../services/gachaApi';
 import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse, ItineraryItemRaw, LocalizedContent, GachaMeta, CouponWon } from '../../../types';
 import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../../../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorCode, isAuthError } from '../../../shared/errors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============================================================
 // 常數定義
@@ -116,6 +117,8 @@ export function GachaScreen() {
   // 國家列表 & 載入狀態
   const [countries, setCountries] = useState<Country[]>([]);
   const [loadingCountries, setLoadingCountries] = useState(true);
+  // 國家載入錯誤狀態
+  const [countriesError, setCountriesError] = useState(false);
 
   // 城市/地區列表 & 載入狀態
   const [regions, setRegions] = useState<Region[]>([]);
@@ -252,12 +255,14 @@ export function GachaScreen() {
    */
   const loadCountries = async () => {
     try {
+      setCountriesError(false);
       console.log('🌍 Loading countries...');
       const data = await apiService.getCountries();
       console.log('🌍 Countries loaded:', JSON.stringify(data));
       setCountries(data);
     } catch (error) {
       console.error('🌍 Failed to load countries:', error);
+      setCountriesError(true);
     } finally {
       setLoadingCountries(false);
     }
@@ -835,6 +840,16 @@ export function GachaScreen() {
         </Text>
       </View>
 
+      {/* ========== 國家載入錯誤提示 ========== */}
+      {countriesError && countries.length === 0 && (
+        <ErrorState
+          icon="globe-outline"
+          message={state.language === 'zh-TW' ? '無法載入區域資料' : 'Failed to load regions'}
+          detail={state.language === 'zh-TW' ? '請檢查網路連線後再試' : 'Please check your connection and try again'}
+          onRetry={loadCountries}
+        />
+      )}
+
       {/* ========== 選擇區域卡片 ========== */}
       <View style={{
         backgroundColor: MibuBrand.creamLight,
@@ -1157,7 +1172,7 @@ export function GachaScreen() {
         <View
           style={{
             flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: UIColors.overlayMedium,
             justifyContent: 'flex-end',
           }}
         >

@@ -21,6 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../../../context/AppContext';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 元件本體 ============
 
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
   },
   roleLabel: {
     fontSize: 14,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 8,
   },
   roleValue: {

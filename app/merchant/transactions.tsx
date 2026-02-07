@@ -4,6 +4,6 @@
  * 對應 Screen: MerchantTransactionsScreen
  * 功能：查看優惠券核銷紀錄和交易歷史
  */
-import { MerchantTransactionsScreen } from '../../src/screens/MerchantTransactionsScreen';
+import { MerchantTransactionsScreen } from '../../src/modules/merchant/screens/MerchantTransactionsScreen';
 
 export default MerchantTransactionsScreen;

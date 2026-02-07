@@ -28,6 +28,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { UserRole } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ Props 介面定義 ============
 
@@ -157,7 +158,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
                       <Ionicons
                         name={config.icon as any}
                         size={20}
-                        color={isActive ? config.color : '#64748b'}
+                        color={isActive ? config.color : UIColors.textSecondary}
                       />
                       <Text
                         style={[
@@ -222,7 +223,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
                   <Ionicons
                     name={config.icon as any}
                     size={18}
-                    color={isActive ? config.color : '#64748b'}
+                    color={isActive ? config.color : UIColors.textSecondary}
                   />
                   <Text
                     style={[
@@ -306,7 +307,7 @@ const styles = StyleSheet.create({
   /** Modal 背景遮罩 */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: UIColors.overlayMedium,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -18,7 +18,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantCoupon, MerchantCouponTier } from '../../../types';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
+import { EmptyState } from '../../shared/components/ui/EmptyState';
 
 const TIER_COLORS: Record<MerchantCouponTier, { bg: string; text: string; border: string }> = {
   SP: { bg: MibuBrand.tierSPBg, text: MibuBrand.tierSP, border: MibuBrand.tierSP },
@@ -45,6 +47,7 @@ export function CouponListScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   const t = {
     title: isZh ? '優惠券管理' : 'Coupon Management',
@@ -68,6 +71,7 @@ export function CouponListScreen() {
 
   const loadCoupons = async (showRefresh = false) => {
     try {
+      setLoadError(false);
       if (showRefresh) setRefreshing(true);
       else setLoading(true);
 
@@ -78,6 +82,7 @@ export function CouponListScreen() {
       setCoupons(response.coupons || []);
     } catch (error) {
       console.error('Failed to load coupons:', error);
+      setLoadError(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -127,7 +132,7 @@ export function CouponListScreen() {
       return { label: t.expired, color: '#ef4444' };
     }
     if (!coupon.isActive) {
-      return { label: t.inactive, color: '#64748b' };
+      return { label: t.inactive, color: UIColors.textSecondary };
     }
     return { label: t.active, color: '#16a34a' };
   };
@@ -137,6 +142,20 @@ export function CouponListScreen() {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{t.loading}</Text>
+      </View>
+    );
+  }
+
+  // 錯誤狀態：API 載入失敗且沒有資料時顯示
+  if (loadError && coupons.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          icon="cloud-offline-outline"
+          message={isZh ? '優惠券載入失敗' : 'Failed to load coupons'}
+          detail={isZh ? '請檢查網路連線後再試' : 'Please check your connection and try again'}
+          onRetry={() => loadCoupons()}
+        />
       </View>
     );
   }
@@ -171,13 +190,11 @@ export function CouponListScreen() {
 
       {/* Coupons List */}
       {coupons.length === 0 ? (
-        <View style={styles.emptyState}>
-          <View style={styles.emptyIcon}>
-            <Ionicons name="ticket-outline" size={48} color="#94a3b8" />
-          </View>
-          <Text style={styles.emptyTitle}>{t.noCoupons}</Text>
-          <Text style={styles.emptySubtitle}>{t.noCouponsHint}</Text>
-        </View>
+        <EmptyState
+          icon="pricetag-outline"
+          title={t.noCoupons}
+          description={t.noCouponsHint}
+        />
       ) : (
         <View style={styles.couponsList}>
           {coupons.map((coupon) => {
@@ -208,14 +225,14 @@ export function CouponListScreen() {
                   </Text>
                   <View style={styles.couponMeta}>
                     <View style={styles.metaItem}>
-                      <Ionicons name="cube-outline" size={14} color="#64748b" />
+                      <Ionicons name="cube-outline" size={14} color={UIColors.textSecondary} />
                       <Text style={styles.metaText}>
                         {t.remaining}: {coupon.remainingQuantity}/{coupon.quantity}
                       </Text>
                     </View>
                     {coupon.validUntil && (
                       <View style={styles.metaItem}>
-                        <Ionicons name="calendar-outline" size={14} color="#64748b" />
+                        <Ionicons name="calendar-outline" size={14} color={UIColors.textSecondary} />
                         <Text style={styles.metaText}>
                           {coupon.validUntil.split('T')[0]}
                         </Text>
@@ -323,30 +340,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: MibuBrand.cream,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: MibuBrand.copper,
-    textAlign: 'center',
   },
   couponsList: {
     gap: 16,

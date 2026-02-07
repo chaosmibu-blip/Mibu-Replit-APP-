@@ -38,7 +38,7 @@ import { API_BASE_URL } from '../../../constants/translations';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { SosAlert, SosAlertStatus } from '../../../types';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
 
@@ -50,7 +50,7 @@ const STATUS_COLORS: Record<SosAlertStatus, { bg: string; text: string; label: s
   pending: { bg: '#fef3c7', text: '#d97706', label: '等待處理', labelEn: 'Pending' },
   acknowledged: { bg: '#dbeafe', text: '#2563eb', label: '已確認', labelEn: 'Acknowledged' },
   resolved: { bg: '#dcfce7', text: '#16a34a', label: '已解決', labelEn: 'Resolved' },
-  cancelled: { bg: '#f1f5f9', text: '#64748b', label: '已取消', labelEn: 'Cancelled' },
+  cancelled: { bg: '#f1f5f9', text: UIColors.textSecondary, label: '已取消', labelEn: 'Cancelled' },
 };
 
 // ============ 元件本體 ============

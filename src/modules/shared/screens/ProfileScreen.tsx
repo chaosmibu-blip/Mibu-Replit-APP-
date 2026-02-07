@@ -26,7 +26,7 @@ import { apiService } from '../../../services/api';
 import { authApi } from '../../../services/authApi';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender } from '../../../types';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 /** AsyncStorage key for avatar preference */
 const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';
@@ -526,7 +526,7 @@ export function ProfileScreen() {
                 ? GENDER_OPTIONS.find(g => g.value === gender)?.[isZh ? 'labelZh' : 'labelEn'] || gender
                 : isZh ? '請選擇' : 'Select'}
             </Text>
-            <Ionicons name="chevron-down" size={20} color="#64748b" />
+            <Ionicons name="chevron-down" size={20} color={UIColors.textSecondary} />
           </TouchableOpacity>
           {/* 性別選項下拉 */}
           {showGenderPicker && (
@@ -637,7 +637,7 @@ export function ProfileScreen() {
                 ? RELATION_OPTIONS.find(r => r.value === emergencyContactRelation)?.[isZh ? 'labelZh' : 'labelEn'] || emergencyContactRelation
                 : isZh ? '請選擇' : 'Select'}
             </Text>
-            <Ionicons name="chevron-down" size={20} color="#64748b" />
+            <Ionicons name="chevron-down" size={20} color={UIColors.textSecondary} />
           </TouchableOpacity>
           {/* 關係選項下拉 */}
           {showRelationPicker && (
@@ -953,7 +953,7 @@ const styles = StyleSheet.create({
   // 頭像 Modal 樣式
   avatarModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: UIColors.overlayMedium,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,

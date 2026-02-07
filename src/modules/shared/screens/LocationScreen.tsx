@@ -34,6 +34,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../../constants/translations';
 import { useApp } from '../../../context/AppContext';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
 
@@ -280,7 +281,7 @@ export function LocationScreen() {
       {/* ===== 位置分享開關 ===== */}
       <View style={styles.sharingToggle}>
         <View style={styles.sharingInfo}>
-          <Ionicons name="people" size={20} color="#64748b" />
+          <Ionicons name="people" size={20} color={UIColors.textSecondary} />
           <Text style={styles.sharingText}>{t.shareLocationToPlanner}</Text>
         </View>
         <Switch
@@ -386,7 +387,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   // 錯誤狀態
   errorContainer: {
@@ -399,7 +400,7 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     textAlign: 'center',
   },
   retryButton: {

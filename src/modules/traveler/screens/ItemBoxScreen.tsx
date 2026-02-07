@@ -23,7 +23,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { InventoryItem, CouponTier } from '../../../types';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 // ============================================================
 // 常數定義
@@ -240,7 +240,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
           style={{
             position: 'absolute',
             bottom: 2,
-            backgroundColor: 'rgba(0,0,0,0.6)',
+            backgroundColor: UIColors.overlayMedium,
             paddingHorizontal: 4,
             paddingVertical: 1,
             borderRadius: 4,
@@ -739,7 +739,7 @@ export function ItemBoxScreen() {
         transparent={true}
         onRequestClose={() => setDetailModalVisible(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <View style={{ flex: 1, backgroundColor: UIColors.overlayMedium, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, borderWidth: 2, borderColor: selectedItem ? TIER_STYLES[selectedItem.tier || selectedItem.rarity]?.borderColor : MibuBrand.tan }}>
             {selectedItem && (() => {
               const selTier = selectedItem.tier || selectedItem.rarity;
@@ -840,7 +840,7 @@ export function ItemBoxScreen() {
         transparent={true}
         onRequestClose={() => !redeemSuccess && setRedeemModalVisible(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <View style={{ flex: 1, backgroundColor: UIColors.overlayMedium, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
             {redeemSuccess ? (
               // ===== 核銷成功畫面 =====
@@ -959,7 +959,7 @@ export function ItemBoxScreen() {
         transparent={true}
         onRequestClose={() => setDeleteModalVisible(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <View style={{ flex: 1, backgroundColor: UIColors.overlayMedium, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
             {/* 警告圖示 */}
             <View style={{ alignItems: 'center', marginBottom: 20 }}>

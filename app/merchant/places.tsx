@@ -4,7 +4,7 @@
  * 對應 Screen: MerchantPlacesScreen
  * 功能：管理商家旗下的店舖或景點資訊
  */
-import { MerchantPlacesScreen } from '../../src/screens/MerchantPlacesScreen';
+import { MerchantPlacesScreen } from '../../src/modules/merchant/screens/MerchantPlacesScreen';
 
 export default function MerchantPlacesPage() {
   return <MerchantPlacesScreen />;

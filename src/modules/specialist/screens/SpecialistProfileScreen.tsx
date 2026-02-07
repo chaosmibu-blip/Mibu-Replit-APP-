@@ -25,6 +25,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { SpecialistInfo } from '../../../types';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 元件主體 ============
 export function SpecialistProfileScreen() {
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 16,
   },
   // 頁面標題樣式
@@ -334,7 +335,7 @@ const styles = StyleSheet.create({
     color: '#16a34a',
   },
   onlineTextInactive: {
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   // 可接單狀態卡片樣式
   availabilityCard: {
@@ -390,7 +391,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 13,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     marginBottom: 4,
   },
   infoValue: {

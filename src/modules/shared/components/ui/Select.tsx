@@ -19,7 +19,7 @@
 import React, { useState, ReactNode } from 'react';
 import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MibuBrand } from '../../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../../constants/Colors';
 
 // ============ Props 介面定義 ============
 
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   /** Modal 背景遮罩：半透明黑色 */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: UIColors.overlayLight,
     justifyContent: 'flex-end',
   },
   /**

@@ -35,7 +35,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { commonApi } from '../../../services/commonApi';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { SOSContact, CreateSOSContactParams } from '../../../types/sos';
 
 // ============ 常數定義 ============
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
   // Modal 樣式
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: UIColors.overlayMedium,
     justifyContent: 'flex-end',
   },
   modalContent: {

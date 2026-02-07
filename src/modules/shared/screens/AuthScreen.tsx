@@ -30,7 +30,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { UserRole } from '../../../types';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 // ============ 介面定義 ============
 
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   // 背景遮罩
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: UIColors.overlayLight,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,

@@ -4,7 +4,7 @@
  * 對應 Screen: ProfileScreen
  * 功能：顯示和編輯用戶個人資料
  */
-import { ProfileScreen } from '../src/screens/ProfileScreen';
+import { ProfileScreen } from '../src/modules/shared/screens/ProfileScreen';
 
 export default function Profile() {
   return <ProfileScreen />;

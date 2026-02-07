@@ -30,7 +30,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
 
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   /** 背景遮罩：半透明黑色 */
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: UIColors.overlayDark,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,

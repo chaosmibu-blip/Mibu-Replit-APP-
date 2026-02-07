@@ -40,6 +40,7 @@ import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
+import { ErrorState } from '../components/ui/ErrorState';
 
 /** AsyncStorage key for avatar preference（與 ProfileScreen 共用）*/
 const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';
@@ -458,7 +459,7 @@ export function HomeScreen() {
         {/* 右側：已獲得金幣 */}
         <View style={styles.taskRight}>
           <Text style={styles.taskEarnedLabel}>{isZh ? '已獲得' : 'Earned'}</Text>
-          <Text style={styles.taskEarnedXp}>+{dailyTask.earnedCoins} {isZh ? '金幣' : 'coins'}</Text>
+          <Text style={styles.taskEarnedCoins}>+{dailyTask.earnedCoins} {isZh ? '金幣' : 'coins'}</Text>
         </View>
 
         {/* 箭頭圖示 */}
@@ -886,7 +887,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: MibuBrand.tan,
   },
-  taskEarnedXp: {
+  taskEarnedCoins: {
     fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brown,

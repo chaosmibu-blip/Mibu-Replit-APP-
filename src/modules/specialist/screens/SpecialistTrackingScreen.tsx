@@ -26,6 +26,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { io, Socket } from 'socket.io-client';
 import { useApp } from '../../../context/AppContext';
 import { API_BASE_URL } from '../../../constants/translations';
+import { UIColors } from '../../../../constants/Colors';
 
 // ============ 型別定義 ============
 
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   // Loading 狀態樣式
   loadingContainer: {
@@ -323,7 +324,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 16,
   },
   // 主內容區樣式
@@ -339,7 +340,7 @@ const styles = StyleSheet.create({
   },
   webMapText: {
     marginTop: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 16,
   },
   travelerCount: {
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   mapPlaceholderText: {
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontSize: 14,
   },
   // 旅客列表卡片樣式
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
   // 座標文字樣式（使用等寬字體）
   travelerCoords: {
     fontSize: 12,
-    color: '#64748b',
+    color: UIColors.textSecondary,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   travelerTime: {

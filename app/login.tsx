@@ -38,7 +38,7 @@ import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { useApp } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
 import { UserRole } from '../src/types';
-import { MibuBrand } from '../constants/Colors';
+import { MibuBrand, RoleColors, UIColors } from '../constants/Colors';
 
 const AUTH_TOKEN_KEY = '@mibu_token';
 
@@ -59,26 +59,26 @@ interface PortalConfig {
 const PORTAL_CONFIGS: Record<string, PortalConfig[]> = {
   'zh-TW': [
     { type: 'traveler', label: '旅客', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '探索台灣各地精彩景點', guestAllowed: true },
-    { type: 'merchant', label: '商家', color: '#10b981', bgColor: '#d1fae5', subtitle: '管理優惠券與店家資訊', guestAllowed: false },
-    { type: 'specialist', label: '專員', color: '#a855f7', bgColor: '#f3e8ff', subtitle: '協助旅客規劃行程', guestAllowed: false },
+    { type: 'merchant', label: '商家', color: RoleColors.merchant.main, bgColor: RoleColors.merchant.light, subtitle: '管理優惠券與店家資訊', guestAllowed: false },
+    { type: 'specialist', label: '專員', color: RoleColors.specialist.main, bgColor: RoleColors.specialist.light, subtitle: '協助旅客規劃行程', guestAllowed: false },
     { type: 'admin', label: '管理端', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: '系統管理員專用入口', guestAllowed: false },
   ],
   'en': [
     { type: 'traveler', label: 'Traveler', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: 'Explore amazing destinations', guestAllowed: true },
-    { type: 'merchant', label: 'Merchant', color: '#10b981', bgColor: '#d1fae5', subtitle: 'Manage coupons and store info', guestAllowed: false },
-    { type: 'specialist', label: 'Specialist', color: '#a855f7', bgColor: '#f3e8ff', subtitle: 'Help travelers plan trips', guestAllowed: false },
+    { type: 'merchant', label: 'Merchant', color: RoleColors.merchant.main, bgColor: RoleColors.merchant.light, subtitle: 'Manage coupons and store info', guestAllowed: false },
+    { type: 'specialist', label: 'Specialist', color: RoleColors.specialist.main, bgColor: RoleColors.specialist.light, subtitle: 'Help travelers plan trips', guestAllowed: false },
     { type: 'admin', label: 'Admin', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: 'System administrator portal', guestAllowed: false },
   ],
   'ja': [
     { type: 'traveler', label: '旅行者', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '素晴らしい目的地を探索', guestAllowed: true },
-    { type: 'merchant', label: '加盟店', color: '#10b981', bgColor: '#d1fae5', subtitle: 'クーポンと店舗情報を管理', guestAllowed: false },
-    { type: 'specialist', label: '専門家', color: '#a855f7', bgColor: '#f3e8ff', subtitle: '旅行者の旅程計画をサポート', guestAllowed: false },
+    { type: 'merchant', label: '加盟店', color: RoleColors.merchant.main, bgColor: RoleColors.merchant.light, subtitle: 'クーポンと店舗情報を管理', guestAllowed: false },
+    { type: 'specialist', label: '専門家', color: RoleColors.specialist.main, bgColor: RoleColors.specialist.light, subtitle: '旅行者の旅程計画をサポート', guestAllowed: false },
     { type: 'admin', label: '管理者', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: 'システム管理者ポータル', guestAllowed: false },
   ],
   'ko': [
     { type: 'traveler', label: '여행자', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '놀라운 여행지 탐험', guestAllowed: true },
-    { type: 'merchant', label: '가맹점', color: '#10b981', bgColor: '#d1fae5', subtitle: '쿠폰 및 매장 정보 관리', guestAllowed: false },
-    { type: 'specialist', label: '전문가', color: '#a855f7', bgColor: '#f3e8ff', subtitle: '여행자의 여행 계획 지원', guestAllowed: false },
+    { type: 'merchant', label: '가맹점', color: RoleColors.merchant.main, bgColor: RoleColors.merchant.light, subtitle: '쿠폰 및 매장 정보 관리', guestAllowed: false },
+    { type: 'specialist', label: '전문가', color: RoleColors.specialist.main, bgColor: RoleColors.specialist.light, subtitle: '여행자의 여행 계획 지원', guestAllowed: false },
     { type: 'admin', label: '관리자', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: '시스템 관리자 포털', guestAllowed: false },
   ],
 };
@@ -862,10 +862,10 @@ export default function LoginScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={UIColors.white} />
             ) : (
               <>
-                <Ionicons name="arrow-redo" size={22} color="#ffffff" />
+                <Ionicons name="arrow-redo" size={22} color={UIColors.white} />
                 <Text style={styles.loginButtonText}>{texts.login}</Text>
               </>
             )}
@@ -954,7 +954,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     paddingVertical: 8,
-    shadowColor: '#000',
+    shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 16,
@@ -967,7 +967,7 @@ const styles = StyleSheet.create({
   },
   portalMenuText: {
     fontSize: 16,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   languageMenu: {
     position: 'absolute',
@@ -976,7 +976,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     paddingVertical: 8,
-    shadowColor: '#000',
+    shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 16,
@@ -999,7 +999,7 @@ const styles = StyleSheet.create({
   },
   languageMenuText: {
     fontSize: 15,
-    color: '#64748b',
+    color: UIColors.textSecondary,
   },
   languageMenuTextActive: {
     color: MibuBrand.brown,
@@ -1010,7 +1010,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: '#000000',
+    backgroundColor: UIColors.black,
     paddingVertical: 16,
     borderRadius: 28,
     marginTop: 12,
@@ -1018,7 +1018,7 @@ const styles = StyleSheet.create({
   appleButtonText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   content: {
     flex: 1,
@@ -1059,7 +1059,7 @@ const styles = StyleSheet.create({
   loginButtonText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   guestButton: {
     alignItems: 'center',
@@ -1068,7 +1068,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 20,
-    shadowColor: '#000',
+    shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
