@@ -178,9 +178,15 @@ export function EconomyScreen() {
   const coinBalance = coinsInfo?.balance || 0;
   const totalEarned = coinsInfo?.totalEarned || 0;
 
-  // 權益資訊（#039 新增）
-  const dailyPullLimit = perksInfo?.dailyPullLimit || 36;
-  const inventorySlots = perksInfo?.inventorySlots || 30;
+  // 權益資訊（#039 新增，#041 支援超管無限額度）
+  // 用 ?? 而非 ||，避免 dailyPullLimit=0（被封禁）時錯誤 fallback 為預設值
+  const rawDailyPullLimit = perksInfo?.dailyPullLimit ?? 36;
+  const rawInventorySlots = perksInfo?.inventorySlots ?? 30;
+  // dailyPullLimit === -1 代表無限（超管）；inventorySlots === 999 代表無限
+  const isUnlimitedPulls = rawDailyPullLimit === -1;
+  const isUnlimitedSlots = rawInventorySlots >= 999;
+  const dailyPullLimitDisplay = isUnlimitedPulls ? '∞' : String(rawDailyPullLimit);
+  const inventorySlotsDisplay = isUnlimitedSlots ? '∞' : String(rawInventorySlots);
 
   // 已解鎖成就數量
   const unlockedCount = achievements.filter(a => a.isUnlocked).length;
@@ -380,7 +386,7 @@ export function EconomyScreen() {
                     {isZh ? '每天可以扭蛋的次數' : 'Number of pulls per day'}
                   </Text>
                 </View>
-                <Text style={styles.perkDetailValue}>{dailyPullLimit}</Text>
+                <Text style={styles.perkDetailValue}>{dailyPullLimitDisplay}</Text>
               </View>
               <View style={styles.taskDivider} />
 
@@ -397,7 +403,7 @@ export function EconomyScreen() {
                     {isZh ? '可存放的道具數量' : 'Number of items you can hold'}
                   </Text>
                 </View>
-                <Text style={styles.perkDetailValue}>{inventorySlots}</Text>
+                <Text style={styles.perkDetailValue}>{inventorySlotsDisplay}</Text>
               </View>
               <View style={styles.taskDivider} />
 
@@ -524,7 +530,9 @@ export function EconomyScreen() {
               <View style={styles.tierBadge}>
                 <Ionicons name="dice-outline" size={12} color={MibuBrand.brown} />
                 <Text style={styles.userTier}>
-                  {isZh ? `每日 ${dailyPullLimit} 抽` : `${dailyPullLimit} pulls/day`}
+                  {isUnlimitedPulls
+                  ? (isZh ? '無限抽' : 'Unlimited pulls')
+                  : (isZh ? `每日 ${rawDailyPullLimit} 抽` : `${rawDailyPullLimit} pulls/day`)}
                 </Text>
               </View>
             </View>
@@ -544,7 +552,9 @@ export function EconomyScreen() {
             <View style={styles.perkItem}>
               <Ionicons name="cube-outline" size={16} color={MibuBrand.copper} />
               <Text style={styles.perkText}>
-                {isZh ? `背包 ${inventorySlots} 格` : `${inventorySlots} slots`}
+                {isUnlimitedSlots
+                  ? (isZh ? '背包無限' : 'Unlimited slots')
+                  : (isZh ? `背包 ${rawInventorySlots} 格` : `${rawInventorySlots} slots`)}
               </Text>
             </View>
             {perksInfo?.canApplySpecialist && (
@@ -572,7 +582,7 @@ export function EconomyScreen() {
           </View>
           <View style={styles.statCard}>
             <Ionicons name="dice" size={20} color="#f97316" />
-            <Text style={styles.statNumber}>{dailyPullLimit}</Text>
+            <Text style={styles.statNumber}>{dailyPullLimitDisplay}</Text>
             <Text style={styles.statLabel}>{isZh ? '每日抽數' : 'Daily Pulls'}</Text>
           </View>
         </View>

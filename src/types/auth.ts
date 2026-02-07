@@ -83,6 +83,8 @@ export interface UserProfile {
   lastName: string | null;                 // 姓
   profileImageUrl: string | null;          // 頭像 URL
   role: UserRole;                          // 用戶角色
+  roles?: string[];                        // 角色陣列（#040 補齊，向後兼容）
+  isSuperAdmin?: boolean;                  // 是否為超級管理員（#041 新增）
   gender: Gender | null;                   // 性別
   birthDate: string | null;                // 生日（YYYY-MM-DD）
   phone: string | null;                    // 電話號碼
@@ -92,6 +94,7 @@ export interface UserProfile {
   emergencyContactPhone: string | null;    // 緊急聯絡人電話
   emergencyContactRelation: string | null; // 緊急聯絡人關係
   preferredLanguage: Language;             // 偏好語言
+  createdAt?: string;                      // 帳號建立時間（#040 補齊）
 }
 
 /**
@@ -121,6 +124,7 @@ export interface ProfileResponse {
   success: boolean;      // 是否成功
   message: string;       // 回應訊息
   profile: UserProfile;  // 用戶資料
+  token?: string;        // 更新 firstName/lastName/email 時回傳新 token（#040 補齊）
 }
 
 // ============ 帳號操作 ============
