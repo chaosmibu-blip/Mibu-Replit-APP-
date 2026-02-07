@@ -282,7 +282,7 @@ export function ContributionScreen() {
                   {report.expEarned > 0 && (
                     <>
                       <Text style={styles.itemMetaText}>•</Text>
-                      <Text style={styles.itemXp}>+{report.expEarned} 金幣</Text>
+                      <Text style={styles.itemCoins}>+{report.expEarned} 金幣</Text>
                     </>
                   )}
                 </View>
@@ -362,7 +362,7 @@ export function ContributionScreen() {
                   {suggestion.expEarned > 0 && (
                     <>
                       <Text style={styles.itemMetaText}>•</Text>
-                      <Text style={styles.itemXp}>+{suggestion.expEarned} 金幣</Text>
+                      <Text style={styles.itemCoins}>+{suggestion.expEarned} 金幣</Text>
                     </>
                   )}
                 </View>
@@ -801,7 +801,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: MibuBrand.tan,
   },
-  itemXp: {
+  itemCoins: {
     fontSize: 12,
     fontWeight: '600',
     color: MibuBrand.success,

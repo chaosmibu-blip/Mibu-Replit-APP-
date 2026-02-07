@@ -176,10 +176,6 @@ export function EconomyScreen() {
   // 計算衍生數據
   // ============================================================
 
-  // 金幣餘額（#039 新增）
-  const coinBalance = coinsInfo?.balance || 0;
-  const totalEarned = coinsInfo?.totalEarned || 0;
-
   // 權益資訊（#039 新增，#041 支援超管無限額度）
   // 用 ?? 而非 ||，避免 dailyPullLimit=0（被封禁）時錯誤 fallback 為預設值
   const rawDailyPullLimit = perksInfo?.dailyPullLimit ?? 36;
@@ -571,170 +567,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 
-  // Level Card
-  levelCard: {
-    backgroundColor: MibuBrand.creamLight,
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
-    marginBottom: 16,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  levelCardDecor: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    opacity: 0.5,
-  },
-  levelCardDecorRight: {
-    left: 'auto',
-    right: 12,
-    top: 16,
-  },
-  levelTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  avatarContainer: {
-    position: 'relative',
-  },
-  avatarRing: {
-    padding: 3,
-    borderRadius: 36,
-    borderWidth: 2,
-    borderColor: MibuBrand.highlight,
-  },
-  avatar: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: MibuBrand.cream,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  levelBadge: {
-    position: 'absolute',
-    bottom: -4,
-    left: -4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: MibuBrand.brown,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    shadowColor: MibuBrand.brown,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  levelBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  userInfo: {
-    flex: 1,
-    marginLeft: 14,
-  },
-  userName: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginBottom: 4,
-  },
-  tierBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: MibuBrand.highlight,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-  },
-  userTier: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: MibuBrand.brown,
-  },
-  totalXpBox: {
-    alignItems: 'flex-end',
-    backgroundColor: MibuBrand.creamLight,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-  },
-  xpIconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 2,
-  },
-  totalXpLabel: {
-    fontSize: 11,
-    color: MibuBrand.copper,
-  },
-  totalXpValue: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: MibuBrand.brownDark,
-  },
-  levelProgress: {},
-  progressBarContainer: {
-    marginBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  progressBarBg: {
-    flex: 1,
-    height: 12,
-    backgroundColor: MibuBrand.tanLight,
-    borderRadius: 6,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: MibuBrand.brown,
-    borderRadius: 6,
-  },
-  progressPercentBadge: {
-    backgroundColor: MibuBrand.brown,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  progressPercentText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  progressLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  progressCurrent: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-    fontWeight: '500',
-  },
-  progressNextBadge: {
-    backgroundColor: MibuBrand.creamLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  progressNext: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: MibuBrand.brown,
-  },
-
   // Stats Row
   statsRow: {
     flexDirection: 'row',
@@ -958,30 +790,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 
-  // ===== #039 新增：權益相關樣式 =====
-  perksRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: MibuBrand.tanLight,
-  },
-  perkItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: MibuBrand.cream,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  perkText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: MibuBrand.copper,
-  },
+  // ===== 權益詳情樣式 =====
   perkDetailItem: {
     flexDirection: 'row',
     alignItems: 'center',

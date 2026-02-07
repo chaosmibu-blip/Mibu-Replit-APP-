@@ -40,7 +40,6 @@ import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
-import { ErrorState } from '../components/ui/ErrorState';
 
 /** AsyncStorage key for avatar preference（與 ProfileScreen 共用）*/
 const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';
@@ -198,7 +197,7 @@ export function HomeScreen() {
 
           if (coinsResponse) {
             // loginStreak 可能在 perksResponse 或 coinsResponse 中
-            const streak = (coinsResponse as any).loginStreak ?? (perksResponse as any)?.loginStreak ?? 1;
+            const streak = coinsResponse.loginStreak ?? perksResponse.loginStreak ?? 1;
             setUserCoins({
               balance: coinsResponse.balance ?? 0,
               totalEarned: coinsResponse.totalEarned ?? 0,
@@ -234,7 +233,7 @@ export function HomeScreen() {
         }
       }
     } catch (error) {
-      console.log('Failed to load home data:', error);
+      // 載入失敗，使用預設值（靜默處理）
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -262,7 +261,7 @@ export function HomeScreen() {
         setCustomAvatarUrl(savedCustomUrl);
       }
     } catch (error) {
-      console.log('Failed to load user avatar:', error);
+      // 頭像載入失敗，使用預設頭像
     }
   }, []);
 
@@ -745,25 +744,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
-  /** Lv badge，置於頭像右下角（不擋住頭像） */
-  levelBadgeCircle: {
-    position: 'absolute',
-    bottom: -6,
-    right: -12,
-    backgroundColor: MibuBrand.brown,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    minWidth: 40,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: MibuBrand.creamLight,
-  },
-  levelBadgeText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: MibuBrand.warmWhite,
-  },
   levelInfo: {
     marginLeft: 12,
     flex: 1,
@@ -772,11 +752,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-  },
-  levelPhase: {
-    fontSize: 12,
-    color: MibuBrand.copper,
-    marginTop: 2,
   },
   loginStreak: {
     alignItems: 'flex-end',
@@ -795,29 +770,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-  },
-
-  // 金幣徽章（#039 新增）
-  coinBadgeCircle: {
-    position: 'absolute',
-    bottom: -6,
-    right: -12,
-    backgroundColor: MibuBrand.warning,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    minWidth: 40,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 2,
-    borderWidth: 2,
-    borderColor: MibuBrand.creamLight,
-  },
-  coinBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#fff',
   },
 
   // 權益區塊（#039 新增，取代 XP 進度區）
@@ -978,18 +930,6 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 0,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
-
   // 公告/活動卡片
   announcementCard: {
     backgroundColor: MibuBrand.creamLight,
@@ -1035,17 +975,6 @@ const styles = StyleSheet.create({
   announcementDate: {
     fontSize: 12,
     color: MibuBrand.tan,
-  },
-
-  // 空狀態
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: MibuBrand.tan,
-    marginTop: 12,
   },
 
 });

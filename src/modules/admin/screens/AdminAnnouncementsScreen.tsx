@@ -847,7 +847,7 @@ const styles = StyleSheet.create({
     color: UIColors.textSecondary,
   },
   typeButtonTextActive: {
-    color: '#ffffff',
+    color: UIColors.white,
   },
 
   // 日期輸入樣式

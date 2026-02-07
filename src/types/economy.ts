@@ -21,6 +21,7 @@ export interface UserCoinsResponse {
   balance: number;       // 當前金幣餘額
   totalEarned: number;   // 累計獲得金幣
   totalSpent: number;    // 累計消費金幣
+  loginStreak?: number;  // 連續登入天數（後端可能回傳）
 }
 
 /**
@@ -34,6 +35,7 @@ export interface UserPerksResponse {
   inventoryBonus: number;       // 背包加成格數
   canApplySpecialist: boolean;  // 是否可申請策劃師
   specialistInvitedAt: string | null;  // 受邀成為策劃師時間
+  loginStreak?: number;                // 連續登入天數（後端可能回傳）
 }
 
 /**

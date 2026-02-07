@@ -256,9 +256,7 @@ export function GachaScreen() {
   const loadCountries = async () => {
     try {
       setCountriesError(false);
-      console.log('🌍 Loading countries...');
       const data = await apiService.getCountries();
-      console.log('🌍 Countries loaded:', JSON.stringify(data));
       setCountries(data);
     } catch (error) {
       console.error('🌍 Failed to load countries:', error);
@@ -278,7 +276,6 @@ export function GachaScreen() {
    * - Failed: 載入失敗
    */
   const loadRegions = async (countryId: number) => {
-    console.log('🏙️ Loading regions for country:', countryId);
     setLoadingRegions(true);
     setRegions([]); // 清空舊資料
 
@@ -292,7 +289,6 @@ export function GachaScreen() {
         apiService.getRegions(countryId),
         timeoutPromise,
       ]);
-      console.log('🏙️ Regions loaded:', data?.length || 0, 'items');
       setRegions(data);
     } catch (error) {
       console.error('🏙️ Failed to load regions:', error);
@@ -512,11 +508,8 @@ export function GachaScreen() {
 
     try {
       const selectedRegion = regions.find(r => r.id === selectedRegionId);
-      console.log('🎰 [GachaScreen] Starting gacha pull:', { regionId: selectedRegionId, pullCount });
-
       // #031: 取得裝置識別碼用於防刷機制
       const deviceId = await getDeviceId();
-      console.log('🎰 [GachaScreen] Device ID:', deviceId ? `${deviceId.substring(0, 8)}...` : 'none');
 
       // ========== 呼叫 V2 API ==========
       const response = await gachaApi.pullGachaV2({
@@ -524,12 +517,6 @@ export function GachaScreen() {
         count: pullCount,
         deviceId,
       }, token);
-
-      console.log('🎰 [GachaScreen] V2 API response received:', {
-        success: response.success,
-        cardsCount: response.cards?.length || 0,
-        meta: response.meta,
-      });
 
       // ========== 錯誤處理 ==========
       if (!response.success) {
