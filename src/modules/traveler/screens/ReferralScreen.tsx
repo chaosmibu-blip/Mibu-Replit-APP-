@@ -265,8 +265,8 @@ export function ReferralScreen() {
         Alert.alert(
           isZh ? '套用成功!' : 'Success!',
           isZh
-            ? `已成功使用推薦碼！獲得 ${result.expEarned} 經驗值`
-            : `Referral code applied! You earned ${result.expEarned} XP`
+            ? `已成功使用推薦碼！獲得 ${result.expEarned} 金幣`
+            : `Referral code applied! You earned ${result.expEarned} coins`
         );
         loadData();
       }

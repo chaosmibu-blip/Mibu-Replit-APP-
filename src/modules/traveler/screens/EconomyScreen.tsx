@@ -56,7 +56,7 @@ interface Task {
   icon: keyof typeof Ionicons.glyphMap;    // 任務圖示
   title: string;                           // 任務標題
   description: string;                     // 任務描述
-  xp: number;                              // 獎勵經驗值
+  coins: number;                            // 獎勵金幣
   isCompleted: boolean;                    // 是否已完成
   category: TaskCategory;                  // 任務類型
 }
@@ -66,12 +66,12 @@ interface Task {
  * 注意：實際應從後端 API 取得
  */
 const DAILY_TASKS: Task[] = [
-  { id: 'd1', icon: 'calendar-outline', title: '每日簽到', description: '登入 APP', xp: 5, isCompleted: false, category: 'daily' },
-  { id: 'd2', icon: 'gift-outline', title: '每日扭蛋', description: '完成 1 次扭蛋', xp: 10, isCompleted: false, category: 'daily' },
-  { id: 'd3', icon: 'book-outline', title: '瀏覽圖鑑', description: '查看圖鑑頁', xp: 5, isCompleted: false, category: 'daily' },
-  { id: 'd4', icon: 'map-outline', title: '查看行程', description: '查看旅程策劃', xp: 5, isCompleted: false, category: 'daily' },
-  { id: 'd5', icon: 'globe-outline', title: '探索地圖', description: '查看世界地圖', xp: 5, isCompleted: false, category: 'daily' },
-  { id: 'd6', icon: 'grid-outline', title: '每日全勤', description: '完成全部每日任務', xp: 30, isCompleted: false, category: 'daily' },
+  { id: 'd1', icon: 'calendar-outline', title: '每日簽到', description: '登入 APP', coins: 5, isCompleted: false, category: 'daily' },
+  { id: 'd2', icon: 'gift-outline', title: '每日扭蛋', description: '完成 1 次扭蛋', coins: 10, isCompleted: false, category: 'daily' },
+  { id: 'd3', icon: 'book-outline', title: '瀏覽圖鑑', description: '查看圖鑑頁', coins: 5, isCompleted: false, category: 'daily' },
+  { id: 'd4', icon: 'map-outline', title: '查看行程', description: '查看旅程策劃', coins: 5, isCompleted: false, category: 'daily' },
+  { id: 'd5', icon: 'globe-outline', title: '探索地圖', description: '查看世界地圖', coins: 5, isCompleted: false, category: 'daily' },
+  { id: 'd6', icon: 'grid-outline', title: '每日全勤', description: '完成全部每日任務', coins: 30, isCompleted: false, category: 'daily' },
 ];
 
 /**
@@ -79,14 +79,14 @@ const DAILY_TASKS: Task[] = [
  * 一次性任務，完成後不會重置
  */
 const ONETIME_TASKS: Task[] = [
-  { id: 'o1', icon: 'compass-outline', title: '初次探索', description: '完成第一次扭蛋', xp: 50, isCompleted: false, category: 'onetime' },
-  { id: 'o2', icon: 'person-outline', title: '建立檔案', description: '設定個人暱稱', xp: 30, isCompleted: false, category: 'onetime' },
-  { id: 'o3', icon: 'image-outline', title: '頭像達人', description: '更換個人頭像', xp: 15, isCompleted: false, category: 'onetime' },
-  { id: 'o4', icon: 'options-outline', title: '選擇偏好', description: '設定旅遊偏好標籤', xp: 20, isCompleted: false, category: 'onetime' },
-  { id: 'o5', icon: 'cart-outline', title: '首購達成', description: '購買第一個行程', xp: 150, isCompleted: false, category: 'onetime' },
-  { id: 'o6', icon: 'people-outline', title: '推薦先鋒', description: '成功邀請第一位好友', xp: 100, isCompleted: false, category: 'onetime' },
-  { id: 'o7', icon: 'cube-outline', title: '道具新手', description: '使用第一個道具', xp: 20, isCompleted: false, category: 'onetime' },
-  { id: 'o8', icon: 'document-text-outline', title: '規劃達人', description: '建立第一個行程項目', xp: 30, isCompleted: false, category: 'onetime' },
+  { id: 'o1', icon: 'compass-outline', title: '初次探索', description: '完成第一次扭蛋', coins: 50, isCompleted: false, category: 'onetime' },
+  { id: 'o2', icon: 'person-outline', title: '建立檔案', description: '設定個人暱稱', coins: 30, isCompleted: false, category: 'onetime' },
+  { id: 'o3', icon: 'image-outline', title: '頭像達人', description: '更換個人頭像', coins: 15, isCompleted: false, category: 'onetime' },
+  { id: 'o4', icon: 'options-outline', title: '選擇偏好', description: '設定旅遊偏好標籤', coins: 20, isCompleted: false, category: 'onetime' },
+  { id: 'o5', icon: 'cart-outline', title: '首購達成', description: '購買第一個行程', coins: 150, isCompleted: false, category: 'onetime' },
+  { id: 'o6', icon: 'people-outline', title: '推薦先鋒', description: '成功邀請第一位好友', coins: 100, isCompleted: false, category: 'onetime' },
+  { id: 'o7', icon: 'cube-outline', title: '道具新手', description: '使用第一個道具', coins: 20, isCompleted: false, category: 'onetime' },
+  { id: 'o8', icon: 'document-text-outline', title: '規劃達人', description: '建立第一個行程項目', coins: 30, isCompleted: false, category: 'onetime' },
 ];
 
 // ============================================================
@@ -230,7 +230,7 @@ export function EconomyScreen() {
       ) : (
         <View style={styles.taskRewardBadge}>
           <Image source={require('../../../../assets/images/coin-icon.png')} style={{ width: 18, height: 18 }} />
-          <Text style={styles.taskXp}>+{task.xp}</Text>
+          <Text style={styles.taskCoins}>+{task.coins}</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -253,12 +253,6 @@ export function EconomyScreen() {
                   {index < dailyTasks.length - 1 && <View style={styles.taskDivider} />}
                 </React.Fragment>
               ))}
-            </View>
-
-            {/* 今日經驗值 */}
-            <View style={styles.dailyXpRow}>
-              <Text style={styles.dailyXpLabel}>{isZh ? '今日經驗值' : "Today's XP"}</Text>
-              <Text style={styles.dailyXpValue}>{dailyEarnedXp} / {dailyTotalXp} XP</Text>
             </View>
 
             {/* 新手任務區塊 */}
@@ -463,15 +457,6 @@ export function EconomyScreen() {
       </View>
     );
   }
-
-  // ============================================================
-  // 計算今日經驗值
-  // ============================================================
-
-  // 今日可獲得的 XP 總和
-  const dailyTotalXp = dailyTasks.reduce((sum, t) => sum + t.xp, 0);
-  // 今日已獲得的 XP
-  const dailyEarnedXp = dailyTasks.filter(t => t.isCompleted).reduce((sum, t) => sum + t.xp, 0);
 
   // ============================================================
   // 主畫面渲染
@@ -885,7 +870,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
   },
-  taskXp: {
+  taskCoins: {
     fontSize: 14,
     fontWeight: '600',
     color: MibuBrand.warning,
@@ -899,24 +884,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // Daily XP Summary
-  dailyXpRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    marginBottom: 16,
-  },
-  dailyXpLabel: {
-    fontSize: 14,
-    color: MibuBrand.copper,
-  },
-  dailyXpValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
 
   // Empty State
   // Achievement Styles

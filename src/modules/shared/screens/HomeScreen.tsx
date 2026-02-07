@@ -458,7 +458,7 @@ export function HomeScreen() {
         {/* 右側：已獲得金幣 */}
         <View style={styles.taskRight}>
           <Text style={styles.taskEarnedLabel}>{isZh ? '已獲得' : 'Earned'}</Text>
-          <Text style={styles.taskEarnedXp}>+{dailyTask.earnedCoins} {isZh ? '金幣' : 'coins'}</Text>
+          <Text style={styles.taskEarnedCoins}>+{dailyTask.earnedCoins} {isZh ? '金幣' : 'coins'}</Text>
         </View>
 
         {/* 箭頭圖示 */}
@@ -886,7 +886,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: MibuBrand.tan,
   },
-  taskEarnedXp: {
+  taskEarnedCoins: {
     fontSize: 16,
     fontWeight: '700',
     color: MibuBrand.brown,

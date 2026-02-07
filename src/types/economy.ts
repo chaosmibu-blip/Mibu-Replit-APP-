@@ -75,63 +75,7 @@ export interface SpecialistEligibilityResponse {
   invitedAt?: string;                  // 邀請時間
 }
 
-// ============ 等級系統（向後兼容，#039 後固定回傳 level: 1） ============
-
-/**
- * 用戶等級資訊
- *
- * 顯示用戶的等級進度和相關數據
- */
-export interface LevelInfo {
-  level: number;                  // 當前等級
-  currentExp: number;             // 當前經驗值
-  nextLevelExp: number;           // 升級所需經驗值
-  totalExp: number;               // 累計總經驗值
-  dailyQuota: number;             // 每日扭蛋配額
-  tier?: number;                  // 用戶階段（VIP 等級）
-  loginStreak?: number;           // 連續登入天數
-  recentExp: ExperienceRecord[];  // 近期經驗值記錄
-}
-
-/**
- * 經驗值記錄
- *
- * 單筆經驗值獲得記錄
- */
-export interface ExperienceRecord {
-  id: string;               // 記錄 ID
-  amount: number;           // 經驗值數量
-  source: ExperienceSource; // 來源
-  description: string;      // 描述
-  createdAt: string;        // 獲得時間（ISO 8601）
-}
-
-/**
- * 經驗值來源
- */
-export type ExperienceSource =
-  | 'gacha'           // 扭蛋
-  | 'collection'      // 收藏
-  | 'referral'        // 推薦
-  | 'contribution'    // 貢獻
-  | 'crowdfund'       // 募資
-  | 'achievement'     // 成就
-  | 'daily_login'     // 每日登入
-  | 'trip_submit';    // 行程提交
-
-/**
- * 經驗值歷史回應
- * GET /api/economy/exp-history
- */
-export interface ExperienceHistoryResponse {
-  records: ExperienceRecord[];  // 記錄列表
-  pagination: {
-    page: number;               // 當前頁碼
-    limit: number;              // 每頁數量
-    total: number;              // 總數量
-    hasMore: boolean;           // 是否有更多
-  };
-}
+// ============ 等級系統已廢除，改用金幣系統 ============
 
 // ============ 成就系統 ============
 
@@ -185,9 +129,6 @@ export interface AchievementReward {
   coinReward: number;              // 金幣獎勵（#039 新增）
   perksReward?: PerksReward;       // 權益獎勵（#039 新增）
   badge?: string;                  // 徽章獎勵
-  // 向後兼容欄位
-  exp?: number;                    // 經驗值獎勵（已棄用，保留向後兼容）
-  credits?: number;                // 點數獎勵（已棄用）
 }
 
 /**
@@ -225,9 +166,6 @@ export interface ClaimAchievementResponse {
   reward: AchievementReward;   // 獲得的獎勵
   coins: UserCoinsResponse;    // 領取後的金幣狀態（#039 新增）
   perks: UserPerksResponse;    // 領取後的權益狀態（#039 新增）
-  // 向後兼容欄位（已棄用）
-  newExp?: number;             // 領取後的總經驗值（已棄用）
-  newLevel?: number;           // 如果升級，新等級（已棄用）
 }
 
 // ============ 每日任務系統 ============
@@ -244,7 +182,7 @@ export interface DailyTask {
   nameEn?: string;            // 任務名稱（英文）
   description: string;        // 任務描述
   icon?: string;              // 圖示
-  expReward: number;          // 經驗值獎勵
+  coinReward: number;         // 金幣獎勵
   targetCount: number;        // 目標次數
   triggerEvent: string;       // 觸發事件
   progress: {                 // 任務進度
@@ -253,11 +191,6 @@ export interface DailyTask {
     rewardClaimed: boolean;   // 是否已領取獎勵
     claimedAt?: string;       // 領取時間（ISO 8601）
   };
-  // 向後相容欄位
-  name?: string;              // 名稱（舊欄位）
-  xpReward?: number;          // 經驗值（舊欄位）
-  isCompleted?: boolean;      // 是否完成（舊欄位）
-  completedAt?: string;       // 完成時間（舊欄位）
 }
 
 /**
@@ -271,12 +204,8 @@ export interface DailyTasksResponse {
     completedTasks: number;   // 已完成任務數
     claimedRewards: number;   // 已領取獎勵數
     pendingRewards: number;   // 待領取獎勵數
-    totalExpAvailable: number; // 可獲得的總經驗值
+    totalCoinsAvailable: number; // 可獲得的總金幣
   };
-  // 向後相容欄位
-  success?: boolean;          // 是否成功（舊欄位）
-  completedCount?: number;    // 完成數（舊欄位）
-  totalCount?: number;        // 總數（舊欄位）
 }
 
 /**
@@ -287,20 +216,6 @@ export interface CompleteDailyTaskResponse {
   success: boolean;           // 是否成功
   message: string;            // 回應訊息
   rewards: {
-    exp: number;              // 獲得的經驗值
+    coins: number;            // 獲得的金幣
   };
-  newLevel?: UserLevel;       // 如果升級，新等級資訊
-  // 向後相容欄位
-  xpGained?: number;          // 獲得經驗值（舊欄位）
-}
-
-/**
- * 用戶等級資訊
- *
- * 用於升級通知時顯示
- */
-export interface UserLevel {
-  level: number;        // 等級
-  currentExp: number;   // 當前經驗值
-  nextLevelExp: number; // 下一級所需經驗值
 }

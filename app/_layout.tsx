@@ -17,6 +17,8 @@
  * - pending-approval: 審核中等待頁
  */
 import "../global.css";
+import { useEffect, useState } from 'react';
+import { Image } from 'react-native';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -27,13 +29,45 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AppProvider } from '../src/context/AppContext';
 
+// ============================================================
+// 全域靜態圖片預載入
+// 在 App 啟動時載入，避免用戶跳轉時才載入導致閃爍
+// ============================================================
+const PRELOAD_IMAGES = [
+  require('../assets/images/icon.png'),
+  require('../assets/images/coin-icon.png'),
+];
+
+/**
+ * 預載入靜態圖片資源
+ * 將 require() 的圖片解析為 URI 並呼叫 Image.prefetch
+ */
+function preloadImageAssets(): Promise<void> {
+  const promises = PRELOAD_IMAGES.map((image) => {
+    const resolved = Image.resolveAssetSource(image);
+    if (resolved?.uri) {
+      return Image.prefetch(resolved.uri);
+    }
+    return Promise.resolve();
+  });
+  return Promise.all(promises).then(() => {});
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [assetsReady, setAssetsReady] = useState(false);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  if (!loaded) {
+  // 啟動時預載入靜態圖片
+  useEffect(() => {
+    preloadImageAssets()
+      .catch((e) => console.warn('資源預載入失敗，繼續啟動:', e))
+      .finally(() => setAssetsReady(true));
+  }, []);
+
+  if (!loaded || !assetsReady) {
     return null;
   }
 

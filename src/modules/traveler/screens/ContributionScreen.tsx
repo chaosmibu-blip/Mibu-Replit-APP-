@@ -165,7 +165,7 @@ export function ContributionScreen() {
         setPendingVotes(prev => prev.filter(p => p.placeId !== placeId));
         Alert.alert(
           isZh ? '投票成功' : 'Vote Submitted',
-          isZh ? `獲得 ${result.expEarned} 經驗值` : `You earned ${result.expEarned} XP`
+          isZh ? `獲得 ${result.expEarned} 金幣` : `You earned ${result.expEarned} coins`
         );
       }
     } catch (error) {
@@ -189,7 +189,7 @@ export function ContributionScreen() {
         setPendingSuggestions(prev => prev.filter(s => s.id !== suggestionId));
         Alert.alert(
           isZh ? '投票成功' : 'Vote Submitted',
-          isZh ? `獲得 ${result.expEarned} 經驗值` : `You earned ${result.expEarned} XP`
+          isZh ? `獲得 ${result.expEarned} 金幣` : `You earned ${result.expEarned} coins`
         );
       }
     } catch (error) {
@@ -233,7 +233,7 @@ export function ContributionScreen() {
             {isZh ? '回報歇業/搬遷' : 'Report Closure'}
           </Text>
           <Text style={styles.actionDesc}>
-            {isZh ? '協助更新景點資訊可獲得經驗值' : 'Earn XP by helping update place info'}
+            {isZh ? '協助更新景點資訊可獲得金幣' : 'Earn coins by helping update place info'}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
@@ -282,7 +282,7 @@ export function ContributionScreen() {
                   {report.expEarned > 0 && (
                     <>
                       <Text style={styles.itemMetaText}>•</Text>
-                      <Text style={styles.itemXp}>+{report.expEarned} XP</Text>
+                      <Text style={styles.itemXp}>+{report.expEarned} 金幣</Text>
                     </>
                   )}
                 </View>
@@ -312,7 +312,7 @@ export function ContributionScreen() {
             {isZh ? '建議新景點' : 'Suggest a Place'}
           </Text>
           <Text style={styles.actionDesc}>
-            {isZh ? '推薦值得一訪的景點可獲得經驗值' : 'Earn XP by recommending great places'}
+            {isZh ? '推薦值得一訪的景點可獲得金幣' : 'Earn coins by recommending great places'}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
@@ -362,7 +362,7 @@ export function ContributionScreen() {
                   {suggestion.expEarned > 0 && (
                     <>
                       <Text style={styles.itemMetaText}>•</Text>
-                      <Text style={styles.itemXp}>+{suggestion.expEarned} XP</Text>
+                      <Text style={styles.itemXp}>+{suggestion.expEarned} 金幣</Text>
                     </>
                   )}
                 </View>

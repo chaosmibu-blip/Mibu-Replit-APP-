@@ -812,7 +812,7 @@ export function SettingsScreen() {
                     )}
                     {mergeResult.summary.expMerged > 0 && (
                       <Text style={styles.mergeSummaryItem}>
-                        • {isZh ? '經驗值' : 'EXP'}: +{mergeResult.summary.expMerged}
+                        • {isZh ? '金幣' : 'Coins'}: +{mergeResult.summary.expMerged}
                       </Text>
                     )}
                     {mergeResult.summary.balanceMerged > 0 && (
