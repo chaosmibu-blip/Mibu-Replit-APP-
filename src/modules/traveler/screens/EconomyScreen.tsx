@@ -229,7 +229,7 @@ export function EconomyScreen() {
         </View>
       ) : (
         <View style={styles.taskRewardBadge}>
-          <Image source={require('../../../../assets/images/coin-icon.png')} style={{ width: 14, height: 14 }} />
+          <Image source={require('../../../../assets/images/coin-icon.png')} style={{ width: 18, height: 18 }} />
           <Text style={styles.taskXp}>+{task.xp}</Text>
         </View>
       )}
@@ -347,7 +347,7 @@ export function EconomyScreen() {
                           </View>
                         </View>
                         <View style={styles.achievementReward}>
-                          <Image source={require('../../../../assets/images/coin-icon.png')} style={{ width: 14, height: 14 }} />
+                          <Image source={require('../../../../assets/images/coin-icon.png')} style={{ width: 18, height: 18 }} />
                           <Text style={styles.achievementRewardText}>+{achievement.reward.coinReward || achievement.reward.exp || 0}</Text>
                         </View>
                       </View>
