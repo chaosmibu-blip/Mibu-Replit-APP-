@@ -49,7 +49,6 @@ const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';
  * 與 ProfileScreen 保持一致
  */
 const AVATAR_PRESETS = [
-  { id: 'default', icon: 'person', color: MibuBrand.brown },
   { id: 'chef', image: require('../../../../assets/images/avatars/avatar-chef.png'), color: '#F5E6D3' },
   { id: 'artist', image: require('../../../../assets/images/avatars/avatar-artist.png'), color: '#F5E6D3' },
   { id: 'musician', image: require('../../../../assets/images/avatars/avatar-musician.png'), color: '#F5E6D3' },
@@ -379,25 +378,26 @@ export function HomeScreen() {
               }
               const avatarPreset = AVATAR_PRESETS.find(a => a.id === userAvatar);
               const avatarColor = avatarPreset?.color || MibuBrand.brown;
-              if (userAvatar === 'default') {
+              // 有圖片的頭像（貓咪系列）
+              if (avatarPreset?.image) {
                 return (
-                  <View style={[styles.levelAvatar, { backgroundColor: avatarColor }]}>
-                    <Text style={styles.avatarInitial}>
-                      {state.user?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
-                    </Text>
-                  </View>
-                );
-              } else {
-                return (
-                  <View style={[styles.levelAvatar, { backgroundColor: avatarColor }]}>
-                    <Ionicons
-                      name={avatarPreset?.icon as any || 'person'}
-                      size={32}
-                      color="#ffffff"
+                  <View style={[styles.levelAvatar, { backgroundColor: avatarColor, overflow: 'hidden' }]}>
+                    <Image
+                      source={avatarPreset.image}
+                      style={{ width: 60, height: 60, borderRadius: 30 }}
+                      resizeMode="cover"
                     />
                   </View>
                 );
               }
+              // Fallback：首字母
+              return (
+                <View style={[styles.levelAvatar, { backgroundColor: avatarColor }]}>
+                  <Text style={styles.avatarInitial}>
+                    {state.user?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
+                  </Text>
+                </View>
+              );
             })()}
           </View>
           <View style={styles.levelInfo}>

@@ -49,7 +49,6 @@ interface AvatarPreset {
  * 預設頭像選項 — 貓咪系列插畫
  */
 const DEFAULT_AVATAR_PRESETS: AvatarPreset[] = [
-  { id: 'default', icon: 'person', color: MibuBrand.brown },
   { id: 'chef', image: require('../../../../assets/images/avatars/avatar-chef.png'), color: '#F5E6D3' },
   { id: 'artist', image: require('../../../../assets/images/avatars/avatar-artist.png'), color: '#F5E6D3' },
   { id: 'musician', image: require('../../../../assets/images/avatars/avatar-musician.png'), color: '#F5E6D3' },
@@ -436,21 +435,25 @@ export function ProfileScreen() {
                 source={{ uri: customAvatarUrl }}
                 style={styles.avatar}
               />
-            ) : (
-              <View style={[styles.avatar, { backgroundColor: avatarPresets.find(a => a.id === selectedAvatar)?.color || MibuBrand.brown }]}>
-                {selectedAvatar === 'default' ? (
+            ) : (() => {
+              const preset = avatarPresets.find(a => a.id === selectedAvatar);
+              // 有圖片的頭像（貓咪系列）
+              if (preset?.image) {
+                return (
+                  <View style={[styles.avatar, { backgroundColor: preset.color, overflow: 'hidden' }]}>
+                    <Image source={preset.image} style={{ width: 92, height: 92, borderRadius: 46 }} />
+                  </View>
+                );
+              }
+              // Fallback：首字母
+              return (
+                <View style={[styles.avatar, { backgroundColor: preset?.color || MibuBrand.brown }]}>
                   <Text style={styles.avatarText}>
                     {firstName?.charAt(0) || profile?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
                   </Text>
-                ) : (
-                  <Ionicons
-                    name={avatarPresets.find(a => a.id === selectedAvatar)?.icon as any || 'person'}
-                    size={44}
-                    color="#ffffff"
-                  />
-                )}
-              </View>
-            )}
+                </View>
+              );
+            })()}
             <View style={styles.avatarEditBadge}>
               {uploadingAvatar ? (
                 <ActivityIndicator size="small" color="#ffffff" />
@@ -696,15 +699,13 @@ export function ProfileScreen() {
                     setShowAvatarModal(false);
                   }}
                 >
-                  <View style={[styles.avatarOptionCircle, { backgroundColor: preset.color }]}>
-                    {preset.id === 'default' ? (
+                  <View style={[styles.avatarOptionCircle, { backgroundColor: preset.color, overflow: 'hidden' }]}>
+                    {preset.image ? (
+                      <Image source={preset.image} style={{ width: '100%', height: '100%', borderRadius: 28 }} resizeMode="cover" />
+                    ) : (
                       <Text style={styles.avatarOptionText}>
                         {firstName?.charAt(0) || '?'}
                       </Text>
-                    ) : preset.image ? (
-                      <Image source={preset.image} style={{ width: 56, height: 56, borderRadius: 28 }} />
-                    ) : (
-                      <Ionicons name={preset.icon as any} size={28} color="#ffffff" />
                     )}
                   </View>
                   {selectedAvatar === preset.id && (
