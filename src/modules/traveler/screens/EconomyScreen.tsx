@@ -26,6 +26,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -228,7 +229,7 @@ export function EconomyScreen() {
         </View>
       ) : (
         <View style={styles.taskRewardBadge}>
-          <Ionicons name="cash-outline" size={12} color={MibuBrand.warning} />
+          <Image source={require('../../../../assets/images/coin-icon.png')} style={{ width: 14, height: 14 }} />
           <Text style={styles.taskXp}>+{task.xp}</Text>
         </View>
       )}
@@ -346,7 +347,7 @@ export function EconomyScreen() {
                           </View>
                         </View>
                         <View style={styles.achievementReward}>
-                          <Ionicons name="cash-outline" size={12} color={MibuBrand.warning} />
+                          <Image source={require('../../../../assets/images/coin-icon.png')} style={{ width: 14, height: 14 }} />
                           <Text style={styles.achievementRewardText}>+{achievement.reward.coinReward || achievement.reward.exp || 0}</Text>
                         </View>
                       </View>
