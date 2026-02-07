@@ -26,12 +26,12 @@ import {
   ActivityIndicator,
   RefreshControl,
   Platform,
-  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { economyApi } from '../../../services/economyApi';
+import { CoinReward } from '../../shared/components/ui/CoinReward';
 import { MibuBrand } from '../../../../constants/Colors';
 import { UserCoinsResponse, UserPerksResponse, Achievement } from '../../../types/economy';
 
@@ -229,8 +229,7 @@ export function EconomyScreen() {
         </View>
       ) : (
         <View style={styles.taskRewardBadge}>
-          <Image source={require('../../../../assets/images/coin-icon.png')} style={{ width: 18, height: 18 }} />
-          <Text style={styles.taskCoins}>+{task.coins}</Text>
+          <CoinReward amount={task.coins} />
         </View>
       )}
     </TouchableOpacity>
@@ -341,8 +340,7 @@ export function EconomyScreen() {
                           </View>
                         </View>
                         <View style={styles.achievementReward}>
-                          <Image source={require('../../../../assets/images/coin-icon.png')} style={{ width: 18, height: 18 }} />
-                          <Text style={styles.achievementRewardText}>+{achievement.reward.coinReward || achievement.reward.exp || 0}</Text>
+                          <CoinReward amount={achievement.reward.coinReward || 0} />
                         </View>
                       </View>
                       {index < achievements.length - 1 && <View style={styles.taskDivider} />}
@@ -870,11 +868,6 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
   },
-  taskCoins: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: MibuBrand.warning,
-  },
   taskCheckmark: {
     width: 28,
     height: 28,
@@ -967,12 +960,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 3,
   },
-  achievementRewardText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: MibuBrand.warning,
-  },
-
   emptyState: {
     alignItems: 'center',
     paddingVertical: 48,
