@@ -26,7 +26,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 
 // ============ Props 介面定義 ============
 
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   buttonDanger: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#C45C5C',
+    borderColor: SemanticColors.errorMain,
   },
   /** 禁用狀態：降低透明度 */
   buttonDisabled: {
@@ -176,6 +176,6 @@ const styles = StyleSheet.create({
   },
   /** 危險按鈕文字：紅色 */
   textDanger: {
-    color: '#C45C5C',
+    color: SemanticColors.errorMain,
   },
 });

@@ -257,7 +257,7 @@ export function TutorialOverlay({
                 {isLastStep ? (isZh ? '開始使用' : 'Get Started') : (isZh ? '下一步' : 'Next')}
               </Text>
               {!isLastStep && (
-                <Ionicons name="chevron-forward" size={20} color="#ffffff" />
+                <Ionicons name="chevron-forward" size={20} color={UIColors.white} />
               )}
             </TouchableOpacity>
           </View>
@@ -290,7 +290,7 @@ export const GACHA_TUTORIAL_STEPS: TutorialStep[] = [
     description: '選擇你想探索的國家和地區，系統會為你推薦當地熱門景點。',
     descriptionEn: 'Select a country and region to explore local attractions.',
     icon: 'location',
-    iconColor: '#6366f1',
+    iconColor: MibuBrand.brown,
   },
   {
     id: 'pull-gacha',
@@ -484,6 +484,6 @@ const styles = StyleSheet.create({
   nextButtonText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 });

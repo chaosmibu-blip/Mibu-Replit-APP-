@@ -30,7 +30,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { UserRole } from '../../../types';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
 // ============ 介面定義 ============
 
@@ -238,7 +238,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
           {/* ===== 錯誤訊息 ===== */}
           {error && (
             <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={20} color="#ef4444" />
+              <Ionicons name="alert-circle" size={20} color={SemanticColors.errorDark} />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
@@ -250,7 +250,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
               placeholder={translations.name}
               value={name}
               onChangeText={setName}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               autoCapitalize="words"
             />
           )}
@@ -261,7 +261,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
             placeholder={translations.username}
             value={username}
             onChangeText={setUsername}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
             autoCapitalize="none"
             keyboardType="email-address"
           />
@@ -272,7 +272,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
             placeholder={translations.password}
             value={password}
             onChangeText={setPassword}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
             secureTextEntry
           />
 
@@ -318,7 +318,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={UIColors.white} />
             ) : (
               <Text style={styles.submitButtonText}>
                 {mode === 'login' ? translations.login : translations.register}
@@ -444,14 +444,14 @@ const styles = StyleSheet.create({
   errorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fef2f2',
+    backgroundColor: SemanticColors.errorLight,
     padding: 12,
     borderRadius: 12,
     marginBottom: 16,
     gap: 8,
   },
   errorText: {
-    color: '#ef4444',
+    color: SemanticColors.errorDark,
     fontSize: 14,
     flex: 1,
   },
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   // 模式切換
   switchButton: {

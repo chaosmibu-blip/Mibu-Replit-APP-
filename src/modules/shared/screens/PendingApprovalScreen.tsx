@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../../../context/AppContext';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 元件本體 ============
 
@@ -86,7 +86,7 @@ export function PendingApprovalScreen() {
 
       {/* ===== 登出按鈕 ===== */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={20} color="#ef4444" />
+        <Ionicons name="log-out-outline" size={20} color={SemanticColors.errorDark} />
         <Text style={styles.logoutText}>{translations.logout}</Text>
       </TouchableOpacity>
     </View>
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   // 主容器
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: '#fef3c7',
+    backgroundColor: SemanticColors.warningLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 32,
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -133,14 +133,14 @@ const styles = StyleSheet.create({
   // 說明文字
   description: {
     fontSize: 14,
-    color: '#94a3b8',
+    color: UIColors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 32,
   },
   // 角色卡片
   roleCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 20,
     width: '100%',
@@ -166,12 +166,12 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 14,
     paddingHorizontal: 24,
-    backgroundColor: '#fef2f2',
+    backgroundColor: SemanticColors.errorLight,
     borderRadius: 12,
   },
   logoutText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ef4444',
+    color: SemanticColors.errorDark,
   },
 });

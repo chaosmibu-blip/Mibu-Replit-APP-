@@ -22,6 +22,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { View, Text, Modal, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
+import { MibuBrand } from '../../../../constants/Colors';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -175,13 +176,13 @@ const PawPrint = ({ delay, x, y }: { delay: number; x: number; y: number }) => {
       {/* 腳印圖案：上方兩個小圓 + 下方三個圓（中間大） */}
       <View style={{ alignItems: 'center' }}>
         <View style={{ flexDirection: 'row', gap: 3, marginBottom: 2 }}>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#6B8DD6' }} />
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#6B8DD6' }} />
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: MibuBrand.info }} />
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: MibuBrand.info }} />
         </View>
         <View style={{ flexDirection: 'row', gap: 2 }}>
-          <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#6B8DD6' }} />
-          <View style={{ width: 10, height: 12, borderRadius: 5, backgroundColor: '#6B8DD6' }} />
-          <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#6B8DD6' }} />
+          <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: MibuBrand.info }} />
+          <View style={{ width: 10, height: 12, borderRadius: 5, backgroundColor: MibuBrand.info }} />
+          <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: MibuBrand.info }} />
         </View>
       </View>
     </Animated.View>

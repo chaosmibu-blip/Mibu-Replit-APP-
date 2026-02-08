@@ -28,7 +28,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { UserRole } from '../../../types';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, RoleColors } from '../../../../constants/Colors';
 
 // ============ Props 介面定義 ============
 
@@ -47,9 +47,9 @@ interface RoleSwitcherProps {
  * 包含標籤、顏色、圖示和對應路由
  */
 const ROLE_CONFIG: Record<UserRole, { label: { zh: string; en: string }; color: string; icon: string; route: string }> = {
-  traveler: { label: { zh: '旅客', en: 'Traveler' }, color: '#6366f1', icon: 'airplane-outline', route: '/(tabs)' },
-  merchant: { label: { zh: '商家端', en: 'Merchant' }, color: '#10b981', icon: 'storefront-outline', route: '/merchant-dashboard' },
-  specialist: { label: { zh: '專員端', en: 'Specialist' }, color: '#a855f7', icon: 'shield-checkmark-outline', route: '/specialist-dashboard' },
+  traveler: { label: { zh: '旅客', en: 'Traveler' }, color: MibuBrand.brown, icon: 'airplane-outline', route: '/(tabs)' },
+  merchant: { label: { zh: '商家端', en: 'Merchant' }, color: RoleColors.merchant.main, icon: 'storefront-outline', route: '/merchant-dashboard' },
+  specialist: { label: { zh: '專員端', en: 'Specialist' }, color: RoleColors.specialist.main, icon: 'shield-checkmark-outline', route: '/specialist-dashboard' },
   admin: { label: { zh: '管理端', en: 'Admin' }, color: '#f59e0b', icon: 'settings-outline', route: '/admin-dashboard' },
 };
 
@@ -141,7 +141,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
                 {isZh ? '切換身份' : 'Switch Role'}
               </Text>
               {switching ? (
-                <ActivityIndicator size="small" color="#6366f1" style={styles.loader} />
+                <ActivityIndicator size="small" color={MibuBrand.brown} style={styles.loader} />
               ) : (
                 accessibleRoles.map((role) => {
                   const config = ROLE_CONFIG[role];
@@ -206,7 +206,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
       {showMenu && (
         <View style={styles.dropdown}>
           {switching ? (
-            <ActivityIndicator size="small" color="#6366f1" style={styles.loader} />
+            <ActivityIndicator size="small" color={MibuBrand.brown} style={styles.loader} />
           ) : (
             accessibleRoles.map((role) => {
               const config = ROLE_CONFIG[role];
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 20,
     borderWidth: 2,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
   },
   /** 按鈕文字 */
   buttonText: {
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 44,
     right: 0,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     paddingVertical: 8,
     minWidth: 160,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   /** 下拉選單文字 */
   dropdownText: {
     fontSize: 15,
-    color: '#334155',
+    color: MibuBrand.brownDark,
   },
   /** 精簡模式按鈕 */
   compactButton: {
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   },
   /** Modal 選單容器 */
   menuContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 8,
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     textAlign: 'center',
     marginBottom: 12,
     paddingHorizontal: 16,
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   menuItemText: {
     flex: 1,
     fontSize: 16,
-    color: '#334155',
+    color: MibuBrand.brownDark,
   },
   /** 載入指示器容器 */
   loader: {

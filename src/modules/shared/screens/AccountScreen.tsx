@@ -31,7 +31,7 @@ import { useRouter } from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useApp } from '../../../context/AppContext';
 import { authApi, LinkedIdentity } from '../../../services/authApi';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
 
@@ -327,7 +327,7 @@ export function AccountScreen() {
                       <Ionicons
                         name={(provider?.icon || 'person') as any}
                         size={24}
-                        color="#ffffff"
+                        color={UIColors.white}
                       />
                     </View>
 
@@ -392,9 +392,9 @@ export function AccountScreen() {
               >
                 <View style={[styles.bindIcon, { backgroundColor: '#000000' }]}>
                   {bindingProvider === 'apple' ? (
-                    <ActivityIndicator size="small" color="#ffffff" />
+                    <ActivityIndicator size="small" color={UIColors.white} />
                   ) : (
-                    <Ionicons name="logo-apple" size={24} color="#ffffff" />
+                    <Ionicons name="logo-apple" size={24} color={UIColors.white} />
                   )}
                 </View>
                 <View style={styles.bindInfo}>
@@ -418,9 +418,9 @@ export function AccountScreen() {
               >
                 <View style={[styles.bindIcon, { backgroundColor: '#4285F4' }]}>
                   {bindingProvider === 'google' ? (
-                    <ActivityIndicator size="small" color="#ffffff" />
+                    <ActivityIndicator size="small" color={UIColors.white} />
                   ) : (
-                    <Ionicons name="logo-google" size={24} color="#ffffff" />
+                    <Ionicons name="logo-google" size={24} color={UIColors.white} />
                   )}
                 </View>
                 <View style={styles.bindInfo}>

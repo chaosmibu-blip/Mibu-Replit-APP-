@@ -34,7 +34,7 @@ import { Language } from '../../../types';
 import { AuthScreen } from './AuthScreen';
 import { apiService } from '../../../services/api';
 import { authApi, MergeSummary } from '../../../services/authApi';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============================================================
 // 常數定義
@@ -294,8 +294,8 @@ export function SettingsScreen() {
           label: isZh ? '個人資料' : 'Profile',
           action: () => router.push('/profile' as any),
           hasArrow: true,
-          iconBg: '#FEF3C7',
-          iconColor: '#D97706',
+          iconBg: SemanticColors.warningLight,
+          iconColor: SemanticColors.warningDark,
         },
         // [HIDDEN] 送審隱藏 #1 推薦領好禮
         // {
@@ -313,8 +313,8 @@ export function SettingsScreen() {
           action: () => setShowLanguageDropdown(true),
           value: currentLang.label,
           hasArrow: true,
-          iconBg: '#EEF2FF',
-          iconColor: '#6366f1',
+          iconBg: MibuBrand.creamLight,
+          iconColor: MibuBrand.brown,
         },
       ],
     },
@@ -427,8 +427,8 @@ export function SettingsScreen() {
           action: () => setShowLanguageDropdown(true),
           value: currentLang.label,
           hasArrow: true,
-          iconBg: '#EEF2FF',
-          iconColor: '#6366f1',
+          iconBg: MibuBrand.creamLight,
+          iconColor: MibuBrand.brown,
         },
       ],
     },
@@ -508,14 +508,14 @@ export function SettingsScreen() {
         <Switch
           value={item.checked}
           onValueChange={item.onChange}
-          trackColor={{ false: '#e2e8f0', true: MibuBrand.brown }}
-          thumbColor="#ffffff"
+          trackColor={{ false: MibuBrand.tanLight, true: MibuBrand.brown }}
+          thumbColor={UIColors.white}
         />
       )}
 
       {/* 箭頭 */}
       {item.hasArrow && (
-        <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        <Ionicons name="chevron-forward" size={20} color={UIColors.textSecondary} />
       )}
     </TouchableOpacity>
   );
@@ -553,13 +553,13 @@ export function SettingsScreen() {
               style={styles.settingItem}
               onPress={() => router.push('/admin-exclusions')}
             >
-              <View style={[styles.iconContainer, { backgroundColor: '#EEF2FF' }]}>
-                <Ionicons name="ban-outline" size={20} color="#6366f1" />
+              <View style={[styles.iconContainer, { backgroundColor: MibuBrand.creamLight }]}>
+                <Ionicons name="ban-outline" size={20} color={MibuBrand.brown} />
               </View>
               <Text style={styles.itemLabel}>
                 {isZh ? '全域排除管理' : 'Global Exclusions'}
               </Text>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+              <Ionicons name="chevron-forward" size={20} color={UIColors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -587,8 +587,8 @@ export function SettingsScreen() {
               style={[styles.settingItem, styles.settingItemBorder]}
               onPress={handleLogout}
             >
-              <View style={[styles.iconContainer, { backgroundColor: '#FEF3C7' }]}>
-                <Ionicons name="log-out-outline" size={20} color="#D97706" />
+              <View style={[styles.iconContainer, { backgroundColor: SemanticColors.warningLight }]}>
+                <Ionicons name="log-out-outline" size={20} color={SemanticColors.warningDark} />
               </View>
               <Text style={styles.itemLabel}>{isZh ? '登出' : 'Logout'}</Text>
             </TouchableOpacity>
@@ -598,10 +598,10 @@ export function SettingsScreen() {
               style={styles.settingItem}
               onPress={handleDeleteAccount}
             >
-              <View style={[styles.iconContainer, { backgroundColor: '#FEE2E2' }]}>
-                <Ionicons name="trash-outline" size={20} color="#EF4444" />
+              <View style={[styles.iconContainer, { backgroundColor: SemanticColors.errorLight }]}>
+                <Ionicons name="trash-outline" size={20} color={SemanticColors.errorDark} />
               </View>
-              <Text style={[styles.itemLabel, { color: '#EF4444' }]}>
+              <Text style={[styles.itemLabel, { color: SemanticColors.errorDark }]}>
                 {isZh ? '刪除帳號' : 'Delete Account'}
               </Text>
             </TouchableOpacity>
@@ -614,7 +614,7 @@ export function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '帳號' : 'Account'}</Text>
           <TouchableOpacity style={styles.loginButton} onPress={() => setShowAuthModal(true)}>
-            <Ionicons name="log-in-outline" size={20} color="#ffffff" />
+            <Ionicons name="log-in-outline" size={20} color={UIColors.white} />
             <Text style={styles.loginButtonText}>{t.login}</Text>
           </TouchableOpacity>
         </View>
@@ -695,7 +695,7 @@ export function SettingsScreen() {
             {mergeStep === 'warning' && (
               <>
                 <View style={styles.mergeIconContainer}>
-                  <Ionicons name="warning-outline" size={48} color="#D97706" />
+                  <Ionicons name="warning-outline" size={48} color={SemanticColors.warningDark} />
                 </View>
                 <Text style={styles.mergeTitle}>
                   {isZh ? '合併帳號' : 'Merge Accounts'}
@@ -780,7 +780,7 @@ export function SettingsScreen() {
                   <Ionicons
                     name={mergeResult.success ? 'checkmark-circle-outline' : 'close-circle-outline'}
                     size={48}
-                    color={mergeResult.success ? '#059669' : '#EF4444'}
+                    color={mergeResult.success ? '#059669' : SemanticColors.errorDark}
                   />
                 </View>
                 <Text style={styles.mergeTitle}>
@@ -974,7 +974,7 @@ const styles = StyleSheet.create({
   loginButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 
   // App 資訊卡片
@@ -1111,7 +1111,7 @@ const styles = StyleSheet.create({
   mergeButtonConfirmText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   mergeBackButton: {
     position: 'absolute',

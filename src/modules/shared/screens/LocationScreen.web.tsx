@@ -31,7 +31,7 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../../constants/translations';
 import { useApp } from '../../../context/AppContext';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
 
@@ -226,7 +226,7 @@ export function LocationScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#22c55e" />
+        <ActivityIndicator size="large" color={SemanticColors.successDark} />
         <Text style={styles.loadingText}>{t.gettingLocation}</Text>
       </View>
     );
@@ -237,7 +237,7 @@ export function LocationScreen() {
   if (errorMsg) {
     return (
       <View style={styles.errorContainer}>
-        <Ionicons name="location-outline" size={48} color="#ef4444" />
+        <Ionicons name="location-outline" size={48} color={SemanticColors.errorDark} />
         <Text style={styles.errorText}>{errorMsg}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={startLocationTracking}>
           <Text style={styles.retryButtonText}>{t.retry}</Text>
@@ -260,7 +260,7 @@ export function LocationScreen() {
           value={isSharingEnabled}
           onValueChange={setIsSharingEnabled}
           trackColor={{ false: '#d1d5db', true: '#86efac' }}
-          thumbColor={isSharingEnabled ? '#22c55e' : '#f4f4f5'}
+          thumbColor={isSharingEnabled ? SemanticColors.successDark : '#f4f4f5'}
         />
       </View>
 
@@ -269,7 +269,7 @@ export function LocationScreen() {
         {/* 用戶位置卡片 */}
         <View style={styles.locationCard}>
           <View style={styles.locationIcon}>
-            <Ionicons name="navigate" size={24} color="#22c55e" />
+            <Ionicons name="navigate" size={24} color={SemanticColors.successDark} />
           </View>
           <View style={styles.locationInfo}>
             <Text style={styles.locationTitle}>{t.yourLocation}</Text>
@@ -317,18 +317,18 @@ const styles = StyleSheet.create({
   // 主容器
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   // 位置分享開關區
   sharingToggle: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.tanLight,
   },
   sharingInfo: {
     flexDirection: 'row',
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   },
   sharingText: {
     fontSize: 15,
-    color: '#334155',
+    color: MibuBrand.brownDark,
     fontWeight: '500',
   },
   // 列表區
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   loadingText: {
     marginTop: 12,
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
     padding: 24,
   },
   errorText: {
@@ -375,13 +375,13 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 20,
-    backgroundColor: '#22c55e',
+    backgroundColor: SemanticColors.successDark,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#ffffff',
+    color: UIColors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   locationCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   locationIcon: {
     width: 48,
     height: 48,
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
   locationTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 4,
   },
   locationCoords: {
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
   plannerCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,

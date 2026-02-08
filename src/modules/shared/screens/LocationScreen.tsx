@@ -34,7 +34,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../../constants/translations';
 import { useApp } from '../../../context/AppContext';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
 
@@ -246,7 +246,7 @@ export function LocationScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#22c55e" />
+        <ActivityIndicator size="large" color={SemanticColors.successDark} />
         <Text style={styles.loadingText}>{t.gettingLocation}</Text>
       </View>
     );
@@ -257,7 +257,7 @@ export function LocationScreen() {
   if (errorMsg) {
     return (
       <View style={styles.errorContainer}>
-        <Ionicons name="location-outline" size={48} color="#ef4444" />
+        <Ionicons name="location-outline" size={48} color={SemanticColors.errorDark} />
         <Text style={styles.errorText}>{errorMsg}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={startLocationTracking}>
           <Text style={styles.retryButtonText}>{t.retry}</Text>
@@ -288,7 +288,7 @@ export function LocationScreen() {
           value={isSharingEnabled}
           onValueChange={setIsSharingEnabled}
           trackColor={{ false: '#d1d5db', true: '#86efac' }}
-          thumbColor={isSharingEnabled ? '#22c55e' : '#f4f4f5'}
+          thumbColor={isSharingEnabled ? SemanticColors.successDark : '#f4f4f5'}
         />
       </View>
 
@@ -331,7 +331,7 @@ export function LocationScreen() {
             description={t.planner}
           >
             <View style={styles.plannerMarker}>
-              <Ionicons name="person" size={16} color="#ffffff" />
+              <Ionicons name="person" size={16} color={UIColors.white} />
             </View>
           </Marker>
         ))}
@@ -339,7 +339,7 @@ export function LocationScreen() {
 
       {/* ===== 定位按鈕 ===== */}
       <TouchableOpacity style={styles.centerButton} onPress={centerOnUser}>
-        <Ionicons name="locate" size={24} color="#22c55e" />
+        <Ionicons name="locate" size={24} color={SemanticColors.successDark} />
       </TouchableOpacity>
     </View>
   );
@@ -357,11 +357,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.tanLight,
   },
   sharingInfo: {
     flexDirection: 'row',
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   },
   sharingText: {
     fontSize: 15,
-    color: '#334155',
+    color: MibuBrand.brownDark,
     fontWeight: '500',
   },
   // 地圖
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   loadingText: {
     marginTop: 12,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
     padding: 24,
   },
   errorText: {
@@ -405,13 +405,13 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 20,
-    backgroundColor: '#22c55e',
+    backgroundColor: SemanticColors.successDark,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#ffffff',
+    color: UIColors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     right: 16,
     width: 48,
     height: 48,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
@@ -444,10 +444,10 @@ const styles = StyleSheet.create({
   userMarkerInner: {
     width: 12,
     height: 12,
-    backgroundColor: '#22c55e',
+    backgroundColor: SemanticColors.successDark,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#ffffff',
+    borderColor: UIColors.white,
   },
   // 策畫師標記
   plannerMarker: {
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#ffffff',
+    borderColor: UIColors.white,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,

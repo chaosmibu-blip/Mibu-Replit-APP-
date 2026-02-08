@@ -38,7 +38,7 @@ import { API_BASE_URL } from '../../../constants/translations';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { SosAlert, SosAlertStatus } from '../../../types';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
 
@@ -47,9 +47,9 @@ const AUTH_TOKEN_KEY = '@mibu_token';
 
 /** SOS 狀態顏色對應 */
 const STATUS_COLORS: Record<SosAlertStatus, { bg: string; text: string; label: string; labelEn: string }> = {
-  pending: { bg: '#fef3c7', text: '#d97706', label: '等待處理', labelEn: 'Pending' },
+  pending: { bg: SemanticColors.warningLight, text: SemanticColors.warningDark, label: '等待處理', labelEn: 'Pending' },
   acknowledged: { bg: '#dbeafe', text: '#2563eb', label: '已確認', labelEn: 'Acknowledged' },
-  resolved: { bg: '#dcfce7', text: '#16a34a', label: '已解決', labelEn: 'Resolved' },
+  resolved: { bg: SemanticColors.successLight, text: SemanticColors.successDark, label: '已解決', labelEn: 'Resolved' },
   cancelled: { bg: '#f1f5f9', text: UIColors.textSecondary, label: '已取消', labelEn: 'Cancelled' },
 };
 
@@ -324,7 +324,7 @@ export function SOSScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ef4444" />
+        <ActivityIndicator size="large" color={SemanticColors.errorDark} />
         <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
@@ -357,7 +357,7 @@ export function SOSScreen() {
         {!eligible ? (
           <View style={styles.lockedCard}>
             <View style={styles.lockIcon}>
-              <Ionicons name="lock-closed" size={48} color="#94a3b8" />
+              <Ionicons name="lock-closed" size={48} color={UIColors.textSecondary} />
             </View>
             <Text style={styles.lockedTitle}>
               {isZh ? 'SOS 功能已鎖定' : 'SOS Feature Locked'}
@@ -379,7 +379,7 @@ export function SOSScreen() {
             {/* ===== 標題區塊 ===== */}
             <View style={styles.header}>
               <View style={styles.iconContainer}>
-                <Ionicons name="shield-checkmark" size={48} color="#ef4444" />
+                <Ionicons name="shield-checkmark" size={48} color={SemanticColors.errorDark} />
               </View>
               <Text style={styles.title}>{t.safetyCenter}</Text>
               <Text style={styles.subtitle}>{t.safetyCenterDesc}</Text>
@@ -411,10 +411,10 @@ export function SOSScreen() {
                 />
                 <View style={styles.sosButtonContent}>
                   {sending ? (
-                    <ActivityIndicator color="#ffffff" size="large" />
+                    <ActivityIndicator color={UIColors.white} size="large" />
                   ) : (
                     <>
-                      <Ionicons name="warning" size={40} color="#ffffff" />
+                      <Ionicons name="warning" size={40} color={UIColors.white} />
                       <Text style={styles.sosButtonText}>SOS</Text>
                       <Text style={styles.sosButtonHint}>
                         {isZh ? '長按 3 秒' : 'Hold 3 sec'}
@@ -448,7 +448,7 @@ export function SOSScreen() {
                       {/* 位置資訊 */}
                       {alert.locationAddress && (
                         <View style={styles.alertRow}>
-                          <Ionicons name="location" size={16} color="#64748b" />
+                          <Ionicons name="location" size={16} color={UIColors.textSecondary} />
                           <Text style={styles.alertRowText}>{alert.locationAddress}</Text>
                         </View>
                       )}
@@ -495,7 +495,7 @@ export function SOSScreen() {
                   <Ionicons
                     name={copied ? "checkmark" : "copy-outline"}
                     size={20}
-                    color="#ffffff"
+                    color={UIColors.white}
                   />
                   <Text style={styles.copyButtonText}>
                     {copied ? t.copied : t.copyLink}
@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
   purchaseButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   // 標題區塊
   header: {
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 80,
     height: 80,
-    backgroundColor: '#fef2f2',
+    backgroundColor: SemanticColors.errorLight,
     borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
@@ -658,10 +658,10 @@ const styles = StyleSheet.create({
   // SOS 按鈕
   sosButton: {
     height: 140,
-    backgroundColor: '#ef4444',
+    backgroundColor: SemanticColors.errorDark,
     borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#ef4444',
+    shadowColor: SemanticColors.errorDark,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
@@ -675,7 +675,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: '#dc2626',
+    backgroundColor: SemanticColors.errorDark,
   },
   sosButtonContent: {
     flex: 1,
@@ -685,7 +685,7 @@ const styles = StyleSheet.create({
   sosButtonText: {
     fontSize: 28,
     fontWeight: '900',
-    color: '#ffffff',
+    color: UIColors.white,
     marginTop: 4,
   },
   sosButtonHint: {
@@ -735,14 +735,14 @@ const styles = StyleSheet.create({
   cancelAlertButton: {
     marginTop: 8,
     paddingVertical: 10,
-    backgroundColor: '#fef2f2',
+    backgroundColor: SemanticColors.errorLight,
     borderRadius: 8,
     alignItems: 'center',
   },
   cancelAlertButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ef4444',
+    color: SemanticColors.errorDark,
   },
   // Webhook 區塊
   webhookBox: {
@@ -782,10 +782,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   copyButtonSuccess: {
-    backgroundColor: '#22c55e',
+    backgroundColor: SemanticColors.successDark,
   },
   copyButtonText: {
-    color: '#ffffff',
+    color: UIColors.white,
     fontSize: 15,
     fontWeight: '600',
   },

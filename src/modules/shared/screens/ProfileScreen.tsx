@@ -409,7 +409,7 @@ export function ProfileScreen() {
       {/* ===== 頂部導航列 ===== */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{isZh ? '個人資料' : 'Profile'}</Text>
         <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveButton}>
@@ -456,9 +456,9 @@ export function ProfileScreen() {
             })()}
             <View style={styles.avatarEditBadge}>
               {uploadingAvatar ? (
-                <ActivityIndicator size="small" color="#ffffff" />
+                <ActivityIndicator size="small" color={UIColors.white} />
               ) : (
-                <Ionicons name="camera" size={14} color="#ffffff" />
+                <Ionicons name="camera" size={14} color={UIColors.white} />
               )}
             </View>
           </TouchableOpacity>
@@ -486,7 +486,7 @@ export function ProfileScreen() {
             value={email}
             onChangeText={setEmail}
             placeholder={isZh ? '請輸入 Email' : 'Enter email'}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
@@ -502,7 +502,7 @@ export function ProfileScreen() {
               value={lastName}
               onChangeText={setLastName}
               placeholder={isZh ? '請輸入姓氏' : 'Enter last name'}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
             />
           </View>
           <View style={[styles.section, { flex: 1, marginLeft: 12 }]}>
@@ -512,7 +512,7 @@ export function ProfileScreen() {
               value={firstName}
               onChangeText={setFirstName}
               placeholder={isZh ? '請輸入名字' : 'Enter first name'}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
             />
           </View>
         </View>
@@ -560,7 +560,7 @@ export function ProfileScreen() {
             value={birthDate}
             onChangeText={setBirthDate}
             placeholder="YYYY-MM-DD"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
           />
         </View>
 
@@ -572,7 +572,7 @@ export function ProfileScreen() {
             value={phone}
             onChangeText={setPhone}
             placeholder={isZh ? '請輸入手機號碼' : 'Enter phone number'}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
             keyboardType="phone-pad"
           />
         </View>
@@ -611,7 +611,7 @@ export function ProfileScreen() {
             value={emergencyContactName}
             onChangeText={setEmergencyContactName}
             placeholder={isZh ? '請輸入姓名' : 'Enter name'}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
           />
         </View>
 
@@ -623,7 +623,7 @@ export function ProfileScreen() {
             value={emergencyContactPhone}
             onChangeText={setEmergencyContactPhone}
             placeholder={isZh ? '請輸入電話' : 'Enter phone'}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
             keyboardType="phone-pad"
           />
         </View>
@@ -710,7 +710,7 @@ export function ProfileScreen() {
                   </View>
                   {selectedAvatar === preset.id && (
                     <View style={styles.avatarCheckmark}>
-                      <Ionicons name="checkmark" size={14} color="#ffffff" />
+                      <Ionicons name="checkmark" size={14} color={UIColors.white} />
                     </View>
                   )}
                 </TouchableOpacity>
@@ -796,7 +796,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 40,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   avatarEditBadge: {
     position: 'absolute',
@@ -1006,7 +1006,7 @@ const styles = StyleSheet.create({
   avatarOptionText: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   avatarCheckmark: {
     position: 'absolute',
@@ -1056,7 +1056,7 @@ const styles = StyleSheet.create({
   toastText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ffffff',
+    color: UIColors.white,
     textAlign: 'center',
   },
 });

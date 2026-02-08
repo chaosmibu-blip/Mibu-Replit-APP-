@@ -28,7 +28,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
 // ============ 介面定義 ============
 
@@ -257,7 +257,7 @@ export function ChatScreen() {
       {/* ===== 頂部導航列 ===== */}
       <View style={styles.header}>
         <View style={styles.headerIcon}>
-          <Ionicons name="chatbubbles" size={24} color="#ffffff" />
+          <Ionicons name="chatbubbles" size={24} color={UIColors.white} />
         </View>
         <View style={styles.headerInfo}>
           <Text style={styles.headerTitle}>{texts.assistantName}</Text>
@@ -354,7 +354,7 @@ export function ChatScreen() {
         <TextInput
           style={styles.input}
           placeholder={texts.placeholder}
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor={UIColors.textSecondary}
           value={inputText}
           onChangeText={setInputText}
           multiline
@@ -365,7 +365,7 @@ export function ChatScreen() {
           onPress={handleSend}
           disabled={!inputText.trim()}
         >
-          <Ionicons name="send" size={20} color={inputText.trim() ? '#ffffff' : '#94a3b8'} />
+          <Ionicons name="send" size={20} color={inputText.trim() ? UIColors.white : UIColors.textSecondary} />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   },
   headerStatus: {
     fontSize: 13,
-    color: '#22c55e',
+    color: SemanticColors.successDark,
   },
   // 訊息列表區
   messagesContainer: {
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   userText: {
-    color: '#ffffff',
+    color: UIColors.white,
   },
   assistantText: {
     color: MibuBrand.brownDark,

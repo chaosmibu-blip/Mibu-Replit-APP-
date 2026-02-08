@@ -36,7 +36,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
-import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
@@ -723,7 +723,7 @@ const styles = StyleSheet.create({
   avatarInitial: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   levelInfo: {
     marginLeft: 12,
