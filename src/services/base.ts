@@ -128,9 +128,6 @@ export class ApiBase {
   protected async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     // 組合完整 URL
     const url = `${this.baseUrl}${endpoint}`;
-    console.log('[ApiBase] Full URL:', url);
-    console.log('[ApiBase] Authorization:', options.headers && 'Authorization' in options.headers ? 'Bearer ***' : 'none');
-
     // 發送請求，自動加入 JSON 標頭
     const response = await fetch(url, {
       ...options,
@@ -159,7 +156,6 @@ export class ApiBase {
       // 嘗試從多個可能的欄位提取錯誤訊息
       // 不同端點可能使用不同的欄位名稱
       const serverMessage = errorData.message || errorData.error || errorData.detail || errorData.reason;
-      console.log('[ApiBase] HTTP error response:', JSON.stringify(errorData));
       throw new ApiError(
         response.status,
         `API Error: ${response.status}`,

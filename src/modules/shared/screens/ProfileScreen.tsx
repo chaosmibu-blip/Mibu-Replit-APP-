@@ -184,7 +184,7 @@ export function ProfileScreen() {
         setCustomAvatarUrl(savedCustomUrl);
       }
     } catch (error) {
-      console.log('Failed to load saved avatar:', error);
+      console.error('Failed to load saved avatar:', error);
     }
   };
 
@@ -196,7 +196,7 @@ export function ProfileScreen() {
     try {
       await AsyncStorage.setItem(AVATAR_STORAGE_KEY, avatarId);
     } catch (error) {
-      console.log('Failed to save avatar choice:', error);
+      console.error('Failed to save avatar choice:', error);
     }
   };
 
