@@ -25,7 +25,7 @@ import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { authApi } from '../../../services/authApi';
 import { MerchantMe } from '../../../types';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function MerchantProfileScreen() {
@@ -268,7 +268,7 @@ export function MerchantProfileScreen() {
         <Text style={styles.dangerTitle}>{translations.dangerZone}</Text>
         {/* 刪除帳號按鈕 */}
         <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
-          <Ionicons name="trash-outline" size={20} color="#ffffff" />
+          <Ionicons name="trash-outline" size={20} color={UIColors.white} />
           <Text style={styles.deleteButtonText}>{translations.deleteAccount}</Text>
         </TouchableOpacity>
       </View>
@@ -357,11 +357,11 @@ const styles = StyleSheet.create({
   },
   // 已核准標籤
   approvedBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
   },
   // 待審核標籤
   pendingBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: SemanticColors.warningLight,
   },
   // 狀態文字
   statusText: {
@@ -370,11 +370,11 @@ const styles = StyleSheet.create({
   },
   // 已核准文字
   approvedText: {
-    color: '#16a34a',
+    color: SemanticColors.successDark,
   },
   // 待審核文字
   pendingText: {
-    color: '#d97706',
+    color: SemanticColors.warningDark,
   },
   // 資訊卡片
   infoCard: {
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
   },
   // 危險區域卡片
   dangerCard: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: SemanticColors.errorLight,
     borderRadius: 20,
     padding: 20,
     marginTop: 24,
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   dangerTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#dc2626',
+    color: SemanticColors.errorDark,
     marginBottom: 16,
   },
   // 刪除按鈕
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ef4444',
+    backgroundColor: SemanticColors.errorDark,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 12,
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   },
   // 刪除按鈕文字
   deleteButtonText: {
-    color: '#ffffff',
+    color: UIColors.white,
     fontSize: 16,
     fontWeight: '600',
   },

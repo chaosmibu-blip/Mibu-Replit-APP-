@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantApplyParams } from '../../../types';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 interface MerchantRegistrationFormProps {
   onSuccess: () => void;
@@ -106,7 +106,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
           <Ionicons name="close" size={24} color={UIColors.textSecondary} />
         </TouchableOpacity>
         <View style={styles.headerIcon}>
-          <Ionicons name="storefront" size={32} color="#6366f1" />
+          <Ionicons name="storefront" size={32} color={MibuBrand.brown} />
         </View>
         <Text style={styles.title}>{translations.title}</Text>
         <Text style={styles.subtitle}>{translations.subtitle}</Text>
@@ -120,7 +120,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
             value={formData.ownerName}
             onChangeText={text => updateField('ownerName', text)}
             placeholder={isZh ? '請輸入負責人姓名' : 'Enter owner name'}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
           />
         </View>
 
@@ -131,7 +131,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
             value={formData.businessName}
             onChangeText={text => updateField('businessName', text)}
             placeholder={isZh ? '請輸入商家名稱' : 'Enter business name'}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
           />
         </View>
 
@@ -165,7 +165,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
             value={formData.taxId}
             onChangeText={text => updateField('taxId', text)}
             placeholder={isZh ? '選填' : 'Optional'}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
             keyboardType="number-pad"
           />
         </View>
@@ -177,7 +177,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
             value={formData.address}
             onChangeText={text => updateField('address', text)}
             placeholder={isZh ? '請輸入商家地址' : 'Enter business address'}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
             multiline
           />
         </View>
@@ -190,7 +190,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
               value={formData.phone}
               onChangeText={text => updateField('phone', text)}
               placeholder="02-1234-5678"
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               keyboardType="phone-pad"
             />
           </View>
@@ -201,7 +201,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
               value={formData.mobile}
               onChangeText={text => updateField('mobile', text)}
               placeholder="0912-345-678"
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               keyboardType="phone-pad"
             />
           </View>
@@ -214,7 +214,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
             value={formData.email}
             onChangeText={text => updateField('email', text)}
             placeholder="contact@example.com"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -230,10 +230,10 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#ffffff" size="small" />
+              <ActivityIndicator color={UIColors.white} size="small" />
             ) : (
               <>
-                <Ionicons name="paper-plane" size={18} color="#ffffff" />
+                <Ionicons name="paper-plane" size={18} color={UIColors.white} />
                 <Text style={styles.submitButtonText}>{translations.submit}</Text>
               </>
             )}
@@ -249,7 +249,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
   },
   header: {
     alignItems: 'center',
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   headerIcon: {
     width: 64,
     height: 64,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 8,
   },
   subtitle: {
@@ -295,17 +295,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#334155',
+    color: MibuBrand.brownDark,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
-    color: '#1e293b',
+    color: MibuBrand.dark,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   textArea: {
     minHeight: 80,
@@ -321,19 +321,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#f8fafc',
+    borderColor: MibuBrand.tanLight,
+    backgroundColor: MibuBrand.warmWhite,
   },
   categoryOptionActive: {
-    backgroundColor: '#eef2ff',
-    borderColor: '#6366f1',
+    backgroundColor: MibuBrand.creamLight,
+    borderColor: MibuBrand.brown,
   },
   categoryText: {
     fontSize: 14,
     color: UIColors.textSecondary,
   },
   categoryTextActive: {
-    color: '#6366f1',
+    color: MibuBrand.brown,
     fontWeight: '600',
   },
   row: {
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
   },
   submitButtonDisabled: {
     opacity: 0.7,
@@ -377,6 +377,6 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 });

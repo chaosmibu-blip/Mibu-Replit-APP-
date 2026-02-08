@@ -25,7 +25,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function MerchantVerifyScreen() {
@@ -123,7 +123,7 @@ export function MerchantVerifyScreen() {
       <View style={styles.header}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
       </View>
@@ -139,7 +139,7 @@ export function MerchantVerifyScreen() {
               <Ionicons
                 name={result.valid ? 'checkmark-circle' : 'close-circle'}
                 size={64}
-                color="#ffffff"
+                color={UIColors.white}
               />
             </View>
             {/* 結果標題 */}
@@ -166,7 +166,7 @@ export function MerchantVerifyScreen() {
                 value={merchantId}
                 onChangeText={setMerchantId}
                 placeholder={translations.merchantIdPlaceholder}
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={UIColors.textSecondary}
                 keyboardType="number-pad"
               />
             </View>
@@ -179,7 +179,7 @@ export function MerchantVerifyScreen() {
                 value={code}
                 onChangeText={(text: string) => setCode(text.toUpperCase())}
                 placeholder={translations.codePlaceholder}
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={UIColors.textSecondary}
                 autoCapitalize="characters"
                 maxLength={6}
               />
@@ -192,10 +192,10 @@ export function MerchantVerifyScreen() {
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator size="small" color="#ffffff" />
+                <ActivityIndicator size="small" color={UIColors.white} />
               ) : (
                 <>
-                  <Ionicons name="shield-checkmark" size={20} color="#ffffff" />
+                  <Ionicons name="shield-checkmark" size={20} color={UIColors.white} />
                   <Text style={styles.verifyButtonText}>{translations.verify}</Text>
                 </>
               )}
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   // 主容器
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   // 頂部標題區
   header: {
@@ -221,9 +221,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.tanLight,
   },
   // 返回按鈕
   backButton: {
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   // 主要內容區
   content: {
@@ -243,11 +243,11 @@ const styles = StyleSheet.create({
   },
   // 表單卡片
   formCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 20,
     padding: 24,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   // 輸入群組
   inputGroup: {
@@ -262,14 +262,14 @@ const styles = StyleSheet.create({
   },
   // 輸入框
   input: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   // 核銷碼輸入框（特殊樣式）
   codeInput: {
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   // 驗證按鈕
   verifyButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -291,22 +291,22 @@ const styles = StyleSheet.create({
   },
   // 驗證按鈕（停用狀態）
   verifyButtonDisabled: {
-    backgroundColor: '#a5b4fc',
+    backgroundColor: MibuBrand.copperLight,
   },
   // 驗證按鈕文字
   verifyButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   // 結果卡片
   resultCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 20,
     padding: 40,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   // 結果圖示容器
   resultIcon: {
@@ -319,17 +319,17 @@ const styles = StyleSheet.create({
   },
   // 成功結果背景
   resultValid: {
-    backgroundColor: '#22c55e',
+    backgroundColor: SemanticColors.successDark,
   },
   // 失敗結果背景
   resultInvalid: {
-    backgroundColor: '#ef4444',
+    backgroundColor: SemanticColors.errorDark,
   },
   // 結果標題
   resultTitle: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 8,
   },
   // 結果訊息
@@ -350,6 +350,6 @@ const styles = StyleSheet.create({
   resetButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6366f1',
+    color: MibuBrand.brown,
   },
 });

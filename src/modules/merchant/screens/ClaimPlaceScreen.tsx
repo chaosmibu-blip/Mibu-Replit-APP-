@@ -19,7 +19,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { PlaceSearchResult } from '../../../types';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 export function ClaimPlaceScreen() {
   const { state, getToken } = useApp();
@@ -108,7 +108,7 @@ export function ClaimPlaceScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#1e293b" />
+            <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <View style={styles.headerText}>
             <Text style={styles.title}>{t.title}</Text>
@@ -119,13 +119,13 @@ export function ClaimPlaceScreen() {
         {/* Search Box */}
         <View style={styles.searchBox}>
           <View style={styles.searchInputContainer}>
-            <Ionicons name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
+            <Ionicons name="search" size={20} color={UIColors.textSecondary} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder={t.searchPlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               onSubmitEditing={handleSearch}
               returnKeyType="search"
             />
@@ -136,7 +136,7 @@ export function ClaimPlaceScreen() {
             disabled={searching || !searchQuery.trim()}
           >
             {searching ? (
-              <ActivityIndicator size="small" color="#ffffff" />
+              <ActivityIndicator size="small" color={UIColors.white} />
             ) : (
               <Text style={styles.searchButtonText}>{t.search}</Text>
             )}
@@ -158,7 +158,7 @@ export function ClaimPlaceScreen() {
               style={styles.addNewButton}
               onPress={() => router.push('/merchant/new-place' as any)}
             >
-              <Ionicons name="add-circle-outline" size={20} color="#6366f1" />
+              <Ionicons name="add-circle-outline" size={20} color={MibuBrand.brown} />
               <Text style={styles.addNewButtonText}>{t.addNewPlace}</Text>
             </TouchableOpacity>
           </View>
@@ -167,7 +167,7 @@ export function ClaimPlaceScreen() {
             {searchResults.map((place) => (
               <View key={place.placeId} style={styles.placeCard}>
                 <View style={styles.placeIcon}>
-                  <Ionicons name="location" size={24} color="#6366f1" />
+                  <Ionicons name="location" size={24} color={MibuBrand.brown} />
                 </View>
                 <View style={styles.placeInfo}>
                   <Text style={styles.placeName}>{place.placeName}</Text>
@@ -187,7 +187,7 @@ export function ClaimPlaceScreen() {
                     disabled={claiming === place.placeId}
                   >
                     {claiming === place.placeId ? (
-                      <ActivityIndicator size="small" color="#ffffff" />
+                      <ActivityIndicator size="small" color={UIColors.white} />
                     ) : (
                       <Text style={styles.claimButtonText}>{t.claim}</Text>
                     )}
@@ -205,7 +205,7 @@ export function ClaimPlaceScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   content: {
     padding: 20,
@@ -222,11 +222,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   headerText: {
     flex: 1,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   subtitle: {
     fontSize: 14,
@@ -250,10 +250,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     paddingHorizontal: 12,
   },
   searchIcon: {
@@ -263,20 +263,20 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   searchButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     borderRadius: 12,
     paddingHorizontal: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   searchButtonDisabled: {
-    backgroundColor: '#c7d2fe',
+    backgroundColor: MibuBrand.cream,
   },
   searchButtonText: {
-    color: '#ffffff',
+    color: UIColors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#94a3b8',
+    color: UIColors.textSecondary,
     marginTop: 8,
     textAlign: 'center',
   },
@@ -304,13 +304,13 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingVertical: 12,
     paddingHorizontal: 20,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 12,
   },
   addNewButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6366f1',
+    color: MibuBrand.brown,
   },
   resultsList: {
     gap: 12,
@@ -318,17 +318,17 @@ const styles = StyleSheet.create({
   placeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   placeIcon: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   placeName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 4,
   },
   placeLocation: {
@@ -363,12 +363,12 @@ const styles = StyleSheet.create({
   claimButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     borderRadius: 20,
   },
   claimButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 });

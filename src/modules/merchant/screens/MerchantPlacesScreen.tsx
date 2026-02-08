@@ -29,7 +29,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantPlace, PlaceSearchResult } from '../../../types';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 
@@ -70,11 +70,11 @@ export function MerchantPlacesScreen() {
   const getStatusConfig = (status?: string) => {
     switch (status) {
       case 'approved':
-        return { bg: '#dcfce7', color: '#16a34a', text: isZh ? '已核准' : 'Approved' };
+        return { bg: SemanticColors.successLight, color: SemanticColors.successDark, text: isZh ? '已核准' : 'Approved' };
       case 'rejected':
-        return { bg: '#fee2e2', color: '#dc2626', text: isZh ? '已拒絕' : 'Rejected' };
+        return { bg: SemanticColors.errorLight, color: SemanticColors.errorDark, text: isZh ? '已拒絕' : 'Rejected' };
       default:
-        return { bg: '#fef3c7', color: '#d97706', text: isZh ? '待審核' : 'Pending' };
+        return { bg: SemanticColors.warningLight, color: SemanticColors.warningDark, text: isZh ? '待審核' : 'Pending' };
     }
   };
 
@@ -518,11 +518,11 @@ const styles = StyleSheet.create({
   },
   // 已驗證標籤（未使用但保留）
   verifiedBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
   },
   // 待驗證標籤（未使用但保留）
   pendingBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: SemanticColors.warningLight,
   },
   // 狀態標籤文字
   statusText: {
@@ -531,11 +531,11 @@ const styles = StyleSheet.create({
   },
   // 已驗證文字（未使用但保留）
   verifiedText: {
-    color: '#16a34a',
+    color: SemanticColors.successDark,
   },
   // 待驗證文字（未使用但保留）
   pendingText: {
-    color: '#d97706',
+    color: SemanticColors.warningDark,
   },
   // 編輯圖示容器
   editIcon: {

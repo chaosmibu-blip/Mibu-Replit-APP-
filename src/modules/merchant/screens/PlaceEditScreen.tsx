@@ -29,7 +29,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { merchantApi } from '../../../services/merchantApi';
 import { MerchantPlace, UpdateMerchantPlaceParams, MerchantPlaceOpeningHours } from '../../../types';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function PlaceEditScreen() {
@@ -211,9 +211,9 @@ export function PlaceEditScreen() {
    */
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return { bg: '#dcfce7', text: '#16a34a' };
-      case 'rejected': return { bg: '#fee2e2', text: '#dc2626' };
-      default: return { bg: '#fef3c7', text: '#d97706' };
+      case 'approved': return { bg: SemanticColors.successLight, text: SemanticColors.successDark };
+      case 'rejected': return { bg: SemanticColors.errorLight, text: SemanticColors.errorDark };
+      default: return { bg: SemanticColors.warningLight, text: SemanticColors.warningDark };
     }
   };
 
@@ -221,7 +221,7 @@ export function PlaceEditScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{translations.loading}</Text>
       </View>
     );
@@ -231,7 +231,7 @@ export function PlaceEditScreen() {
   if (!place) {
     return (
       <View style={styles.loadingContainer}>
-        <Ionicons name="alert-circle-outline" size={48} color="#94a3b8" />
+        <Ionicons name="alert-circle-outline" size={48} color={UIColors.textSecondary} />
         <Text style={styles.loadingText}>{translations.loadFailed}</Text>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButtonLarge} onPress={() => router.back()}>
@@ -256,7 +256,7 @@ export function PlaceEditScreen() {
         <View style={styles.header}>
           {/* 返回按鈕 */}
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#1e293b" />
+            <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <Text style={styles.title}>{translations.title}</Text>
         </View>
@@ -301,7 +301,7 @@ export function PlaceEditScreen() {
               value={description}
               onChangeText={setDescription}
               placeholder={translations.descriptionPlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
@@ -316,7 +316,7 @@ export function PlaceEditScreen() {
               value={googleMapUrl}
               onChangeText={setGoogleMapUrl}
               placeholder={translations.googleMapUrlPlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               autoCapitalize="none"
               keyboardType="url"
             />
@@ -330,7 +330,7 @@ export function PlaceEditScreen() {
               value={openingHoursText}
               onChangeText={setOpeningHoursText}
               placeholder={translations.openingHoursPlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
@@ -349,8 +349,8 @@ export function PlaceEditScreen() {
             <Switch
               value={isPromoActive}
               onValueChange={setIsPromoActive}
-              trackColor={{ false: '#e2e8f0', true: '#a5b4fc' }}
-              thumbColor={isPromoActive ? '#6366f1' : '#f4f4f5'}
+              trackColor={{ false: MibuBrand.tanLight, true: MibuBrand.copperLight }}
+              thumbColor={isPromoActive ? MibuBrand.brown : '#f4f4f5'}
             />
           </View>
 
@@ -362,7 +362,7 @@ export function PlaceEditScreen() {
               value={promoTitle}
               onChangeText={setPromoTitle}
               placeholder={translations.promoTitlePlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
             />
           </View>
 
@@ -374,7 +374,7 @@ export function PlaceEditScreen() {
               value={promoDescription}
               onChangeText={setPromoDescription}
               placeholder={translations.promoDescriptionPlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
@@ -389,9 +389,9 @@ export function PlaceEditScreen() {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator size="small" color="#ffffff" />
+            <ActivityIndicator size="small" color={UIColors.white} />
           ) : (
-            <Ionicons name="checkmark-circle" size={24} color="#ffffff" />
+            <Ionicons name="checkmark-circle" size={24} color={UIColors.white} />
           )}
           <Text style={styles.saveButtonText}>
             {saving ? translations.saving : translations.save}
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   // 主容器
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   // 內容區
   content: {
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   // 載入中文字
   loadingText: {
@@ -440,23 +440,23 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   // 大返回按鈕（用於錯誤頁面）
   backButtonLarge: {
     marginTop: 20,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     borderRadius: 12,
   },
   // 返回按鈕文字
   backButtonText: {
-    color: '#ffffff',
+    color: UIColors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   // 區塊容器
   section: {
@@ -479,11 +479,11 @@ const styles = StyleSheet.create({
   },
   // 唯讀卡片
   readOnlyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   // 唯讀列
   readOnlyRow: {
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
   readOnlyValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     flex: 1,
     textAlign: 'right',
     marginLeft: 12,
@@ -527,19 +527,19 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 8,
   },
   // 文字輸入框
   textInput: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
-    color: '#1e293b',
+    borderColor: MibuBrand.tanLight,
+    color: MibuBrand.dark,
   },
   // 多行輸入框
   textArea: {
@@ -549,7 +549,7 @@ const styles = StyleSheet.create({
   // 輸入提示
   inputHint: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: UIColors.textSecondary,
     marginTop: 6,
     lineHeight: 18,
   },
@@ -558,19 +558,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     marginBottom: 16,
   },
   // 開關標籤
   switchLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   // 儲存按鈕
   saveButton: {
@@ -578,19 +578,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     paddingVertical: 16,
     borderRadius: 16,
     marginTop: 8,
   },
   // 儲存按鈕（停用狀態）
   saveButtonDisabled: {
-    backgroundColor: '#a5b4fc',
+    backgroundColor: MibuBrand.copperLight,
   },
   // 儲存按鈕文字
   saveButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 });

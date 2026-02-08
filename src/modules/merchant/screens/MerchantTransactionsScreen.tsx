@@ -24,7 +24,7 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantTransaction } from '../../../types';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function MerchantTransactionsScreen() {
@@ -130,8 +130,8 @@ export function MerchantTransactionsScreen() {
    */
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'purchase': return '#22c55e'; // 綠色：購買
-      case 'usage': return '#ef4444';    // 紅色：使用
+      case 'purchase': return SemanticColors.successDark; // 綠色：購買
+      case 'usage': return SemanticColors.errorDark;    // 紅色：使用
       case 'refund': return '#f59e0b';   // 橘色：退款
       default: return UIColors.textSecondary;
     }
@@ -141,7 +141,7 @@ export function MerchantTransactionsScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{translations.loading}</Text>
       </View>
     );
@@ -154,7 +154,7 @@ export function MerchantTransactionsScreen() {
       <View style={styles.header}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
       </View>
@@ -171,7 +171,7 @@ export function MerchantTransactionsScreen() {
         {transactions.length === 0 ? (
           // 空狀態
           <View style={styles.emptyCard}>
-            <Ionicons name="receipt-outline" size={48} color="#94a3b8" />
+            <Ionicons name="receipt-outline" size={48} color={UIColors.textSecondary} />
             <Text style={styles.emptyText}>{translations.noTransactions}</Text>
           </View>
         ) : (
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   // 主容器
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   // 頂部標題區
   header: {
@@ -223,9 +223,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.tanLight,
   },
   // 返回按鈕
   backButton: {
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   // 捲動區域
   scrollView: {
@@ -260,12 +260,12 @@ const styles = StyleSheet.create({
   },
   // 空狀態卡片
   emptyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 40,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   // 空狀態文字
   emptyText: {
@@ -279,13 +279,13 @@ const styles = StyleSheet.create({
   },
   // 交易卡片
   transactionCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   // 交易圖示容器
   transactionIcon: {
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   transactionType: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 4,
   },
   // 交易日期
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   // 交易說明
   transactionDesc: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: UIColors.textSecondary,
     marginTop: 4,
   },
   // 交易金額

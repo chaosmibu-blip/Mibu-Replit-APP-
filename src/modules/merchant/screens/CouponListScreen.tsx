@@ -18,7 +18,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantCoupon, MerchantCouponTier } from '../../../types';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
 
@@ -129,12 +129,12 @@ export function CouponListScreen() {
 
   const getCouponStatus = (coupon: MerchantCoupon) => {
     if (coupon.validUntil && new Date(coupon.validUntil) < new Date()) {
-      return { label: t.expired, color: '#ef4444' };
+      return { label: t.expired, color: SemanticColors.errorDark };
     }
     if (!coupon.isActive) {
       return { label: t.inactive, color: UIColors.textSecondary };
     }
-    return { label: t.active, color: '#16a34a' };
+    return { label: t.active, color: SemanticColors.successDark };
   };
 
   if (loading) {
@@ -184,7 +184,7 @@ export function CouponListScreen() {
         style={styles.addButton}
         onPress={() => router.push('/merchant/coupon/new' as any)}
       >
-        <Ionicons name="add-circle" size={20} color="#ffffff" />
+        <Ionicons name="add-circle" size={20} color={UIColors.white} />
         <Text style={styles.addButtonText}>{t.addCoupon}</Text>
       </TouchableOpacity>
 
@@ -260,9 +260,9 @@ export function CouponListScreen() {
                       disabled={deleting === coupon.id}
                     >
                       {deleting === coupon.id ? (
-                        <ActivityIndicator size="small" color="#ef4444" />
+                        <ActivityIndicator size="small" color={SemanticColors.errorDark} />
                       ) : (
-                        <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                        <Ionicons name="trash-outline" size={20} color={SemanticColors.errorDark} />
                       )}
                     </TouchableOpacity>
                   </View>
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   couponsList: {
     gap: 16,

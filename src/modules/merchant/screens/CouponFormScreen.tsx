@@ -19,7 +19,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantCoupon, MerchantCouponTier } from '../../../types';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 const TIERS: { id: MerchantCouponTier; label: string; prob: string; color: string }[] = [
   { id: 'SP', label: 'SP', prob: '0.1%', color: MibuBrand.tierSP },
@@ -159,7 +159,7 @@ export function CouponFormScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
@@ -177,7 +177,7 @@ export function CouponFormScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#1e293b" />
+            <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <Text style={styles.title}>{isEdit ? t.titleEdit : t.titleNew}</Text>
         </View>
@@ -195,7 +195,7 @@ export function CouponFormScreen() {
               value={formData.name}
               onChangeText={(v) => updateField('name', v)}
               placeholder={t.namePlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
             />
           </View>
 
@@ -248,7 +248,7 @@ export function CouponFormScreen() {
               value={formData.content}
               onChangeText={(v) => updateField('content', v)}
               placeholder={t.contentPlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               multiline
               numberOfLines={3}
               textAlignVertical="top"
@@ -263,7 +263,7 @@ export function CouponFormScreen() {
               value={formData.terms}
               onChangeText={(v) => updateField('terms', v)}
               placeholder={t.termsPlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               multiline
               numberOfLines={2}
               textAlignVertical="top"
@@ -279,7 +279,7 @@ export function CouponFormScreen() {
                 value={formData.quantity}
                 onChangeText={(v) => updateField('quantity', v.replace(/[^0-9]/g, ''))}
                 placeholder="100"
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={UIColors.textSecondary}
                 keyboardType="number-pad"
               />
             </View>
@@ -290,7 +290,7 @@ export function CouponFormScreen() {
                 value={formData.validUntil}
                 onChangeText={(v) => updateField('validUntil', v)}
                 placeholder={t.validUntilPlaceholder}
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={UIColors.textSecondary}
               />
             </View>
           </View>
@@ -324,10 +324,10 @@ export function CouponFormScreen() {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator size="small" color="#ffffff" />
+            <ActivityIndicator size="small" color={UIColors.white} />
           ) : (
             <>
-              <Ionicons name="checkmark-circle" size={20} color="#ffffff" />
+              <Ionicons name="checkmark-circle" size={20} color={UIColors.white} />
               <Text style={styles.saveButtonText}>{t.save}</Text>
             </>
           )}
@@ -340,7 +340,7 @@ export function CouponFormScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   content: {
     padding: 20,
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   loadingText: {
     marginTop: 12,
@@ -368,16 +368,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   form: {
     gap: 20,
@@ -393,25 +393,25 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   required: {
     fontSize: 12,
-    color: '#ef4444',
+    color: SemanticColors.errorDark,
   },
   hint: {
     fontSize: 12,
     color: UIColors.textSecondary,
   },
   input: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   textArea: {
     minHeight: 80,
@@ -430,14 +430,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     minWidth: 64,
   },
   tierButtonActive: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   tierLabel: {
     fontSize: 16,
@@ -447,41 +447,41 @@ const styles = StyleSheet.create({
   tierProb: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#94a3b8',
+    color: UIColors.textSecondary,
     marginTop: 2,
   },
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
   toggleLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   toggle: {
     width: 52,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: MibuBrand.tanLight,
     justifyContent: 'center',
     padding: 2,
   },
   toggleActive: {
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
   },
   toggleKnob: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
   },
   toggleKnobActive: {
     alignSelf: 'flex-end',
@@ -491,17 +491,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     borderRadius: 16,
     paddingVertical: 18,
     marginTop: 32,
   },
   saveButtonDisabled: {
-    backgroundColor: '#c7d2fe',
+    backgroundColor: MibuBrand.cream,
   },
   saveButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 });

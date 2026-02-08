@@ -18,7 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 const CATEGORIES = [
   { id: 'food', label: '美食', labelEn: 'Food', icon: 'restaurant' },
@@ -115,7 +115,7 @@ export function NewPlaceScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#1e293b" />
+            <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <View style={styles.headerText}>
             <Text style={styles.title}>{t.title}</Text>
@@ -136,7 +136,7 @@ export function NewPlaceScreen() {
               value={formData.placeName}
               onChangeText={(v) => updateField('placeName', v)}
               placeholder={t.placeNamePlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
             />
           </View>
 
@@ -159,7 +159,7 @@ export function NewPlaceScreen() {
                   <Ionicons
                     name={cat.icon as any}
                     size={20}
-                    color={formData.category === cat.id ? '#6366f1' : UIColors.textSecondary}
+                    color={formData.category === cat.id ? MibuBrand.brown : UIColors.textSecondary}
                   />
                   <Text
                     style={[
@@ -186,7 +186,7 @@ export function NewPlaceScreen() {
                 value={formData.city}
                 onChangeText={(v) => updateField('city', v)}
                 placeholder={t.cityPlaceholder}
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={UIColors.textSecondary}
               />
             </View>
             <View style={[styles.field, { flex: 1 }]}>
@@ -196,7 +196,7 @@ export function NewPlaceScreen() {
                 value={formData.district}
                 onChangeText={(v) => updateField('district', v)}
                 placeholder={t.districtPlaceholder}
-                placeholderTextColor="#94a3b8"
+                placeholderTextColor={UIColors.textSecondary}
               />
             </View>
           </View>
@@ -209,7 +209,7 @@ export function NewPlaceScreen() {
               value={formData.address}
               onChangeText={(v) => updateField('address', v)}
               placeholder={t.addressPlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
             />
           </View>
 
@@ -221,7 +221,7 @@ export function NewPlaceScreen() {
               value={formData.description}
               onChangeText={(v) => updateField('description', v)}
               placeholder={t.descriptionPlaceholder}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor={UIColors.textSecondary}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
@@ -236,10 +236,10 @@ export function NewPlaceScreen() {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator size="small" color="#ffffff" />
+            <ActivityIndicator size="small" color={UIColors.white} />
           ) : (
             <>
-              <Ionicons name="checkmark-circle" size={20} color="#ffffff" />
+              <Ionicons name="checkmark-circle" size={20} color={UIColors.white} />
               <Text style={styles.submitButtonText}>{t.submit}</Text>
             </>
           )}
@@ -252,7 +252,7 @@ export function NewPlaceScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   content: {
     padding: 20,
@@ -269,11 +269,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   headerText: {
     flex: 1,
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   subtitle: {
     fontSize: 14,
@@ -302,21 +302,21 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   required: {
     fontSize: 12,
-    color: '#ef4444',
+    color: SemanticColors.errorDark,
   },
   input: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   textArea: {
     minHeight: 100,
@@ -337,14 +337,14 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   categoryButtonActive: {
-    backgroundColor: '#eef2ff',
-    borderColor: '#6366f1',
+    backgroundColor: MibuBrand.creamLight,
+    borderColor: MibuBrand.brown,
   },
   categoryText: {
     fontSize: 14,
@@ -352,24 +352,24 @@ const styles = StyleSheet.create({
     color: UIColors.textSecondary,
   },
   categoryTextActive: {
-    color: '#6366f1',
+    color: MibuBrand.brown,
   },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
     borderRadius: 16,
     paddingVertical: 18,
     marginTop: 32,
   },
   submitButtonDisabled: {
-    backgroundColor: '#c7d2fe',
+    backgroundColor: MibuBrand.cream,
   },
   submitButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 });

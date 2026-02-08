@@ -26,7 +26,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MerchantPlace } from '../../../types';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function PlaceListScreen() {
@@ -98,7 +98,7 @@ export function PlaceListScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
@@ -117,7 +117,7 @@ export function PlaceListScreen() {
       <View style={styles.header}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         <View style={styles.headerText}>
           <Text style={styles.title}>{t.title}</Text>
@@ -132,7 +132,7 @@ export function PlaceListScreen() {
           style={styles.actionButton}
           onPress={() => router.push('/merchant/claim-place' as any)}
         >
-          <Ionicons name="search" size={20} color="#6366f1" />
+          <Ionicons name="search" size={20} color={MibuBrand.brown} />
           <Text style={styles.actionButtonText}>{t.claimPlace}</Text>
         </TouchableOpacity>
         {/* 新增自有店家按鈕 */}
@@ -140,7 +140,7 @@ export function PlaceListScreen() {
           style={[styles.actionButton, styles.actionButtonPrimary]}
           onPress={() => router.push('/merchant/new-place' as any)}
         >
-          <Ionicons name="add" size={20} color="#ffffff" />
+          <Ionicons name="add" size={20} color={UIColors.white} />
           <Text style={[styles.actionButtonText, styles.actionButtonTextPrimary]}>{t.addPlace}</Text>
         </TouchableOpacity>
       </View>
@@ -150,7 +150,7 @@ export function PlaceListScreen() {
         // 空狀態
         <View style={styles.emptyState}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="storefront-outline" size={48} color="#94a3b8" />
+            <Ionicons name="storefront-outline" size={48} color={UIColors.textSecondary} />
           </View>
           <Text style={styles.emptyTitle}>{t.noPlaces}</Text>
           <Text style={styles.emptySubtitle}>{t.noPlacesHint}</Text>
@@ -169,7 +169,7 @@ export function PlaceListScreen() {
               >
                 {/* 店家圖示 */}
                 <View style={styles.placeIcon}>
-                  <Ionicons name="storefront" size={24} color="#6366f1" />
+                  <Ionicons name="storefront" size={24} color={MibuBrand.brown} />
                 </View>
                 {/* 店家資訊 */}
                 <View style={styles.placeInfo}>
@@ -190,7 +190,7 @@ export function PlaceListScreen() {
                     <Ionicons
                       name={place.isVerified ? 'checkmark-circle' : 'time'}
                       size={14}
-                      color={place.isVerified ? '#16a34a' : '#d97706'}
+                      color={place.isVerified ? SemanticColors.successDark : SemanticColors.warningDark}
                     />
                     <Text
                       style={[
@@ -202,7 +202,7 @@ export function PlaceListScreen() {
                     </Text>
                   </View>
                   {/* 右箭頭 */}
-                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+                  <Ionicons name="chevron-forward" size={20} color={UIColors.textSecondary} />
                 </View>
               </TouchableOpacity>
             ))}
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   // 主容器
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   // 內容區
   content: {
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.warmWhite,
   },
   // 載入中文字
   loadingText: {
@@ -251,11 +251,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   // 標題文字區
   headerText: {
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   // 副標題
   subtitle: {
@@ -287,25 +287,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   // 主要操作按鈕（填滿色）
   actionButtonPrimary: {
-    backgroundColor: '#6366f1',
-    borderColor: '#6366f1',
+    backgroundColor: MibuBrand.brown,
+    borderColor: MibuBrand.brown,
   },
   // 操作按鈕文字
   actionButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6366f1',
+    color: MibuBrand.brown,
   },
   // 主要操作按鈕文字
   actionButtonTextPrimary: {
-    color: '#ffffff',
+    color: UIColors.white,
   },
   // 空狀態容器
   emptyState: {
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 8,
   },
   // 空狀態副標題
@@ -349,18 +349,18 @@ const styles = StyleSheet.create({
   placeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   // 店家圖示容器
   placeIcon: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   placeName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.dark,
     marginBottom: 4,
   },
   // 店家位置
@@ -398,11 +398,11 @@ const styles = StyleSheet.create({
   },
   // 已驗證標籤
   verifiedBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
   },
   // 待驗證標籤
   pendingBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: SemanticColors.warningLight,
   },
   // 狀態文字
   statusText: {
@@ -411,10 +411,10 @@ const styles = StyleSheet.create({
   },
   // 已驗證文字
   verifiedText: {
-    color: '#16a34a',
+    color: SemanticColors.successDark,
   },
   // 待驗證文字
   pendingText: {
-    color: '#d97706',
+    color: SemanticColors.warningDark,
   },
 });
