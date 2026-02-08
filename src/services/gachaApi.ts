@@ -134,15 +134,10 @@ class GachaApiService extends ApiBase {
    * @returns 獎池內容
    */
   async getGachaPool(city: string): Promise<GachaPoolResponse> {
-    try {
-      const params = new URLSearchParams({ city });
-      const data = await this.request<{ pool: GachaPoolResponse['pool'] }>(`/api/gacha/pool?${params}`);
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return { success: true, pool: data.pool };
-    } catch (error) {
-      console.error('Failed to get gacha pool:', error);
-      throw error;
-    }
+    const params = new URLSearchParams({ city });
+    const data = await this.request<{ pool: GachaPoolResponse['pool'] }>(`/api/gacha/pool?${params}`);
+    // 後端沒有 success 欄位，HTTP 200 就是成功
+    return { success: true, pool: data.pool };
   }
 
   /**
@@ -155,16 +150,10 @@ class GachaApiService extends ApiBase {
    * @returns 抽獎結果
    */
   async pullGacha(payload: GachaPullPayload): Promise<GachaPullResponse> {
-    try {
-      const data = await this.request<GachaPullResponse>('/api/gacha/pull/v3', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      return data;
-    } catch (error) {
-      console.error('Failed to pull gacha:', error);
-      throw error;
-    }
+    return this.request<GachaPullResponse>('/api/gacha/pull/v3', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
   }
 
   /**

@@ -107,15 +107,10 @@ class AdminApiService extends ApiBase {
    * @returns 排除清單
    */
   async getGlobalExclusions(token: string): Promise<GlobalExclusion[]> {
-    try {
-      const data = await this.request<{ exclusions: GlobalExclusion[] }>('/api/admin/global-exclusions', {
-        headers: this.authHeaders(token),
-      });
-      return data.exclusions || [];
-    } catch (error) {
-      console.error('Failed to get global exclusions:', error);
-      throw error;
-    }
+    const data = await this.request<{ exclusions: GlobalExclusion[] }>('/api/admin/global-exclusions', {
+      headers: this.authHeaders(token),
+    });
+    return data.exclusions || [];
   }
 
   /**

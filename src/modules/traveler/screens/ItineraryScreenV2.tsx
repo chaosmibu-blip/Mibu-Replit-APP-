@@ -1397,8 +1397,8 @@ export function ItineraryScreenV2() {
           { icon: 'sparkles' as const, text: isZh ? 'AI 智慧推薦景點' : 'AI recommends spots' },
           { icon: 'calendar-outline' as const, text: isZh ? '自動安排每日行程' : 'Auto daily planning' },
           { icon: 'navigate-outline' as const, text: isZh ? '即時導航帶你走' : 'Real-time navigation' },
-        ].map((tip, i) => (
-          <View key={i} style={styles.emptyTipRow}>
+        ].map((tip) => (
+          <View key={tip.icon} style={styles.emptyTipRow}>
             <Ionicons name={tip.icon} size={18} color={MibuBrand.copper} />
             <Text style={styles.emptyTipText}>{tip.text}</Text>
           </View>
@@ -1528,7 +1528,7 @@ export function ItineraryScreenV2() {
         {/* 對話訊息 */}
         {messages.map((msg, index) => (
           <View
-            key={index}
+            key={`msg-${index}-${msg.role}`}
             style={[
               styles.messageRow,
               msg.role === 'user' ? styles.userMessageRow : styles.assistantMessageRow,

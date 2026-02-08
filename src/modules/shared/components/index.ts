@@ -17,7 +17,7 @@ export { TutorialOverlay, GACHA_TUTORIAL_STEPS, useTutorial, resetTutorial } fro
 export { FilterChips, type FilterOption } from './FilterChips';
 export { SearchInput } from './SearchInput';
 export { CtaButton } from './CtaButton';
-export { StatCard } from './StatCard';
+export { StatCard } from './ui/StatCard';
 
 // UI Components
 export { Button } from './ui/Button';
