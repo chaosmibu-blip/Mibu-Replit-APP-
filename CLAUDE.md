@@ -350,6 +350,85 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 
 ---
 
+### /img-fit — 圖片對齊裁切（圖片與外框不對齊時觸發）
+
+**核心原則**：圖片自帶的邊框/圓框與 CSS 框架衝突時，用 scale + overflow 裁切解決，不重做圖片。
+
+**觸發時機**：任何圖片需要嵌入圓形/方形框架，且出現以下情況：
+- 圖片自帶的邊框與 CSS border 產生雙框
+- 圖片內容沒有填滿框架，有空隙
+- 圖片比例不對，導致變形或偏移
+
+**三層結構（由外到內）**：
+```
+┌─ 框架層（View + border / frame 圖片）─────┐
+│  ┌─ 遮罩層（overflow: hidden + 形狀）──┐  │
+│  │  ┌─ 圖片層（scale 放大裁切）────┐  │  │
+│  │  │                              │  │  │
+│  │  └──────────────────────────────┘  │  │
+│  └──────────────────────────────────────┘  │
+└────────────────────────────────────────────┘
+```
+
+**實作模板**：
+```typescript
+// 框架層：控制外框樣式
+<View style={{
+  width: SIZE,
+  height: SIZE,
+  borderRadius: SIZE / 2,       // 圓形
+  borderWidth: FRAME_WIDTH,
+  borderColor: FRAME_COLOR,
+  overflow: 'hidden',           // 遮罩層合併在框架層
+}}>
+  {/* 圖片層：放大裁切 */}
+  <Image
+    source={imageSource}
+    style={{
+      width: '100%',
+      height: '100%',
+      transform: [{ scale: SCALE_FACTOR }],  // 關鍵
+    }}
+    resizeMode="cover"
+  />
+</View>
+```
+
+**Scale 決策表**：
+
+| 圖片狀況 | Scale 值 | 說明 |
+|---------|---------|------|
+| 圖片有細邊框線（1-2px） | 1.05 | 輕微放大，裁掉邊框線 |
+| 圖片有明顯圓框（3-5px） | 1.08 | 標準裁切，本專案頭像用這個 |
+| 圖片有粗框 + 留白 | 1.12~1.15 | 激進裁切，注意是否裁到主體 |
+| 圖片無框，但有透明邊距 | 1.03~1.05 | 消除邊距 |
+
+**檢查流程**：
+```
+1. 辨識問題 → 是雙框？空隙？偏移？
+2. 看圖片 → 圖片自帶什麼邊框/留白？
+3. 選 scale → 參考決策表選初始值
+4. 確認結構 → 容器有 overflow: hidden 嗎？
+5. 套用 → 加 transform: [{ scale }]
+6. 舉一反三 → 搜尋專案中所有同類圖片渲染，一次修完
+```
+
+**舉一反三搜尋**：
+```bash
+# 找所有可能有同樣問題的圖片渲染
+grep -rn "resizeMode.*cover" src/
+grep -rn "borderRadius.*overflow" src/
+grep -rn "Image.*source.*preset\|avatar\|frame" src/
+```
+
+**注意事項**：
+- `transform: [{ scale }]` 是從中心點放大，四邊均勻裁切
+- 必須確認父容器有 `overflow: 'hidden'`，否則放大的部分會溢出
+- 自訂上傳的圖片（非預設圖）通常不需要 scale，因為沒有預畫框
+- 如果 scale 後主體被裁太多 → 降低 scale 或考慮重做圖片
+
+---
+
 ## 收尾清單（每次任務結束前必跑）
 
 ### 完成標準

@@ -445,7 +445,7 @@ export function ProfileScreen() {
               if (preset?.image) {
                 return (
                   <View style={[styles.avatar, { backgroundColor: preset.color, overflow: 'hidden' }]}>
-                    <Image source={preset.image} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                    <Image source={preset.image} style={{ width: '100%', height: '100%', transform: [{ scale: 1.08 }] }} resizeMode="cover" />
                   </View>
                 );
               }
@@ -1006,6 +1006,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+    transform: [{ scale: 1.08 }],
   },
   avatarOptionText: {
     fontSize: 24,

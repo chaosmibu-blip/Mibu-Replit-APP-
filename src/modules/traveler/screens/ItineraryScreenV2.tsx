@@ -54,6 +54,7 @@ import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
+import { Calendar } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -277,6 +278,7 @@ export function ItineraryScreenV2() {
   // 建立行程 Modal 狀態
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // 【截圖 9-15 #12】編輯標題狀態
   const [editingTitle, setEditingTitle] = useState(false);
@@ -815,6 +817,7 @@ export function ItineraryScreenV2() {
   // 開啟建立行程 Modal
   const openCreateModal = useCallback(() => {
     setCreateModalVisible(true);
+    setShowCalendar(false);
     setNewItinerary({
       title: '',
       date: new Date().toISOString().split('T')[0],
@@ -2113,8 +2116,7 @@ export function ItineraryScreenV2() {
               {filteredPlaces.map(categoryGroup => {
                 const categoryToken = getCategoryToken(categoryGroup.category);
                 const isExpanded = expandedCategory === categoryGroup.category;
-                // 【截圖 9-15 #6】最多顯示 15 個
-                const displayPlaces = isExpanded ? categoryGroup.places.slice(0, 15) : [];
+                const displayPlaces = isExpanded ? categoryGroup.places : [];
 
                 return (
                   <View key={categoryGroup.category} style={styles.modalCategorySection}>
@@ -2146,7 +2148,7 @@ export function ItineraryScreenV2() {
                       />
                     </TouchableOpacity>
 
-                    {/* 展開的景點列表（可滑動，最多 15 個） */}
+                    {/* 展開的景點列表（可滑動） */}
                     {isExpanded && (
                       <ScrollView
                         style={styles.accordionContent}
@@ -2188,11 +2190,6 @@ export function ItineraryScreenV2() {
                             </TouchableOpacity>
                           );
                         })}
-                        {categoryGroup.places.length > 15 && (
-                          <Text style={styles.accordionMoreText}>
-                            {tFormat(t.itinerary_morePlaces, { count: categoryGroup.places.length - 15 })}
-                          </Text>
-                        )}
                       </ScrollView>
                     )}
                   </View>
@@ -2262,20 +2259,58 @@ export function ItineraryScreenV2() {
               {/* 分隔線 */}
               <View style={styles.createDivider} />
 
-              {/* 日期 */}
+              {/* 日期（月曆選擇器） */}
               <View style={styles.createFieldGroup}>
                 <View style={styles.createFieldIcon}>
                   <Ionicons name="calendar-outline" size={18} color={MibuBrand.copper} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.createFieldLabel}>{t.itinerary_date}</Text>
-                  <TextInput
-                    style={styles.createFieldInput}
-                    value={newItinerary.date}
-                    onChangeText={(text) => setNewItinerary(prev => ({ ...prev, date: text }))}
-                    placeholder="YYYY-MM-DD"
-                    placeholderTextColor={MibuBrand.tan}
-                  />
+                  <TouchableOpacity
+                    style={[styles.createFieldInput, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+                    onPress={() => setShowCalendar(!showCalendar)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={{ fontSize: FontSize.md, color: MibuBrand.brownDark }}>
+                      {newItinerary.date}
+                    </Text>
+                    <Ionicons
+                      name={showCalendar ? 'chevron-up' : 'chevron-down'}
+                      size={16}
+                      color={MibuBrand.copper}
+                    />
+                  </TouchableOpacity>
+                  {showCalendar && (
+                    <View style={{ marginTop: Spacing.sm, borderRadius: Radius.md, overflow: 'hidden' }}>
+                      <Calendar
+                        current={newItinerary.date}
+                        onDayPress={(day: { dateString: string }) => {
+                          setNewItinerary(prev => ({ ...prev, date: day.dateString }));
+                          setShowCalendar(false);
+                        }}
+                        markedDates={{
+                          [newItinerary.date]: { selected: true, selectedColor: MibuBrand.brown },
+                        }}
+                        theme={{
+                          backgroundColor: MibuBrand.warmWhite,
+                          calendarBackground: MibuBrand.warmWhite,
+                          todayTextColor: MibuBrand.copper,
+                          selectedDayBackgroundColor: MibuBrand.brown,
+                          selectedDayTextColor: MibuBrand.warmWhite,
+                          arrowColor: MibuBrand.copper,
+                          monthTextColor: MibuBrand.brownDark,
+                          dayTextColor: MibuBrand.brownDark,
+                          textDisabledColor: MibuBrand.tan,
+                          textDayFontWeight: '500',
+                          textMonthFontWeight: '700',
+                          textDayHeaderFontWeight: '600',
+                          textDayFontSize: FontSize.md,
+                          textMonthFontSize: FontSize.lg,
+                          textDayHeaderFontSize: FontSize.sm,
+                        }}
+                      />
+                    </View>
+                  )}
                 </View>
               </View>
 
