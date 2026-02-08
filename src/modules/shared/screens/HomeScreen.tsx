@@ -41,8 +41,8 @@ import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
 
-/** AsyncStorage key for avatar preference（與 ProfileScreen 共用）*/
-const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';
+// StorageKeys 已統一集中管理
+import { STORAGE_KEYS } from '../../../constants/storageKeys';
 
 /**
  * 預設頭像選項
@@ -251,12 +251,12 @@ export function HomeScreen() {
    */
   const loadUserAvatar = useCallback(async () => {
     try {
-      const savedAvatar = await AsyncStorage.getItem(AVATAR_STORAGE_KEY);
+      const savedAvatar = await AsyncStorage.getItem(STORAGE_KEYS.AVATAR_PRESET);
       if (savedAvatar) {
         setUserAvatar(savedAvatar);
       }
       // #038 載入自訂頭像 URL
-      const savedCustomUrl = await AsyncStorage.getItem('@mibu_custom_avatar_url');
+      const savedCustomUrl = await AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_AVATAR_URL);
       if (savedCustomUrl) {
         setCustomAvatarUrl(savedCustomUrl);
       }

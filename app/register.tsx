@@ -30,8 +30,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
 import { MibuBrand } from '../constants/Colors';
-
-const AUTH_TOKEN_KEY = '@mibu_token';
+import { STORAGE_KEYS } from '../src/constants/storageKeys';
 
 const TRANSLATIONS = {
   'zh-TW': {
@@ -168,8 +167,8 @@ export default function RegisterScreen() {
       }
 
       if (data.token && data.user) {
-        await AsyncStorage.setItem(AUTH_TOKEN_KEY, data.token);
-        await AsyncStorage.setItem('@mibu_user', JSON.stringify(data.user));
+        await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+        await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
 
         setUser({
           id: data.user.id,

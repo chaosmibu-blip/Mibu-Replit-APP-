@@ -64,8 +64,8 @@ import { ErrorState } from '../../shared/components/ui/ErrorState';
 // 不限次數的特殊帳號（測試用）
 const UNLIMITED_EMAILS = ['s8869420@gmail.com'];
 
-// 每日扭蛋次數儲存 key
-const DAILY_LIMIT_KEY = '@mibu_daily_limit';
+// 每日扭蛋次數儲存 key（來自集中管理）
+import { STORAGE_KEYS } from '../../../constants/storageKeys';
 
 // 螢幕寬度（用於計算獎池項目寬度）
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -351,7 +351,7 @@ export function GachaScreen() {
 
     try {
       const today = new Date().toISOString().split('T')[0];
-      const stored = await AsyncStorage.getItem(DAILY_LIMIT_KEY);
+      const stored = await AsyncStorage.getItem(STORAGE_KEYS.DAILY_LIMIT);
 
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -372,7 +372,7 @@ export function GachaScreen() {
   const incrementDailyCount = async () => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const stored = await AsyncStorage.getItem(DAILY_LIMIT_KEY);
+      const stored = await AsyncStorage.getItem(STORAGE_KEYS.DAILY_LIMIT);
 
       let count = 1;
       if (stored) {
@@ -382,7 +382,7 @@ export function GachaScreen() {
         }
       }
 
-      await AsyncStorage.setItem(DAILY_LIMIT_KEY, JSON.stringify({ date: today, count }));
+      await AsyncStorage.setItem(STORAGE_KEYS.DAILY_LIMIT, JSON.stringify({ date: today, count }));
     } catch (error) {
       console.error('Failed to increment daily count:', error);
     }

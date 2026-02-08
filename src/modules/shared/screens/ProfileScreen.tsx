@@ -27,9 +27,7 @@ import { authApi } from '../../../services/authApi';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
-
-/** AsyncStorage key for avatar preference */
-const AVATAR_STORAGE_KEY = '@mibu_avatar_preset';
+import { STORAGE_KEYS } from '../../../constants/storageKeys';
 
 // ============ 常數定義 ============
 
@@ -174,12 +172,12 @@ export function ProfileScreen() {
    */
   const loadSavedAvatar = async () => {
     try {
-      const savedAvatar = await AsyncStorage.getItem(AVATAR_STORAGE_KEY);
+      const savedAvatar = await AsyncStorage.getItem(STORAGE_KEYS.AVATAR_PRESET);
       if (savedAvatar) {
         setSelectedAvatar(savedAvatar);
       }
       // #038 載入自訂頭像 URL
-      const savedCustomUrl = await AsyncStorage.getItem('@mibu_custom_avatar_url');
+      const savedCustomUrl = await AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_AVATAR_URL);
       if (savedCustomUrl) {
         setCustomAvatarUrl(savedCustomUrl);
       }
@@ -194,7 +192,7 @@ export function ProfileScreen() {
    */
   const saveAvatarChoice = async (avatarId: string) => {
     try {
-      await AsyncStorage.setItem(AVATAR_STORAGE_KEY, avatarId);
+      await AsyncStorage.setItem(STORAGE_KEYS.AVATAR_PRESET, avatarId);
     } catch (error) {
       console.error('Failed to save avatar choice:', error);
     }
@@ -259,7 +257,7 @@ export function ProfileScreen() {
         setSelectedAvatar('custom');
         await saveAvatarChoice('custom');
         // 儲存自訂頭像 URL 到 AsyncStorage
-        await AsyncStorage.setItem('@mibu_custom_avatar_url', uploadResult.avatarUrl);
+        await AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_AVATAR_URL, uploadResult.avatarUrl);
         showToastMessage(isZh ? '頭像上傳成功' : 'Avatar uploaded successfully');
       } else {
         showToastMessage(uploadResult.message || (isZh ? '上傳失敗' : 'Upload failed'));

@@ -13,8 +13,10 @@
  * ============ 主要功能 ============
  * - ApiBase: 所有 API 服務的基底類別
  * - ApiError: 統一的 API 錯誤類別
- * - request(): 通用 HTTP 請求方法
+ * - request(): 通用 HTTP 請求方法（含超時機制）
  * - authHeaders(): 生成 Bearer Token 認證標頭
+ *
+ * 更新日期：2026-02-08（加入 AbortController 超時機制）
  */
 import { API_BASE_URL } from '../constants/translations';
 
@@ -106,6 +108,16 @@ export class ApiBase {
   protected baseUrl = API_BASE_URL;
 
   /**
+   * 預設超時時間（毫秒）
+   * 子類別可覆寫此值，例如 AI 扭蛋服務需要更長時間
+   * @example
+   * class GachaApi extends ApiBase {
+   *   protected defaultTimeout = 120_000; // AI 生成需要 2 分鐘
+   * }
+   */
+  protected defaultTimeout = 30_000; // 30 秒
+
+  /**
    * 發送 HTTP 請求
    *
    * 統一處理所有 API 請求，包含：
@@ -113,58 +125,81 @@ export class ApiBase {
    * - JSON 回應解析
    * - HTTP 錯誤狀態碼處理
    * - 錯誤訊息提取
+   * - AbortController 超時機制（預設 30 秒）
    *
    * @template T - 回應資料的型別
    * @param endpoint - API 端點路徑（如 /api/auth/login）
    * @param options - fetch 請求選項
+   * @param timeout - 自訂超時時間（毫秒），不傳則使用 defaultTimeout
    * @returns 解析後的 JSON 回應
-   * @throws {ApiError} 當 HTTP 狀態碼非 2xx 時拋出
+   * @throws {ApiError} 當 HTTP 狀態碼非 2xx 或超時時拋出
    *
    * @example
+   * // 一般請求（30 秒超時）
    * const user = await this.request<User>('/api/auth/user', {
    *   headers: this.authHeaders(token),
    * });
+   *
+   * // 自訂超時（AI 生成用 120 秒）
+   * const result = await this.request<AiResult>('/api/ai/generate', opts, 120_000);
    */
-  protected async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  protected async request<T>(endpoint: string, options: RequestInit = {}, timeout?: number): Promise<T> {
     // 組合完整 URL
     const url = `${this.baseUrl}${endpoint}`;
-    // 發送請求，自動加入 JSON 標頭
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...options.headers,
-      },
-    });
 
-    // 嘗試解析 JSON 回應
-    let data: T | ApiErrorResponse;
+    // 建立超時控制器
+    const timeoutMs = timeout ?? this.defaultTimeout;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
-      data = await response.json();
-    } catch {
-      // 無法解析 JSON（可能是 HTML 錯誤頁面或空回應）
-      if (!response.ok) {
-        throw new ApiError(response.status, `API Error: ${response.status}`);
+      // 發送請求，自動加入 JSON 標頭 + 超時信號
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...options.headers,
+        },
+      });
+
+      // 嘗試解析 JSON 回應
+      let data: T | ApiErrorResponse;
+      try {
+        data = await response.json();
+      } catch {
+        // 無法解析 JSON（可能是 HTML 錯誤頁面或空回應）
+        if (!response.ok) {
+          throw new ApiError(response.status, `API Error: ${response.status}`);
+        }
+        throw new Error('Invalid JSON response');
       }
-      throw new Error('Invalid JSON response');
-    }
 
-    // 檢查 HTTP 狀態碼
-    if (!response.ok) {
-      const errorData = data as ApiErrorResponse;
-      // 嘗試從多個可能的欄位提取錯誤訊息
-      // 不同端點可能使用不同的欄位名稱
-      const serverMessage = errorData.message || errorData.error || errorData.detail || errorData.reason;
-      throw new ApiError(
-        response.status,
-        `API Error: ${response.status}`,
-        serverMessage,
-        errorData.code
-      );
-    }
+      // 檢查 HTTP 狀態碼
+      if (!response.ok) {
+        const errorData = data as ApiErrorResponse;
+        // 嘗試從多個可能的欄位提取錯誤訊息
+        // 不同端點可能使用不同的欄位名稱
+        const serverMessage = errorData.message || errorData.error || errorData.detail || errorData.reason;
+        throw new ApiError(
+          response.status,
+          `API Error: ${response.status}`,
+          serverMessage,
+          errorData.code
+        );
+      }
 
-    return data as T;
+      return data as T;
+    } catch (error) {
+      // 超時錯誤轉換為 ApiError
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new ApiError(0, `請求超時（${timeoutMs / 1000} 秒）`, '網路連線逾時，請稍後再試');
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   /**

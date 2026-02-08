@@ -23,6 +23,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import { AppState, Language, User, GachaItem, GachaResponse, UserRole } from '../types';
 import { TRANSLATIONS, DEFAULT_LEVEL } from '../constants/translations';
+import { STORAGE_KEYS } from '../constants/storageKeys';
 import { apiService } from '../services/api';
 import { pushNotificationService } from '../services/pushNotificationService';
 import { preloadService } from '../services/preloadService';
@@ -140,18 +141,7 @@ const defaultState: AppState = {
 /** Context 實例 */
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// ============ AsyncStorage Keys ============
-
-/**
- * 本地儲存的 Key 常數
- * 統一管理避免打錯字
- */
-const STORAGE_KEYS = {
-  LANGUAGE: '@mibu_language',      // 語言偏好
-  COLLECTION: '@mibu_collection',  // 扭蛋收藏
-  USER: '@mibu_user',              // 用戶資料快取
-  TOKEN: '@mibu_token',            // JWT Token
-};
+// StorageKeys 已統一集中管理於 src/constants/storageKeys.ts
 
 // ============ Provider 元件 ============
 

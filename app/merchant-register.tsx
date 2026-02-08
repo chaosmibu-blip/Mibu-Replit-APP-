@@ -33,6 +33,7 @@ import { useApp } from '../src/context/AppContext';
 import { apiService } from '../src/services/api';
 import { MibuBrand, UIColors } from '../constants/Colors';
 import { MerchantApplyParams } from '../src/types';
+import { STORAGE_KEYS } from '../src/constants/storageKeys';
 
 const BUSINESS_CATEGORIES = [
   { value: 'restaurant', labelZh: '餐飲業', labelEn: 'Restaurant' },
@@ -110,7 +111,7 @@ export default function MerchantRegisterScreen() {
 
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('@mibu_token');
+      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
       if (!token) {
         router.replace('/login');
         return;

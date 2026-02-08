@@ -39,11 +39,9 @@ import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { SosAlert, SosAlertStatus } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { STORAGE_KEYS } from '../../../constants/storageKeys';
 
 // ============ 常數定義 ============
-
-/** Token 儲存 key */
-const AUTH_TOKEN_KEY = '@mibu_token';
 
 /** SOS 狀態顏色對應 */
 const STATUS_COLORS: Record<SosAlertStatus, { bg: string; text: string; label: string; labelEn: string }> = {
@@ -82,7 +80,7 @@ export function SOSScreen() {
    * 包含資格檢查、求救記錄、Webhook URL
    */
   const fetchData = useCallback(async () => {
-    const userToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+    const userToken = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
     if (!userToken) {
       setLoading(false);
       return;
@@ -204,7 +202,7 @@ export function SOSScreen() {
   const triggerSOS = async () => {
     setSending(true);
     try {
-      const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
       if (!token) return;
 
       let locationData: { location?: string; locationAddress?: string } = {};
@@ -286,7 +284,7 @@ export function SOSScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+              const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
               if (!token) return;
 
               await apiService.cancelSosAlert(token, alertId);

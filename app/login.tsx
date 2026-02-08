@@ -39,8 +39,7 @@ import { useApp } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
 import { UserRole } from '../src/types';
 import { MibuBrand, RoleColors, UIColors } from '../constants/Colors';
-
-const AUTH_TOKEN_KEY = '@mibu_token';
+import { STORAGE_KEYS } from '../src/constants/storageKeys';
 
 // OAuth 登入 URL - 使用環境變數設定的 API URL（正式或開發環境）
 const OAUTH_BASE_URL = API_BASE_URL;
@@ -165,12 +164,12 @@ export default function LoginScreen() {
 
   const fetchUserWithTokenDirect = async (token: string) => {
     try {
-      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+      await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, token);
       
       // *** 關鍵修改：從 AsyncStorage 讀出之前儲存的入口選擇 ***
-      const targetPortal = await AsyncStorage.getItem('post_login_portal');
+      const targetPortal = await AsyncStorage.getItem(STORAGE_KEYS.POST_LOGIN_PORTAL);
       // *** 用完後立即刪除，避免影響下次登入 ***
-      await AsyncStorage.removeItem('post_login_portal');
+      await AsyncStorage.removeItem(STORAGE_KEYS.POST_LOGIN_PORTAL);
       
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         headers: {
@@ -351,7 +350,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       // *** 關鍵修改：在發起登入前，儲存使用者選擇的入口 ***
-      await AsyncStorage.setItem('post_login_portal', selectedPortal);
+      await AsyncStorage.setItem(STORAGE_KEYS.POST_LOGIN_PORTAL, selectedPortal);
 
       // Use /api/login with portal parameter - OAuth 使用開發環境 URL（僅 Web 平台）
       const authUrl = `${OAUTH_BASE_URL}/api/login?portal=${selectedPortal}&redirect_uri=${encodeURIComponent(redirectUri)}`;
@@ -385,19 +384,19 @@ export default function LoginScreen() {
     } catch (error) {
       console.error('Auth error:', error);
       // 清理可能殘留的存儲
-      await AsyncStorage.removeItem('post_login_portal');
+      await AsyncStorage.removeItem(STORAGE_KEYS.POST_LOGIN_PORTAL);
       setLoading(false);
     }
   };
 
   const fetchUserWithToken = async (token: string) => {
     try {
-      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+      await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, token);
       
       // *** 關鍵修改：從 AsyncStorage 讀出之前儲存的入口選擇 ***
-      const targetPortal = await AsyncStorage.getItem('post_login_portal');
+      const targetPortal = await AsyncStorage.getItem(STORAGE_KEYS.POST_LOGIN_PORTAL);
       // *** 用完後立即刪除，避免影響下次登入 ***
-      await AsyncStorage.removeItem('post_login_portal');
+      await AsyncStorage.removeItem(STORAGE_KEYS.POST_LOGIN_PORTAL);
       
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         headers: {
@@ -475,9 +474,9 @@ export default function LoginScreen() {
   const fetchUserAfterAuth = async () => {
     try {
       // *** 關鍵修改：從 AsyncStorage 讀出之前儲存的入口選擇 ***
-      const targetPortal = await AsyncStorage.getItem('post_login_portal');
+      const targetPortal = await AsyncStorage.getItem(STORAGE_KEYS.POST_LOGIN_PORTAL);
       // *** 用完後立即刪除，避免影響下次登入 ***
-      await AsyncStorage.removeItem('post_login_portal');
+      await AsyncStorage.removeItem(STORAGE_KEYS.POST_LOGIN_PORTAL);
       
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         credentials: 'include',
@@ -489,7 +488,7 @@ export default function LoginScreen() {
           // 使用從 AsyncStorage 讀出的 targetPortal
           const portalToUse = targetPortal || selectedPortal;
           let finalActiveRole = userData.activeRole || userData.role || portalToUse;
-          const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+          const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
           
           if (userData.isSuperAdmin && portalToUse !== finalActiveRole && token) {
             try {
