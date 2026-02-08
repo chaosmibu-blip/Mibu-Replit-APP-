@@ -127,12 +127,22 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 
 **開發前必做**：派偵察兵執行以下檢查
 
+**向內檢查（專案內部）**
+
 | 步驟 | 檢查內容 |
 |------|---------|
 | 1 | 搜尋是否已有相同/類似功能的程式碼 |
 | 2 | 檢查 memory 文件是否有相關記錄 |
 | 3 | 確認是否有可複用的元件/函數（查 components/、lib/、shared/） |
 | 4 | 判斷動作：新增 / 修改 / 覆蓋 / 直接使用 |
+
+**向外檢查（外部資源）**
+
+| 步驟 | 檢查內容 |
+|------|---------|
+| 5 | 有沒有現成的第三方套件能直接用？（查 reactnative.directory、npm） |
+| 6 | 有沒有外部 API 能省掉自建？（查外部資源索引的 API 市集） |
+| 7 | 業界成熟方案怎麼做？（查 UI/UX 套件庫、設計系統參考） |
 
 **決策矩陣**
 
@@ -143,6 +153,8 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 | 有但過時 | 更新覆蓋 |
 | 有且完整 | 直接使用，不重做 |
 | 有但位置不對 | 搬移重構 |
+| 外部有成熟套件 | 評估引入（確認 Expo 相容 + 維護活躍度） |
+| 外部有 API 可用 | 評估串接（確認費用 + 限額 + 穩定性） |
 
 ### 接到 UI 任務時
 ```
@@ -269,6 +281,42 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 **Commit 策略**：每個 Phase 結束後獨立 commit，訊息標明 Phase 編號
 
 **中斷處理**：如果某 Phase 被卡住（等後端、需確認），跳過進下一個，標記為「blocked」
+
+---
+
+### /ext-check — 向外檢查外部資源（開發新功能前觸發）
+
+**核心原則**：不要自己造輪子，先看外面有沒有現成的。套件能省 3 天開發，API 能省 3 週後端。
+
+**觸發時機**：開發新功能、新元件、新 API 串接前
+
+**流程**：
+```
+1. 定義需求 → 我需要什麼能力？（UI 元件 / 動畫效果 / 資料來源 / 工具函數）
+2. 查套件庫 → reactnative.directory 搜尋，確認 Expo 相容性
+3. 查 API 市集 → RapidAPI / APILayer 搜尋，確認免費額度
+4. 評估品質 → 星數、更新頻率、issue 數、下載量
+5. 決策回報 → 自建 vs 引入外部方案，向用戶說明取捨
+```
+
+**評估標準**：
+
+| 指標 | 及格線 |
+|------|--------|
+| GitHub Stars | ≥ 500 |
+| 最近更新 | 6 個月內 |
+| Expo 相容 | 必須（用 `npx expo install` 能裝） |
+| TypeScript 支援 | 必須 |
+| 套件大小 | 不超過 500KB（避免 bundle 膨脹） |
+
+**決策矩陣**：
+
+| 情境 | 決定 |
+|------|------|
+| 有成熟套件且符合需求 ≥ 80% | 引入套件 |
+| 有套件但需大量客製 | 自建（參考套件設計） |
+| 有 API 且免費額度足夠 | 串接 API |
+| 都沒有 | 自建 |
 
 ---
 
@@ -400,6 +448,64 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 | `babel.config.js`、`tsconfig.json` | 編譯設定 |
 | `.env*` | 環境變數，含敏感資訊 |
 | `package-lock.json` | 依賴鎖定，手動改會出問題 |
+
+---
+
+## 外部資源索引（/ext-check 使用）
+
+### API 市集
+
+| 平台 | 說明 | 費用 |
+|------|------|------|
+| [RapidAPI Hub](https://rapidapi.com/hub) | 全球最大 API 市集，數千個 API，搜尋就能找到 | 免費瀏覽，部分有免費方案 |
+| [Postman API Network](https://www.postman.com/explore) | API 文件 + 直接測試 | 免費 |
+| [APILayer](https://apilayer.com/) | 精選實用 API（匯率、地理位置、Email 驗證等） | 大部分有免費額度 |
+| [Public APIs (GitHub)](https://github.com/public-apis/public-apis) | 開源清單，分類列出所有免費公開 API | 免費 |
+
+### UI/UX 元件庫（React Native / Expo）
+
+| 套件 | 用途 | 備註 |
+|------|------|------|
+| [Gluestack UI v3](https://gluestack.io/) | 模組化元件庫，NativeBase 繼承者 | NativeWind/Tailwind 風格 |
+| [Tamagui](https://tamagui.dev/) | 編譯器優化的通用 UI 套件 | Expo + Next.js 整合強 |
+| [React Native Paper](https://callstack.github.io/react-native-paper/) | Material Design 元件 | 內建主題 + 無障礙 |
+| [React Native Elements](https://reactnativeelements.com/) | 入門友好的 UI 工具包 | 元件齊全、客製化容易 |
+| [Wix UI Lib](https://wix.github.io/react-native-ui-lib/) | 輕量彈性框架 | 來自 Wix 生產環境 |
+
+### 動畫庫
+
+| 套件 | 用途 | 備註 |
+|------|------|------|
+| [Reanimated 3](https://docs.swmansion.com/react-native-reanimated/) | UI thread 高效能動畫 | Expo 內建 |
+| [Moti](https://moti.fyi/) | 宣告式動畫（基於 Reanimated） | 簡化常見動畫模式 |
+| [Lottie RN](https://github.com/lottie-react-native/lottie-react-native) | AE 動畫轉 JSON | 適合 loading、onboarding |
+| [React Native Skia](https://shopify.github.io/react-native-skia/) | GPU 加速 2D 繪圖 | 適合扭蛋特效、粒子效果 |
+
+### 圖示 & 插圖
+
+| 來源 | 用途 | 費用 |
+|------|------|------|
+| [Expo Vector Icons](https://icons.expo.fyi/) | Ionicons/Material/Feather 等 icon 集合 | 免費（已內建） |
+| [Lucide](https://lucide.dev/) | 1,500+ 簡潔一致的 icon | 免費 |
+| [unDraw](https://undraw.co/) | 開源 SVG 插圖，可自訂顏色 | 免費 |
+| [LottieFiles](https://lottiefiles.com/) | Lottie 動畫素材庫 | 免費 / 付費 |
+
+### 設計系統 & Token 工具
+
+| 工具 | 用途 | 費用 |
+|------|------|------|
+| [Tokens Studio](https://tokens.studio/) | Figma 設計 Token 管理，可匯出 RN 格式 | 免費 / 付費 |
+| [Coolors](https://coolors.co/) | 色彩搭配產生器 + 對比度檢查 | 免費 |
+| [Type Scale](https://typescale.net/) | 字型比例產生器 | 免費 |
+| [Restyle (Shopify)](https://github.com/Shopify/restyle) | RN 型別安全設計系統框架 | 免費 |
+
+### 套件搜尋
+
+| 平台 | 說明 |
+|------|------|
+| [React Native Directory](https://reactnative.directory/) | RN 套件搜尋，可篩選 Expo 相容 |
+| [npm Registry](https://www.npmjs.com/) | JS 套件總倉庫（用 `npx expo install` 安裝） |
+| `npx expo-doctor` | 驗證套件相容性 |
 
 ---
 

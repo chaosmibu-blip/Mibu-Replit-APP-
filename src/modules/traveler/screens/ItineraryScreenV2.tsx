@@ -283,6 +283,7 @@ export function ItineraryScreenV2() {
   const [titleInput, setTitleInput] = useState('');
   const savingTitleRef = useRef(false); // 使用 ref 防止重複保存（同步更新）
   const [newItinerary, setNewItinerary] = useState({
+    title: '',
     date: new Date().toISOString().split('T')[0],
     countryId: null as number | null,
     countryName: '',
@@ -815,6 +816,7 @@ export function ItineraryScreenV2() {
   const openCreateModal = useCallback(() => {
     setCreateModalVisible(true);
     setNewItinerary({
+      title: '',
       date: new Date().toISOString().split('T')[0],
       countryId: null,
       countryName: '',
@@ -841,18 +843,33 @@ export function ItineraryScreenV2() {
 
     setCreating(true);
     try {
+      const trimmedTitle = newItinerary.title.trim();
       const res = await itineraryApi.createItinerary({
+        ...(trimmedTitle ? { title: trimmedTitle } : {}),
         date: newItinerary.date,
         country: newItinerary.countryName,
         city: newItinerary.regionName,
       }, token);
 
       if (res.success) {
+        // 如果用戶有填標題但後端沒套用，補一次 updateItinerary
+        let finalItinerary = res.itinerary;
+        if (trimmedTitle && res.itinerary.title !== trimmedTitle) {
+          const updateRes = await itineraryApi.updateItinerary(
+            res.itinerary.id,
+            { title: trimmedTitle },
+            token,
+          );
+          if (updateRes.success) {
+            finalItinerary = updateRes.itinerary;
+          }
+        }
+
         setCreateModalVisible(false);
         await fetchItineraries();
         // 切換到新建立的行程
-        setActiveItineraryId(res.itinerary.id);
-        setCurrentItinerary(res.itinerary);
+        setActiveItineraryId(finalItinerary.id);
+        setCurrentItinerary(finalItinerary);
         setMessages([]);
         setAiContext(undefined);
         setAiSuggestions([]);
@@ -2237,6 +2254,29 @@ export function ItineraryScreenV2() {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.createCard}>
+              {/* 行程標題（可選） */}
+              <View style={styles.createFieldGroup}>
+                <View style={styles.createFieldIcon}>
+                  <Ionicons name="create-outline" size={18} color={MibuBrand.copper} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.createFieldLabel}>{isZh ? '行程標題' : 'Trip Title'}</Text>
+                  <TextInput
+                    style={styles.createFieldInput}
+                    value={newItinerary.title}
+                    onChangeText={(text) => setNewItinerary(prev => ({ ...prev, title: text }))}
+                    placeholder={isZh ? '為你的旅程取個名字（選填）' : 'Name your trip (optional)'}
+                    placeholderTextColor={MibuBrand.tan}
+                    maxLength={50}
+                    autoCapitalize="none"
+                    returnKeyType="next"
+                  />
+                </View>
+              </View>
+
+              {/* 分隔線 */}
+              <View style={styles.createDivider} />
+
               {/* 日期 */}
               <View style={styles.createFieldGroup}>
                 <View style={styles.createFieldIcon}>

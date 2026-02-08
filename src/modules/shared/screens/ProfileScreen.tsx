@@ -24,6 +24,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { authApi } from '../../../services/authApi';
+import { ApiError } from '../../../services/base';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
@@ -339,6 +340,10 @@ export function ProfileScreen() {
       // 用回傳的新資料更新本地狀態
       if (response && response.profile) {
         const data = response.profile;
+        // 保留原始 id：後端更新回傳可能不含 id 欄位
+        if (!data.id && profile?.id) {
+          data.id = profile.id;
+        }
         setProfile(data);
         setEmail(data.email || ''); // #037: 更新 Email
         setFirstName(data.firstName || '');
@@ -377,9 +382,11 @@ export function ProfileScreen() {
       showToastMessage(isZh ? '個人資料已更新' : 'Profile updated successfully');
     } catch (error) {
       console.error('Failed to save profile:', error);
+      // 提取後端錯誤訊息（如 Email 重複等）
+      const serverMsg = error instanceof ApiError ? error.serverMessage : undefined;
       Alert.alert(
         isZh ? '錯誤' : 'Error',
-        isZh ? '儲存失敗' : 'Failed to save'
+        serverMsg || (isZh ? '儲存失敗，請稍後再試' : 'Failed to save, please try again')
       );
     } finally {
       setSaving(false);
@@ -439,7 +446,7 @@ export function ProfileScreen() {
               if (preset?.image) {
                 return (
                   <View style={[styles.avatar, { backgroundColor: preset.color, overflow: 'hidden' }]}>
-                    <Image source={preset.image} style={{ width: 92, height: 92, borderRadius: 46 }} />
+                    <Image source={preset.image} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
                   </View>
                 );
               }
@@ -472,7 +479,7 @@ export function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{isZh ? '用戶 ID' : 'User ID'}</Text>
           <View style={styles.readOnlyField}>
-            <Text style={styles.readOnlyText}>{displayUserId(profile?.id)}</Text>
+            <Text style={styles.readOnlyText}>{displayUserId(profile?.id || state.user?.id)}</Text>
           </View>
         </View>
 
@@ -697,9 +704,9 @@ export function ProfileScreen() {
                     setShowAvatarModal(false);
                   }}
                 >
-                  <View style={[styles.avatarOptionCircle, { backgroundColor: preset.color, overflow: 'hidden' }]}>
+                  <View style={[styles.avatarOptionCircle, { backgroundColor: preset.color }]}>
                     {preset.image ? (
-                      <Image source={preset.image} style={{ width: '100%', height: '100%', borderRadius: 28 }} resizeMode="cover" />
+                      <Image source={preset.image} style={styles.avatarOptionImage} />
                     ) : (
                       <Text style={styles.avatarOptionText}>
                         {firstName?.charAt(0) || '?'}
@@ -997,9 +1004,15 @@ const styles = StyleSheet.create({
   },
   avatarOptionCircle: {
     flex: 1,
-    borderRadius: 29,
+    borderRadius: 26,       // 內圈 52px 的一半（64 - 2*(3 padding + 3 border) = 52）
+    overflow: 'hidden',     // 裁切圖片超出圓形範圍
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarOptionImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   avatarOptionText: {
     fontSize: 24,

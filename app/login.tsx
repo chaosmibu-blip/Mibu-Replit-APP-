@@ -22,6 +22,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   Platform,
   Modal,
@@ -720,73 +721,42 @@ export default function LoginScreen() {
           <Ionicons name="globe-outline" size={28} color={MibuBrand.copper} />
         </TouchableOpacity>
         {showLanguageMenu && (
-          <View style={styles.languageMenu}>
-            {LANGUAGE_OPTIONS.map((lang) => (
-              <TouchableOpacity
-                key={lang.code}
-                style={[
-                  styles.languageMenuItem,
-                  state.language === lang.code && styles.languageMenuItemActive,
-                ]}
-                onPress={() => {
-                  setLanguage(lang.code);
-                  setShowLanguageMenu(false);
-                }}
-                accessibilityLabel={`${state.language === 'zh-TW' ? '切換至' : 'Switch to'} ${lang.label}`}
-                accessibilityRole="menuitem"
-              >
-                <Text style={styles.languageFlag}>{lang.flag}</Text>
-                <Text style={[
-                  styles.languageMenuText,
-                  state.language === lang.code && styles.languageMenuTextActive,
-                ]}>
-                  {lang.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <>
+            {/* 全螢幕透明遮罩 — 點擊任意位置關閉選單 */}
+            <Pressable
+              style={StyleSheet.absoluteFillObject}
+              onPress={() => setShowLanguageMenu(false)}
+            />
+            <View style={styles.languageMenu}>
+              {LANGUAGE_OPTIONS.map((lang) => (
+                <TouchableOpacity
+                  key={lang.code}
+                  style={[
+                    styles.languageMenuItem,
+                    state.language === lang.code && styles.languageMenuItemActive,
+                  ]}
+                  onPress={() => {
+                    setLanguage(lang.code);
+                    setShowLanguageMenu(false);
+                  }}
+                  accessibilityLabel={`${state.language === 'zh-TW' ? '切換至' : 'Switch to'} ${lang.label}`}
+                  accessibilityRole="menuitem"
+                >
+                  <Text style={styles.languageFlag}>{lang.flag}</Text>
+                  <Text style={[
+                    styles.languageMenuText,
+                    state.language === lang.code && styles.languageMenuTextActive,
+                  ]}>
+                    {lang.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
         )}
       </View>
 
-      <View style={styles.portalSwitcher}>
-        <TouchableOpacity
-          style={styles.switchButton}
-          onPress={() => setShowPortalMenu(!showPortalMenu)}
-          accessibilityLabel={texts.switchPortal}
-          accessibilityRole="button"
-        >
-          <Text style={[styles.switchButtonText, { color: currentPortal.color }]}>
-            {texts.switchPortal}
-          </Text>
-        </TouchableOpacity>
-
-        {showPortalMenu && (
-          <View style={styles.portalMenu}>
-            {portals.map((portal) => (
-              <TouchableOpacity
-                key={portal.type}
-                style={[
-                  styles.portalMenuItem,
-                  selectedPortal === portal.type && { backgroundColor: portal.bgColor },
-                ]}
-                onPress={() => {
-                  setSelectedPortal(portal.type);
-                  setShowPortalMenu(false);
-                }}
-                accessibilityLabel={`${state.language === 'zh-TW' ? '切換至' : 'Switch to'} ${portal.label}`}
-                accessibilityRole="menuitem"
-              >
-                <Text style={[
-                  styles.portalMenuText,
-                  selectedPortal === portal.type && { color: portal.color, fontWeight: '700' },
-                ]}>
-                  {portal.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
+      {/* 角色切換器已隱藏 — 目前僅開放旅客入口，商家/專員/管理端暫不開放 */}
 
       <View style={styles.content}>
         <Text style={styles.title}>Mibu</Text>

@@ -193,7 +193,8 @@ export class ApiBase {
       return data as T;
     } catch (error) {
       // 超時錯誤轉換為 ApiError
-      if (error instanceof DOMException && error.name === 'AbortError') {
+      // 注意：RN 原生環境沒有 DOMException，改用 error.name 判斷（Web + RN 通用）
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new ApiError(0, `請求超時（${timeoutMs / 1000} 秒）`, '網路連線逾時，請稍後再試');
       }
       throw error;

@@ -132,6 +132,7 @@ export interface AvailablePlacesByCategory {
  * POST /api/itinerary
  */
 export interface CreateItineraryRequest {
+  title?: string;      // 行程標題（可選，不填則由後端自動命名）
   date: string;        // 行程日期（YYYY-MM-DD）
   country: string;     // 國家
   city: string;        // 城市

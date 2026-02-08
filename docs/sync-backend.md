@@ -6,6 +6,32 @@
 
 ## 最新回報
 
+### 2026-02-08 🔧 技術債：多語系 isZh 全面遷移到 t 字典
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | APP 端截圖審查發現 |
+| 狀態 | 🟡 待獨立執行 |
+| 嚴重度 | 中（日/韓語系完全無效，中/英切換部分有效） |
+
+**問題描述**
+- 設定頁支援 4 國語系（zh-TW、en、ja、ko）
+- `setLanguage()` 機制正常，`t` 翻譯字典正確更新
+- 但全 app **43 個檔案共 963 處** 使用 `isZh ? '中文' : 'English'` 硬判斷
+- 等同只支援中/英，日/韓語系全部 fallback 到英文
+
+**影響範圍**
+- 43 個檔案（幾乎所有畫面）
+- Tab layout 用 `t` 字典（✅ 正常）
+- 其餘畫面用 `isZh ?`（❌ 只有中/英）
+
+**修復方案**
+1. 確認 `translations.ts` 四國字典 key 完整覆蓋所有文字
+2. 逐檔替換 `isZh ? '...' : '...'` → `t.key`
+3. 需獨立開一輪批次執行（預估工作量大）
+
+---
+
 ### 2026-02-07 🐛 BUG：Apple 登入的超管帳號不被識別為 isSuperAdmin
 
 | 項目 | 內容 |
@@ -689,6 +715,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 技術債 | 02-08 | 多語系 isZh→t 字典遷移（963處/43檔案） | 🟡 待執行 |
 | BUG | 02-07 | Apple 登入超管帳號 isSuperAdmin 未被識別 | 🟡 待後端 |
 | 041 | 02-07 | 超管無限額度支援（dailyPullLimit=-1、inventorySlots=999） | ✅ |
 | 040-B | 02-07 | PATCH profile 回應欄位補齊（isSuperAdmin、roles、createdAt、token） | ✅ |
