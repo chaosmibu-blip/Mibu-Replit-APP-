@@ -383,7 +383,7 @@ export function HomeScreen() {
                   <View style={[styles.levelAvatar, { backgroundColor: avatarColor, overflow: 'hidden' }]}>
                     <Image
                       source={avatarPreset.image}
-                      style={{ width: '100%', height: '100%', transform: [{ scale: 1.08 }] }}
+                      style={{ width: '100%', height: '100%', transform: [{ scale: 1.15 }] }}
                       resizeMode="cover"
                     />
                   </View>

@@ -692,40 +692,6 @@ export default function LoginScreen() {
         >
           <Ionicons name="globe-outline" size={28} color={MibuBrand.copper} />
         </TouchableOpacity>
-        {showLanguageMenu && (
-          <>
-            {/* 全螢幕透明遮罩 — 點擊任意位置關閉選單 */}
-            <Pressable
-              style={StyleSheet.absoluteFillObject}
-              onPress={() => setShowLanguageMenu(false)}
-            />
-            <View style={styles.languageMenu}>
-              {LANGUAGE_OPTIONS.map((lang) => (
-                <TouchableOpacity
-                  key={lang.code}
-                  style={[
-                    styles.languageMenuItem,
-                    state.language === lang.code && styles.languageMenuItemActive,
-                  ]}
-                  onPress={() => {
-                    setLanguage(lang.code);
-                    setShowLanguageMenu(false);
-                  }}
-                  accessibilityLabel={`${t.auth_switchTo} ${lang.label}`}
-                  accessibilityRole="menuitem"
-                >
-                  <Text style={styles.languageFlag}>{lang.flag}</Text>
-                  <Text style={[
-                    styles.languageMenuText,
-                    state.language === lang.code && styles.languageMenuTextActive,
-                  ]}>
-                    {lang.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        )}
       </View>
 
       {/* 角色切換器已隱藏 — 目前僅開放旅客入口，商家/專員/管理端暫不開放 */}
@@ -768,6 +734,41 @@ export default function LoginScreen() {
           </Text>
         </View>
       </View>
+
+      {/* 語系選單（置於根容器層級，遮罩才能覆蓋全螢幕） */}
+      {showLanguageMenu && (
+        <>
+          <Pressable
+            style={[StyleSheet.absoluteFillObject, { zIndex: 999 }]}
+            onPress={() => setShowLanguageMenu(false)}
+          />
+          <View style={[styles.languageMenu, { zIndex: 1000 }]}>
+            {LANGUAGE_OPTIONS.map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                style={[
+                  styles.languageMenuItem,
+                  state.language === lang.code && styles.languageMenuItemActive,
+                ]}
+                onPress={() => {
+                  setLanguage(lang.code);
+                  setShowLanguageMenu(false);
+                }}
+                accessibilityLabel={`${t.auth_switchTo} ${lang.label}`}
+                accessibilityRole="menuitem"
+              >
+                <Text style={styles.languageFlag}>{lang.flag}</Text>
+                <Text style={[
+                  styles.languageMenuText,
+                  state.language === lang.code && styles.languageMenuTextActive,
+                ]}>
+                  {lang.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </>
+      )}
     </View>
   );
 }
