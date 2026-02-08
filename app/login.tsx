@@ -172,8 +172,6 @@ export default function LoginScreen() {
       // *** 用完後立即刪除，避免影響下次登入 ***
       await AsyncStorage.removeItem('post_login_portal');
       
-      console.log('🔐 fetchUserWithTokenDirect - targetPortal from storage:', targetPortal);
-      
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -212,15 +210,6 @@ export default function LoginScreen() {
           const userRole = userData.role || 'traveler';
           const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
           
-          console.log('🔐 User data from API:', { 
-            role: userData.role, 
-            activeRole: userData.activeRole, 
-            isSuperAdmin: userData.isSuperAdmin,
-            isApproved: userData.isApproved,
-            navigationRole,
-            targetPortal: portalToUse
-          });
-          
           setUser({
             id: userData.id,
             name: userData.name,
@@ -250,33 +239,24 @@ export default function LoginScreen() {
   };
 
   const navigateAfterLogin = (role: string, isApproved?: boolean, isSuperAdmin?: boolean, targetPortal?: string) => {
-    console.log('🔀 navigateAfterLogin called with:', { role, isApproved, isSuperAdmin, targetPortal });
-    
     // *** 關鍵修改：始終優先使用 targetPortal（用戶選擇的入口），而非後端返回的 role ***
     const portalToUse = targetPortal || role;
-    console.log('🔀 Using portal:', portalToUse);
     
     if (portalToUse === 'merchant') {
       if (isApproved === false) {
-        console.log('🔀 Merchant not approved, going to pending');
         router.replace('/pending-approval');
       } else {
-        console.log('🔀 Navigating to merchant-dashboard');
         router.replace('/merchant-dashboard');
       }
     } else if (portalToUse === 'specialist') {
       if (isApproved === false) {
-        console.log('🔀 Specialist not approved, going to pending');
         router.replace('/pending-approval');
       } else {
-        console.log('🔀 Navigating to specialist-dashboard');
         router.replace('/specialist-dashboard');
       }
     } else if (portalToUse === 'admin') {
-      console.log('🔀 Navigating to admin-dashboard');
       router.replace('/admin-dashboard');
     } else {
-      console.log('🔀 Navigating to tabs (traveler)');
       router.replace('/(tabs)');
     }
   };
@@ -299,11 +279,9 @@ export default function LoginScreen() {
   const handleGoogleNativeLogin = async () => {
     try {
       setLoading(true);
-      console.log('[Google Native] Starting Google Sign In...');
 
       // 1. 取得 Google idToken（原生方式）
       const idToken = await signInWithGoogle();
-      console.log('[Google Native] Got idToken:', idToken?.substring(0, 50) + '...');
 
       // 2. 傳送到後端驗證
       const apiUrl = `${API_BASE_URL}/api/auth/mobile`;
@@ -313,15 +291,12 @@ export default function LoginScreen() {
         targetPortal: selectedPortal,
       };
 
-      console.log('[Google Native] Sending request to:', apiUrl);
-
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
       });
 
-      console.log('[Google Native] Response status:', response.status);
       const data = await response.json();
 
       if (data.token && data.user) {
@@ -353,7 +328,7 @@ export default function LoginScreen() {
     } catch (error: any) {
       console.error('[Google Native] Error:', error);
       if (error.message === '使用者取消登入') {
-        console.log('[Google Native] User canceled');
+        // 使用者取消登入，不需處理
       } else {
         Alert.alert(
           state.language === 'zh-TW' ? '登入錯誤' : 'Login Error',
@@ -424,14 +399,12 @@ export default function LoginScreen() {
       // *** 用完後立即刪除，避免影響下次登入 ***
       await AsyncStorage.removeItem('post_login_portal');
       
-      console.log('🔐 fetchUserWithToken - targetPortal from storage:', targetPortal);
-      
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
-      
+
       if (response.ok) {
         const userData = await response.json();
         if (userData && userData.id) {
@@ -465,15 +438,6 @@ export default function LoginScreen() {
           // Use API role for navigation, activeRole for super admins
           const userRole = userData.role || 'traveler';
           const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
-          
-          console.log('🔐 fetchUserWithToken - User data:', { 
-            role: userData.role, 
-            activeRole: userData.activeRole, 
-            isSuperAdmin: userData.isSuperAdmin,
-            isApproved: userData.isApproved,
-            navigationRole,
-            targetPortal: portalToUse
-          });
           
           setUser({
             id: userData.id,
@@ -515,8 +479,6 @@ export default function LoginScreen() {
       // *** 用完後立即刪除，避免影響下次登入 ***
       await AsyncStorage.removeItem('post_login_portal');
       
-      console.log('🔐 fetchUserAfterAuth - targetPortal from storage:', targetPortal);
-      
       const response = await fetch(`${API_BASE_URL}/api/auth/user`, {
         credentials: 'include',
       });
@@ -553,15 +515,6 @@ export default function LoginScreen() {
           // Use API role for navigation, activeRole for super admins
           const userRole = userData.role || 'traveler';
           const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
-          
-          console.log('🔐 fetchUserAfterAuth - User data:', { 
-            role: userData.role, 
-            activeRole: userData.activeRole, 
-            isSuperAdmin: userData.isSuperAdmin,
-            isApproved: userData.isApproved,
-            navigationRole,
-            targetPortal: portalToUse
-          });
           
           setUser({
             id: userData.id,
@@ -603,21 +556,12 @@ export default function LoginScreen() {
   const handleAppleLogin = async () => {
     try {
       setLoading(true);
-      console.log('[Apple Auth] Starting Apple Sign In...');
-      
+
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
-      });
-
-      console.log('[Apple Auth] Credential received:', {
-        hasIdentityToken: !!credential.identityToken,
-        identityTokenPreview: credential.identityToken?.substring(0, 50) + '...',
-        user: credential.user,
-        email: credential.email,
-        fullName: credential.fullName,
       });
 
       if (credential.identityToken) {
@@ -635,17 +579,12 @@ export default function LoginScreen() {
         };
         
         const bodyString = JSON.stringify(requestBody);
-        console.log('[Apple Auth] Sending request to:', apiUrl);
-        console.log('[Apple Auth] Request body keys:', Object.keys(requestBody));
-        console.log('[Apple Auth] Full JSON body:', bodyString.substring(0, 200) + '...');
-        console.log('[Apple Auth] Body starts with identityToken?:', bodyString.startsWith('{"identityToken":'));
-        
+
         if (!requestBody.identityToken) {
           console.error('[Apple Auth] No identityToken!');
           return;
         }
         
-        console.log('[Apple Auth] About to send request...');
         let response;
         try {
           response = await fetch(apiUrl, {
@@ -655,7 +594,6 @@ export default function LoginScreen() {
             },
             body: bodyString,
           });
-          console.log('[Apple Auth] Request completed, status:', response.status);
         } catch (fetchError: any) {
           console.error('[Apple Auth] FETCH ERROR:', fetchError);
           console.error('[Apple Auth] FETCH ERROR message:', fetchError.message);
@@ -666,9 +604,7 @@ export default function LoginScreen() {
           return;
         }
 
-        console.log('[Apple Auth] Response status:', response.status);
         const responseText = await response.text();
-        console.log('[Apple Auth] Response raw:', responseText);
         
         let data;
         try {
@@ -678,14 +614,6 @@ export default function LoginScreen() {
           data = { error: responseText };
         }
         
-        console.log('[Apple Auth] Response data:', {
-          success: data.success,
-          hasToken: !!data.token,
-          hasUser: !!data.user,
-          error: data.error,
-          message: data.message,
-        });
-
         if (data.token && data.user) {
           const userRole = data.user.role as UserRole || 'traveler';
           const finalActiveRole = data.user.activeRole as UserRole || userRole;
@@ -715,7 +643,7 @@ export default function LoginScreen() {
       }
     } catch (error: any) {
       if (error.code === 'ERR_REQUEST_CANCELED') {
-        console.log('[Apple Auth] User canceled Apple Sign In');
+        // 使用者取消 Apple 登入，不需處理
       } else {
         console.error('[Apple Auth] Error:', {
           code: error.code,
