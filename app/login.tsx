@@ -40,6 +40,7 @@ import { API_BASE_URL } from '../src/constants/translations';
 import { UserRole } from '../src/types';
 import { MibuBrand, RoleColors, UIColors } from '../constants/Colors';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
+import { isValidJWTFormat, isAuthCallbackPath } from '../src/utils/validation';
 
 // OAuth 登入 URL - 使用環境變數設定的 API URL（正式或開發環境）
 const OAUTH_BASE_URL = API_BASE_URL;
@@ -106,8 +107,9 @@ export default function LoginScreen() {
 
   const handleDeepLink = useCallback(async (event: { url: string }) => {
     const parsed = Linking.parse(event.url);
-    
-    if (parsed.path === 'auth/callback' || event.url.includes('auth/callback') || event.url.includes('token=') || event.url.includes('error=')) {
+
+    // 安全加固：僅允許 auth/callback 路徑，移除過於寬鬆的 includes('token=') 判斷
+    if (isAuthCallbackPath(parsed.path) || event.url.includes('auth/callback')) {
       // Handle error codes from callback
       if (parsed.queryParams?.error) {
         await WebBrowser.dismissBrowser();
@@ -155,9 +157,10 @@ export default function LoginScreen() {
         return;
       }
       
-      if (parsed.queryParams?.token) {
+      // 安全檢查：token 必須符合 JWT 格式才處理
+      if (isValidJWTFormat(parsed.queryParams?.token)) {
         await WebBrowser.dismissBrowser();
-        await fetchUserWithTokenDirect(parsed.queryParams.token as string);
+        await fetchUserWithTokenDirect(parsed.queryParams.token);
       }
     }
   }, [state.language]);

@@ -35,6 +35,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { MibuBrand } from '../../../../constants/Colors';
+import { Spacing, Radius, FontSize, FontWeight } from '../../../theme/designTokens';
 
 // ============ Props 介面定義 ============
 
@@ -145,21 +146,21 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: Spacing.sm,
   },
   /** 可滾動容器：橫向排列、加側邊間距 */
   scrollContainer: {
     flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 4,
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
   },
   /** 晶片基礎樣式：橫向排列、藥丸形圓角 */
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 999,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
   },
   /** 實心樣式：溫暖白背景 */
   chipFilled: {
@@ -178,8 +179,8 @@ const styles = StyleSheet.create({
   },
   /** 晶片文字：銅色 */
   chipText: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.medium,
     color: MibuBrand.copper,
   },
   /** 邊框樣式的晶片文字：深棕色 */
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
   /** 選中狀態的文字：白色、加粗 */
   chipTextSelected: {
     color: MibuBrand.warmWhite,
-    fontWeight: '600',
+    fontWeight: FontWeight.semibold,
   },
   /** 數量徽章容器 */
   countBadge: {
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
   /** 數量文字 */
   countText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: FontWeight.semibold,
     color: MibuBrand.copper,
   },
   /** 選中狀態的數量文字：白色 */

@@ -32,7 +32,8 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { GlobalExclusion } from '../../../types';
 import { apiService } from '../../../services/api';
-import { UIColors } from '../../../../constants/Colors';
+import { UIColors, MibuBrand } from '../../../../constants/Colors';
+import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';
 
 // ============ 主元件 ============
 
@@ -251,13 +252,13 @@ export function AdminExclusionsScreen() {
         {/* 頂部標題列 */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#1e293b" />
+            <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <Text style={styles.title}>{t.title}</Text>
         </View>
         {/* 無權限提示 */}
         <View style={styles.emptyContainer}>
-          <Ionicons name="lock-closed-outline" size={64} color="#94a3b8" />
+          <Ionicons name="lock-closed-outline" size={64} color={UIColors.textSecondary} />
           <Text style={styles.emptyText}>{t.noPermission}</Text>
         </View>
       </View>
@@ -272,7 +273,7 @@ export function AdminExclusionsScreen() {
       <View style={styles.header}>
         {/* 返回按鈕 */}
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         {/* 標題與副標題 */}
         <View style={styles.headerText}>
@@ -291,7 +292,7 @@ export function AdminExclusionsScreen() {
             placeholder={t.placeName}
             value={placeName}
             onChangeText={setPlaceName}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
           />
           {/* 區域輸入 */}
           <TextInput
@@ -299,7 +300,7 @@ export function AdminExclusionsScreen() {
             placeholder={t.district}
             value={district}
             onChangeText={setDistrict}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
           />
           {/* 城市輸入 */}
           <TextInput
@@ -307,7 +308,7 @@ export function AdminExclusionsScreen() {
             placeholder={t.city}
             value={city}
             onChangeText={setCity}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={UIColors.textSecondary}
           />
           {/* 表單按鈕 */}
           <View style={styles.formButtons}>
@@ -338,7 +339,7 @@ export function AdminExclusionsScreen() {
           style={styles.addNewButton}
           onPress={() => setShowAddForm(true)}
         >
-          <Ionicons name="add-circle-outline" size={20} color="#6366f1" />
+          <Ionicons name="add-circle-outline" size={20} color={MibuBrand.info} />
           <Text style={styles.addNewButtonText}>{t.addNew}</Text>
         </TouchableOpacity>
       )}
@@ -347,13 +348,13 @@ export function AdminExclusionsScreen() {
       {loading ? (
         // 載入中狀態
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#6366f1" />
+          <ActivityIndicator size="large" color={MibuBrand.info} />
           <Text style={styles.loadingText}>{t.loading}</Text>
         </View>
       ) : exclusions.length === 0 ? (
         // 空狀態
         <View style={styles.emptyContainer}>
-          <Ionicons name="ban-outline" size={64} color="#94a3b8" />
+          <Ionicons name="ban-outline" size={64} color={UIColors.textSecondary} />
           <Text style={styles.emptyText}>{t.empty}</Text>
         </View>
       ) : (
@@ -379,7 +380,7 @@ export function AdminExclusionsScreen() {
                 style={styles.removeButton}
                 onPress={() => handleRemove(exclusion)}
               >
-                <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                <Ionicons name="trash-outline" size={20} color={MibuBrand.error} />
               </TouchableOpacity>
             </View>
           ))}
@@ -395,7 +396,7 @@ const styles = StyleSheet.create({
   // 容器樣式
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
 
   // 頂部標題列樣式
@@ -407,24 +408,24 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: MibuBrand.creamLight,
   },
   backButton: {
-    marginRight: 16,
-    padding: 4,
+    marginRight: Spacing.lg,
+    padding: Spacing.xs,
   },
   headerText: {
     flex: 1,
   },
   title: {
     fontSize: 24,
-    fontWeight: '800',
-    color: '#1e293b',
+    fontWeight: FontWeight.extrabold,
+    color: MibuBrand.dark,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     color: UIColors.textSecondary,
-    marginTop: 4,
+    marginTop: Spacing.xs,
   },
 
   // 新增按鈕樣式（虛線邊框）
@@ -432,20 +433,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#eef2ff',
+    backgroundColor: SemanticColors.info.light,
     marginHorizontal: 20,
     marginTop: 20,
-    padding: 16,
-    borderRadius: 12,
+    padding: Spacing.lg,
+    borderRadius: Radius.md,
     borderWidth: 2,
-    borderColor: '#c7d2fe',
+    borderColor: SemanticColors.info.light,
     borderStyle: 'dashed',
   },
   addNewButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#6366f1',
-    marginLeft: 8,
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.semibold,
+    color: MibuBrand.info,
+    marginLeft: Spacing.sm,
   },
 
   // 新增表單樣式
@@ -454,50 +455,50 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 20,
     padding: 20,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   input: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#1e293b',
-    marginBottom: 12,
+    borderColor: MibuBrand.tanLight,
+    borderRadius: Radius.md,
+    padding: Spacing.lg,
+    fontSize: FontSize.lg,
+    color: MibuBrand.dark,
+    marginBottom: Spacing.md,
   },
   formButtons: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
+    gap: Spacing.md,
+    marginTop: Spacing.sm,
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: MibuBrand.creamLight,
+    padding: Spacing.lg,
+    borderRadius: Radius.md,
     alignItems: 'center',
   },
   cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.semibold,
     color: UIColors.textSecondary,
   },
   addButton: {
     flex: 1,
-    backgroundColor: '#6366f1',
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: MibuBrand.info,
+    padding: Spacing.lg,
+    borderRadius: Radius.md,
     alignItems: 'center',
   },
   addButtonDisabled: {
     opacity: 0.6,
   },
   addButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.semibold,
     color: '#ffffff',
   },
 
@@ -508,9 +509,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     color: UIColors.textSecondary,
-    marginTop: 12,
+    marginTop: Spacing.md,
   },
 
   // 空狀態樣式
@@ -520,9 +521,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     color: UIColors.textSecondary,
-    marginTop: 16,
+    marginTop: Spacing.lg,
   },
 
   // 列表樣式
@@ -537,9 +538,9 @@ const styles = StyleSheet.create({
   // 排除項目卡片樣式
   exclusionCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 2,
@@ -549,26 +550,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   exclusionName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 4,
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    color: MibuBrand.dark,
+    marginBottom: Spacing.xs,
   },
   exclusionLocation: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     color: UIColors.textSecondary,
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   exclusionDate: {
-    fontSize: 12,
-    color: '#94a3b8',
+    fontSize: FontSize.sm,
+    color: UIColors.textSecondary,
   },
 
   // 移除按鈕樣式
   removeButton: {
     width: 44,
     height: 44,
-    backgroundColor: '#fef2f2',
+    backgroundColor: SemanticColors.error.light,
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',

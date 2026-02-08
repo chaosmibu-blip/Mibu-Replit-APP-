@@ -29,6 +29,7 @@ import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MibuBrand } from '../../../../constants/Colors';
+import { Spacing, Radius } from '../../../theme/designTokens';
 
 // ============ Props 介面定義 ============
 
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
     paddingHorizontal: 14,
@@ -126,7 +127,7 @@ const styles = StyleSheet.create({
   },
   /** 清除按鈕：左側間距、增加點擊區域 */
   clearButton: {
-    marginLeft: 8,
-    padding: 4,
+    marginLeft: Spacing.sm,
+    padding: Spacing.xs,
   },
 });

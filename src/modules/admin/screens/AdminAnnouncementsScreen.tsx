@@ -33,7 +33,8 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { Announcement, AnnouncementType, CreateAnnouncementParams } from '../../../types';
-import { UIColors } from '../../../../constants/Colors';
+import { UIColors, MibuBrand } from '../../../../constants/Colors';
+import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';
 
 // ============ 主元件 ============
 
@@ -124,9 +125,9 @@ export function AdminAnnouncementsScreen() {
 
   /** 公告類型顏色對照表 */
   const typeColors: Record<AnnouncementType, string> = {
-    announcement: '#3b82f6',    // 藍色 - 一般公告
-    flash_event: '#f59e0b',     // 橘色 - 快閃活動
-    holiday_event: '#ef4444',   // 紅色 - 節日限定
+    announcement: MibuBrand.info,      // 藍色 - 一般公告
+    flash_event: MibuBrand.warning,    // 橘色 - 快閃活動
+    holiday_event: MibuBrand.error,    // 紅色 - 節日限定
   };
 
   // ============ 副作用 ============
@@ -373,7 +374,7 @@ export function AdminAnnouncementsScreen() {
             style={styles.actionButton}
             onPress={() => openEditModal(item)}
           >
-            <Ionicons name="pencil-outline" size={18} color="#3b82f6" />
+            <Ionicons name="pencil-outline" size={18} color={MibuBrand.info} />
           </TouchableOpacity>
 
           {/* 刪除按鈕 */}
@@ -383,9 +384,9 @@ export function AdminAnnouncementsScreen() {
             disabled={actionLoading === item.id}
           >
             {actionLoading === item.id ? (
-              <ActivityIndicator size="small" color="#ef4444" />
+              <ActivityIndicator size="small" color={MibuBrand.error} />
             ) : (
-              <Ionicons name="trash-outline" size={18} color="#ef4444" />
+              <Ionicons name="trash-outline" size={18} color={MibuBrand.error} />
             )}
           </TouchableOpacity>
         </View>
@@ -522,8 +523,8 @@ export function AdminAnnouncementsScreen() {
               <Switch
                 value={formData.isActive}
                 onValueChange={(value) => setFormData({ ...formData, isActive: value })}
-                trackColor={{ false: '#e2e8f0', true: '#86efac' }}
-                thumbColor={formData.isActive ? '#22c55e' : '#94a3b8'}
+                trackColor={{ false: MibuBrand.tanLight, true: SemanticColors.success.light }}
+                thumbColor={formData.isActive ? MibuBrand.success : UIColors.textSecondary}
               />
             </View>
           </ScrollView>
@@ -552,13 +553,13 @@ export function AdminAnnouncementsScreen() {
       <View style={styles.header}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         {/* 標題 */}
         <Text style={styles.headerTitle}>{translations.title}</Text>
         {/* 新增按鈕 */}
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Ionicons name="add" size={24} color="#ffffff" />
+          <Ionicons name="add" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -566,7 +567,7 @@ export function AdminAnnouncementsScreen() {
       {loading ? (
         // 載入中狀態
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3b82f6" />
+          <ActivityIndicator size="large" color={MibuBrand.info} />
           <Text style={styles.loadingText}>{translations.loading}</Text>
         </View>
       ) : (
@@ -580,7 +581,7 @@ export function AdminAnnouncementsScreen() {
           {announcements.length === 0 ? (
             // 空狀態
             <View style={styles.emptyContainer}>
-              <Ionicons name="megaphone-outline" size={48} color="#cbd5e1" />
+              <Ionicons name="megaphone-outline" size={48} color={UIColors.textSecondary} />
               <Text style={styles.emptyText}>{translations.noData}</Text>
             </View>
           ) : (
@@ -602,7 +603,7 @@ const styles = StyleSheet.create({
   // 容器樣式
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
 
   // 頂部標題列樣式
@@ -613,28 +614,28 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.tanLight,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1e293b',
+    fontSize: FontSize.xl,
+    fontWeight: FontWeight.bold,
+    color: MibuBrand.dark,
   },
   addButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#3b82f6',
+    backgroundColor: MibuBrand.info,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -646,15 +647,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+    marginTop: Spacing.md,
+    fontSize: FontSize.md,
     color: UIColors.textSecondary,
   },
 
   // 內容區樣式
   content: {
     flex: 1,
-    padding: 16,
+    padding: Spacing.lg,
   },
 
   // 空狀態樣式
@@ -664,19 +665,19 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   emptyText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#94a3b8',
+    marginTop: Spacing.md,
+    fontSize: FontSize.md,
+    color: UIColors.textSecondary,
   },
 
   // 卡片樣式
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: '#fff',
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   cardInactive: {
     opacity: 0.6,  // 停用的公告顯示較淡
@@ -684,39 +685,39 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
 
   // 類型標籤樣式
   typeBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.sm,
   },
   typeBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+    color: '#fff',
   },
 
   // 狀態標籤樣式
   statusBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.sm,
   },
   statusActive: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.success.light,
   },
   statusInactive: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
   },
   statusTextActive: {
-    color: '#16a34a',
+    color: SemanticColors.success.dark,
   },
   statusTextInactive: {
     color: UIColors.textSecondary,
@@ -724,16 +725,16 @@ const styles = StyleSheet.create({
 
   // 卡片內容樣式
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 8,
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    color: MibuBrand.dark,
+    marginBottom: Spacing.sm,
   },
   cardContent: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     color: UIColors.textSecondary,
     lineHeight: 20,
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
 
   // 日期列樣式
@@ -741,10 +742,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   dateText: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     color: UIColors.textSecondary,
   },
 
@@ -754,25 +755,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    paddingTop: 12,
+    borderTopColor: MibuBrand.creamLight,
+    paddingTop: Spacing.md,
   },
   priorityText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#94a3b8',
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+    color: UIColors.textSecondary,
   },
 
   // 操作按鈕樣式
   cardActions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.md,
   },
   actionButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -784,9 +785,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: Radius.xxl,
+    borderTopRightRadius: Radius.xxl,
     maxHeight: '90%',
   },
   modalHeader: {
@@ -795,12 +796,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.tanLight,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1e293b',
+    fontSize: FontSize.xl,
+    fontWeight: FontWeight.bold,
+    color: MibuBrand.dark,
   },
   modalBody: {
     padding: 20,
@@ -808,20 +809,20 @@ const styles = StyleSheet.create({
 
   // 表單輸入樣式
   inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#475569',
-    marginBottom: 8,
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.semibold,
+    color: UIColors.textSecondary,
+    marginBottom: Spacing.sm,
   },
   input: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
+    borderColor: MibuBrand.tanLight,
+    borderRadius: Radius.md,
     padding: 14,
     fontSize: 15,
-    color: '#1e293b',
-    marginBottom: 16,
+    color: MibuBrand.dark,
+    marginBottom: Spacing.lg,
   },
   textArea: {
     minHeight: 100,
@@ -831,19 +832,19 @@ const styles = StyleSheet.create({
   // 類型選擇按鈕樣式
   typeButtons: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
   typeButton: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
   },
   typeButtonText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: FontWeight.semibold,
     color: UIColors.textSecondary,
   },
   typeButtonTextActive: {
@@ -860,39 +861,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
 
   // Modal 底部按鈕樣式
   modalFooter: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.md,
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: MibuBrand.tanLight,
   },
   cancelButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#f1f5f9',
+    borderRadius: Radius.md,
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
   },
   cancelButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: FontWeight.semibold,
     color: UIColors.textSecondary,
   },
   saveButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#3b82f6',
+    borderRadius: Radius.md,
+    backgroundColor: MibuBrand.info,
     alignItems: 'center',
   },
   saveButtonText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: FontWeight.semibold,
+    color: '#fff',
   },
 });

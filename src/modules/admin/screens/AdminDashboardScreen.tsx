@@ -36,7 +36,8 @@ import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { AdminUser, PlaceDraft, GlobalExclusion } from '../../../types';
-import { UIColors } from '../../../../constants/Colors';
+import { UIColors, MibuBrand } from '../../../../constants/Colors';
+import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';
 
 // ============ 型別定義 ============
 
@@ -374,7 +375,7 @@ export function AdminDashboardScreen() {
       {/* 無待審核用戶時顯示空狀態 */}
       {pendingUsers.length === 0 ? (
         <View style={styles.emptyCard}>
-          <Ionicons name="checkmark-circle-outline" size={48} color="#22c55e" />
+          <Ionicons name="checkmark-circle-outline" size={48} color={SemanticColors.success.main} />
           <Text style={styles.emptyText}>{translations.noPending}</Text>
         </View>
       ) : (
@@ -385,7 +386,7 @@ export function AdminDashboardScreen() {
             <View style={styles.userInfo}>
               {/* 用戶頭像 */}
               <View style={styles.userAvatar}>
-                <Ionicons name="person" size={20} color="#ffffff" />
+                <Ionicons name="person" size={20} color={UIColors.white} />
               </View>
               {/* 用戶詳情 */}
               <View style={styles.userDetails}>
@@ -409,9 +410,9 @@ export function AdminDashboardScreen() {
                 disabled={actionLoading === user.id}
               >
                 {actionLoading === user.id ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <ActivityIndicator size="small" color={UIColors.white} />
                 ) : (
-                  <Ionicons name="checkmark" size={18} color="#ffffff" />
+                  <Ionicons name="checkmark" size={18} color={UIColors.white} />
                 )}
               </TouchableOpacity>
               {/* 拒絕按鈕 */}
@@ -420,7 +421,7 @@ export function AdminDashboardScreen() {
                 onPress={() => handleApproveUser(user.id, false)}
                 disabled={actionLoading === user.id}
               >
-                <Ionicons name="close" size={18} color="#ffffff" />
+                <Ionicons name="close" size={18} color={UIColors.white} />
               </TouchableOpacity>
             </View>
           </View>
@@ -440,7 +441,7 @@ export function AdminDashboardScreen() {
       {/* 無用戶時顯示空狀態 */}
       {allUsers.length === 0 ? (
         <View style={styles.emptyCard}>
-          <Ionicons name="people-outline" size={48} color="#94a3b8" />
+          <Ionicons name="people-outline" size={48} color={UIColors.textSecondary} />
           <Text style={styles.emptyText}>{translations.noData}</Text>
         </View>
       ) : (
@@ -451,7 +452,7 @@ export function AdminDashboardScreen() {
             <View style={styles.userInfo}>
               {/* 用戶頭像 */}
               <View style={styles.userAvatar}>
-                <Ionicons name="person" size={20} color="#ffffff" />
+                <Ionicons name="person" size={20} color={UIColors.white} />
               </View>
               {/* 用戶詳情 */}
               <View style={styles.userDetails}>
@@ -487,7 +488,7 @@ export function AdminDashboardScreen() {
       {/* 無草稿時顯示空狀態 */}
       {drafts.length === 0 ? (
         <View style={styles.emptyCard}>
-          <Ionicons name="document-outline" size={48} color="#94a3b8" />
+          <Ionicons name="document-outline" size={48} color={UIColors.textSecondary} />
           <Text style={styles.emptyText}>{translations.noData}</Text>
         </View>
       ) : (
@@ -518,9 +519,9 @@ export function AdminDashboardScreen() {
                 disabled={actionLoading === `draft-${draft.id}`}
               >
                 {actionLoading === `draft-${draft.id}` ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <ActivityIndicator size="small" color={UIColors.white} />
                 ) : (
-                  <Ionicons name="cloud-upload" size={18} color="#ffffff" />
+                  <Ionicons name="cloud-upload" size={18} color={UIColors.white} />
                 )}
               </TouchableOpacity>
               {/* 刪除按鈕 */}
@@ -529,7 +530,7 @@ export function AdminDashboardScreen() {
                 onPress={() => handleDeleteDraft(draft.id)}
                 disabled={actionLoading === `draft-${draft.id}`}
               >
-                <Ionicons name="trash" size={18} color="#ffffff" />
+                <Ionicons name="trash" size={18} color={UIColors.white} />
               </TouchableOpacity>
             </View>
           </View>
@@ -549,7 +550,7 @@ export function AdminDashboardScreen() {
       {/* 無排除項目時顯示空狀態 */}
       {exclusions.length === 0 ? (
         <View style={styles.emptyCard}>
-          <Ionicons name="ban-outline" size={48} color="#94a3b8" />
+          <Ionicons name="ban-outline" size={48} color={UIColors.textSecondary} />
           <Text style={styles.emptyText}>{translations.noData}</Text>
         </View>
       ) : (
@@ -576,9 +577,9 @@ export function AdminDashboardScreen() {
               disabled={actionLoading === `exclusion-${exclusion.id}`}
             >
               {actionLoading === `exclusion-${exclusion.id}` ? (
-                <ActivityIndicator size="small" color="#ffffff" />
+                <ActivityIndicator size="small" color={UIColors.white} />
               ) : (
-                <Ionicons name="trash" size={18} color="#ffffff" />
+                <Ionicons name="trash" size={18} color={UIColors.white} />
               )}
             </TouchableOpacity>
           </View>
@@ -598,7 +599,7 @@ export function AdminDashboardScreen() {
     if (loading && !refreshing) {
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#6366f1" />
+          <ActivityIndicator size="large" color={MibuBrand.info} />
           <Text style={styles.loadingText}>{translations.loading}</Text>
         </View>
       );
@@ -620,18 +621,18 @@ export function AdminDashboardScreen() {
           <View style={styles.listContainer}>
             <TouchableOpacity
               style={{
-                backgroundColor: '#7A5230',
-                borderRadius: 16,
-                padding: 16,
+                backgroundColor: MibuBrand.brown,
+                borderRadius: Radius.lg,
+                padding: Spacing.lg,
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 8,
+                gap: Spacing.sm,
               }}
               onPress={() => router.push('/announcement-manage' as any)}
             >
               <Ionicons name="megaphone-outline" size={20} color="#FFFEFA" />
-              <Text style={{ fontSize: 16, fontWeight: '700', color: '#FFFEFA' }}>
+              <Text style={{ fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: '#FFFEFA' }}>
                 {isZh ? '前往公告管理' : 'Go to Announcement Manager'}
               </Text>
             </TouchableOpacity>
@@ -649,7 +650,7 @@ export function AdminDashboardScreen() {
         <Text style={styles.title}>{translations.title}</Text>
         {/* 登出按鈕 */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color="#ef4444" />
+          <Ionicons name="log-out-outline" size={20} color={SemanticColors.error.main} />
           <Text style={styles.logoutText}>{translations.logout}</Text>
         </TouchableOpacity>
       </View>
@@ -677,7 +678,7 @@ const styles = StyleSheet.create({
   // 容器樣式
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
 
   // 頂部標題列樣式
@@ -687,15 +688,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: Spacing.lg,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.tanLight,
   },
   title: {
-    fontSize: 28,
+    fontSize: FontSize.xxxl,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.dark,
   },
   logoutButton: {
     flexDirection: 'row',
@@ -703,47 +704,47 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 10,
     paddingHorizontal: 14,
-    backgroundColor: '#fef2f2',
-    borderRadius: 12,
+    backgroundColor: SemanticColors.error.light,
+    borderRadius: Radius.md,
   },
   logoutText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ef4444',
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.semibold,
+    color: SemanticColors.error.main,
   },
 
   // 分頁標籤樣式
   tabsContainer: {
     flexDirection: 'row',
     backgroundColor: '#ffffff',
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-    gap: 8,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
+    gap: Spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.tanLight,
   },
   tab: {
     flex: 1,
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.md,
     borderRadius: 10,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.info,
   },
   tabText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: FontWeight.semibold,
     color: UIColors.textSecondary,
   },
   activeTabText: {
     color: '#ffffff',
   },
   badgeText: {
-    color: '#ef4444',
-    fontWeight: '700',
+    color: SemanticColors.error.main,
+    fontWeight: FontWeight.bold,
   },
 
   // 滾動區域樣式
@@ -751,7 +752,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: Spacing.lg,
     paddingBottom: 100,
   },
 
@@ -763,41 +764,41 @@ const styles = StyleSheet.create({
     paddingTop: 100,
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: Spacing.md,
     color: UIColors.textSecondary,
-    fontSize: 16,
+    fontSize: FontSize.lg,
   },
 
   // 列表容器樣式
   listContainer: {
-    gap: 12,
+    gap: Spacing.md,
   },
 
   // 空狀態卡片樣式
   emptyCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     padding: 40,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     color: UIColors.textSecondary,
-    marginTop: 12,
+    marginTop: Spacing.md,
   },
 
   // 用戶卡片樣式
   userCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   userInfo: {
     flexDirection: 'row',
@@ -807,145 +808,145 @@ const styles = StyleSheet.create({
   userAvatar: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: '#6366f1',
+    borderRadius: Radius.xl,
+    backgroundColor: MibuBrand.info,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: Spacing.md,
   },
   userDetails: {
     flex: 1,
   },
   userName: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#1e293b',
+    fontWeight: FontWeight.bold,
+    color: MibuBrand.dark,
     marginBottom: 6,
   },
   userMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
   },
   userDate: {
-    fontSize: 12,
-    color: '#94a3b8',
+    fontSize: FontSize.sm,
+    color: UIColors.textSecondary,
   },
 
   // 角色標籤樣式
   roleBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
     borderRadius: 6,
   },
   roleTraveler: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: SemanticColors.info.light,
   },
   roleMerchant: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: SemanticColors.warning.light,
   },
   roleSpecialist: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: SemanticColors.success.light,
   },
   roleAdmin: {
     backgroundColor: '#fce7f3',
   },
   roleBadgeText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#475569',
+    fontWeight: FontWeight.semibold,
+    color: UIColors.textSecondary,
   },
 
   // 狀態標籤樣式
   statusBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
     borderRadius: 6,
   },
   statusApproved: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.success.light,
   },
   statusPending: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: SemanticColors.warning.light,
   },
   statusBadgeText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#475569',
+    fontWeight: FontWeight.semibold,
+    color: UIColors.textSecondary,
   },
 
   // 操作按鈕樣式
   userActions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: Spacing.sm,
   },
   actionButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
   approveButton: {
-    backgroundColor: '#22c55e',
+    backgroundColor: SemanticColors.success.main,
   },
   rejectButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: SemanticColors.error.main,
   },
   publishButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.info,
   },
   deleteButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: SemanticColors.error.main,
   },
 
   // 草稿卡片樣式
   draftCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   draftInfo: {
     flex: 1,
   },
   draftName: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 4,
+    fontWeight: FontWeight.bold,
+    color: MibuBrand.dark,
+    marginBottom: Spacing.xs,
   },
   draftLocation: {
     fontSize: 13,
     color: UIColors.textSecondary,
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   categoryBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
     borderRadius: 6,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
   },
   categoryBadgeText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#475569',
+    fontWeight: FontWeight.semibold,
+    color: UIColors.textSecondary,
   },
   draftActions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: Spacing.sm,
   },
 
   // 排除項目卡片樣式
   exclusionCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -957,18 +958,18 @@ const styles = StyleSheet.create({
   },
   exclusionName: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 4,
+    fontWeight: FontWeight.bold,
+    color: MibuBrand.dark,
+    marginBottom: Spacing.xs,
   },
   exclusionLocation: {
     fontSize: 13,
     color: UIColors.textSecondary,
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   exclusionScore: {
-    fontSize: 12,
-    color: '#ef4444',
-    fontWeight: '600',
+    fontSize: FontSize.sm,
+    color: SemanticColors.error.main,
+    fontWeight: FontWeight.semibold,
   },
 });
