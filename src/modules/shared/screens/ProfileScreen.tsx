@@ -443,9 +443,16 @@ export function ProfileScreen() {
               const preset = avatarPresets.find(a => a.id === selectedAvatar);
               // 有圖片的頭像（貓咪系列）
               if (preset?.image) {
+                // /img-fit: 絕對定位 + 超尺寸裁切圖片自帶圓框
+                // 容器 100x100, border 4 → 內容區 92x92
+                // 圖片放大到 112x112 (約 1.22x)，負偏移置中
                 return (
                   <View style={[styles.avatar, { backgroundColor: preset.color, overflow: 'hidden' }]}>
-                    <Image source={preset.image} style={{ width: '100%', height: '100%', transform: [{ scale: 1.15 }] }} resizeMode="cover" />
+                    <Image
+                      source={preset.image}
+                      style={{ position: 'absolute', top: -10, left: -10, width: 112, height: 112 }}
+                      resizeMode="cover"
+                    />
                   </View>
                 );
               }
@@ -1003,10 +1010,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarOptionImage: {
-    width: '100%',
-    height: '100%',
+    // /img-fit: 絕對定位裁切（avatarOptionCircle 52x52）
+    position: 'absolute',
+    top: -6,
+    left: -6,
+    width: 64,
+    height: 64,
     resizeMode: 'cover',
-    transform: [{ scale: 1.15 }],
   },
   avatarOptionText: {
     fontSize: 24,

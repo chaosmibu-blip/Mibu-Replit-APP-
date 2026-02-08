@@ -370,28 +370,40 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 └────────────────────────────────────────────┘
 ```
 
-**實作模板**：
+**實作模板（絕對定位法，最穩定）**：
 ```typescript
-// 框架層：控制外框樣式
+// 計算公式：
+// 內容區 = SIZE - FRAME_WIDTH * 2
+// 圖片尺寸 = 內容區 * 1.22（放大 22% 裁掉圖片自帶框）
+// 偏移量 = (圖片尺寸 - 內容區) / 2（置中）
+
 <View style={{
   width: SIZE,
   height: SIZE,
-  borderRadius: SIZE / 2,       // 圓形
+  borderRadius: SIZE / 2,
   borderWidth: FRAME_WIDTH,
   borderColor: FRAME_COLOR,
-  overflow: 'hidden',           // 遮罩層合併在框架層
+  overflow: 'hidden',
 }}>
-  {/* 圖片層：放大裁切 */}
   <Image
     source={imageSource}
     style={{
-      width: '100%',
-      height: '100%',
-      transform: [{ scale: SCALE_FACTOR }],  // 關鍵
+      position: 'absolute',
+      top: -OFFSET,
+      left: -OFFSET,
+      width: IMAGE_SIZE,
+      height: IMAGE_SIZE,
     }}
     resizeMode="cover"
   />
 </View>
+
+// 範例（100px 容器 + 4px border）：
+// 內容區 = 92, 圖片 = 112, 偏移 = 10
+// 範例（64px 容器 + 無 border）：
+// 內容區 = 64, 圖片 = 78, 偏移 = 7
+// 範例（52px 容器，modal 選擇器）：
+// 內容區 = 52, 圖片 = 64, 偏移 = 6
 ```
 
 **Scale 決策表**：
@@ -422,7 +434,7 @@ grep -rn "Image.*source.*preset\|avatar\|frame" src/
 ```
 
 **注意事項**：
-- `transform: [{ scale }]` 是從中心點放大，四邊均勻裁切
+- 優先使用絕對定位法（`position: absolute` + 負偏移），比 `transform: scale` 更穩定
 - 必須確認父容器有 `overflow: 'hidden'`，否則放大的部分會溢出
 - 自訂上傳的圖片（非預設圖）通常不需要 scale，因為沒有預畫框
 - 如果 scale 後主體被裁太多 → 降低 scale 或考慮重做圖片
