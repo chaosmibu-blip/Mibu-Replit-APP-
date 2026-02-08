@@ -32,18 +32,17 @@ import { API_BASE_URL } from '../src/constants/translations';
 import { MibuBrand } from '../constants/Colors';
 
 const BUSINESS_CATEGORIES = [
-  { value: 'restaurant', label: { zh: '餐飲', en: 'Restaurant' } },
-  { value: 'hotel', label: { zh: '住宿', en: 'Hotel' } },
-  { value: 'attraction', label: { zh: '景點', en: 'Attraction' } },
-  { value: 'shopping', label: { zh: '購物', en: 'Shopping' } },
-  { value: 'activity', label: { zh: '活動', en: 'Activity' } },
-  { value: 'other', label: { zh: '其他', en: 'Other' } },
+  { value: 'restaurant', labelKey: 'merchant_catRestaurant' },
+  { value: 'hotel', labelKey: 'merchant_catHotel' },
+  { value: 'attraction', labelKey: 'merchant_catAttraction' },
+  { value: 'shopping', labelKey: 'merchant_catShopping' },
+  { value: 'activity', labelKey: 'merchant_catExperience' },
+  { value: 'other', labelKey: 'merchant_catOther' },
 ];
 
 export default function RegisterMerchantScreen() {
   const router = useRouter();
-  const { state } = useApp();
-  const isZh = state.language === 'zh-TW';
+  const { state, t } = useApp();
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -60,53 +59,53 @@ export default function RegisterMerchantScreen() {
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
   const texts = {
-    title: isZh ? '商家註冊' : 'Merchant Registration',
-    email: isZh ? 'Email（帳號）' : 'Email (Account)',
-    password: isZh ? '密碼（至少6字）' : 'Password (min 6 chars)',
-    confirmPassword: isZh ? '確認密碼' : 'Confirm Password',
-    businessName: isZh ? '商家名稱' : 'Business Name',
-    contactName: isZh ? '聯絡人名稱' : 'Contact Name',
-    taxId: isZh ? '統一編號（選填）' : 'Tax ID (Optional)',
-    businessCategory: isZh ? '產業類別' : 'Business Category',
-    address: isZh ? '營業地址' : 'Business Address',
-    otherContact: isZh ? '其他聯絡方式（選填）' : 'Other Contact (Optional)',
-    submit: isZh ? '提交申請' : 'Submit Application',
-    back: isZh ? '返回登入' : 'Back to Login',
-    selectCategory: isZh ? '請選擇產業類別' : 'Select Business Category',
-    required: isZh ? '必填' : 'Required',
+    title: t.merchant_registration,
+    email: t.merchant_regEmail,
+    password: t.merchant_regPassword,
+    confirmPassword: t.merchant_regConfirmPassword,
+    businessName: t.merchant_regBusinessName,
+    contactName: t.merchant_regContactName,
+    taxId: t.merchant_regTaxId,
+    businessCategory: t.merchant_regIndustryCategory,
+    address: t.merchant_regBusinessAddress,
+    otherContact: t.merchant_regOtherContact,
+    submit: t.merchant_submitApplication,
+    back: t.merchant_regBackToLogin,
+    selectCategory: t.merchant_regSelectCategory,
+    required: t.common_required,
   };
 
   const validateForm = () => {
     if (!formData.email.trim()) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請輸入 Email' : 'Please enter email');
+      Alert.alert(t.common_error, t.merchant_regEnterEmail);
       return false;
     }
     if (!formData.email.includes('@')) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? 'Email 格式不正確' : 'Invalid email format');
+      Alert.alert(t.common_error, t.merchant_regInvalidEmailFormat);
       return false;
     }
     if (formData.password.length < 6) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '密碼至少需要6個字' : 'Password must be at least 6 characters');
+      Alert.alert(t.common_error, t.merchant_regPasswordMinLength);
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '密碼不一致' : 'Passwords do not match');
+      Alert.alert(t.common_error, t.merchant_regPasswordMismatch);
       return false;
     }
     if (!formData.businessName.trim()) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請輸入商家名稱' : 'Please enter business name');
+      Alert.alert(t.common_error, t.merchant_regEnterBusinessName);
       return false;
     }
     if (!formData.contactName.trim()) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請輸入聯絡人名稱' : 'Please enter contact name');
+      Alert.alert(t.common_error, t.merchant_regEnterContactName);
       return false;
     }
     if (!formData.businessCategory) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請選擇產業類別' : 'Please select business category');
+      Alert.alert(t.common_error, t.merchant_regSelectIndustry);
       return false;
     }
     if (!formData.address.trim()) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請輸入營業地址' : 'Please enter business address');
+      Alert.alert(t.common_error, t.merchant_regEnterAddress);
       return false;
     }
     return true;
@@ -137,11 +136,11 @@ export default function RegisterMerchantScreen() {
       if (data.success) {
         router.replace('/register-success');
       } else {
-        Alert.alert(isZh ? '註冊失敗' : 'Registration Failed', data.message || (isZh ? '請稍後再試' : 'Please try again later'));
+        Alert.alert(t.auth_registrationFailed, data.message || t.auth_tryAgainLater);
       }
     } catch (error) {
       console.error('Registration error:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '註冊失敗，請稍後再試' : 'Registration failed. Please try again.');
+      Alert.alert(t.common_error, t.auth_registrationError);
     } finally {
       setLoading(false);
     }
@@ -149,7 +148,7 @@ export default function RegisterMerchantScreen() {
 
   const getCategoryLabel = (value: string) => {
     const cat = BUSINESS_CATEGORIES.find(c => c.value === value);
-    return cat ? cat.label[isZh ? 'zh' : 'en'] : texts.selectCategory;
+    return cat ? t[cat.labelKey] : texts.selectCategory;
   };
 
   return (
@@ -204,7 +203,7 @@ export default function RegisterMerchantScreen() {
             style={styles.input}
             value={formData.businessName}
             onChangeText={(text: string) => setFormData(prev => ({ ...prev, businessName: text }))}
-            placeholder={isZh ? '請輸入商家名稱' : 'Enter business name'}
+            placeholder={t.merchant_regBusinessNamePlaceholder}
           />
         </View>
 
@@ -214,7 +213,7 @@ export default function RegisterMerchantScreen() {
             style={styles.input}
             value={formData.contactName}
             onChangeText={(text: string) => setFormData(prev => ({ ...prev, contactName: text }))}
-            placeholder={isZh ? '請輸入聯絡人姓名' : 'Enter contact name'}
+            placeholder={t.merchant_regContactNamePlaceholder}
           />
         </View>
 
@@ -238,7 +237,7 @@ export default function RegisterMerchantScreen() {
                   }}
                 >
                   <Text style={[styles.pickerText, formData.businessCategory === cat.value && styles.pickerTextSelected]}>
-                    {cat.label[isZh ? 'zh' : 'en']}
+                    {t[cat.labelKey]}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -252,7 +251,7 @@ export default function RegisterMerchantScreen() {
             style={styles.input}
             value={formData.address}
             onChangeText={(text: string) => setFormData(prev => ({ ...prev, address: text }))}
-            placeholder={isZh ? '請輸入營業地址' : 'Enter business address'}
+            placeholder={t.merchant_regAddressPlaceholder}
           />
         </View>
 
@@ -262,7 +261,7 @@ export default function RegisterMerchantScreen() {
             style={styles.input}
             value={formData.taxId}
             onChangeText={(text: string) => setFormData(prev => ({ ...prev, taxId: text }))}
-            placeholder={isZh ? '統一編號' : 'Tax ID'}
+            placeholder={t.merchant_regTaxIdShort}
           />
         </View>
 
@@ -272,7 +271,7 @@ export default function RegisterMerchantScreen() {
             style={styles.input}
             value={formData.otherContact}
             onChangeText={(text: string) => setFormData(prev => ({ ...prev, otherContact: text }))}
-            placeholder={isZh ? 'LINE ID 或電話' : 'LINE ID or Phone'}
+            placeholder={t.merchant_regLineOrPhone}
           />
         </View>
 

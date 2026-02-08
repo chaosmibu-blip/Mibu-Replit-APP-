@@ -30,10 +30,9 @@ const TIERS: { id: MerchantCouponTier; label: string; prob: string; color: strin
 ];
 
 export function CouponFormScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
-  const isZh = state.language === 'zh-TW';
   const isEdit = !!params.id && params.id !== 'new';
 
   const [loading, setLoading] = useState(isEdit);
@@ -47,31 +46,6 @@ export function CouponFormScreen() {
     validUntil: '',
     isActive: true,
   });
-
-  const t = {
-    titleNew: isZh ? '新增優惠券' : 'Add Coupon',
-    titleEdit: isZh ? '編輯優惠券' : 'Edit Coupon',
-    name: isZh ? '優惠券名稱' : 'Coupon Name',
-    namePlaceholder: isZh ? '例：滿千折百' : 'e.g. 10% Off',
-    tier: isZh ? '稀有度等級' : 'Rarity Tier',
-    tierHint: isZh ? '等級越高，抽中機率越低' : 'Higher tier = lower draw rate',
-    content: isZh ? '優惠內容' : 'Discount Content',
-    contentPlaceholder: isZh ? '詳細描述優惠內容...' : 'Describe the discount...',
-    terms: isZh ? '使用條款' : 'Terms & Conditions',
-    termsPlaceholder: isZh ? '使用限制與注意事項（選填）' : 'Usage restrictions (optional)',
-    quantity: isZh ? '發放數量' : 'Quantity',
-    quantityHint: isZh ? '總共可發放的數量' : 'Total coupons to distribute',
-    validUntil: isZh ? '有效期限' : 'Valid Until',
-    validUntilPlaceholder: 'YYYY-MM-DD',
-    validUntilHint: isZh ? '留空表示無期限' : 'Leave empty for no expiration',
-    isActive: isZh ? '立即啟用' : 'Activate Now',
-    save: isZh ? '儲存' : 'Save',
-    required: isZh ? '必填' : 'Required',
-    fillRequired: isZh ? '請填寫必要欄位' : 'Please fill required fields',
-    saveSuccess: isZh ? '儲存成功' : 'Saved successfully',
-    saveFailed: isZh ? '儲存失敗' : 'Save failed',
-    loading: isZh ? '載入中...' : 'Loading...',
-  };
 
   useEffect(() => {
     if (isEdit) {
@@ -111,7 +85,7 @@ export function CouponFormScreen() {
 
   const handleSave = async () => {
     if (!formData.name.trim() || !formData.content.trim()) {
-      Alert.alert(isZh ? '提示' : 'Notice', t.fillRequired);
+      Alert.alert(t.merchant_notice, t.common_fillRequired);
       return;
     }
 
@@ -145,12 +119,12 @@ export function CouponFormScreen() {
         });
       }
 
-      Alert.alert(isZh ? '成功' : 'Success', t.saveSuccess, [
+      Alert.alert(t.common_success, t.merchant_saveSuccess, [
         { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (error) {
       console.error('Save failed:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', t.saveFailed);
+      Alert.alert(t.common_error, t.common_saveFailed);
     } finally {
       setSaving(false);
     }
@@ -179,7 +153,7 @@ export function CouponFormScreen() {
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
             <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
-          <Text style={styles.title}>{isEdit ? t.titleEdit : t.titleNew}</Text>
+          <Text style={styles.title}>{isEdit ? t.merchant_couponEditTitle : t.merchant_couponAddTitle}</Text>
         </View>
 
         {/* Form */}
@@ -187,14 +161,14 @@ export function CouponFormScreen() {
           {/* Name */}
           <View style={styles.field}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>{t.name}</Text>
-              <Text style={styles.required}>{t.required}</Text>
+              <Text style={styles.label}>{t.merchant_couponName}</Text>
+              <Text style={styles.required}>{t.common_required}</Text>
             </View>
             <TextInput
               style={styles.input}
               value={formData.name}
               onChangeText={(v) => updateField('name', v)}
-              placeholder={t.namePlaceholder}
+              placeholder={t.merchant_couponNamePlaceholder}
               placeholderTextColor={UIColors.textSecondary}
             />
           </View>
@@ -202,8 +176,8 @@ export function CouponFormScreen() {
           {/* Tier */}
           <View style={styles.field}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>{t.tier}</Text>
-              <Text style={styles.hint}>{t.tierHint}</Text>
+              <Text style={styles.label}>{t.merchant_rarityTier}</Text>
+              <Text style={styles.hint}>{t.merchant_tierHint}</Text>
             </View>
             <View style={styles.tierGrid}>
               {TIERS.map((tier) => (
@@ -241,14 +215,14 @@ export function CouponFormScreen() {
           {/* Content */}
           <View style={styles.field}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>{t.content}</Text>
-              <Text style={styles.required}>{t.required}</Text>
+              <Text style={styles.label}>{t.merchant_discountContent}</Text>
+              <Text style={styles.required}>{t.common_required}</Text>
             </View>
             <TextInput
               style={[styles.input, styles.textArea]}
               value={formData.content}
               onChangeText={(v) => updateField('content', v)}
-              placeholder={t.contentPlaceholder}
+              placeholder={t.merchant_discountContentPlaceholder}
               placeholderTextColor={UIColors.textSecondary}
               multiline
               numberOfLines={3}
@@ -258,12 +232,12 @@ export function CouponFormScreen() {
 
           {/* Terms */}
           <View style={styles.field}>
-            <Text style={styles.label}>{t.terms}</Text>
+            <Text style={styles.label}>{t.merchant_terms}</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
               value={formData.terms}
               onChangeText={(v) => updateField('terms', v)}
-              placeholder={t.termsPlaceholder}
+              placeholder={t.merchant_termsPlaceholder}
               placeholderTextColor={UIColors.textSecondary}
               multiline
               numberOfLines={2}
@@ -274,7 +248,7 @@ export function CouponFormScreen() {
           {/* Quantity & Valid Until Row */}
           <View style={styles.row}>
             <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>{t.quantity}</Text>
+              <Text style={styles.label}>{t.merchant_quantity}</Text>
               <TextInput
                 style={styles.input}
                 value={formData.quantity}
@@ -285,12 +259,12 @@ export function CouponFormScreen() {
               />
             </View>
             <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>{t.validUntil}</Text>
+              <Text style={styles.label}>{t.merchant_validUntil}</Text>
               <TextInput
                 style={styles.input}
                 value={formData.validUntil}
                 onChangeText={(v) => updateField('validUntil', v)}
-                placeholder={t.validUntilPlaceholder}
+                placeholder="YYYY-MM-DD"
                 placeholderTextColor={UIColors.textSecondary}
               />
             </View>
@@ -302,7 +276,7 @@ export function CouponFormScreen() {
             onPress={() => updateField('isActive', !formData.isActive)}
             accessibilityLabel={formData.isActive ? '停用優惠券' : '啟用優惠券'}
           >
-            <Text style={styles.toggleLabel}>{t.isActive}</Text>
+            <Text style={styles.toggleLabel}>{t.merchant_activateNow}</Text>
             <View
               style={[
                 styles.toggle,
@@ -331,7 +305,7 @@ export function CouponFormScreen() {
           ) : (
             <>
               <Ionicons name="checkmark-circle" size={20} color={UIColors.white} />
-              <Text style={styles.saveButtonText}>{t.save}</Text>
+              <Text style={styles.saveButtonText}>{t.common_save}</Text>
             </>
           )}
         </TouchableOpacity>

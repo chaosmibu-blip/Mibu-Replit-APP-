@@ -30,8 +30,7 @@ import { MibuBrand } from '../constants/Colors';
 
 export default function RegisterSpecialistScreen() {
   const router = useRouter();
-  const { state } = useApp();
-  const isZh = state.language === 'zh-TW';
+  const { state, t } = useApp();
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -44,37 +43,37 @@ export default function RegisterSpecialistScreen() {
   });
 
   const texts = {
-    title: isZh ? '專員註冊' : 'Specialist Registration',
-    email: isZh ? 'Email（帳號）' : 'Email (Account)',
-    password: isZh ? '密碼（至少6字）' : 'Password (min 6 chars)',
-    confirmPassword: isZh ? '確認密碼' : 'Confirm Password',
-    name: isZh ? '名稱' : 'Name',
-    otherContact: isZh ? '其他聯絡方式（選填）' : 'Other Contact (Optional)',
-    serviceRegion: isZh ? '服務地區（選填）' : 'Service Region (Optional)',
-    submit: isZh ? '提交申請' : 'Submit Application',
-    back: isZh ? '返回登入' : 'Back to Login',
-    required: isZh ? '必填' : 'Required',
+    title: t.specialist_registration,
+    email: t.specialist_emailAccount,
+    password: t.specialist_passwordMin,
+    confirmPassword: t.specialist_confirmPassword,
+    name: t.specialist_nameLabel,
+    otherContact: t.specialist_otherContact,
+    serviceRegion: t.specialist_serviceRegionOptional,
+    submit: t.specialist_submitApplication,
+    back: t.specialist_backToLogin,
+    required: t.common_required,
   };
 
   const validateForm = () => {
     if (!formData.email.trim()) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請輸入 Email' : 'Please enter email');
+      Alert.alert(t.common_error, t.specialist_enterEmail);
       return false;
     }
     if (!formData.email.includes('@')) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? 'Email 格式不正確' : 'Invalid email format');
+      Alert.alert(t.common_error, t.specialist_invalidEmailFormat);
       return false;
     }
     if (formData.password.length < 6) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '密碼至少需要6個字' : 'Password must be at least 6 characters');
+      Alert.alert(t.common_error, t.specialist_passwordMinLength);
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '密碼不一致' : 'Passwords do not match');
+      Alert.alert(t.common_error, t.specialist_passwordMismatch);
       return false;
     }
     if (!formData.name.trim()) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請輸入名稱' : 'Please enter name');
+      Alert.alert(t.common_error, t.specialist_enterName);
       return false;
     }
     return true;
@@ -102,11 +101,11 @@ export default function RegisterSpecialistScreen() {
       if (data.success) {
         router.replace('/register-success');
       } else {
-        Alert.alert(isZh ? '註冊失敗' : 'Registration Failed', data.message || (isZh ? '請稍後再試' : 'Please try again later'));
+        Alert.alert(t.auth_registrationFailed, data.message || t.auth_tryAgainLater);
       }
     } catch (error) {
       console.error('Registration error:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '註冊失敗，請稍後再試' : 'Registration failed. Please try again.');
+      Alert.alert(t.common_error, t.auth_registrationError);
     } finally {
       setLoading(false);
     }
@@ -164,7 +163,7 @@ export default function RegisterSpecialistScreen() {
             style={styles.input}
             value={formData.name}
             onChangeText={(text: string) => setFormData(prev => ({ ...prev, name: text }))}
-            placeholder={isZh ? '請輸入您的名稱' : 'Enter your name'}
+            placeholder={t.specialist_namePlaceholder}
           />
         </View>
 
@@ -174,7 +173,7 @@ export default function RegisterSpecialistScreen() {
             style={styles.input}
             value={formData.serviceRegion}
             onChangeText={(text: string) => setFormData(prev => ({ ...prev, serviceRegion: text }))}
-            placeholder={isZh ? '例如：台北、宜蘭' : 'e.g., Taipei, Yilan'}
+            placeholder={t.specialist_regionPlaceholder}
           />
         </View>
 
@@ -184,7 +183,7 @@ export default function RegisterSpecialistScreen() {
             style={styles.input}
             value={formData.otherContact}
             onChangeText={(text: string) => setFormData(prev => ({ ...prev, otherContact: text }))}
-            placeholder={isZh ? 'LINE ID 或電話' : 'LINE ID or Phone'}
+            placeholder={t.specialist_lineOrPhone}
           />
         </View>
 

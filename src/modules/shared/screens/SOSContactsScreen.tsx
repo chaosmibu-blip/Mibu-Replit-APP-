@@ -37,26 +37,26 @@ import { useApp } from '../../../context/AppContext';
 import { commonApi } from '../../../services/commonApi';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { SOSContact, CreateSOSContactParams } from '../../../types/sos';
+import { tFormat } from '../../../utils/i18n';
 
 // ============ 常數定義 ============
 
 /** 最大聯絡人數量 */
 const MAX_CONTACTS = 3;
 
-/** 關係選項 */
+/** 關係選項（使用 labelKey 對應 translations key） */
 const RELATIONSHIP_OPTIONS = [
-  { value: 'family', label: { zh: '家人', en: 'Family' } },
-  { value: 'friend', label: { zh: '朋友', en: 'Friend' } },
-  { value: 'colleague', label: { zh: '同事', en: 'Colleague' } },
-  { value: 'other', label: { zh: '其他', en: 'Other' } },
-];
+  { value: 'family', labelKey: 'sos_relFamily' },
+  { value: 'friend', labelKey: 'sos_relFriend' },
+  { value: 'colleague', labelKey: 'sos_relColleague' },
+  { value: 'other', labelKey: 'sos_relOther' },
+] as const;
 
 // ============ 元件本體 ============
 
 export function SOSContactsScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   // ============ 狀態管理 ============
 
@@ -118,10 +118,8 @@ export function SOSContactsScreen() {
   const openAddModal = () => {
     if (contacts.length >= MAX_CONTACTS) {
       Alert.alert(
-        isZh ? '已達上限' : 'Limit Reached',
-        isZh
-          ? `最多只能新增 ${MAX_CONTACTS} 位緊急聯絡人`
-          : `You can only add up to ${MAX_CONTACTS} emergency contacts`
+        t.sos_limitReached,
+        tFormat(t.sos_limitReachedDesc, { max: MAX_CONTACTS })
       );
       return;
     }
@@ -152,8 +150,8 @@ export function SOSContactsScreen() {
     // 驗證必填欄位
     if (!formName.trim() || !formPhone.trim()) {
       Alert.alert(
-        isZh ? '請填寫完整' : 'Incomplete',
-        isZh ? '請輸入姓名和電話' : 'Please enter name and phone'
+        t.sos_incomplete,
+        t.sos_enterNamePhone
       );
       return;
     }
@@ -189,8 +187,8 @@ export function SOSContactsScreen() {
     } catch (error) {
       console.error('Failed to save contact:', error);
       Alert.alert(
-        isZh ? '錯誤' : 'Error',
-        isZh ? '無法儲存聯絡人' : 'Failed to save contact'
+        t.common_error,
+        t.sos_saveFailed
       );
     } finally {
       setSaving(false);
@@ -202,14 +200,12 @@ export function SOSContactsScreen() {
    */
   const handleDelete = (contact: SOSContact) => {
     Alert.alert(
-      isZh ? '刪除聯絡人' : 'Delete Contact',
-      isZh
-        ? `確定要刪除「${contact.name}」嗎？`
-        : `Delete "${contact.name}"?`,
+      t.sos_deleteContact,
+      tFormat(t.sos_deleteContactConfirm, { name: contact.name }),
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: isZh ? '刪除' : 'Delete',
+          text: t.common_delete,
           style: 'destructive',
           onPress: async () => {
             try {
@@ -223,8 +219,8 @@ export function SOSContactsScreen() {
             } catch (error) {
               console.error('Failed to delete contact:', error);
               Alert.alert(
-                isZh ? '錯誤' : 'Error',
-                isZh ? '無法刪除聯絡人' : 'Failed to delete contact'
+                t.common_error,
+                t.sos_deleteContactFailed
               );
             }
           },
@@ -236,11 +232,11 @@ export function SOSContactsScreen() {
   // ============ 輔助函數 ============
 
   /**
-   * 取得關係的顯示文字
+   * 取得關係的顯示文字（透過 labelKey 查詢翻譯字典）
    */
   const getRelationshipLabel = (value?: string) => {
     const option = RELATIONSHIP_OPTIONS.find(o => o.value === value);
-    return option ? option.label[isZh ? 'zh' : 'en'] : value;
+    return option ? t[option.labelKey] : value;
   };
 
   // ============ 列表項目渲染 ============
@@ -312,7 +308,7 @@ export function SOSContactsScreen() {
         <View style={styles.headerCenter}>
           <Ionicons name="shield-checkmark" size={24} color="#EF4444" />
           <Text style={styles.headerTitle}>
-            {isZh ? '緊急聯絡人' : 'Emergency Contacts'}
+            {t.sos_emergencyContacts}
           </Text>
         </View>
         <TouchableOpacity onPress={openAddModal} style={styles.addButton}>
@@ -324,9 +320,7 @@ export function SOSContactsScreen() {
       <View style={styles.infoBanner}>
         <Ionicons name="information-circle" size={20} color={MibuBrand.copper} />
         <Text style={styles.infoText}>
-          {isZh
-            ? `最多可新增 ${MAX_CONTACTS} 位緊急聯絡人，發送 SOS 時將同時通知他們`
-            : `Add up to ${MAX_CONTACTS} emergency contacts. They will be notified when you send SOS.`}
+          {tFormat(t.sos_infoBanner, { max: MAX_CONTACTS })}
         </Text>
       </View>
 
@@ -351,17 +345,15 @@ export function SOSContactsScreen() {
         <View style={styles.emptyContainer}>
           <Ionicons name="people-outline" size={64} color={MibuBrand.tan} />
           <Text style={styles.emptyTitle}>
-            {isZh ? '尚無緊急聯絡人' : 'No emergency contacts'}
+            {t.sos_noContacts}
           </Text>
           <Text style={styles.emptySubtitle}>
-            {isZh
-              ? '點擊右上角 + 新增聯絡人'
-              : 'Tap + to add your first contact'}
+            {t.sos_tapToAdd}
           </Text>
           <TouchableOpacity style={styles.addFirstBtn} onPress={openAddModal}>
             <Ionicons name="add-circle" size={20} color="#fff" />
             <Text style={styles.addFirstBtnText}>
-              {isZh ? '新增聯絡人' : 'Add Contact'}
+              {t.sos_addContact}
             </Text>
           </TouchableOpacity>
         </View>
@@ -382,9 +374,7 @@ export function SOSContactsScreen() {
             {/* Modal 標題 */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {editingContact
-                  ? isZh ? '編輯聯絡人' : 'Edit Contact'
-                  : isZh ? '新增聯絡人' : 'Add Contact'}
+                {editingContact ? t.sos_editContact : t.sos_addContact}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Ionicons name="close" size={24} color={MibuBrand.brownDark} />
@@ -393,24 +383,24 @@ export function SOSContactsScreen() {
 
             {/* 姓名欄位 */}
             <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>{isZh ? '姓名' : 'Name'}</Text>
+              <Text style={styles.formLabel}>{t.common_name}</Text>
               <TextInput
                 style={styles.formInput}
                 value={formName}
                 onChangeText={setFormName}
-                placeholder={isZh ? '輸入姓名' : 'Enter name'}
+                placeholder={t.sos_enterName}
                 placeholderTextColor={MibuBrand.tan}
               />
             </View>
 
             {/* 電話欄位 */}
             <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>{isZh ? '電話' : 'Phone'}</Text>
+              <Text style={styles.formLabel}>{t.common_phone}</Text>
               <TextInput
                 style={styles.formInput}
                 value={formPhone}
                 onChangeText={setFormPhone}
-                placeholder={isZh ? '輸入電話號碼' : 'Enter phone number'}
+                placeholder={t.sos_enterPhone}
                 placeholderTextColor={MibuBrand.tan}
                 keyboardType="phone-pad"
               />
@@ -418,7 +408,7 @@ export function SOSContactsScreen() {
 
             {/* 關係選擇 */}
             <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>{isZh ? '關係' : 'Relationship'}</Text>
+              <Text style={styles.formLabel}>{t.sos_relationship}</Text>
               <View style={styles.relationshipOptions}>
                 {RELATIONSHIP_OPTIONS.map(option => (
                   <TouchableOpacity
@@ -435,7 +425,7 @@ export function SOSContactsScreen() {
                         formRelationship === option.value && styles.relationshipOptionTextActive,
                       ]}
                     >
-                      {option.label[isZh ? 'zh' : 'en']}
+                      {t[option.labelKey]}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -452,7 +442,7 @@ export function SOSContactsScreen() {
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <Text style={styles.saveBtnText}>
-                  {isZh ? '儲存' : 'Save'}
+                  {t.common_save}
                 </Text>
               )}
             </TouchableOpacity>

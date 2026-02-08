@@ -96,11 +96,8 @@ const ONETIME_TASKS: Task[] = [
 // ============================================================
 
 export function EconomyScreen() {
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
-
-  // 語言判斷
-  const isZh = state.language === 'zh-TW';
 
   // ============================================================
   // 狀態管理
@@ -155,10 +152,7 @@ export function EconomyScreen() {
     } catch (error) {
       console.error('Failed to load economy data:', error);
       // 用戶可見的錯誤提示
-      Alert.alert(
-        isZh ? '載入失敗' : 'Load Failed',
-        isZh ? '無法載入經濟資料，請稍後再試' : 'Unable to load economy data. Please try again later.'
-      );
+      Alert.alert(t.economy_loadFailed, t.economy_loadFailedDesc);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -259,8 +253,8 @@ export function EconomyScreen() {
 
             {/* 新手任務區塊 */}
             <SectionHeader
-              title={isZh ? '新手任務' : 'Beginner Tasks'}
-              subtitle={`${completedOnetimeCount}/${totalOnetimeCount} ${isZh ? '完成' : 'done'}`}
+              title={t.economy_beginnerTasks}
+              subtitle={`${completedOnetimeCount}/${totalOnetimeCount} ${t.economy_done}`}
             />
             <View style={styles.taskGroup}>
               {onetimeTasks.map((task, index) => (
@@ -277,8 +271,8 @@ export function EconomyScreen() {
         return (
           <>
             <SectionHeader
-              title={isZh ? '新手任務' : 'Beginner Tasks'}
-              subtitle={`${completedOnetimeCount}/${totalOnetimeCount} ${isZh ? '完成' : 'done'}`}
+              title={t.economy_beginnerTasks}
+              subtitle={`${completedOnetimeCount}/${totalOnetimeCount} ${t.economy_done}`}
             />
             <View style={styles.taskGroup}>
               {onetimeTasks.map((task, index) => (
@@ -295,8 +289,8 @@ export function EconomyScreen() {
         return (
           <>
             <SectionHeader
-              title={isZh ? '成就進度' : 'Achievement Progress'}
-              subtitle={`${unlockedCount}/${achievements.length} ${isZh ? '解鎖' : 'unlocked'}`}
+              title={t.economy_achievementProgress}
+              subtitle={`${unlockedCount}/${achievements.length} ${t.economy_unlocked}`}
             />
             {achievements.length > 0 ? (
               <View style={styles.taskGroup}>
@@ -355,7 +349,7 @@ export function EconomyScreen() {
               <View style={styles.emptyState}>
                 <Ionicons name="trophy-outline" size={48} color={MibuBrand.tan} />
                 <Text style={styles.emptyText}>
-                  {isZh ? '暫無成就資料' : 'No achievements yet'}
+                  {t.economy_noAchievements}
                 </Text>
               </View>
             )}
@@ -365,7 +359,7 @@ export function EconomyScreen() {
         // ===== 權益 Tab（#039 重構） =====
         return (
           <>
-            <SectionHeader title={isZh ? '我的權益' : 'My Perks'} />
+            <SectionHeader title={t.economy_myPerks} />
             <View style={styles.taskGroup}>
               {/* 每日扭蛋上限 */}
               <View style={styles.perkDetailItem}>
@@ -374,10 +368,10 @@ export function EconomyScreen() {
                 </View>
                 <View style={styles.perkDetailContent}>
                   <Text style={styles.perkDetailTitle}>
-                    {isZh ? '每日扭蛋上限' : 'Daily Pull Limit'}
+                    {t.economy_dailyPullLimit}
                   </Text>
                   <Text style={styles.perkDetailDesc}>
-                    {isZh ? '每天可以扭蛋的次數' : 'Number of pulls per day'}
+                    {t.economy_pullsPerDay}
                   </Text>
                 </View>
                 <Text style={styles.perkDetailValue}>{dailyPullLimitDisplay}</Text>
@@ -391,10 +385,10 @@ export function EconomyScreen() {
                 </View>
                 <View style={styles.perkDetailContent}>
                   <Text style={styles.perkDetailTitle}>
-                    {isZh ? '背包容量' : 'Inventory Slots'}
+                    {t.economy_inventorySlots}
                   </Text>
                   <Text style={styles.perkDetailDesc}>
-                    {isZh ? '可存放的道具數量' : 'Number of items you can hold'}
+                    {t.economy_itemsCanHold}
                   </Text>
                 </View>
                 <Text style={styles.perkDetailValue}>{inventorySlotsDisplay}</Text>
@@ -412,12 +406,12 @@ export function EconomyScreen() {
                 </View>
                 <View style={styles.perkDetailContent}>
                   <Text style={styles.perkDetailTitle}>
-                    {isZh ? '策劃師資格' : 'Specialist Eligibility'}
+                    {t.economy_specialistEligibility}
                   </Text>
                   <Text style={styles.perkDetailDesc}>
                     {perksInfo?.canApplySpecialist
-                      ? (isZh ? '已獲得申請資格！' : 'You can apply now!')
-                      : (isZh ? '達成「資深旅人」成就並累計 1,500 金幣後解鎖' : 'Unlock by earning 1,500 coins and "Veteran Traveler" achievement')}
+                      ? t.economy_canApplyNow
+                      : t.economy_unlockRequirement}
                   </Text>
                 </View>
                 {perksInfo?.canApplySpecialist && (
@@ -428,15 +422,13 @@ export function EconomyScreen() {
 
             {/* 金幣說明 */}
             <View style={{ marginTop: 16 }}>
-              <SectionHeader title={isZh ? '金幣說明' : 'About Coins'} />
+              <SectionHeader title={t.economy_aboutCoins} />
             </View>
             <View style={styles.taskGroup}>
               <View style={styles.coinInfoItem}>
                 <Ionicons name="information-circle-outline" size={20} color={MibuBrand.copper} />
                 <Text style={styles.coinInfoText}>
-                  {isZh
-                    ? '金幣可透過完成任務、解鎖成就獲得。累積金幣可解鎖更多權益！'
-                    : 'Earn coins by completing tasks and unlocking achievements. Accumulate coins to unlock more perks!'}
+                  {t.economy_coinsInfo}
                 </Text>
               </View>
             </View>
@@ -471,7 +463,7 @@ export function EconomyScreen() {
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {isZh ? '成就系統' : 'Achievements'}
+          {t.economy_achievementsTitle}
         </Text>
         <View style={styles.headerPlaceholder} />
       </View>
@@ -494,7 +486,7 @@ export function EconomyScreen() {
           <View style={styles.statCard}>
             <Ionicons name="trophy" size={20} color={MibuBrand.copper} />
             <Text style={styles.statNumber}>{unlockedCount}</Text>
-            <Text style={styles.statLabel}>{isZh ? '成就' : 'Achievements'}</Text>
+            <Text style={styles.statLabel}>{t.economy_statAchievements}</Text>
           </View>
         </View>
 
@@ -507,10 +499,10 @@ export function EconomyScreen() {
               onPress={() => setSelectedTab(tab)}
             >
               <Text style={[styles.tabText, selectedTab === tab && styles.tabTextActive]}>
-                {tab === 'daily' && (isZh ? '每日' : 'Daily')}
-                {tab === 'onetime' && (isZh ? '一次性' : 'Once')}
-                {tab === 'cumulative' && (isZh ? '累計' : 'Total')}
-                {tab === 'level' && (isZh ? '權益' : 'Perks')}
+                {tab === 'daily' && t.economy_tabDaily}
+                {tab === 'onetime' && t.economy_tabOnce}
+                {tab === 'cumulative' && t.economy_tabTotal}
+                {tab === 'level' && t.economy_tabPerks}
               </Text>
             </TouchableOpacity>
           ))}

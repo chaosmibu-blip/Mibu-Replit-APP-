@@ -39,6 +39,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useApp } from '../../../context/AppContext';
+import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 import { referralApi } from '../../../services/referralApi';
 import { MibuBrand } from '../../../../constants/Colors';
 import {
@@ -80,11 +81,9 @@ const REWARD_TIERS: RewardTier[] = [
 // ============================================================
 
 export function ReferralScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
 
-  // 語言判斷
-  const isZh = state.language === 'zh-TW';
 
   // ============================================================
   // 狀態管理
@@ -212,8 +211,8 @@ export function ReferralScreen() {
     } catch (error) {
       console.error('Failed to generate code:', error);
       Alert.alert(
-        isZh ? '錯誤' : 'Error',
-        isZh ? '無法生成推薦碼' : 'Failed to generate code'
+        t.common_error,
+        t.referral_generateError
       );
     } finally {
       setGeneratingCode(false);
@@ -224,8 +223,8 @@ export function ReferralScreen() {
     if (!myCode) return;
     await Clipboard.setStringAsync(myCode.code);
     Alert.alert(
-      isZh ? '已複製!' : 'Copied!',
-      isZh ? '推薦碼已複製到剪貼簿' : 'Code copied to clipboard'
+      t.referral_copied,
+      t.referral_copiedDesc
     );
   };
 
@@ -233,9 +232,7 @@ export function ReferralScreen() {
     if (!myCode) return;
     try {
       await Share.share({
-        message: isZh
-          ? `用我的推薦碼 ${myCode.code} 加入 Mibu 旅行扭蛋，一起探索旅遊新體驗！\n\n下載 APP: https://mibu.app`
-          : `Use my code ${myCode.code} to join Mibu and discover new travel experiences! Download: https://mibu.app`,
+        message: tFormat(t.referral_shareMessage, { code: myCode.code }),
       });
     } catch (error) {
       console.error('Share failed:', error);
@@ -253,8 +250,8 @@ export function ReferralScreen() {
       const validation = await referralApi.validateCode(token, inputCode.trim());
       if (!validation.valid) {
         Alert.alert(
-          isZh ? '無效的推薦碼' : 'Invalid Code',
-          validation.message || (isZh ? '此推薦碼無效' : 'This code is not valid')
+          t.referral_invalidCode,
+          validation.message || t.referral_invalidCodeDesc
         );
         return;
       }
@@ -263,18 +260,16 @@ export function ReferralScreen() {
       if (result.success) {
         setInputCode('');
         Alert.alert(
-          isZh ? '套用成功!' : 'Success!',
-          isZh
-            ? `已成功使用推薦碼！獲得 ${result.expEarned} 金幣`
-            : `Referral code applied! You earned ${result.expEarned} coins`
+          t.referral_applySuccess,
+          tFormat(t.referral_applySuccessDesc, { amount: result.expEarned })
         );
         loadData();
       }
     } catch (error: any) {
       console.error('Apply code failed:', error);
       Alert.alert(
-        isZh ? '錯誤' : 'Error',
-        error.message || (isZh ? '無法套用推薦碼' : 'Failed to apply code')
+        t.common_error,
+        error.message || t.referral_applyError
       );
     } finally {
       setApplyingCode(false);
@@ -310,7 +305,7 @@ export function ReferralScreen() {
         <View style={styles.headerCenter}>
           <Ionicons name="people" size={24} color={MibuBrand.brownDark} />
           <Text style={styles.headerTitle}>
-            {isZh ? '邀請好友' : 'Invite Friends'}
+            {t.referral_inviteFriends}
           </Text>
         </View>
         <View style={styles.headerPlaceholder} />
@@ -334,7 +329,7 @@ export function ReferralScreen() {
             <View style={styles.codeCardHeader}>
               <Ionicons name="gift" size={24} color="#fff" />
               <Text style={styles.codeCardTitle}>
-                {isZh ? '我的專屬推薦碼' : 'My Referral Code'}
+                {t.referral_myCode}
               </Text>
             </View>
             <View style={styles.codeDisplayArea}>
@@ -347,7 +342,7 @@ export function ReferralScreen() {
               >
                 <Ionicons name="copy-outline" size={20} color={MibuBrand.brown} />
                 <Text style={styles.copyButtonText}>
-                  {isZh ? '複製' : 'Copy'}
+                  {t.referral_copy}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -356,7 +351,7 @@ export function ReferralScreen() {
               >
                 <Ionicons name="share-social" size={20} color="#fff" />
                 <Text style={styles.shareButtonText}>
-                  {isZh ? '分享給好友' : 'Share'}
+                  {t.referral_share}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -366,10 +361,10 @@ export function ReferralScreen() {
             <View style={styles.generateCardInner}>
               <Ionicons name="gift-outline" size={48} color={MibuBrand.brown} />
               <Text style={styles.generateTitle}>
-                {isZh ? '生成你的專屬推薦碼' : 'Generate Your Code'}
+                {t.referral_generateTitle}
               </Text>
               <Text style={styles.generateSubtitle}>
-                {isZh ? '分享給好友，一起賺取豐富獎勵' : 'Share with friends and earn rewards together'}
+                {t.referral_generateSubtitle}
               </Text>
               <TouchableOpacity
                 style={styles.generateBtn}
@@ -382,7 +377,7 @@ export function ReferralScreen() {
                   <>
                     <Ionicons name="add-circle" size={20} color="#ffffff" />
                     <Text style={styles.generateBtnText}>
-                      {isZh ? '立即生成' : 'Generate Now'}
+                      {t.referral_generateNow}
                     </Text>
                   </>
                 )}
@@ -398,7 +393,7 @@ export function ReferralScreen() {
               <Ionicons name="person-add" size={20} color={MibuBrand.brown} />
             </View>
             <Text style={styles.statNumber}>{referralStats.totalReferrals}</Text>
-            <Text style={styles.statLabel}>{isZh ? '邀請人數' : 'Invited'}</Text>
+            <Text style={styles.statLabel}>{t.referral_invited}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconCircle, { backgroundColor: '#DCFCE7' }]}>
@@ -407,7 +402,7 @@ export function ReferralScreen() {
             <Text style={[styles.statNumber, { color: '#059669' }]}>
               {referralStats.activeReferrals}
             </Text>
-            <Text style={styles.statLabel}>{isZh ? '成功推薦' : 'Successful'}</Text>
+            <Text style={styles.statLabel}>{t.referral_successful}</Text>
           </View>
           <View style={styles.statCard}>
             <View style={[styles.statIconCircle, { backgroundColor: '#E0E7FF' }]}>
@@ -416,7 +411,7 @@ export function ReferralScreen() {
             <Text style={[styles.statNumber, { color: '#6366f1' }]}>
               {balance?.totalEarned || 0}
             </Text>
-            <Text style={styles.statLabel}>{isZh ? '獲得獎勵' : 'XP Earned'}</Text>
+            <Text style={styles.statLabel}>{t.referral_xpEarned}</Text>
           </View>
         </View>
 
@@ -425,7 +420,7 @@ export function ReferralScreen() {
           <View style={styles.sectionHeader}>
             <Ionicons name="information-circle" size={20} color={MibuBrand.brown} />
             <Text style={styles.sectionTitle}>
-              {isZh ? '獎勵機制說明' : 'How It Works'}
+              {t.referral_howItWorks}
             </Text>
           </View>
           <View style={styles.howItWorksCard}>
@@ -435,10 +430,10 @@ export function ReferralScreen() {
               </View>
               <View style={styles.stepContent}>
                 <Text style={styles.stepTitle}>
-                  {isZh ? '分享推薦碼' : 'Share Your Code'}
+                  {t.referral_step1Title}
                 </Text>
                 <Text style={styles.stepDesc}>
-                  {isZh ? '複製你的專屬推薦碼分享給好友' : 'Copy and share your unique referral code'}
+                  {t.referral_step1Desc}
                 </Text>
               </View>
             </View>
@@ -449,10 +444,10 @@ export function ReferralScreen() {
               </View>
               <View style={styles.stepContent}>
                 <Text style={styles.stepTitle}>
-                  {isZh ? '好友註冊' : 'Friend Signs Up'}
+                  {t.referral_step2Title}
                 </Text>
                 <Text style={styles.stepDesc}>
-                  {isZh ? '好友使用你的推薦碼完成註冊' : 'Your friend registers using your code'}
+                  {t.referral_step2Desc}
                 </Text>
               </View>
             </View>
@@ -463,10 +458,10 @@ export function ReferralScreen() {
               </View>
               <View style={styles.stepContent}>
                 <Text style={styles.stepTitle}>
-                  {isZh ? '雙方獲得獎勵' : 'Both Earn Rewards'}
+                  {t.referral_step3Title}
                 </Text>
                 <Text style={styles.stepDesc}>
-                  {isZh ? '你和好友都能獲得 50 XP 獎勵' : 'You and your friend each earn 50 XP'}
+                  {t.referral_step3Desc}
                 </Text>
               </View>
             </View>
@@ -478,7 +473,7 @@ export function ReferralScreen() {
           <View style={styles.sectionHeader}>
             <Ionicons name="trophy" size={20} color={MibuBrand.brown} />
             <Text style={styles.sectionTitle}>
-              {isZh ? '本週邀請排行榜' : 'Weekly Leaderboard'}
+              {t.referral_weeklyLeaderboard}
             </Text>
           </View>
           <View style={styles.leaderboardCard}>
@@ -533,7 +528,7 @@ export function ReferralScreen() {
                     >
                       {user.nickname}
                       {isCurrentUser && (
-                        <Text style={styles.youBadge}> ({isZh ? '你' : 'You'})</Text>
+                        <Text style={styles.youBadge}> ({t.referral_you})</Text>
                       )}
                     </Text>
 
@@ -549,10 +544,10 @@ export function ReferralScreen() {
               <View style={styles.emptyLeaderboard}>
                 <Ionicons name="people-outline" size={40} color={MibuBrand.tan} />
                 <Text style={styles.emptyLeaderboardText}>
-                  {isZh ? '暫無排行資料' : 'No ranking data yet'}
+                  {t.referral_noRanking}
                 </Text>
                 <Text style={styles.emptyLeaderboardSubtext}>
-                  {isZh ? '成為第一個邀請好友的人！' : 'Be the first to invite friends!'}
+                  {t.referral_beFirst}
                 </Text>
               </View>
             )}
@@ -560,7 +555,7 @@ export function ReferralScreen() {
           {myRank && !myRank.isOnLeaderboard && myRank.rank > 0 && (
             <View style={styles.myRankCard}>
               <Text style={styles.myRankText}>
-                {isZh ? `你目前排名第 ${myRank.rank} 名` : `Your current rank: #${myRank.rank}`}
+                {tFormat(t.referral_yourRank, { rank: myRank.rank })}
               </Text>
             </View>
           )}
@@ -571,7 +566,7 @@ export function ReferralScreen() {
           <View style={styles.sectionHeader}>
             <Ionicons name="gift" size={20} color={MibuBrand.brown} />
             <Text style={styles.sectionTitle}>
-              {isZh ? '邀請獎勵' : 'Invite Rewards'}
+              {t.referral_inviteRewards}
             </Text>
           </View>
           <View style={styles.rewardsList}>
@@ -597,7 +592,7 @@ export function ReferralScreen() {
                   </View>
                   <View style={styles.rewardInfo}>
                     <Text style={styles.rewardCount}>
-                      {isZh ? `邀請 ${tier.count} 位好友` : `Invite ${tier.count} friends`}
+                      {tFormat(t.referral_inviteCount, { count: tier.count })}
                     </Text>
                     <Text style={[styles.rewardValue, isAchieved && styles.rewardValueAchieved]}>
                       {tier.reward}
@@ -606,14 +601,14 @@ export function ReferralScreen() {
                   {isAchieved && (
                     <View style={styles.achievedBadge}>
                       <Text style={styles.achievedText}>
-                        {isZh ? '已達成' : 'Done'}
+                        {t.referral_achieved}
                       </Text>
                     </View>
                   )}
                   {isNext && (
                     <View style={styles.nextBadge}>
                       <Text style={styles.nextText}>
-                        {isZh ? `還差 ${tier.count - referralStats.totalReferrals} 位` : `${tier.count - referralStats.totalReferrals} more`}
+                        {tFormat(t.referral_remaining, { count: tier.count - referralStats.totalReferrals })}
                       </Text>
                     </View>
                   )}
@@ -628,19 +623,19 @@ export function ReferralScreen() {
           <View style={styles.sectionHeader}>
             <Ionicons name="enter-outline" size={20} color={MibuBrand.brown} />
             <Text style={styles.sectionTitle}>
-              {isZh ? '輸入好友推薦碼' : "Enter Friend's Code"}
+              {t.referral_enterCode}
             </Text>
           </View>
           <View style={styles.applyCard}>
             <Text style={styles.applyCardHint}>
-              {isZh ? '有好友推薦碼？輸入獲取獎勵' : 'Have a referral code? Enter to earn rewards'}
+              {t.referral_enterCodeHint}
             </Text>
             <View style={styles.applyInputRow}>
               <TextInput
                 style={styles.applyInput}
                 value={inputCode}
                 onChangeText={setInputCode}
-                placeholder={isZh ? '輸入推薦碼' : 'Enter code'}
+                placeholder={t.referral_enterCodePlaceholder}
                 placeholderTextColor={MibuBrand.tan}
                 autoCapitalize="characters"
                 maxLength={12}
@@ -669,7 +664,7 @@ export function ReferralScreen() {
             <View style={styles.sectionHeader}>
               <Ionicons name="time" size={20} color={MibuBrand.brown} />
               <Text style={styles.sectionTitle}>
-                {isZh ? '邀請紀錄' : 'Invite History'}
+                {t.referral_inviteHistory}
               </Text>
             </View>
             <View style={styles.referralsList}>
@@ -683,7 +678,7 @@ export function ReferralScreen() {
                   <View style={styles.referralInfo}>
                     <Text style={styles.referralName}>{referral.userName}</Text>
                     <Text style={styles.referralDate}>
-                      {new Date(referral.joinedAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
+                      {new Date(referral.joinedAt).toLocaleDateString(LOCALE_MAP[state.language])}
                     </Text>
                   </View>
                   <View style={styles.referralReward}>

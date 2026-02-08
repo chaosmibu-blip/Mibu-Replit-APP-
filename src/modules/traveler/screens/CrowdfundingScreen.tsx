@@ -84,31 +84,31 @@ const REGIONS: Region[] = [
  * - icon: 狀態圖示
  */
 const STATUS_CONFIG: Record<RegionStatus, {
-  label: { zh: string; en: string };
+  labelKey: string;
   color: string;
   bg: string;
   icon: keyof typeof Ionicons.glyphMap;
 }> = {
   unlocked: {
-    label: { zh: '已解鎖', en: 'Unlocked' },
+    labelKey: 'crowdfunding_statusUnlocked',
     color: '#059669',
     bg: '#ECFDF5',
     icon: 'checkmark-circle',
   },
   fundraising: {
-    label: { zh: '募資中', en: 'Fundraising' },
+    labelKey: 'crowdfunding_statusFundraising',
     color: '#6366f1',
     bg: '#EEF2FF',
     icon: 'trending-up',
   },
   coming_soon: {
-    label: { zh: '即將開放', en: 'Coming Soon' },
+    labelKey: 'crowdfunding_statusComingSoon',
     color: '#D97706',
     bg: '#FEF3C7',
     icon: 'time-outline',
   },
   stay_tuned: {
-    label: { zh: '敬請期待', en: 'Stay Tuned' },
+    labelKey: 'crowdfunding_statusStayTuned',
     color: '#6b7280',
     bg: '#F3F4F6',
     icon: 'sparkles-outline',
@@ -120,11 +120,8 @@ const STATUS_CONFIG: Record<RegionStatus, {
 // ============================================================
 
 export function CrowdfundingScreen() {
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
-
-  // 語言判斷
-  const isZh = state.language === 'zh-TW';
 
   // ============================================================
   // 狀態管理
@@ -179,10 +176,7 @@ export function CrowdfundingScreen() {
 
     } catch (error) {
       console.error('Failed to load crowdfunding data:', error);
-      Alert.alert(
-        isZh ? '載入失敗' : 'Load Failed',
-        isZh ? '無法載入募資活動，請稍後再試' : 'Failed to load crowdfunding campaigns. Please try again later.'
-      );
+      Alert.alert(t.crowdfunding_loadFailed, t.crowdfunding_loadFailedDesc);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -220,7 +214,7 @@ export function CrowdfundingScreen() {
           <Text style={styles.regionFlag}>{region.flag}</Text>
           <View style={styles.regionInfo}>
             <Text style={styles.regionName}>
-              {region.name[isZh ? 'zh' : 'en']}
+              {region.name[state.language === 'zh-TW' ? 'zh' : 'en']}
             </Text>
             {isFundraising && region.progress !== undefined && (
               <View style={styles.progressContainer}>
@@ -242,8 +236,8 @@ export function CrowdfundingScreen() {
           <Ionicons name={config.icon} size={14} color={config.color} />
           <Text style={[styles.statusText, { color: config.color }]}>
             {isFundraising && region.progress !== undefined
-              ? `${config.label[isZh ? 'zh' : 'en']} ${region.progress}%`
-              : config.label[isZh ? 'zh' : 'en']
+              ? `${t[config.labelKey]} ${region.progress}%`
+              : t[config.labelKey]
             }
           </Text>
         </View>
@@ -269,7 +263,7 @@ export function CrowdfundingScreen() {
         <View style={styles.headerCenter}>
           <Ionicons name="globe-outline" size={24} color={MibuBrand.brownDark} />
           <Text style={styles.headerTitle}>
-            {isZh ? '解鎖全球地圖' : 'Unlock World Map'}
+            {t.crowdfunding_title}
           </Text>
         </View>
         <View style={styles.headerPlaceholder} />
@@ -280,21 +274,21 @@ export function CrowdfundingScreen() {
         <View style={styles.statItem}>
           <Text style={styles.statValue}>{stats.unlocked}</Text>
           <Text style={styles.statLabel}>
-            {isZh ? '已解鎖國家' : 'Unlocked'}
+            {t.crowdfunding_statUnlocked}
           </Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: '#6366f1' }]}>{stats.fundraising}</Text>
           <Text style={styles.statLabel}>
-            {isZh ? '募資進行中' : 'Fundraising'}
+            {t.crowdfunding_statFundraising}
           </Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: '#D97706' }]}>{stats.coming}</Text>
           <Text style={styles.statLabel}>
-            {isZh ? '即將開放' : 'Coming'}
+            {t.crowdfunding_statComing}
           </Text>
         </View>
       </View>
@@ -317,7 +311,7 @@ export function CrowdfundingScreen() {
             <View style={styles.sectionHeader}>
               <Ionicons name="checkmark-circle" size={18} color="#059669" />
               <Text style={styles.sectionTitle}>
-                {isZh ? '已開放地區' : 'Available Regions'}
+                {t.crowdfunding_availableRegions}
               </Text>
             </View>
             {regions.filter(r => r.status === 'unlocked').map(renderRegionCard)}
@@ -330,7 +324,7 @@ export function CrowdfundingScreen() {
             <View style={styles.sectionHeader}>
               <Ionicons name="trending-up" size={18} color="#6366f1" />
               <Text style={styles.sectionTitle}>
-                {isZh ? '募資進行中' : 'Fundraising'}
+                {t.crowdfunding_fundraising}
               </Text>
             </View>
             {regions.filter(r => r.status === 'fundraising').map(renderRegionCard)}
@@ -343,7 +337,7 @@ export function CrowdfundingScreen() {
             <View style={styles.sectionHeader}>
               <Ionicons name="time-outline" size={18} color="#D97706" />
               <Text style={styles.sectionTitle}>
-                {isZh ? '即將開放' : 'Coming Soon'}
+                {t.crowdfunding_comingSoon}
               </Text>
             </View>
             {regions.filter(r => r.status === 'coming_soon').map(renderRegionCard)}
@@ -356,7 +350,7 @@ export function CrowdfundingScreen() {
             <View style={styles.sectionHeader}>
               <Ionicons name="sparkles-outline" size={18} color="#6b7280" />
               <Text style={styles.sectionTitle}>
-                {isZh ? '敬請期待' : 'Stay Tuned'}
+                {t.crowdfunding_stayTuned}
               </Text>
             </View>
             {regions.filter(r => r.status === 'stay_tuned').map(renderRegionCard)}
@@ -367,8 +361,8 @@ export function CrowdfundingScreen() {
         {campaigns.length === 0 && regions.filter(r => r.status === 'fundraising').length === 0 && (
           <EmptyState
             icon="megaphone-outline"
-            title={isZh ? '目前沒有進行中的募資活動' : 'No crowdfunding projects'}
-            description={isZh ? '敬請期待新的探索地區開放' : 'Stay tuned for new regions to explore'}
+            title={t.crowdfunding_noProjects}
+            description={t.crowdfunding_stayTunedDesc}
           />
         )}
 
@@ -378,12 +372,12 @@ export function CrowdfundingScreen() {
             <View style={styles.sectionHeader}>
               <Ionicons name="heart" size={18} color={MibuBrand.brown} />
               <Text style={styles.sectionTitle}>
-                {isZh ? '我的贊助紀錄' : 'My Contributions'}
+                {t.crowdfunding_myContributions}
               </Text>
             </View>
             <View style={styles.contributionSummary}>
               <Text style={styles.contributionLabel}>
-                {isZh ? '累計贊助' : 'Total'}
+                {t.crowdfunding_totalContributions}
               </Text>
               <Text style={styles.contributionAmount}>
                 NT$ {myContributions.reduce((sum, c) => sum + c.amount, 0).toLocaleString()}
@@ -408,7 +402,7 @@ export function CrowdfundingScreen() {
         >
           <Ionicons name="heart" size={20} color={UIColors.white} />
           <Text style={styles.ctaText}>
-            {isZh ? '支持我們的理念' : 'Support Our Vision'}
+            {t.crowdfunding_supportVision}
           </Text>
         </TouchableOpacity>
       </View>

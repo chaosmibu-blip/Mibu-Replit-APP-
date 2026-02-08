@@ -101,9 +101,8 @@ export function HomeScreen() {
   // ============================================================
   // Hooks & Context
   // ============================================================
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   // ============================================================
   // 狀態管理
@@ -125,7 +124,7 @@ export function HomeScreen() {
   const [userCoins, setUserCoins] = useState<UserCoinsData>({
     balance: 0,
     totalEarned: 0,
-    title: isZh ? '旅行新手' : 'Newbie',
+    title: '',
     loginStreak: 1,
   });
 
@@ -188,11 +187,11 @@ export function HomeScreen() {
            * 0+    = 旅行新手
            */
           const getCoinTitle = (totalEarned: number): string => {
-            if (totalEarned >= 5000) return isZh ? '傳奇旅者' : 'Legendary';
-            if (totalEarned >= 2000) return isZh ? '資深冒險家' : 'Expert';
-            if (totalEarned >= 500) return isZh ? '旅行達人' : 'Traveler';
-            if (totalEarned >= 100) return isZh ? '探索者' : 'Explorer';
-            return isZh ? '旅行新手' : 'Newbie';
+            if (totalEarned >= 5000) return t.home_titleLegendary;
+            if (totalEarned >= 2000) return t.home_titleExpert;
+            if (totalEarned >= 500) return t.home_titleTraveler;
+            if (totalEarned >= 100) return t.home_titleExplorer;
+            return t.home_titleNewbie;
           };
 
           if (coinsResponse) {
@@ -355,10 +354,10 @@ export function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.greeting}>
           <Text style={styles.greetingTitle}>
-            {isZh ? '嗨，旅行者！' : 'Hi, Traveler!'}
+            {t.home_greeting}
           </Text>
           <Text style={styles.greetingSubtitle}>
-            {isZh ? '今天想去哪裡探索？' : 'Where to explore today?'}
+            {t.home_greetingSubtitle}
           </Text>
         </View>
       </View>
@@ -405,11 +404,11 @@ export function HomeScreen() {
           </View>
           <View style={styles.loginStreak}>
             <Text style={styles.loginStreakLabel}>
-              {isZh ? '連續登入' : 'Streak'}
+              {t.home_loginStreak}
             </Text>
             <View style={styles.loginStreakValue}>
               <Ionicons name="flame" size={16} color="#F97316" />
-              <Text style={styles.loginStreakNumber}>{userCoins.loginStreak} {isZh ? '天' : 'd'}</Text>
+              <Text style={styles.loginStreakNumber}>{userCoins.loginStreak} {t.home_days}</Text>
             </View>
           </View>
         </View>
@@ -418,7 +417,7 @@ export function HomeScreen() {
             <View style={styles.perkItem}>
               <Ionicons name="ribbon-outline" size={16} color={MibuBrand.success} />
               <Text style={[styles.perkText, { color: MibuBrand.success }]}>
-                {isZh ? '可申請策劃師' : 'Specialist Ready'}
+                {t.home_specialistReady}
               </Text>
             </View>
           </View>
@@ -437,16 +436,16 @@ export function HomeScreen() {
           </View>
           <View style={styles.taskInfo}>
             <Text style={styles.taskTitle}>
-              {isZh ? '每日任務' : 'Daily Tasks'}
+              {t.home_dailyTasks}
             </Text>
             <Text style={styles.taskProgress}>
-              {dailyTask.completed}/{dailyTask.total} {isZh ? '完成' : 'done'}
+              {dailyTask.completed}/{dailyTask.total} {t.home_done}
             </Text>
           </View>
         </View>
         <View style={styles.taskRight}>
-          <Text style={styles.taskEarnedLabel}>{isZh ? '已獲得' : 'Earned'}</Text>
-          <Text style={styles.taskEarnedCoins}>+{dailyTask.earnedCoins} {isZh ? '金幣' : 'coins'}</Text>
+          <Text style={styles.taskEarnedLabel}>{t.home_earned}</Text>
+          <Text style={styles.taskEarnedCoins}>+{dailyTask.earnedCoins} {t.home_coinsUnit}</Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
       </TouchableOpacity>
@@ -473,7 +472,7 @@ export function HomeScreen() {
               activeEventTab === 'announcements' && styles.eventTabTextActive,
             ]}
           >
-            {isZh ? '公告' : 'News'}
+            {t.home_newsTab}
           </Text>
         </TouchableOpacity>
 
@@ -492,7 +491,7 @@ export function HomeScreen() {
               activeEventTab === 'local' && styles.eventTabTextActive,
             ]}
           >
-            {isZh ? '在地活動' : 'Local'}
+            {t.home_localTab}
           </Text>
         </TouchableOpacity>
 
@@ -511,7 +510,7 @@ export function HomeScreen() {
               activeEventTab === 'flash' && styles.eventTabTextActive,
             ]}
           >
-            {isZh ? '限時活動' : 'Flash'}
+            {t.home_flashTab}
           </Text>
         </TouchableOpacity>
       </View>
@@ -549,10 +548,10 @@ export function HomeScreen() {
               <View style={styles.tabEmptyState}>
                 <Ionicons name="megaphone-outline" size={40} color={MibuBrand.tan} />
                 <Text style={styles.tabEmptyText}>
-                  {isZh ? '目前沒有公告' : 'No announcements'}
+                  {t.home_noAnnouncements}
                 </Text>
                 <Text style={styles.tabEmptySubtext}>
-                  {isZh ? '敬請期待最新消息！' : 'Stay tuned for updates!'}
+                  {t.home_stayTuned}
                 </Text>
               </View>
             )}
@@ -590,10 +589,10 @@ export function HomeScreen() {
               <View style={styles.tabEmptyState}>
                 <Ionicons name="location-outline" size={40} color={MibuBrand.tan} />
                 <Text style={styles.tabEmptyText}>
-                  {isZh ? '目前沒有在地活動' : 'No local activities'}
+                  {t.home_noLocalActivities}
                 </Text>
                 <Text style={styles.tabEmptySubtext}>
-                  {isZh ? '探索附近的精彩活動！' : 'Discover events near you!'}
+                  {t.home_discoverNearby}
                 </Text>
               </View>
             )}
@@ -631,10 +630,10 @@ export function HomeScreen() {
               <View style={styles.tabEmptyState}>
                 <Ionicons name="sparkles" size={40} color={MibuBrand.tan} />
                 <Text style={styles.tabEmptyText}>
-                  {isZh ? '目前沒有限時活動' : 'No flash events'}
+                  {t.home_noFlashEvents}
                 </Text>
                 <Text style={styles.tabEmptySubtext}>
-                  {isZh ? '限時優惠即將到來！' : 'Limited offers coming soon!'}
+                  {t.home_limitedOffersSoon}
                 </Text>
               </View>
             )}

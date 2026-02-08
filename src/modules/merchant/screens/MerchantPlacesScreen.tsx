@@ -36,7 +36,7 @@ import { ErrorState } from '../../shared/components/ui/ErrorState';
 // ============ 主元件 ============
 export function MerchantPlacesScreen() {
   // ============ Hooks ============
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -57,9 +57,6 @@ export function MerchantPlacesScreen() {
   // loadError: API 載入錯誤狀態
   const [loadError, setLoadError] = useState(false);
 
-  // isZh: 判斷是否為中文語系
-  const isZh = state.language === 'zh-TW';
-
   // ============ 工具函數 ============
 
   /**
@@ -70,35 +67,35 @@ export function MerchantPlacesScreen() {
   const getStatusConfig = (status?: string) => {
     switch (status) {
       case 'approved':
-        return { bg: SemanticColors.successLight, color: SemanticColors.successDark, text: isZh ? '已核准' : 'Approved' };
+        return { bg: SemanticColors.successLight, color: SemanticColors.successDark, text: t.common_approved };
       case 'rejected':
-        return { bg: SemanticColors.errorLight, color: SemanticColors.errorDark, text: isZh ? '已拒絕' : 'Rejected' };
+        return { bg: SemanticColors.errorLight, color: SemanticColors.errorDark, text: t.common_rejected };
       default:
-        return { bg: SemanticColors.warningLight, color: SemanticColors.warningDark, text: isZh ? '待審核' : 'Pending' };
+        return { bg: SemanticColors.warningLight, color: SemanticColors.warningDark, text: t.common_pending };
     }
   };
 
-  // ============ 多語系翻譯 ============
+  // ============ 多語系翻譯（透過 t 字典） ============
   const translations = {
-    title: isZh ? '店家管理' : 'Place Management',
-    myPlaces: isZh ? '我的店家' : 'My Places',
-    noPlaces: isZh ? '尚未認領任何店家' : 'No places claimed yet',
-    claimNew: isZh ? '認領新店家' : 'Claim New Place',
-    search: isZh ? '搜尋店家名稱...' : 'Search place name...',
-    searchBtn: isZh ? '搜尋' : 'Search',
-    claim: isZh ? '認領' : 'Claim',
-    claimed: isZh ? '已認領' : 'Claimed',
-    verified: isZh ? '已驗證' : 'Verified',
-    pending: isZh ? '待驗證' : 'Pending',
-    approved: isZh ? '已核准' : 'Approved',
-    rejected: isZh ? '已拒絕' : 'Rejected',
-    edit: isZh ? '編輯' : 'Edit',
-    noResults: isZh ? '找不到符合的店家' : 'No matching places found',
-    loading: isZh ? '載入中...' : 'Loading...',
-    cancel: isZh ? '取消' : 'Cancel',
-    claimSuccess: isZh ? '認領成功！' : 'Claimed successfully!',
-    claimFailed: isZh ? '認領失敗' : 'Claim failed',
-    back: isZh ? '返回' : 'Back',
+    title: t.merchant_placeManagement,
+    myPlaces: t.merchant_myPlaces,
+    noPlaces: t.merchant_noPlaces,
+    claimNew: t.merchant_claimNew,
+    search: t.merchant_searchPlaceholder,
+    searchBtn: t.common_search,
+    claim: t.merchant_claimNew,
+    claimed: t.merchant_claimed,
+    verified: t.common_verified,
+    pending: t.common_pending,
+    approved: t.common_approved,
+    rejected: t.common_rejected,
+    edit: t.common_edit,
+    noResults: t.merchant_noSearchResults,
+    loading: t.loading,
+    cancel: t.cancel,
+    claimSuccess: t.merchant_claimSuccess,
+    claimFailed: t.merchant_claimFailed,
+    back: t.common_back,
   };
 
   // ============ Effect Hooks ============
@@ -151,7 +148,7 @@ export function MerchantPlacesScreen() {
         router.push('/login');
         return;
       }
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '搜尋失敗，請稍後再試' : 'Search failed, please try again');
+      Alert.alert(t.common_error, t.merchant_searchFailedRetry);
     } finally {
       setSearching(false);
     }
@@ -174,7 +171,7 @@ export function MerchantPlacesScreen() {
         placeCacheId: String(place.id),
         googlePlaceId: place.placeId,
       });
-      Alert.alert(isZh ? '成功' : 'Success', translations.claimSuccess);
+      Alert.alert(t.common_success, translations.claimSuccess);
       // 認領成功後返回列表模式並重新載入
       setShowSearch(false);
       setSearchQuery('');
@@ -182,7 +179,7 @@ export function MerchantPlacesScreen() {
       loadPlaces();
     } catch (error) {
       console.error('Claim failed:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', translations.claimFailed);
+      Alert.alert(t.common_error, translations.claimFailed);
     } finally {
       setClaiming(null);
     }
@@ -204,8 +201,8 @@ export function MerchantPlacesScreen() {
       <View style={styles.loadingContainer}>
         <ErrorState
           icon="cloud-offline-outline"
-          message={isZh ? '店家資料載入失敗' : 'Failed to load places'}
-          detail={isZh ? '請檢查網路連線後再試' : 'Please check your connection and try again'}
+          message={t.merchant_loadPlacesFailed}
+          detail={t.merchant_checkConnection}
           onRetry={loadPlaces}
         />
       </View>

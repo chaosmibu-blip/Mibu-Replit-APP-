@@ -26,11 +26,12 @@ import { apiService } from '../../../services/api';
 import { authApi } from '../../../services/authApi';
 import { MerchantMe } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 主元件 ============
 export function MerchantProfileScreen() {
   // ============ Hooks ============
-  const { state, getToken, setUser } = useApp();
+  const { state, t, getToken, setUser } = useApp();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -39,35 +40,30 @@ export function MerchantProfileScreen() {
   // loading: 資料載入狀態
   const [loading, setLoading] = useState(true);
 
-  // isZh: 判斷是否為中文語系
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
+  // ============ 多語系翻譯（透過 t 字典） ============
   const translations = {
-    title: isZh ? '商家資料' : 'Merchant Profile',
-    businessName: isZh ? '商家名稱' : 'Business Name',
-    email: isZh ? '聯絡信箱' : 'Contact Email',
-    status: isZh ? '帳號狀態' : 'Account Status',
-    approved: isZh ? '已核准' : 'Approved',
-    pending: isZh ? '待審核' : 'Pending',
-    balance: isZh ? '點數餘額' : 'Credit Balance',
-    plan: isZh ? '訂閱方案' : 'Subscription Plan',
-    free: isZh ? '免費方案' : 'Free Plan',
-    partner: isZh ? '合作夥伴' : 'Partner',
-    premium: isZh ? '進階方案' : 'Premium',
-    memberSince: isZh ? '加入時間' : 'Member Since',
-    loading: isZh ? '載入中...' : 'Loading...',
-    points: isZh ? '點' : 'pts',
-    dangerZone: isZh ? '危險區域' : 'Danger Zone',
-    deleteAccount: isZh ? '刪除帳號' : 'Delete Account',
-    deleteConfirmTitle: isZh ? '確認刪除帳號' : 'Confirm Delete Account',
-    deleteConfirmMessage: isZh
-      ? '此操作無法復原，所有資料將被永久刪除。確定要繼續嗎？'
-      : 'This action cannot be undone. All your data will be permanently deleted. Are you sure you want to continue?',
-    cancel: isZh ? '取消' : 'Cancel',
-    confirm: isZh ? '確認刪除' : 'Confirm Delete',
-    deleteSuccess: isZh ? '帳號已刪除' : 'Account deleted',
-    deleteFailed: isZh ? '刪除失敗，請稍後再試' : 'Delete failed, please try again later',
+    title: t.merchant_merchantProfile,
+    businessName: t.merchant_businessName,
+    email: t.merchant_contactEmail,
+    status: t.merchant_accountStatus,
+    approved: t.common_approved,
+    pending: t.common_pending,
+    balance: t.merchant_creditBalance,
+    plan: t.merchant_subscriptionPlan,
+    free: t.merchant_freePlan,
+    partner: t.merchant_partnerPlan,
+    premium: t.merchant_premiumPlan,
+    memberSince: t.merchant_memberSince,
+    loading: t.loading,
+    points: t.merchant_points,
+    dangerZone: t.merchant_dangerZone,
+    deleteAccount: t.merchant_deleteAccount,
+    deleteConfirmTitle: t.merchant_confirmDeleteTitle,
+    deleteConfirmMessage: t.merchant_confirmDeleteMessage,
+    cancel: t.cancel,
+    confirm: t.merchant_confirmDeleteBtn,
+    deleteSuccess: t.merchant_accountDeleted,
+    deleteFailed: t.merchant_deleteFailed,
   };
 
   // ============ Effect Hooks ============
@@ -104,7 +100,7 @@ export function MerchantProfileScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(isZh ? 'zh-TW' : 'en-US', {
+    return date.toLocaleDateString(LOCALE_MAP[state.language], {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

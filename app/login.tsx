@@ -92,7 +92,7 @@ const LANGUAGE_OPTIONS: { code: 'zh-TW' | 'en' | 'ja' | 'ko'; label: string; fla
 ];
 
 export default function LoginScreen() {
-  const { setUser, state, setLanguage } = useApp();
+  const { setUser, state, setLanguage, t } = useApp();
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(false);
   const [selectedPortal, setSelectedPortal] = useState<PortalType>('traveler');
@@ -117,42 +117,41 @@ export default function LoginScreen() {
         setLoading(false);
         const errorCode = parsed.queryParams?.error as string;
         const errorMessage = parsed.queryParams?.message as string;
-        const isZh = state.language === 'zh-TW';
         
         switch (errorCode) {
           case 'NO_MERCHANT_DATA':
             Alert.alert(
-              isZh ? '尚未註冊商家' : 'Not a Merchant',
-              isZh ? '您尚未註冊為商家，請先申請商家帳號' : (errorMessage || 'Please register as a merchant first'),
-              [{ text: isZh ? '確定' : 'OK' }]
+              t.auth_notMerchant,
+              errorMessage || t.auth_notMerchantDesc,
+              [{ text: t.common_confirm }]
             );
             break;
           case 'NO_SPECIALIST_DATA':
             Alert.alert(
-              isZh ? '尚未註冊專員' : 'Not a Specialist',
-              isZh ? '您尚未註冊為專員，請先申請專員帳號' : (errorMessage || 'Please register as a specialist first'),
-              [{ text: isZh ? '確定' : 'OK' }]
+              t.auth_notSpecialist,
+              errorMessage || t.auth_notSpecialistDesc,
+              [{ text: t.common_confirm }]
             );
             break;
           case 'WRONG_PORTAL':
             Alert.alert(
-              isZh ? '入口錯誤' : 'Wrong Portal',
-              isZh ? '請切換至正確的入口登入' : (errorMessage || 'Please switch to the correct portal'),
-              [{ text: isZh ? '確定' : 'OK' }]
+              t.auth_wrongPortal,
+              errorMessage || t.auth_wrongPortalDesc,
+              [{ text: t.common_confirm }]
             );
             break;
           case 'PERMISSION_DENIED':
             Alert.alert(
-              isZh ? '權限不足' : 'Permission Denied',
-              isZh ? '您沒有權限存取此功能' : (errorMessage || 'You do not have permission to access this feature'),
-              [{ text: isZh ? '確定' : 'OK' }]
+              t.auth_permissionDenied,
+              errorMessage || t.auth_permissionDeniedDesc,
+              [{ text: t.common_confirm }]
             );
             break;
           default:
             Alert.alert(
-              isZh ? '登入失敗' : 'Login Failed',
-              errorMessage || (isZh ? '請稍後再試' : 'Please try again'),
-              [{ text: isZh ? '確定' : 'OK' }]
+              t.auth_oauthLoginFailed,
+              errorMessage || t.auth_tryAgainLater,
+              [{ text: t.common_confirm }]
             );
         }
         return;
@@ -324,8 +323,8 @@ export default function LoginScreen() {
         navigateAfterLogin(userRole, data.user.isApproved, data.user.isSuperAdmin, selectedPortal);
       } else {
         Alert.alert(
-          state.language === 'zh-TW' ? '登入失敗' : 'Login Failed',
-          data.error || (state.language === 'zh-TW' ? '請稍後再試' : 'Please try again later')
+          t.auth_oauthLoginFailed,
+          data.error || t.auth_tryAgainLater
         );
       }
     } catch (error: any) {
@@ -334,8 +333,8 @@ export default function LoginScreen() {
         // 使用者取消登入，不需處理
       } else {
         Alert.alert(
-          state.language === 'zh-TW' ? '登入錯誤' : 'Login Error',
-          state.language === 'zh-TW' ? '無法完成 Google 登入' : 'Could not complete Google Sign In'
+          t.auth_loginError,
+          t.auth_googleSignInFailed
         );
       }
     } finally {
@@ -601,8 +600,8 @@ export default function LoginScreen() {
           console.error('[Apple Auth] FETCH ERROR:', fetchError);
           console.error('[Apple Auth] FETCH ERROR message:', fetchError.message);
           Alert.alert(
-            state.language === 'zh-TW' ? '網路錯誤' : 'Network Error',
-            state.language === 'zh-TW' ? '無法連接到伺服器' : 'Could not connect to server'
+            t.auth_networkError,
+            t.auth_cannotConnectServer
           );
           return;
         }
@@ -639,8 +638,8 @@ export default function LoginScreen() {
           navigateAfterLogin(userRole, data.user.isApproved, data.user.isSuperAdmin, selectedPortal);
         } else {
           Alert.alert(
-            state.language === 'zh-TW' ? '登入失敗' : 'Login Failed',
-            data.error || (state.language === 'zh-TW' ? '請稍後再試' : 'Please try again later')
+            t.auth_oauthLoginFailed,
+            data.error || t.auth_tryAgainLater
           );
         }
       }
@@ -655,8 +654,8 @@ export default function LoginScreen() {
           stack: error.stack?.substring(0, 200),
         });
         Alert.alert(
-          state.language === 'zh-TW' ? '登入錯誤' : 'Login Error',
-          state.language === 'zh-TW' ? '無法完成 Apple 登入' : 'Could not complete Apple Sign In'
+          t.auth_loginError,
+          t.auth_appleSignInFailed
         );
       }
     } finally {
@@ -672,34 +671,7 @@ export default function LoginScreen() {
     );
   }
 
-  const t = {
-    'zh-TW': {
-      switchPortal: '切換用戶別',
-      login: 'Google 登入',
-      guest: '訪客登入',
-      guestNote: '訪客模式的資料僅保存在此裝置',
-    },
-    'en': {
-      switchPortal: 'Switch Portal',
-      login: 'Google Sign In',
-      guest: 'Guest Login',
-      guestNote: 'Guest mode data is only saved on this device',
-    },
-    'ja': {
-      switchPortal: 'ポータル切替',
-      login: 'Googleログイン',
-      guest: 'ゲストログイン',
-      guestNote: 'ゲストモードのデータはこのデバイスにのみ保存',
-    },
-    'ko': {
-      switchPortal: '포털 전환',
-      login: 'Google 로그인',
-      guest: '게스트 로그인',
-      guestNote: '게스트 모드 데이터는 이 기기에만 저장됩니다',
-    },
-  };
-
-  const texts = t[state.language] || t['zh-TW'];
+  // 使用全域 t 翻譯字典（來自 useApp）
 
   return (
     <View style={styles.container}>
@@ -715,7 +687,7 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={styles.globeButton}
           onPress={() => setShowLanguageMenu(!showLanguageMenu)}
-          accessibilityLabel={state.language === 'zh-TW' ? '切換語言' : 'Switch language'}
+          accessibilityLabel={t.auth_switchLanguage}
           accessibilityRole="button"
         >
           <Ionicons name="globe-outline" size={28} color={MibuBrand.copper} />
@@ -739,7 +711,7 @@ export default function LoginScreen() {
                     setLanguage(lang.code);
                     setShowLanguageMenu(false);
                   }}
-                  accessibilityLabel={`${state.language === 'zh-TW' ? '切換至' : 'Switch to'} ${lang.label}`}
+                  accessibilityLabel={`${t.auth_switchTo} ${lang.label}`}
                   accessibilityRole="menuitem"
                 >
                   <Text style={styles.languageFlag}>{lang.flag}</Text>
@@ -768,7 +740,7 @@ export default function LoginScreen() {
             style={[styles.loginButton, { backgroundColor: currentPortal.color }]}
             onPress={handleLogin}
             disabled={loading}
-            accessibilityLabel={texts.login}
+            accessibilityLabel={t.auth_googleLogin}
             accessibilityRole="button"
           >
             {loading ? (
@@ -776,7 +748,7 @@ export default function LoginScreen() {
             ) : (
               <>
                 <Ionicons name="arrow-redo" size={22} color={UIColors.white} />
-                <Text style={styles.loginButtonText}>{texts.login}</Text>
+                <Text style={styles.loginButtonText}>{t.auth_googleLogin}</Text>
               </>
             )}
           </TouchableOpacity>

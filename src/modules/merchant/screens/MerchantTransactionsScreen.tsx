@@ -23,13 +23,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
+import { LOCALE_MAP } from '../../../utils/i18n';
 import { MerchantTransaction } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function MerchantTransactionsScreen() {
   // ============ Hooks ============
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -39,20 +40,6 @@ export function MerchantTransactionsScreen() {
   const [loading, setLoading] = useState(true);
   // refreshing: 下拉刷新狀態
   const [refreshing, setRefreshing] = useState(false);
-
-  // isZh: 判斷是否為中文語系
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
-  const translations = {
-    title: isZh ? '交易記錄' : 'Transaction History',
-    noTransactions: isZh ? '暫無交易記錄' : 'No transactions yet',
-    loading: isZh ? '載入中...' : 'Loading...',
-    purchase: isZh ? '購買點數' : 'Purchase',
-    usage: isZh ? '使用點數' : 'Usage',
-    refund: isZh ? '退款' : 'Refund',
-    back: isZh ? '返回' : 'Back',
-  };
 
   // ============ Effect Hooks ============
   // 元件載入時取得交易紀錄
@@ -100,7 +87,7 @@ export function MerchantTransactionsScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString(isZh ? 'zh-TW' : 'en-US', {
+    return date.toLocaleString(LOCALE_MAP[state.language], {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -116,9 +103,9 @@ export function MerchantTransactionsScreen() {
    */
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'purchase': return translations.purchase;
-      case 'usage': return translations.usage;
-      case 'refund': return translations.refund;
+      case 'purchase': return t.merchant_purchase;
+      case 'usage': return t.merchant_usage;
+      case 'refund': return t.merchant_refund;
       default: return type;
     }
   };
@@ -142,7 +129,7 @@ export function MerchantTransactionsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
-        <Text style={styles.loadingText}>{translations.loading}</Text>
+        <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
   }
@@ -156,7 +143,7 @@ export function MerchantTransactionsScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
-        <Text style={styles.title}>{translations.title}</Text>
+        <Text style={styles.title}>{t.merchant_transactionHistory}</Text>
       </View>
 
       {/* ============ 主要內容區 ============ */}
@@ -172,7 +159,7 @@ export function MerchantTransactionsScreen() {
           // 空狀態
           <View style={styles.emptyCard}>
             <Ionicons name="receipt-outline" size={48} color={UIColors.textSecondary} />
-            <Text style={styles.emptyText}>{translations.noTransactions}</Text>
+            <Text style={styles.emptyText}>{t.merchant_noTransactions}</Text>
           </View>
         ) : (
           // 交易卡片列表

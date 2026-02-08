@@ -48,6 +48,7 @@ import { MibuBrand, getCategoryToken, deriveMerchantScheme, UIColors } from '../
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
+import { tFormat } from '../../../utils/i18n';
 
 // ============================================================
 // 型別定義
@@ -117,7 +118,7 @@ interface PlaceDetailModalProps {
  */
 function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: PlaceDetailModalProps) {
   const [showActionMenu, setShowActionMenu] = useState(false);
-  const isZh = language === 'zh-TW';
+  const { t } = useApp();
   const placeName = getPlaceName(item);
   const description = getDescription(item);
   const category = typeof item.category === 'string' ? item.category.toLowerCase() : '';
@@ -177,14 +178,14 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
                   <TouchableOpacity
                     style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
                     onPress={handleFavorite}
-                    accessibilityLabel={isZh ? '加入最愛' : 'Add to favorites'}
+                    accessibilityLabel={t.collection_addToFavorites}
                   >
                     <Ionicons name="heart-outline" size={20} color={MibuBrand.tierSP} />
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
                     onPress={onClose}
-                    accessibilityLabel={isZh ? '關閉詳情' : 'Close details'}
+                    accessibilityLabel={t.collection_closeDetails}
                   >
                     <Ionicons name="close" size={20} color={MibuBrand.dark} />
                   </TouchableOpacity>
@@ -223,7 +224,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
             <TouchableOpacity
               style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: MibuBrand.brown, paddingVertical: 16, borderRadius: 16 }}
               onPress={handleNavigate}
-              accessibilityLabel={isZh ? '在地圖中查看' : 'View on map'}
+              accessibilityLabel={t.collection_viewOnMap}
             >
               <Ionicons name="search" size={20} color={UIColors.white} />
               <Text style={{ fontSize: 16, fontWeight: '700', color: UIColors.white }}>在 Google 中查看</Text>
@@ -238,7 +239,6 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
 export function CollectionScreen() {
   const { state, t, getToken } = useApp();
   const { collection: localCollection, language } = state;
-  const isZh = language === 'zh-TW';
   // 【圖鑑導航】麵包屑導航狀態
   const [navLevel, setNavLevel] = useState<0 | 1 | 2>(0);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -817,7 +817,7 @@ export function CollectionScreen() {
           onChangeText={setSearchQuery}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityLabel={isZh ? '清除搜尋' : 'Clear search'}>
+          <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityLabel={t.collection_clearSearch}>
             <Ionicons name="close-circle" size={18} color={MibuBrand.brownLight} />
           </TouchableOpacity>
         )}

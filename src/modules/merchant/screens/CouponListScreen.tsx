@@ -39,35 +39,14 @@ const TIER_PROBABILITY: Record<MerchantCouponTier, string> = {
 };
 
 export function CouponListScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   const [coupons, setCoupons] = useState<MerchantCoupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [loadError, setLoadError] = useState(false);
-
-  const t = {
-    title: isZh ? '優惠券管理' : 'Coupon Management',
-    subtitle: isZh ? '創建和管理您的優惠券' : 'Create and manage your coupons',
-    addCoupon: isZh ? '新增優惠券' : 'Add Coupon',
-    noCoupons: isZh ? '尚未創建優惠券' : 'No coupons yet',
-    noCouponsHint: isZh ? '開始創建您的第一張優惠券' : 'Start creating your first coupon',
-    remaining: isZh ? '剩餘' : 'Remaining',
-    active: isZh ? '啟用中' : 'Active',
-    inactive: isZh ? '已停用' : 'Inactive',
-    expired: isZh ? '已過期' : 'Expired',
-    edit: isZh ? '編輯' : 'Edit',
-    delete: isZh ? '刪除' : 'Delete',
-    confirmDelete: isZh ? '確定要刪除此優惠券嗎？' : 'Delete this coupon?',
-    deleteSuccess: isZh ? '刪除成功' : 'Deleted successfully',
-    deleteFailed: isZh ? '刪除失敗' : 'Delete failed',
-    probability: isZh ? '抽中機率' : 'Draw rate',
-    validUntil: isZh ? '有效期至' : 'Valid until',
-    loading: isZh ? '載入中...' : 'Loading...',
-  };
 
   const loadCoupons = async (showRefresh = false) => {
     try {
@@ -101,12 +80,12 @@ export function CouponListScreen() {
 
   const handleDelete = (coupon: MerchantCoupon) => {
     Alert.alert(
-      t.delete,
-      t.confirmDelete,
+      t.common_delete,
+      t.merchant_confirmDeleteCoupon,
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: t.delete,
+          text: t.common_delete,
           style: 'destructive',
           onPress: async () => {
             setDeleting(coupon.id);
@@ -117,7 +96,7 @@ export function CouponListScreen() {
               setCoupons((prev) => prev.filter((c) => c.id !== coupon.id));
             } catch (error) {
               console.error('Delete failed:', error);
-              Alert.alert(isZh ? '錯誤' : 'Error', t.deleteFailed);
+              Alert.alert(t.common_error, t.common_deleteFailed);
             } finally {
               setDeleting(null);
             }
@@ -129,12 +108,12 @@ export function CouponListScreen() {
 
   const getCouponStatus = (coupon: MerchantCoupon) => {
     if (coupon.validUntil && new Date(coupon.validUntil) < new Date()) {
-      return { label: t.expired, color: SemanticColors.errorDark };
+      return { label: t.merchant_couponExpired, color: SemanticColors.errorDark };
     }
     if (!coupon.isActive) {
-      return { label: t.inactive, color: UIColors.textSecondary };
+      return { label: t.merchant_couponInactive, color: UIColors.textSecondary };
     }
-    return { label: t.active, color: SemanticColors.successDark };
+    return { label: t.merchant_couponActive, color: SemanticColors.successDark };
   };
 
   if (loading) {
@@ -152,8 +131,8 @@ export function CouponListScreen() {
       <View style={styles.loadingContainer}>
         <ErrorState
           icon="cloud-offline-outline"
-          message={isZh ? '優惠券載入失敗' : 'Failed to load coupons'}
-          detail={isZh ? '請檢查網路連線後再試' : 'Please check your connection and try again'}
+          message={t.merchant_couponLoadFailed}
+          detail={t.merchant_couponLoadFailedDetail}
           onRetry={() => loadCoupons()}
         />
       </View>
@@ -174,8 +153,8 @@ export function CouponListScreen() {
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <View style={styles.headerText}>
-          <Text style={styles.title}>{t.title}</Text>
-          <Text style={styles.subtitle}>{t.subtitle}</Text>
+          <Text style={styles.title}>{t.merchant_couponMgmt}</Text>
+          <Text style={styles.subtitle}>{t.merchant_couponMgmtSubtitle}</Text>
         </View>
       </View>
 
@@ -186,15 +165,15 @@ export function CouponListScreen() {
         accessibilityLabel="新增優惠券"
       >
         <Ionicons name="add-circle" size={20} color={UIColors.white} />
-        <Text style={styles.addButtonText}>{t.addCoupon}</Text>
+        <Text style={styles.addButtonText}>{t.merchant_addCoupon}</Text>
       </TouchableOpacity>
 
       {/* Coupons List */}
       {coupons.length === 0 ? (
         <EmptyState
           icon="pricetag-outline"
-          title={t.noCoupons}
-          description={t.noCouponsHint}
+          title={t.merchant_noCoupons}
+          description={t.merchant_noCouponsHint}
         />
       ) : (
         <View style={styles.couponsList}>
@@ -228,7 +207,7 @@ export function CouponListScreen() {
                     <View style={styles.metaItem}>
                       <Ionicons name="cube-outline" size={14} color={UIColors.textSecondary} />
                       <Text style={styles.metaText}>
-                        {t.remaining}: {coupon.remainingQuantity}/{coupon.quantity}
+                        {t.merchant_remaining}: {coupon.remainingQuantity}/{coupon.quantity}
                       </Text>
                     </View>
                     {coupon.validUntil && (

@@ -31,6 +31,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { useApp } from '../../../context/AppContext';
+import { Language } from '../../../types';
 
 // ============ 常數定義 ============
 
@@ -66,8 +68,8 @@ interface TutorialOverlayProps {
   storageKey: string;
   /** 教學步驟列表 */
   steps: TutorialStep[];
-  /** 語言設定（預設 zh-TW） */
-  language?: 'zh-TW' | 'en';
+  /** 語言設定（預設從 AppContext 取得） */
+  language?: Language;
   /** 教學完成時的回調函數 */
   onComplete?: () => void;
   /** 是否在元件掛載時自動顯示（預設 true） */
@@ -92,18 +94,21 @@ const STORAGE_PREFIX = '@mibu_tutorial_';
 export function TutorialOverlay({
   storageKey,
   steps,
-  language = 'zh-TW',
+  language: languageProp,
   onComplete,
   showOnMount = true,
 }: TutorialOverlayProps) {
+  const { state, t } = useApp();
+  // 語言：優先使用 prop，否則從 context 取得
+  const language = languageProp ?? state.language;
   // 是否顯示教學 Modal
   const [visible, setVisible] = useState(false);
   // 目前步驟索引（從 0 開始）
   const [currentStep, setCurrentStep] = useState(0);
   // 滑動動畫值（目前未使用，保留供未來擴充）
   const [slideAnim] = useState(new Animated.Value(0));
-  // 是否為中文
-  const isZh = language === 'zh-TW';
+  // 取得步驟的本地化文字（zh-TW 用中文，其餘 fallback 到英文）
+  const isZhLang = language === 'zh-TW';
 
   // 元件掛載時檢查是否需要顯示教學
   useEffect(() => {
@@ -203,7 +208,7 @@ export function TutorialOverlay({
           {/* 跳過按鈕（右上角） */}
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
             <Text style={styles.skipText}>
-              {isZh ? '跳過' : 'Skip'}
+              {t.common_skip}
             </Text>
           </TouchableOpacity>
 
@@ -231,10 +236,10 @@ export function TutorialOverlay({
 
           {/* 標題與說明 */}
           <Text style={styles.title}>
-            {isZh ? step.title : step.titleEn}
+            {isZhLang ? step.title : step.titleEn}
           </Text>
           <Text style={styles.description}>
-            {isZh ? step.description : step.descriptionEn}
+            {isZhLang ? step.description : step.descriptionEn}
           </Text>
 
           {/* 導航按鈕 */}
@@ -244,7 +249,7 @@ export function TutorialOverlay({
               <TouchableOpacity style={styles.backButton} onPress={handleBack}>
                 <Ionicons name="chevron-back" size={20} color={MibuBrand.brownLight} />
                 <Text style={styles.backButtonText}>
-                  {isZh ? '上一步' : 'Back'}
+                  {t.common_back}
                 </Text>
               </TouchableOpacity>
             )}
@@ -254,7 +259,7 @@ export function TutorialOverlay({
               onPress={handleNext}
             >
               <Text style={styles.nextButtonText}>
-                {isLastStep ? (isZh ? '開始使用' : 'Get Started') : (isZh ? '下一步' : 'Next')}
+                {isLastStep ? t.common_getStarted : t.common_next}
               </Text>
               {!isLastStep && (
                 <Ionicons name="chevron-forward" size={20} color={UIColors.white} />

@@ -22,30 +22,13 @@ import { PlaceSearchResult } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 export function ClaimPlaceScreen() {
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
   const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [claiming, setClaiming] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-
-  const isZh = state.language === 'zh-TW';
-
-  const t = {
-    title: isZh ? '認領店家' : 'Claim Place',
-    subtitle: isZh ? '搜尋並認領您的店家' : 'Search and claim your place',
-    searchPlaceholder: isZh ? '輸入店家名稱...' : 'Enter place name...',
-    search: isZh ? '搜尋' : 'Search',
-    claim: isZh ? '認領' : 'Claim',
-    claimed: isZh ? '已認領' : 'Claimed',
-    noResults: isZh ? '找不到符合的店家' : 'No matching places found',
-    noResultsHint: isZh ? '試試其他關鍵字，或新增自有店家' : 'Try other keywords, or add your own place',
-    addNewPlace: isZh ? '新增自有店家' : 'Add New Place',
-    claimSuccess: isZh ? '認領成功！' : 'Claimed successfully!',
-    claimFailed: isZh ? '認領失敗' : 'Claim failed',
-    searchHint: isZh ? '輸入店家名稱開始搜尋' : 'Enter place name to search',
-  };
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -66,7 +49,7 @@ export function ClaimPlaceScreen() {
         router.push('/login');
         return;
       }
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '搜尋失敗' : 'Search failed');
+      Alert.alert(t.common_error, t.merchant_searchFailed);
     } finally {
       setSearching(false);
     }
@@ -85,12 +68,12 @@ export function ClaimPlaceScreen() {
         placeCacheId: String(place.id),
         googlePlaceId: place.placeId,
       });
-      Alert.alert(isZh ? '成功' : 'Success', t.claimSuccess, [
+      Alert.alert(t.common_success, t.merchant_claimSuccess, [
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (error) {
       console.error('Claim failed:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', t.claimFailed);
+      Alert.alert(t.common_error, t.merchant_claimFailed);
     } finally {
       setClaiming(null);
     }
@@ -111,8 +94,8 @@ export function ClaimPlaceScreen() {
             <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <View style={styles.headerText}>
-            <Text style={styles.title}>{t.title}</Text>
-            <Text style={styles.subtitle}>{t.subtitle}</Text>
+            <Text style={styles.title}>{t.merchant_claimTitle}</Text>
+            <Text style={styles.subtitle}>{t.merchant_claimSubtitle}</Text>
           </View>
         </View>
 
@@ -124,7 +107,7 @@ export function ClaimPlaceScreen() {
               style={styles.searchInput}
               value={searchQuery}
               onChangeText={setSearchQuery}
-              placeholder={t.searchPlaceholder}
+              placeholder={t.merchant_searchPlaceholder}
               placeholderTextColor={UIColors.textSecondary}
               onSubmitEditing={handleSearch}
               returnKeyType="search"
@@ -139,7 +122,7 @@ export function ClaimPlaceScreen() {
             {searching ? (
               <ActivityIndicator size="small" color={UIColors.white} />
             ) : (
-              <Text style={styles.searchButtonText}>{t.search}</Text>
+              <Text style={styles.searchButtonText}>{t.common_search}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -148,20 +131,20 @@ export function ClaimPlaceScreen() {
         {!hasSearched ? (
           <View style={styles.emptyState}>
             <Ionicons name="storefront-outline" size={64} color="#cbd5e1" />
-            <Text style={styles.emptyTitle}>{t.searchHint}</Text>
+            <Text style={styles.emptyTitle}>{t.merchant_searchHint}</Text>
           </View>
         ) : searchResults.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="search-outline" size={64} color="#cbd5e1" />
-            <Text style={styles.emptyTitle}>{t.noResults}</Text>
-            <Text style={styles.emptySubtitle}>{t.noResultsHint}</Text>
+            <Text style={styles.emptyTitle}>{t.merchant_noSearchResults}</Text>
+            <Text style={styles.emptySubtitle}>{t.merchant_noResultsHint}</Text>
             <TouchableOpacity
               style={styles.addNewButton}
               onPress={() => router.push('/merchant/new-place' as any)}
               accessibilityLabel="新增自有店家"
             >
               <Ionicons name="add-circle-outline" size={20} color={MibuBrand.brown} />
-              <Text style={styles.addNewButtonText}>{t.addNewPlace}</Text>
+              <Text style={styles.addNewButtonText}>{t.merchant_addNewPlace}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -180,7 +163,7 @@ export function ClaimPlaceScreen() {
                 {place.isClaimed ? (
                   <View style={styles.claimedBadge}>
                     <Ionicons name="checkmark-circle" size={16} color={UIColors.textSecondary} />
-                    <Text style={styles.claimedText}>{t.claimed}</Text>
+                    <Text style={styles.claimedText}>{t.merchant_claimed}</Text>
                   </View>
                 ) : (
                   <TouchableOpacity
@@ -192,7 +175,7 @@ export function ClaimPlaceScreen() {
                     {claiming === place.placeId ? (
                       <ActivityIndicator size="small" color={UIColors.white} />
                     ) : (
-                      <Text style={styles.claimButtonText}>{t.claim}</Text>
+                      <Text style={styles.claimButtonText}>{t.merchant_claim}</Text>
                     )}
                   </TouchableOpacity>
                 )}

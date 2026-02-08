@@ -26,27 +26,15 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 // ============ 元件本體 ============
 
 export function PendingApprovalScreen() {
-  const { state, setUser } = useApp();
+  const { state, setUser, t } = useApp();
   const router = useRouter();
 
-  const isZh = state.language === 'zh-TW';
+  // ============ 輔助函數 ============
 
-  // ============ 多語系翻譯 ============
-
-  const translations = {
-    title: isZh ? '等待審核' : 'Pending Approval',
-    subtitle: isZh
-      ? '您的帳號正在等待管理員審核'
-      : 'Your account is pending admin approval',
-    description: isZh
-      ? '商家和專員帳號需經過審核才能使用完整功能。審核通過後會通知您。'
-      : 'Merchant and Specialist accounts require approval for full access. You will be notified once approved.',
-    role: isZh ? '申請身份' : 'Applied Role',
-    logout: isZh ? '登出' : 'Logout',
-    roleLabels: {
-      merchant: isZh ? '商家' : 'Merchant',
-      specialist: isZh ? '專員' : 'Specialist',
-    } as Record<string, string>,
+  /** 角色 key 對應翻譯字典 */
+  const ROLE_LABEL_MAP: Record<string, string> = {
+    merchant: t.auth_roleMerchant,
+    specialist: t.auth_roleSpecialist,
   };
 
   // ============ 事件處理 ============
@@ -63,7 +51,7 @@ export function PendingApprovalScreen() {
   };
 
   // 取得角色顯示文字
-  const roleLabel = translations.roleLabels[state.user?.role || ''] || state.user?.role;
+  const roleLabel = ROLE_LABEL_MAP[state.user?.role || ''] || state.user?.role;
 
   // ============ 主要渲染 ============
 
@@ -75,20 +63,20 @@ export function PendingApprovalScreen() {
       </View>
 
       {/* ===== 標題與說明 ===== */}
-      <Text style={styles.title}>{translations.title}</Text>
-      <Text style={styles.subtitle}>{translations.subtitle}</Text>
-      <Text style={styles.description}>{translations.description}</Text>
+      <Text style={styles.title}>{t.auth_pendingTitle}</Text>
+      <Text style={styles.subtitle}>{t.auth_pendingSubtitle}</Text>
+      <Text style={styles.description}>{t.auth_pendingDescription}</Text>
 
       {/* ===== 申請身份卡片 ===== */}
       <View style={styles.roleCard}>
-        <Text style={styles.roleLabel}>{translations.role}</Text>
+        <Text style={styles.roleLabel}>{t.auth_appliedRole}</Text>
         <Text style={styles.roleValue}>{roleLabel}</Text>
       </View>
 
       {/* ===== 登出按鈕 ===== */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={20} color={SemanticColors.errorDark} />
-        <Text style={styles.logoutText}>{translations.logout}</Text>
+        <Text style={styles.logoutText}>{t.common_logout}</Text>
       </TouchableOpacity>
     </View>
   );

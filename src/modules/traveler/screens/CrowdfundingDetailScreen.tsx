@@ -32,6 +32,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
+import { tFormat } from '../../../utils/i18n';
+import { LOCALE_MAP } from '../../../utils/i18n';
 import { crowdfundingApi } from '../../../services/crowdfundingApi';
 import { revenueCatService } from '../../../services/revenueCatService';
 import { MibuBrand } from '../../../../constants/Colors';
@@ -42,14 +44,12 @@ import { CampaignDetail, CampaignReward, CampaignUpdate } from '../../../types/c
 // ============================================================
 
 export function CrowdfundingDetailScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
 
   // 從路由參數取得活動 ID
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  // 語言判斷
-  const isZh = state.language === 'zh-TW';
 
   // ============================================================
   // 狀態管理
@@ -90,14 +90,14 @@ export function CrowdfundingDetailScreen() {
     } catch (error) {
       console.error('Failed to load campaign detail:', error);
       Alert.alert(
-        isZh ? '錯誤' : 'Error',
-        isZh ? '無法載入活動詳情' : 'Failed to load campaign details'
+        t.common_error,
+        t.crowdfunding_loadFailedDetail
       );
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [id, getToken, router, isZh]);
+  }, [id, getToken, router]);
 
   useEffect(() => {
     loadData();
@@ -153,8 +153,8 @@ export function CrowdfundingDetailScreen() {
   const handleContribute = async () => {
     if (!selectedTier) {
       Alert.alert(
-        isZh ? '請選擇方案' : 'Select a Tier',
-        isZh ? '請先選擇要贊助的方案' : 'Please select a reward tier first'
+        t.crowdfunding_selectTier,
+        t.crowdfunding_selectTierDesc
       );
       return;
     }
@@ -171,14 +171,12 @@ export function CrowdfundingDetailScreen() {
       if (offerings.length === 0) {
         // 開發模式：顯示模擬購買流程
         Alert.alert(
-          isZh ? '測試模式' : 'Test Mode',
-          isZh
-            ? `您選擇了「${selectedTier.tier}」方案（${formatCurrency(selectedTier.minAmount)}）\n\n正式上線後將啟用真實購買功能。`
-            : `You selected "${selectedTier.tier}" tier (${formatCurrency(selectedTier.minAmount)})\n\nReal purchase will be enabled after launch.`,
+          t.crowdfunding_testMode,
+          tFormat(t.crowdfunding_testModeDesc, { tier: selectedTier.tier, amount: formatCurrency(selectedTier.minAmount) }),
           [
-            { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+            { text: t.cancel, style: 'cancel' },
             {
-              text: isZh ? '模擬購買成功' : 'Simulate Success',
+              text: t.crowdfunding_simulateSuccess,
               onPress: async () => {
                 // 模擬購買成功後通知後端
                 try {
@@ -193,8 +191,8 @@ export function CrowdfundingDetailScreen() {
                     });
 
                     Alert.alert(
-                      isZh ? '贊助成功！' : 'Thank you!',
-                      isZh ? '感謝您的支持！' : 'Thank you for your support!',
+                      t.crowdfunding_thankYou,
+                      t.crowdfunding_thankYouDesc,
                       [{ text: 'OK', onPress: () => loadData() }]
                     );
                   }
@@ -230,8 +228,8 @@ export function CrowdfundingDetailScreen() {
         }
 
         Alert.alert(
-          isZh ? '贊助成功！' : 'Thank you!',
-          isZh ? '感謝您的支持！您的贊助已成功處理。' : 'Thank you for your support! Your contribution has been processed.',
+          t.crowdfunding_thankYou,
+          t.crowdfunding_thankYouDescFull,
           [{ text: 'OK', onPress: () => loadData() }]
         );
       } else if (result.error === 'USER_CANCELLED') {
@@ -239,15 +237,15 @@ export function CrowdfundingDetailScreen() {
         // 用戶取消購買，不需處理
       } else {
         Alert.alert(
-          isZh ? '購買失敗' : 'Purchase Failed',
-          isZh ? '無法完成購買，請稍後再試。' : 'Could not complete purchase. Please try again.',
+          t.crowdfunding_purchaseFailed,
+          t.crowdfunding_purchaseFailedDesc,
         );
       }
     } catch (error) {
       console.error('IAP error:', error);
       Alert.alert(
-        isZh ? '錯誤' : 'Error',
-        isZh ? '購買過程發生錯誤，請稍後再試。' : 'An error occurred during purchase. Please try again.',
+        t.common_error,
+        t.crowdfunding_purchaseError,
       );
     } finally {
       setPurchasing(false);
@@ -284,8 +282,8 @@ export function CrowdfundingDetailScreen() {
         {reward.remaining !== null && (
           <Text style={styles.rewardRemaining}>
             {isSoldOut
-              ? (isZh ? '已額滿' : 'Sold Out')
-              : (isZh ? `剩餘 ${reward.remaining} 名` : `${reward.remaining} left`)}
+              ? t.crowdfunding_soldOut
+              : tFormat(t.crowdfunding_remaining, { count: reward.remaining })}
           </Text>
         )}
         {isSelected && (
@@ -302,7 +300,7 @@ export function CrowdfundingDetailScreen() {
       <Text style={styles.updateTitle}>{update.title}</Text>
       <Text style={styles.updateContent}>{update.content}</Text>
       <Text style={styles.updateDate}>
-        {new Date(update.createdAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
+        {new Date(update.createdAt).toLocaleDateString(LOCALE_MAP[state.language])}
       </Text>
     </View>
   );
@@ -320,10 +318,10 @@ export function CrowdfundingDetailScreen() {
       <View style={styles.errorContainer}>
         <Ionicons name="alert-circle" size={48} color={MibuBrand.error} />
         <Text style={styles.errorText}>
-          {isZh ? '找不到活動' : 'Campaign not found'}
+          {t.crowdfunding_notFound}
         </Text>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={styles.backBtnText}>{isZh ? '返回' : 'Go Back'}</Text>
+          <Text style={styles.backBtnText}>{t.crowdfunding_goBack}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -376,27 +374,27 @@ export function CrowdfundingDetailScreen() {
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{formatCurrency(campaign.currentAmount)}</Text>
               <Text style={styles.statLabel}>
-                {isZh ? '已募集' : 'Raised'}
+                {t.crowdfunding_raised}
               </Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{campaign.contributorCount}</Text>
               <Text style={styles.statLabel}>
-                {isZh ? '位贊助者' : 'Backers'}
+                {t.crowdfunding_backers}
               </Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{daysLeft}</Text>
               <Text style={styles.statLabel}>
-                {isZh ? '天剩餘' : 'Days Left'}
+                {t.crowdfunding_daysLeft}
               </Text>
             </View>
           </View>
 
           <Text style={styles.targetText}>
-            {isZh ? '目標：' : 'Goal: '}{formatCurrency(campaign.targetAmount)}
+            {t.crowdfunding_goal}{formatCurrency(campaign.targetAmount)}
             {' '}({Math.round(progress)}%)
           </Text>
 
@@ -404,7 +402,7 @@ export function CrowdfundingDetailScreen() {
             <View style={styles.myContributionBadge}>
               <Ionicons name="heart" size={16} color={MibuBrand.brown} />
               <Text style={styles.myContributionText}>
-                {isZh ? '您已贊助 ' : 'You backed '}
+                {t.crowdfunding_youBacked}
                 {formatCurrency(campaign.myContribution)}
               </Text>
             </View>
@@ -414,7 +412,7 @@ export function CrowdfundingDetailScreen() {
         {/* Description */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            {isZh ? '活動介紹' : 'About'}
+            {t.crowdfunding_about}
           </Text>
           <Text style={styles.description}>{campaign.description}</Text>
         </View>
@@ -423,7 +421,7 @@ export function CrowdfundingDetailScreen() {
         {campaign.rewards.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              {isZh ? '贊助方案' : 'Reward Tiers'}
+              {t.crowdfunding_rewardTiers}
             </Text>
             <View style={styles.rewardsList}>
               {campaign.rewards.map(renderRewardTier)}
@@ -435,7 +433,7 @@ export function CrowdfundingDetailScreen() {
         {campaign.updates.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              {isZh ? '最新動態' : 'Updates'} ({campaign.updates.length})
+              {t.crowdfunding_updates} ({campaign.updates.length})
             </Text>
             <View style={styles.updatesList}>
               {campaign.updates.map(renderUpdate)}
@@ -464,10 +462,10 @@ export function CrowdfundingDetailScreen() {
             )}
             <Text style={styles.contributeButtonText}>
               {purchasing
-                ? (isZh ? '處理中...' : 'Processing...')
+                ? t.crowdfunding_processing
                 : selectedTier
-                  ? (isZh ? `贊助 ${formatCurrency(selectedTier.minAmount)}` : `Back ${formatCurrency(selectedTier.minAmount)}`)
-                  : (isZh ? '選擇贊助方案' : 'Select a Tier')}
+                  ? tFormat(t.crowdfunding_backAmount, { amount: formatCurrency(selectedTier.minAmount) })
+                  : t.crowdfunding_selectATier}
             </Text>
           </TouchableOpacity>
         </View>

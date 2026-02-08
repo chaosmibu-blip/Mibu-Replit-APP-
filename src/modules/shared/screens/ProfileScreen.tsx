@@ -58,20 +58,20 @@ const DEFAULT_AVATAR_PRESETS: AvatarPreset[] = [
   { id: 'camper', image: require('../../../../assets/images/avatars/avatar-camper.png'), color: '#F5E6D3' },
 ];
 
-/** 性別選項 */
-const GENDER_OPTIONS: { value: Gender; labelZh: string; labelEn: string }[] = [
-  { value: 'male', labelZh: '男', labelEn: 'Male' },
-  { value: 'female', labelZh: '女', labelEn: 'Female' },
-  { value: 'other', labelZh: '其他', labelEn: 'Other' },
+/** 性別選項（labelKey 對應 translations.ts 翻譯鍵） */
+const GENDER_OPTIONS: { value: Gender; labelKey: string }[] = [
+  { value: 'male', labelKey: 'profile_genderMale' },
+  { value: 'female', labelKey: 'profile_genderFemale' },
+  { value: 'other', labelKey: 'profile_genderOther' },
 ];
 
-/** 關係選項（緊急聯絡人） */
-const RELATION_OPTIONS = [
-  { value: 'spouse', labelZh: '配偶', labelEn: 'Spouse' },
-  { value: 'parent', labelZh: '父母', labelEn: 'Parent' },
-  { value: 'sibling', labelZh: '兄弟姊妹', labelEn: 'Sibling' },
-  { value: 'friend', labelZh: '朋友', labelEn: 'Friend' },
-  { value: 'other', labelZh: '其他', labelEn: 'Other' },
+/** 關係選項（緊急聯絡人，labelKey 對應 translations.ts 翻譯鍵） */
+const RELATION_OPTIONS: { value: string; labelKey: string }[] = [
+  { value: 'spouse', labelKey: 'profile_relationSpouse' },
+  { value: 'parent', labelKey: 'profile_relationParent' },
+  { value: 'sibling', labelKey: 'profile_relationSibling' },
+  { value: 'friend', labelKey: 'profile_relationFriend' },
+  { value: 'other', labelKey: 'profile_relationOther' },
 ];
 
 // ============ 輔助函數 ============
@@ -90,9 +90,8 @@ const displayUserId = (userId: string | undefined): string => {
 // ============ 元件本體 ============
 
 export function ProfileScreen() {
-  const { state, getToken, setUser } = useApp();
+  const { state, t, getToken, setUser } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   // ============ 狀態管理 ============
 
@@ -208,7 +207,7 @@ export function ProfileScreen() {
       // 請求相簿權限
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
-        showToastMessage(isZh ? '需要相簿存取權限' : 'Photo library permission required');
+        showToastMessage(t.profile_photoPermissionRequired);
         return;
       }
 
@@ -229,7 +228,7 @@ export function ProfileScreen() {
 
       // 檢查是否有 base64 資料
       if (!asset.base64) {
-        showToastMessage(isZh ? '無法讀取圖片資料' : 'Cannot read image data');
+        showToastMessage(t.profile_cannotReadImage);
         return;
       }
 
@@ -239,7 +238,7 @@ export function ProfileScreen() {
       // 取得 token
       const token = await getToken();
       if (!token) {
-        showToastMessage(isZh ? '請先登入' : 'Please login first');
+        showToastMessage(t.settings_pleaseLoginFirst);
         setUploadingAvatar(false);
         return;
       }
@@ -259,13 +258,13 @@ export function ProfileScreen() {
         await saveAvatarChoice('custom');
         // 儲存自訂頭像 URL 到 AsyncStorage
         await AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_AVATAR_URL, uploadResult.avatarUrl);
-        showToastMessage(isZh ? '頭像上傳成功' : 'Avatar uploaded successfully');
+        showToastMessage(t.profile_avatarUploaded);
       } else {
-        showToastMessage(uploadResult.message || (isZh ? '上傳失敗' : 'Upload failed'));
+        showToastMessage(uploadResult.message || t.profile_uploadFailed);
       }
     } catch (error) {
       console.error('Upload avatar error:', error);
-      showToastMessage(isZh ? '上傳失敗，請稍後再試' : 'Upload failed, please try again');
+      showToastMessage(t.profile_uploadFailedRetry);
     } finally {
       setUploadingAvatar(false);
     }
@@ -303,8 +302,8 @@ export function ProfileScreen() {
     } catch (error) {
       console.error('Failed to load profile:', error);
       Alert.alert(
-        isZh ? '錯誤' : 'Error',
-        isZh ? '無法載入個人資料' : 'Failed to load profile'
+        t.error,
+        t.profile_loadFailed
       );
     } finally {
       setLoading(false);
@@ -379,14 +378,14 @@ export function ProfileScreen() {
       }
 
       // 【截圖 19】改用 Toast 取代彈窗
-      showToastMessage(isZh ? '個人資料已更新' : 'Profile updated successfully');
+      showToastMessage(t.profile_profileUpdated);
     } catch (error) {
       console.error('Failed to save profile:', error);
       // 提取後端錯誤訊息（如 Email 重複等）
       const serverMsg = error instanceof ApiError ? error.serverMessage : undefined;
       Alert.alert(
-        isZh ? '錯誤' : 'Error',
-        serverMsg || (isZh ? '儲存失敗，請稍後再試' : 'Failed to save, please try again')
+        t.error,
+        serverMsg || t.profile_saveFailed
       );
     } finally {
       setSaving(false);
@@ -416,12 +415,12 @@ export function ProfileScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{isZh ? '個人資料' : 'Profile'}</Text>
+        <Text style={styles.headerTitle}>{t.profile_title}</Text>
         <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveButton}>
           {saving ? (
             <ActivityIndicator size="small" color={MibuBrand.brown} />
           ) : (
-            <Text style={styles.saveButtonText}>{isZh ? '儲存' : 'Save'}</Text>
+            <Text style={styles.saveButtonText}>{t.profile_save}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -468,16 +467,13 @@ export function ProfileScreen() {
             </View>
           </TouchableOpacity>
           <Text style={styles.avatarHint}>
-            {uploadingAvatar
-              ? (isZh ? '上傳中...' : 'Uploading...')
-              : (isZh ? '點擊更換頭像' : 'Tap to change avatar')
-            }
+            {uploadingAvatar ? t.profile_uploading : t.profile_tapToChange}
           </Text>
         </View>
 
         {/* ===== 唯讀欄位：用戶 ID（#037 截斷顯示）===== */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '用戶 ID' : 'User ID'}</Text>
+          <Text style={styles.sectionTitle}>{t.profile_userId}</Text>
           <View style={styles.readOnlyField}>
             <Text style={styles.readOnlyText}>{displayUserId(profile?.id || state.user?.id)}</Text>
           </View>
@@ -490,7 +486,7 @@ export function ProfileScreen() {
             style={styles.input}
             value={email}
             onChangeText={setEmail}
-            placeholder={isZh ? '請輸入 Email' : 'Enter email'}
+            placeholder={t.profile_enterEmail}
             placeholderTextColor={UIColors.textSecondary}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -501,22 +497,22 @@ export function ProfileScreen() {
         {/* ===== 姓名欄位 ===== */}
         <View style={styles.row}>
           <View style={[styles.section, { flex: 1 }]}>
-            <Text style={styles.sectionTitle}>{isZh ? '姓' : 'Last Name'}</Text>
+            <Text style={styles.sectionTitle}>{t.profile_lastName}</Text>
             <TextInput
               style={styles.input}
               value={lastName}
               onChangeText={setLastName}
-              placeholder={isZh ? '請輸入姓氏' : 'Enter last name'}
+              placeholder={t.profile_enterLastName}
               placeholderTextColor={UIColors.textSecondary}
             />
           </View>
           <View style={[styles.section, { flex: 1, marginLeft: 12 }]}>
-            <Text style={styles.sectionTitle}>{isZh ? '名' : 'First Name'}</Text>
+            <Text style={styles.sectionTitle}>{t.profile_firstName}</Text>
             <TextInput
               style={styles.input}
               value={firstName}
               onChangeText={setFirstName}
-              placeholder={isZh ? '請輸入名字' : 'Enter first name'}
+              placeholder={t.profile_enterFirstName}
               placeholderTextColor={UIColors.textSecondary}
             />
           </View>
@@ -524,15 +520,15 @@ export function ProfileScreen() {
 
         {/* ===== 性別欄位 ===== */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '性別' : 'Gender'}</Text>
+          <Text style={styles.sectionTitle}>{t.profile_gender}</Text>
           <TouchableOpacity
             style={styles.pickerButton}
             onPress={() => setShowGenderPicker(!showGenderPicker)}
           >
             <Text style={gender ? styles.pickerText : styles.pickerPlaceholder}>
               {gender
-                ? GENDER_OPTIONS.find(g => g.value === gender)?.[isZh ? 'labelZh' : 'labelEn'] || gender
-                : isZh ? '請選擇' : 'Select'}
+                ? t[GENDER_OPTIONS.find(g => g.value === gender)?.labelKey || ''] || gender
+                : t.profile_select}
             </Text>
             <Ionicons name="chevron-down" size={20} color={UIColors.textSecondary} />
           </TouchableOpacity>
@@ -549,7 +545,7 @@ export function ProfileScreen() {
                   }}
                 >
                   <Text style={[styles.pickerOptionText, gender === option.value && styles.pickerOptionTextActive]}>
-                    {isZh ? option.labelZh : option.labelEn}
+                    {t[option.labelKey]}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -559,7 +555,7 @@ export function ProfileScreen() {
 
         {/* ===== 出生日期欄位 ===== */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '出生年月日' : 'Birth Date'}</Text>
+          <Text style={styles.sectionTitle}>{t.profile_birthDate}</Text>
           <TextInput
             style={styles.input}
             value={birthDate}
@@ -571,12 +567,12 @@ export function ProfileScreen() {
 
         {/* ===== 手機欄位 ===== */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '手機' : 'Phone'}</Text>
+          <Text style={styles.sectionTitle}>{t.profile_phone}</Text>
           <TextInput
             style={styles.input}
             value={phone}
             onChangeText={setPhone}
-            placeholder={isZh ? '請輸入手機號碼' : 'Enter phone number'}
+            placeholder={t.profile_enterPhone}
             placeholderTextColor={UIColors.textSecondary}
             keyboardType="phone-pad"
           />
@@ -584,21 +580,21 @@ export function ProfileScreen() {
 
         {/* ===== 飲食禁忌欄位 ===== */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '飲食禁忌' : 'Dietary Restrictions'}</Text>
+          <Text style={styles.sectionTitle}>{t.profile_dietaryRestrictions}</Text>
           <TagInput
             value={dietaryRestrictions}
             onChange={setDietaryRestrictions}
-            placeholder={isZh ? '輸入飲食禁忌，如：素食、海鮮過敏' : 'e.g., Vegetarian, Seafood allergy'}
+            placeholder={t.profile_dietaryPlaceholder}
           />
         </View>
 
         {/* ===== 疾病史欄位 ===== */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '疾病史' : 'Medical History'}</Text>
+          <Text style={styles.sectionTitle}>{t.profile_medicalHistory}</Text>
           <TagInput
             value={medicalHistory}
             onChange={setMedicalHistory}
-            placeholder={isZh ? '輸入疾病史，如：糖尿病、高血壓' : 'e.g., Diabetes, Hypertension'}
+            placeholder={t.profile_medicalPlaceholder}
           />
         </View>
 
@@ -606,28 +602,28 @@ export function ProfileScreen() {
         <View style={styles.divider} />
 
         {/* ===== 緊急聯絡人區塊 ===== */}
-        <Text style={styles.groupTitle}>{isZh ? '緊急聯絡人' : 'Emergency Contact'}</Text>
+        <Text style={styles.groupTitle}>{t.profile_emergencyContact}</Text>
 
         {/* 緊急聯絡人姓名 */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '姓名' : 'Name'}</Text>
+          <Text style={styles.sectionTitle}>{t.profile_contactName}</Text>
           <TextInput
             style={styles.input}
             value={emergencyContactName}
             onChangeText={setEmergencyContactName}
-            placeholder={isZh ? '請輸入姓名' : 'Enter name'}
+            placeholder={t.profile_enterName}
             placeholderTextColor={UIColors.textSecondary}
           />
         </View>
 
         {/* 緊急聯絡人電話 */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '電話' : 'Phone'}</Text>
+          <Text style={styles.sectionTitle}>{t.profile_contactPhone}</Text>
           <TextInput
             style={styles.input}
             value={emergencyContactPhone}
             onChangeText={setEmergencyContactPhone}
-            placeholder={isZh ? '請輸入電話' : 'Enter phone'}
+            placeholder={t.profile_enterContactPhone}
             placeholderTextColor={UIColors.textSecondary}
             keyboardType="phone-pad"
           />
@@ -635,15 +631,15 @@ export function ProfileScreen() {
 
         {/* 緊急聯絡人關係 */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '關係' : 'Relationship'}</Text>
+          <Text style={styles.sectionTitle}>{t.profile_relationship}</Text>
           <TouchableOpacity
             style={styles.pickerButton}
             onPress={() => setShowRelationPicker(!showRelationPicker)}
           >
             <Text style={emergencyContactRelation ? styles.pickerText : styles.pickerPlaceholder}>
               {emergencyContactRelation
-                ? RELATION_OPTIONS.find(r => r.value === emergencyContactRelation)?.[isZh ? 'labelZh' : 'labelEn'] || emergencyContactRelation
-                : isZh ? '請選擇' : 'Select'}
+                ? t[RELATION_OPTIONS.find(r => r.value === emergencyContactRelation)?.labelKey || ''] || emergencyContactRelation
+                : t.profile_select}
             </Text>
             <Ionicons name="chevron-down" size={20} color={UIColors.textSecondary} />
           </TouchableOpacity>
@@ -660,7 +656,7 @@ export function ProfileScreen() {
                   }}
                 >
                   <Text style={[styles.pickerOptionText, emergencyContactRelation === option.value && styles.pickerOptionTextActive]}>
-                    {isZh ? option.labelZh : option.labelEn}
+                    {t[option.labelKey]}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -686,7 +682,7 @@ export function ProfileScreen() {
         >
           <View style={styles.avatarModalContent} onStartShouldSetResponder={() => true}>
             <Text style={styles.avatarModalTitle}>
-              {isZh ? '選擇頭像' : 'Choose Avatar'}
+              {t.profile_chooseAvatar}
             </Text>
 
             {/* 頭像選項網格 */}
@@ -734,10 +730,7 @@ export function ProfileScreen() {
                 <Ionicons name="cloud-upload-outline" size={20} color={MibuBrand.brown} />
               )}
               <Text style={styles.avatarUploadText}>
-                {uploadingAvatar
-                  ? (isZh ? '上傳中...' : 'Uploading...')
-                  : (isZh ? '上傳自訂頭像' : 'Upload Custom Avatar')
-                }
+                {uploadingAvatar ? t.profile_uploading : t.profile_uploadAvatar}
               </Text>
             </TouchableOpacity>
           </View>

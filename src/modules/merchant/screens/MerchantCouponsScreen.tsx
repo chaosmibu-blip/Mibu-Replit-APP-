@@ -35,13 +35,13 @@ import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateM
 import { TierBadge } from '../../shared/components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 主元件 ============
 export function MerchantCouponsScreen() {
   // ============ Hooks ============
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   // ============ 狀態變數 ============
   // loading: 資料載入狀態
@@ -72,27 +72,27 @@ export function MerchantCouponsScreen() {
     validUntil: '',
   });
 
-  // ============ 多語系翻譯 ============
+  // ============ 多語系翻譯（透過 t 字典） ============
   const translations = {
-    title: isZh ? '優惠券管理' : 'Coupon Management',
-    addCoupon: isZh ? '新增優惠券' : 'Add Coupon',
-    editCoupon: isZh ? '編輯優惠券' : 'Edit Coupon',
-    name: isZh ? '優惠券名稱' : 'Coupon Name',
-    tier: isZh ? '稀有度等級' : 'Rarity Tier',
-    content: isZh ? '優惠內容' : 'Discount Content',
-    terms: isZh ? '使用條款' : 'Terms & Conditions',
-    quantity: isZh ? '發放數量' : 'Quantity',
-    validUntil: isZh ? '有效期限 (YYYY-MM-DD)' : 'Valid Until (YYYY-MM-DD)',
-    save: isZh ? '儲存' : 'Save',
-    cancel: isZh ? '取消' : 'Cancel',
-    delete: isZh ? '刪除' : 'Delete',
-    remaining: isZh ? '剩餘' : 'Remaining',
-    active: isZh ? '啟用中' : 'Active',
-    inactive: isZh ? '已停用' : 'Inactive',
-    expired: isZh ? '已過期' : 'Expired',
-    noCoupons: isZh ? '尚未創建優惠券' : 'No coupons yet',
-    confirmDelete: isZh ? '確定要刪除此優惠券嗎？' : 'Delete this coupon?',
-    tierProbability: isZh ? '抽中機率' : 'Draw Probability',
+    title: t.merchant_couponManagement,
+    addCoupon: t.merchant_addCoupon,
+    editCoupon: t.merchant_couponEditTitle,
+    name: t.merchant_couponName,
+    tier: t.merchant_rarityTier,
+    content: t.merchant_discountContent,
+    terms: t.merchant_terms,
+    quantity: t.merchant_quantity,
+    validUntil: t.merchant_validUntilWithFormat,
+    save: t.common_save,
+    cancel: t.cancel,
+    delete: t.common_delete,
+    remaining: t.merchant_remaining,
+    active: t.merchant_couponActive,
+    inactive: t.merchant_couponInactive,
+    expired: t.merchant_couponExpired,
+    noCoupons: t.merchant_noCoupons,
+    confirmDelete: t.merchant_confirmDeleteCoupon,
+    tierProbability: t.merchant_tierProbability,
   };
 
   // ============ Effect Hooks ============
@@ -165,7 +165,7 @@ export function MerchantCouponsScreen() {
   const handleSave = async () => {
     // 驗證必填欄位
     if (!formData.name.trim() || !formData.content.trim()) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請填寫必要欄位' : 'Please fill required fields');
+      Alert.alert(t.common_error, t.common_fillRequired);
       return;
     }
 
@@ -224,7 +224,7 @@ export function MerchantCouponsScreen() {
       loadCoupons();
     } catch (error) {
       console.error('Save failed:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '儲存失敗' : 'Save failed');
+      Alert.alert(t.common_error, t.common_saveFailed);
     } finally {
       setSaving(false);
     }
@@ -236,7 +236,7 @@ export function MerchantCouponsScreen() {
    */
   const handleDelete = async (couponId: number) => {
     Alert.alert(
-      isZh ? '確認刪除' : 'Confirm Delete',
+      t.common_confirmDelete,
       translations.confirmDelete,
       [
         { text: translations.cancel, style: 'cancel' },
@@ -251,7 +251,7 @@ export function MerchantCouponsScreen() {
               await apiService.deleteMerchantCoupon(token, couponId);
               loadCoupons();
             } catch (error) {
-              Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '刪除失敗' : 'Delete failed');
+              Alert.alert(t.common_error, t.common_deleteFailed);
             }
           },
         },
@@ -284,7 +284,7 @@ export function MerchantCouponsScreen() {
    */
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString(isZh ? 'zh-TW' : 'en-US');
+    return new Date(dateStr).toLocaleDateString(LOCALE_MAP[state.language]);
   };
 
   /**
@@ -336,7 +336,7 @@ export function MerchantCouponsScreen() {
               const style = getTierStyle(tier);
               return (
                 <View key={tier} style={styles.probabilityItem}>
-                  <TierBadge tier={tier} isZh={isZh} size="small" />
+                  <TierBadge tier={tier} size="small" />
                   <Text style={[styles.probabilityValue, { color: style.textColor }]}>
                     {style.probability}%
                   </Text>
@@ -371,7 +371,7 @@ export function MerchantCouponsScreen() {
             >
               {/* 卡片頂部：稀有度 + 狀態 */}
               <View style={styles.couponHeader}>
-                <TierBadge tier={coupon.tier} isZh={isZh} />
+                <TierBadge tier={coupon.tier} />
                 <View style={[
                   styles.statusBadge,
                   coupon.isActive
@@ -462,7 +462,7 @@ export function MerchantCouponsScreen() {
                 style={styles.input}
                 value={formData.name}
                 onChangeText={text => setFormData({ ...formData, name: text })}
-                placeholder={isZh ? '例：九折優惠' : 'e.g., 10% Off'}
+                placeholder={t.merchant_couponNamePlaceholder}
                 placeholderTextColor={MibuBrand.tan}
               />
 
@@ -501,7 +501,7 @@ export function MerchantCouponsScreen() {
                 style={[styles.input, styles.textArea]}
                 value={formData.content}
                 onChangeText={text => setFormData({ ...formData, content: text })}
-                placeholder={isZh ? '優惠詳細內容' : 'Discount details'}
+                placeholder={t.merchant_discountContentPlaceholder}
                 placeholderTextColor={MibuBrand.tan}
                 multiline
                 numberOfLines={3}
@@ -513,7 +513,7 @@ export function MerchantCouponsScreen() {
                 style={[styles.input, styles.textArea]}
                 value={formData.terms}
                 onChangeText={text => setFormData({ ...formData, terms: text })}
-                placeholder={isZh ? '使用條款（選填）' : 'Terms (optional)'}
+                placeholder={t.merchant_termsPlaceholder}
                 placeholderTextColor={MibuBrand.tan}
                 multiline
                 numberOfLines={2}

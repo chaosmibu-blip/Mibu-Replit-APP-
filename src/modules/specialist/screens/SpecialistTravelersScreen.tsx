@@ -26,6 +26,7 @@ import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { ServiceRelation } from '../../../types';
 import { UIColors } from '../../../../constants/Colors';
+import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 型別定義 ============
 
@@ -43,7 +44,7 @@ interface TravelerData {
 
 // ============ 元件主體 ============
 export function SpecialistTravelersScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -53,21 +54,6 @@ export function SpecialistTravelersScreen() {
   const [loading, setLoading] = useState(true);
   // refreshing: 是否正在下拉刷新
   const [refreshing, setRefreshing] = useState(false);
-
-  // 判斷目前語言是否為繁體中文
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
-  const translations = {
-    title: isZh ? '服務中旅客' : 'Active Travelers',
-    noTravelers: isZh ? '目前無服務中旅客' : 'No active travelers',
-    loading: isZh ? '載入中...' : 'Loading...',
-    since: isZh ? '開始於' : 'Since',
-    status: isZh ? '狀態' : 'Status',
-    active: isZh ? '服務中' : 'Active',
-    viewLocation: isZh ? '查看位置' : 'View Location',
-    chat: isZh ? '聊天' : 'Chat',
-  };
 
   // 元件載入時取得旅客列表
   useEffect(() => {
@@ -119,7 +105,7 @@ export function SpecialistTravelersScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString(isZh ? 'zh-TW' : 'en-US', {
+    return date.toLocaleString(LOCALE_MAP[state.language], {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -132,7 +118,7 @@ export function SpecialistTravelersScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#6366f1" />
-        <Text style={styles.loadingText}>{translations.loading}</Text>
+        <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
   }
@@ -146,7 +132,7 @@ export function SpecialistTravelersScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.title}>{translations.title}</Text>
+        <Text style={styles.title}>{t.specialist_activeTravelers}</Text>
       </View>
 
       {/* ============ 旅客列表區（支援下拉刷新） ============ */}
@@ -161,7 +147,7 @@ export function SpecialistTravelersScreen() {
           // 空狀態顯示
           <View style={styles.emptyCard}>
             <Ionicons name="people-outline" size={48} color="#94a3b8" />
-            <Text style={styles.emptyText}>{translations.noTravelers}</Text>
+            <Text style={styles.emptyText}>{t.specialist_noActiveTravelers}</Text>
           </View>
         ) : (
           // 旅客卡片列表
@@ -180,12 +166,12 @@ export function SpecialistTravelersScreen() {
                   </Text>
                   {/* 服務開始時間 */}
                   <Text style={styles.travelerDate}>
-                    {translations.since}: {formatDate(serviceRelation.createdAt)}
+                    {t.specialist_since}: {formatDate(serviceRelation.createdAt)}
                   </Text>
                   {/* 服務狀態標籤 */}
                   <View style={styles.statusBadge}>
                     <View style={styles.statusDot} />
-                    <Text style={styles.statusText}>{translations.active}</Text>
+                    <Text style={styles.statusText}>{t.common_active}</Text>
                   </View>
                 </View>
                 {/* 快捷操作按鈕 */}

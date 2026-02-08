@@ -58,6 +58,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
+import { tFormat } from '../../../utils/i18n';
 import { itineraryApi } from '../../../services/itineraryApi';
 import { locationApi } from '../../../services/locationApi';
 import { preloadService } from '../../../services/preloadService';
@@ -215,8 +216,7 @@ const getCityAvatar = (city: string | undefined) => {
 export function ItineraryScreenV2() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { state, getToken } = useApp();
-  const isZh = state.language === 'zh-TW';
+  const { state, getToken, t } = useApp();
 
   // ===== 狀態管理 =====
   const [loading, setLoading] = useState(true);
@@ -357,7 +357,7 @@ export function ItineraryScreenV2() {
       }
     } catch (error) {
       console.error('Failed to fetch itineraries:', error);
-      Alert.alert('載入失敗', '無法載入行程列表，請稍後再試');
+      Alert.alert(t.itinerary_createFailed, t.itinerary_tryAgainLater);
     }
   }, [getToken, activeItineraryId]);
 
@@ -436,7 +436,7 @@ export function ItineraryScreenV2() {
       }
     } catch (error) {
       console.error('Failed to fetch itinerary detail:', error);
-      Alert.alert('載入失敗', '無法載入行程詳情，請稍後再試');
+      Alert.alert(t.itinerary_createFailed, t.itinerary_tryAgainLater);
     }
   }, [getToken, loadMessages, saveMessages]);
 
@@ -486,9 +486,9 @@ export function ItineraryScreenV2() {
         // v2.2.0: 根據 actionTaken 顯示操作結果
         let responseText = res.response;
         if (res.actionTaken?.type === 'add_place') {
-          responseText += isZh ? '\n\n✅ 已加入行程' : '\n\n✅ Added to itinerary';
+          responseText += '\n\n✅ ' + t.itinerary_addedToItinerary;
         } else if (res.actionTaken?.type === 'remove_place') {
-          responseText += isZh ? '\n\n✅ 已從行程移除' : '\n\n✅ Removed from itinerary';
+          responseText += '\n\n✅ ' + t.itinerary_removedFromItinerary;
         }
 
         const assistantMessage: AiChatMessage = { role: 'assistant', content: responseText };
@@ -529,12 +529,12 @@ export function ItineraryScreenV2() {
       console.error('AI chat error:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: isZh ? '抱歉，我暫時無法回應，請稍後再試' : 'Sorry, I cannot respond right now. Please try again later.'
+        content: t.itinerary_aiUnavailable
       }]);
     } finally {
       setAiLoading(false);
     }
-  }, [currentItinerary, inputText, getToken, aiContext, aiSuggestions, fetchItineraryDetail, isZh]);
+  }, [currentItinerary, inputText, getToken, aiContext, aiSuggestions, fetchItineraryDetail, t]);
 
   // 【截圖 9-15 #11】移除景點 - 不使用彈窗確認，直接移除並顯示 Toast
   const handleRemovePlace = useCallback(async (itemId: number, placeName?: string) => {
@@ -547,13 +547,13 @@ export function ItineraryScreenV2() {
       if (res.success) {
         await fetchItineraryDetail(currentItinerary.id);
         // 顯示 Toast 通知
-        showToastMessage(isZh ? `已移除「${placeName || '景點'}」` : `Removed "${placeName || 'place'}"`);
+        showToastMessage(tFormat(t.itinerary_removed, { name: placeName || '' }));
       }
     } catch (error) {
       console.error('Remove place error:', error);
-      showToastMessage(isZh ? '移除失敗，請稍後再試' : 'Failed to remove, please try again');
+      showToastMessage(t.itinerary_removeFailed);
     }
-  }, [currentItinerary, getToken, fetchItineraryDetail, isZh, showToastMessage]);
+  }, [currentItinerary, getToken, fetchItineraryDetail, t, showToastMessage]);
 
   /**
    * 關閉左側 Drawer
@@ -681,11 +681,11 @@ export function ItineraryScreenV2() {
       }
     } catch (error) {
       console.error('Failed to add places:', error);
-      showToastMessage(isZh ? '加入景點失敗，請稍後再試' : 'Failed to add places, please try again');
+      showToastMessage(t.itinerary_addPlacesFailed);
     } finally {
       setAddingPlaces(false);
     }
-  }, [currentItinerary, selectedCollectionIds, getToken, fetchItineraryDetail, isZh, showToastMessage]);
+  }, [currentItinerary, selectedCollectionIds, getToken, fetchItineraryDetail, t, showToastMessage]);
 
   // 移動景點（上/下）
   // 【預防卡住】失敗時直接還原本地狀態，不重新載入整個行程
@@ -757,7 +757,7 @@ export function ItineraryScreenV2() {
       if (!res.success) {
         // 【預防卡住】失敗時直接還原本地狀態，不發起新的網路請求
         setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
-        showToastMessage(isZh ? '排序失敗，請重試' : 'Reorder failed, please try again');
+        showToastMessage(t.itinerary_reorderFailed);
       } else {
         // 更新快取
         if (itineraryCache.current[currentItinerary.id]) {
@@ -772,9 +772,9 @@ export function ItineraryScreenV2() {
       console.error('Drag reorder error:', error);
       // 【預防卡住】失敗時直接還原本地狀態
       setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
-      showToastMessage(isZh ? '排序失敗，請重試' : 'Reorder failed, please try again');
+      showToastMessage(t.itinerary_reorderFailed);
     }
-  }, [currentItinerary, getToken, isZh, showToastMessage]);
+  }, [currentItinerary, getToken, t, showToastMessage]);
 
   // 載入國家列表
   const loadCountries = useCallback(async () => {
@@ -808,9 +808,9 @@ export function ItineraryScreenV2() {
 
   // 取得本地化名稱
   const getLocalizedName = useCallback((item: Country | Region): string => {
-    if (isZh) return item.nameZh || item.nameEn || '';
+    if (state.language === 'zh-TW') return item.nameZh || item.nameEn || '';
     return item.nameEn || item.nameZh || '';
-  }, [isZh]);
+  }, [state.language]);
 
   // 開啟建立行程 Modal
   const openCreateModal = useCallback(() => {
@@ -832,10 +832,7 @@ export function ItineraryScreenV2() {
   // 建立行程
   const handleCreateItinerary = useCallback(async () => {
     if (!newItinerary.countryName || !newItinerary.regionName) {
-      Alert.alert(
-        isZh ? '請填寫完整' : 'Incomplete',
-        isZh ? '請選擇國家和城市' : 'Please select country and city'
-      );
+      Alert.alert(t.itinerary_incomplete, t.itinerary_selectCountryCity);
       return;
     }
     const token = await getToken();
@@ -892,21 +889,15 @@ export function ItineraryScreenV2() {
           });
         }, 100);
       } else {
-        Alert.alert(
-          isZh ? '建立失敗' : 'Create Failed',
-          res.message || (isZh ? '請稍後再試' : 'Please try again later')
-        );
+        Alert.alert(t.itinerary_createFailed, res.message || t.itinerary_tryAgainLater);
       }
     } catch (error) {
       console.error('Create itinerary error:', error);
-      Alert.alert(
-        isZh ? '建立失敗' : 'Create Failed',
-        isZh ? '網路錯誤，請稍後再試' : 'Network error, please try again later'
-      );
+      Alert.alert(t.itinerary_createFailed, t.itinerary_networkError);
     } finally {
       setCreating(false);
     }
-  }, [newItinerary, getToken, fetchItineraries, isZh, leftDrawerAnim, overlayAnim]);
+  }, [newItinerary, getToken, fetchItineraries, t, leftDrawerAnim, overlayAnim]);
 
   /**
    * 【截圖 9-15 #12】保存行程標題
@@ -980,7 +971,7 @@ export function ItineraryScreenV2() {
             title: oldTitle,
           };
         }
-        showToastMessage(isZh ? '更新失敗' : 'Update failed');
+        showToastMessage(t.itinerary_updateFailed);
       }
     } catch (error) {
       console.error('Update title error:', error);
@@ -999,11 +990,11 @@ export function ItineraryScreenV2() {
           title: oldTitle,
         };
       }
-      showToastMessage(isZh ? '更新失敗' : 'Update failed');
+      showToastMessage(t.itinerary_updateFailed);
     } finally {
       savingTitleRef.current = false;
     }
-  }, [currentItinerary, titleInput, getToken, isZh, showToastMessage]);
+  }, [currentItinerary, titleInput, getToken, t, showToastMessage]);
 
   /**
    * 【截圖 9-15 #12】開始編輯標題
@@ -1033,14 +1024,12 @@ export function ItineraryScreenV2() {
     if (selectedItineraryIds.length === 0) return;
 
     Alert.alert(
-      isZh ? '刪除行程' : 'Delete Itineraries',
-      isZh
-        ? `確定要刪除 ${selectedItineraryIds.length} 個行程嗎？此操作無法復原。`
-        : `Are you sure you want to delete ${selectedItineraryIds.length} itineraries? This cannot be undone.`,
+      t.itinerary_deleteItineraries,
+      tFormat(t.itinerary_deleteItinerariesConfirm, { count: selectedItineraryIds.length }),
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: isZh ? '刪除' : 'Delete',
+          text: t.common_delete,
           style: 'destructive',
           onPress: async () => {
             const token = await getToken();
@@ -1071,26 +1060,26 @@ export function ItineraryScreenV2() {
               // 退出選擇模式
               setSelectMode(false);
               setSelectedItineraryIds([]);
-              showToastMessage(isZh ? `已刪除 ${selectedItineraryIds.length} 個行程` : `Deleted ${selectedItineraryIds.length} itineraries`);
+              showToastMessage(tFormat(t.itinerary_deleted, { count: selectedItineraryIds.length }));
             } catch (error) {
               console.error('Delete itineraries error:', error);
-              showToastMessage(isZh ? '刪除失敗' : 'Delete failed');
+              showToastMessage(t.itinerary_deleteFailed);
             }
           },
         },
       ]
     );
-  }, [selectedItineraryIds, getToken, activeItineraryId, fetchItineraryDetail, isZh, showToastMessage]);
+  }, [selectedItineraryIds, getToken, activeItineraryId, fetchItineraryDetail, t, showToastMessage]);
 
   // 刪除單一行程（非選擇模式時使用）
   const handleDeleteItinerary = useCallback(async (id: number) => {
     Alert.alert(
-      isZh ? '刪除行程' : 'Delete Itinerary',
-      isZh ? '確定要刪除這個行程嗎？此操作無法復原。' : 'Are you sure you want to delete this itinerary? This cannot be undone.',
+      t.itinerary_deleteItinerary,
+      t.itinerary_deleteItineraryConfirm,
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: isZh ? '刪除' : 'Delete',
+          text: t.common_delete,
           style: 'destructive',
           onPress: async () => {
             const token = await getToken();
@@ -1114,7 +1103,7 @@ export function ItineraryScreenV2() {
                     }
                   }
                 }
-                showToastMessage(isZh ? '行程已刪除' : 'Itinerary deleted');
+                showToastMessage(t.itinerary_deletedSingle);
               }
             } catch (error) {
               console.error('Delete itinerary error:', error);
@@ -1123,7 +1112,7 @@ export function ItineraryScreenV2() {
         },
       ]
     );
-  }, [getToken, activeItineraryId, fetchItineraryDetail, isZh, showToastMessage]);
+  }, [getToken, activeItineraryId, fetchItineraryDetail, t, showToastMessage]);
 
   // 初始載入
   useEffect(() => {
@@ -1373,13 +1362,13 @@ export function ItineraryScreenV2() {
     return (
       <View style={styles.emptyContainer}>
         <Ionicons name="airplane-outline" size={64} color={MibuBrand.tanLight} />
-        <Text style={styles.emptyTitle}>{isZh ? '登入以使用行程助手' : 'Login to use Trip Assistant'}</Text>
+        <Text style={styles.emptyTitle}>{t.itinerary_loginRequired}</Text>
         <TouchableOpacity
           style={styles.loginButton}
           onPress={() => router.push('/login')}
           activeOpacity={0.8}
         >
-          <Text style={styles.loginButtonText}>{isZh ? '登入' : 'Login'}</Text>
+          <Text style={styles.loginButtonText}>{t.login}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -1390,7 +1379,7 @@ export function ItineraryScreenV2() {
     return (
       <View style={styles.emptyContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
-        <Text style={styles.loadingText}>{isZh ? '載入中...' : 'Loading...'}</Text>
+        <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
   }
@@ -1403,17 +1392,17 @@ export function ItineraryScreenV2() {
       <View style={styles.emptyIconCircle}>
         <Ionicons name="map-outline" size={48} color={MibuBrand.brown} />
       </View>
-      <Text style={styles.emptyTitle}>{isZh ? '還沒有行程' : 'No itineraries yet'}</Text>
+      <Text style={styles.emptyTitle}>{t.itinerary_noItineraries}</Text>
       <Text style={styles.emptySubtitle}>
-        {isZh ? '建立行程，讓 AI 幫你規劃完美旅途' : 'Create a trip and let AI plan for you'}
+        {t.itinerary_noItinerariesDesc}
       </Text>
 
       {/* 功能提示卡片 */}
       <View style={styles.emptyTipsCard}>
         {[
-          { icon: 'sparkles' as const, text: isZh ? 'AI 智慧推薦景點' : 'AI recommends spots' },
-          { icon: 'calendar-outline' as const, text: isZh ? '自動安排每日行程' : 'Auto daily planning' },
-          { icon: 'navigate-outline' as const, text: isZh ? '即時導航帶你走' : 'Real-time navigation' },
+          { icon: 'sparkles' as const, text: t.itinerary_tipAi },
+          { icon: 'calendar-outline' as const, text: t.itinerary_tipPlanning },
+          { icon: 'navigate-outline' as const, text: t.itinerary_tipNav },
         ].map((tip) => (
           <View key={tip.icon} style={styles.emptyTipRow}>
             <Ionicons name={tip.icon} size={18} color={MibuBrand.copper} />
@@ -1427,11 +1416,11 @@ export function ItineraryScreenV2() {
         style={styles.emptyCreateButton}
         onPress={openCreateModal}
         activeOpacity={0.8}
-        accessibilityLabel={isZh ? '建立第一個行程' : 'Create first itinerary'}
+        accessibilityLabel={t.itinerary_createFirst}
       >
         <Ionicons name="add-circle-outline" size={24} color={MibuBrand.warmWhite} />
         <Text style={styles.emptyCreateButtonText}>
-          {isZh ? '建立第一個行程' : 'Create First Itinerary'}
+          {t.itinerary_createFirst}
         </Text>
       </TouchableOpacity>
     </View>
@@ -1453,7 +1442,7 @@ export function ItineraryScreenV2() {
           onPress={openLeftDrawer}
           style={styles.headerIconButton}
           activeOpacity={0.7}
-          accessibilityLabel={isZh ? '開啟行程列表' : 'Open itinerary list'}
+          accessibilityLabel={t.itinerary_openList}
         >
           <Ionicons name="menu-outline" size={26} color={MibuBrand.brown} />
         </TouchableOpacity>
@@ -1481,7 +1470,7 @@ export function ItineraryScreenV2() {
             <>
               <View style={styles.headerTitleRow}>
                 <Text style={styles.headerTitle}>
-                  {currentItinerary?.title || (isZh ? '行程助手' : 'Trip Assistant')}
+                  {currentItinerary?.title || t.itinerary_tripAssistant}
                 </Text>
                 <Ionicons name="pencil-outline" size={14} color={MibuBrand.copper} style={{ marginLeft: 4 }} />
               </View>
@@ -1496,7 +1485,7 @@ export function ItineraryScreenV2() {
           onPress={openRightDrawer}
           style={styles.headerIconButton}
           activeOpacity={0.7}
-          accessibilityLabel={isZh ? '查看行程詳情' : 'View itinerary details'}
+          accessibilityLabel={t.itinerary_viewDetails}
         >
           <View style={styles.itineraryBadge}>
             <Text style={styles.itineraryBadgeText}>
@@ -1525,9 +1514,9 @@ export function ItineraryScreenV2() {
           >
             <Ionicons name="help-circle-outline" size={22} color={MibuBrand.copper} />
           </TouchableOpacity>
-          <Text style={styles.welcomeTitle}>Mibu {isZh ? '行程助手' : 'Trip Assistant'}</Text>
+          <Text style={styles.welcomeTitle}>Mibu {t.itinerary_tripAssistant}</Text>
           <Text style={styles.welcomeSubtitle}>
-            {isZh ? '告訴我你想去哪，我來幫你安排' : 'Tell me where you want to go'}
+            {t.itinerary_welcomeSubtitle}
           </Text>
         </View>
 
@@ -1535,9 +1524,7 @@ export function ItineraryScreenV2() {
         {showHelpTooltip && (
           <Animated.View style={[styles.helpTooltip, { opacity: helpTooltipOpacity }]}>
             <Text style={styles.helpTooltipText}>
-              {isZh
-                ? '告訴我你的旅遊偏好，我會推薦景點並加入行程\n點擊左上角查看行程列表，點擊右上角查看行程表'
-                : 'Tell me your preferences, I\'ll recommend places\nTap top-left for trip list, top-right for itinerary'}
+              {t.itinerary_helpText}
             </Text>
           </Animated.View>
         )}
@@ -1615,7 +1602,7 @@ export function ItineraryScreenV2() {
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.textInput}
-            placeholder={isZh ? '想去哪裡？告訴我...' : 'Where do you want to go?'}
+            placeholder={t.itinerary_inputPlaceholder}
             placeholderTextColor={MibuBrand.copper}
             value={inputText}
             onChangeText={setInputText}
@@ -1631,7 +1618,7 @@ export function ItineraryScreenV2() {
             disabled={!inputText.trim() || aiLoading}
             onPress={sendAiMessage}
             activeOpacity={0.8}
-            accessibilityLabel={isZh ? '發送訊息' : 'Send message'}
+            accessibilityLabel={t.itinerary_sendMessage}
           >
             <Ionicons
               name="send"
@@ -1657,9 +1644,9 @@ export function ItineraryScreenV2() {
         {/* Drawer Header */}
         <View style={styles.drawerHeader}>
           <View>
-            <Text style={styles.drawerTitle}>{isZh ? '我的行程' : 'My Trips'}</Text>
+            <Text style={styles.drawerTitle}>{t.itinerary_myTrips}</Text>
             <Text style={styles.drawerSubtitle}>
-              {itineraries.length} {isZh ? '個行程' : 'trips'}
+              {itineraries.length} {t.itinerary_tripsCount}
             </Text>
           </View>
           <View style={styles.drawerHeaderActions}>
@@ -1671,10 +1658,10 @@ export function ItineraryScreenV2() {
               }}
               style={styles.selectModeButton}
               activeOpacity={0.7}
-              accessibilityLabel={isZh ? (selectMode ? '取消選擇' : '選擇行程') : (selectMode ? 'Cancel selection' : 'Select itineraries')}
+              accessibilityLabel={selectMode ? t.itinerary_cancelSelect : t.itinerary_selectItineraries}
             >
               <Text style={styles.selectModeText}>
-                {selectMode ? (isZh ? '取消' : 'Cancel') : (isZh ? '選擇' : 'Select')}
+                {selectMode ? t.cancel : t.itinerary_selectMode}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -1693,11 +1680,11 @@ export function ItineraryScreenV2() {
             style={styles.deleteSelectedButton}
             onPress={handleDeleteSelectedItineraries}
             activeOpacity={0.8}
-            accessibilityLabel={isZh ? '刪除已選行程' : 'Delete selected itineraries'}
+            accessibilityLabel={t.itinerary_deleteSelected}
           >
             <Ionicons name="trash-outline" size={18} color={MibuBrand.warmWhite} />
             <Text style={styles.deleteSelectedText}>
-              {isZh ? `刪除 ${selectedItineraryIds.length} 個` : `Delete ${selectedItineraryIds.length}`}
+              {tFormat(t.itinerary_deleteCount, { count: selectedItineraryIds.length })}
             </Text>
           </TouchableOpacity>
         )}
@@ -1765,7 +1752,7 @@ export function ItineraryScreenV2() {
                       <View style={styles.tripCountBadge}>
                         <Ionicons name="location" size={12} color={MibuBrand.copper} />
                         <Text style={styles.tripCountText}>
-                          {item.placeCount} {isZh ? '個景點' : 'places'}
+                          {item.placeCount} {t.itinerary_places}
                         </Text>
                       </View>
                     </View>
@@ -1797,7 +1784,7 @@ export function ItineraryScreenV2() {
             onPress={openCreateModal}
           >
             <Ionicons name="add-circle-outline" size={24} color={MibuBrand.brown} />
-            <Text style={styles.addTripText}>{isZh ? '新增行程' : 'New Trip'}</Text>
+            <Text style={styles.addTripText}>{t.itinerary_newTrip}</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -1817,7 +1804,7 @@ export function ItineraryScreenV2() {
         {/* Drawer Header */}
         <View style={styles.drawerHeader}>
           <View>
-            <Text style={styles.drawerTitle}>{isZh ? '行程表' : 'Itinerary'}</Text>
+            <Text style={styles.drawerTitle}>{t.itinerary_itinerary}</Text>
             <Text style={styles.drawerSubtitle}>
               {currentItinerary?.date} · {currentItinerary?.city}
             </Text>
@@ -1965,7 +1952,7 @@ export function ItineraryScreenV2() {
                           color={MibuBrand.copper}
                         />
                         <Text style={styles.placeMapText}>
-                          {isZh ? '在 Google Maps 查看' : 'View on Google Maps'}
+                          {t.itinerary_viewOnGoogleMaps}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -1981,7 +1968,7 @@ export function ItineraryScreenV2() {
               >
                 <Ionicons name="albums-outline" size={20} color={MibuBrand.brown} />
                 <Text style={styles.addFromCollectionText}>
-                  {isZh ? '從圖鑑加入景點' : 'Add from Collection'}
+                  {t.itinerary_addFromCollection}
                 </Text>
               </TouchableOpacity>
             }
@@ -1991,7 +1978,7 @@ export function ItineraryScreenV2() {
             <View style={styles.emptyPlaces}>
               <Ionicons name="location-outline" size={48} color={MibuBrand.tanLight} />
               <Text style={styles.emptyPlacesText}>
-                {isZh ? '還沒有景點\n跟 AI 聊聊想去哪吧！' : 'No places yet\nChat with AI to add some!'}
+                {t.itinerary_noPlaces}
               </Text>
             </View>
             {/* 從圖鑑加入 */}
@@ -2002,7 +1989,7 @@ export function ItineraryScreenV2() {
             >
               <Ionicons name="albums-outline" size={20} color={MibuBrand.brown} />
               <Text style={styles.addFromCollectionText}>
-                {isZh ? '從圖鑑加入景點' : 'Add from Collection'}
+                {t.itinerary_addFromCollection}
               </Text>
             </TouchableOpacity>
           </View>
@@ -2063,7 +2050,7 @@ export function ItineraryScreenV2() {
               <Ionicons name="close" size={24} color={MibuBrand.copper} />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>
-              {isZh ? '從圖鑑加入景點' : 'Add from Collection'}
+              {t.itinerary_addFromCollection}
             </Text>
             <TouchableOpacity
               onPress={confirmAddPlaces}
@@ -2077,7 +2064,7 @@ export function ItineraryScreenV2() {
                 <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
               ) : (
                 <Text style={styles.modalConfirmText}>
-                  {isZh ? `加入 (${selectedCollectionIds.length})` : `Add (${selectedCollectionIds.length})`}
+                  {tFormat(t.itinerary_addCount, { count: selectedCollectionIds.length })}
                 </Text>
               )}
             </TouchableOpacity>
@@ -2088,7 +2075,7 @@ export function ItineraryScreenV2() {
             <Ionicons name="search-outline" size={20} color={MibuBrand.copper} />
             <TextInput
               style={styles.searchInput}
-              placeholder={isZh ? '搜尋景點...' : 'Search places...'}
+              placeholder={t.itinerary_searchPlaces}
               placeholderTextColor={MibuBrand.copper}
               value={placeSearchQuery}
               onChangeText={setPlaceSearchQuery}
@@ -2105,7 +2092,7 @@ export function ItineraryScreenV2() {
             <View style={styles.modalLoading}>
               <ActivityIndicator size="large" color={MibuBrand.brown} />
               <Text style={styles.modalLoadingText}>
-                {isZh ? '載入中...' : 'Loading...'}
+                {t.loading}
               </Text>
             </View>
           ) : filteredPlaces.length === 0 ? (
@@ -2113,8 +2100,8 @@ export function ItineraryScreenV2() {
               <Ionicons name="albums-outline" size={48} color={MibuBrand.tanLight} />
               <Text style={styles.modalEmptyText}>
                 {placeSearchQuery.trim()
-                  ? (isZh ? '找不到符合的景點' : 'No matching places found')
-                  : (isZh ? '圖鑑中沒有可加入的景點\n先去抽卡收集一些吧！' : 'No places in collection\nGo gacha to collect some!')}
+                  ? (t.itinerary_noMatchingPlaces)
+                  : (t.itinerary_noCollectionPlaces)}
               </Text>
             </View>
           ) : (
@@ -2203,9 +2190,7 @@ export function ItineraryScreenV2() {
                         })}
                         {categoryGroup.places.length > 15 && (
                           <Text style={styles.accordionMoreText}>
-                            {isZh
-                              ? `還有 ${categoryGroup.places.length - 15} 個景點...`
-                              : `${categoryGroup.places.length - 15} more places...`}
+                            {tFormat(t.itinerary_morePlaces, { count: categoryGroup.places.length - 15 })}
                           </Text>
                         )}
                       </ScrollView>
@@ -2241,7 +2226,7 @@ export function ItineraryScreenV2() {
               <Ionicons name="close" size={24} color={MibuBrand.copper} />
             </TouchableOpacity>
             <Text style={styles.createModalTitle}>
-              {isZh ? '新增行程' : 'New Itinerary'}
+              {t.itinerary_newItinerary}
             </Text>
             {/* 佔位，讓標題置中 */}
             <View style={{ width: 44 }} />
@@ -2260,12 +2245,12 @@ export function ItineraryScreenV2() {
                   <Ionicons name="create-outline" size={18} color={MibuBrand.copper} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.createFieldLabel}>{isZh ? '行程標題' : 'Trip Title'}</Text>
+                  <Text style={styles.createFieldLabel}>{t.itinerary_tripTitle}</Text>
                   <TextInput
                     style={styles.createFieldInput}
                     value={newItinerary.title}
                     onChangeText={(text) => setNewItinerary(prev => ({ ...prev, title: text }))}
-                    placeholder={isZh ? '為你的旅程取個名字（選填）' : 'Name your trip (optional)'}
+                    placeholder={t.itinerary_tripTitlePlaceholder}
                     placeholderTextColor={MibuBrand.tan}
                     maxLength={50}
                     autoCapitalize="none"
@@ -2283,7 +2268,7 @@ export function ItineraryScreenV2() {
                   <Ionicons name="calendar-outline" size={18} color={MibuBrand.copper} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.createFieldLabel}>{isZh ? '日期' : 'Date'}</Text>
+                  <Text style={styles.createFieldLabel}>{t.itinerary_date}</Text>
                   <TextInput
                     style={styles.createFieldInput}
                     value={newItinerary.date}
@@ -2307,7 +2292,7 @@ export function ItineraryScreenV2() {
                     {/* 國家 */}
                     <View style={{ flex: 1, marginRight: Spacing.sm }}>
                       <Select
-                        label={isZh ? '國家' : 'Country'}
+                        label={t.itinerary_country}
                         options={countries.map(c => ({ label: getLocalizedName(c), value: c.id }))}
                         value={newItinerary.countryId || null}
                         onChange={(value) => {
@@ -2320,14 +2305,14 @@ export function ItineraryScreenV2() {
                             regionName: '',
                           }));
                         }}
-                        placeholder={isZh ? '選擇國家' : 'Country'}
+                        placeholder={t.itinerary_countryPlaceholder}
                         loading={loadingCountries}
                       />
                     </View>
                     {/* 城市 */}
                     <View style={{ flex: 1, marginLeft: Spacing.sm }}>
                       <Select
-                        label={isZh ? '城市' : 'City'}
+                        label={t.itinerary_city}
                         options={regions.map(r => ({ label: getLocalizedName(r), value: r.id }))}
                         value={newItinerary.regionId || null}
                         onChange={(value) => {
@@ -2338,7 +2323,7 @@ export function ItineraryScreenV2() {
                             regionName: region?.nameZh || '',
                           }));
                         }}
-                        placeholder={isZh ? '選擇城市' : 'City'}
+                        placeholder={t.itinerary_cityPlaceholder}
                         loading={loadingRegions || !newItinerary.countryId}
                       />
                     </View>
@@ -2365,7 +2350,7 @@ export function ItineraryScreenV2() {
                 <>
                   <Ionicons name="sparkles" size={20} color={MibuBrand.warmWhite} style={{ marginRight: Spacing.sm }} />
                   <Text style={styles.createBottomButtonText}>
-                    {isZh ? '建立行程' : 'Create Itinerary'}
+                    {t.itinerary_createItinerary}
                   </Text>
                 </>
               )}

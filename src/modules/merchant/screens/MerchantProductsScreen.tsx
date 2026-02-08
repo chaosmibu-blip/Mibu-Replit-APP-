@@ -37,7 +37,7 @@ import { EmptyState } from '../../shared/components/ui/EmptyState';
 // ============ 主元件 ============
 export function MerchantProductsScreen() {
   // ============ Hooks ============
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -58,32 +58,6 @@ export function MerchantProductsScreen() {
     price: '',          // 原價
     discountPrice: '',  // 優惠價
   });
-
-  // isZh: 判斷是否為中文語系
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
-  const translations = {
-    title: isZh ? '商品管理' : 'Product Management',
-    myProducts: isZh ? '我的商品' : 'My Products',
-    noProducts: isZh ? '尚未建立任何商品' : 'No products yet',
-    addNew: isZh ? '新增商品' : 'Add Product',
-    edit: isZh ? '編輯' : 'Edit',
-    delete: isZh ? '刪除' : 'Delete',
-    name: isZh ? '商品名稱' : 'Product Name',
-    description: isZh ? '商品描述' : 'Description',
-    price: isZh ? '原價' : 'Price',
-    discountPrice: isZh ? '優惠價' : 'Discount Price',
-    save: isZh ? '儲存' : 'Save',
-    cancel: isZh ? '取消' : 'Cancel',
-    active: isZh ? '上架中' : 'Active',
-    inactive: isZh ? '已下架' : 'Inactive',
-    loading: isZh ? '載入中...' : 'Loading...',
-    deleteConfirm: isZh ? '確定要刪除此商品？' : 'Delete this product?',
-    deleteSuccess: isZh ? '已刪除' : 'Deleted',
-    saveSuccess: isZh ? '已儲存' : 'Saved',
-    saveFailed: isZh ? '儲存失敗' : 'Save failed',
-  };
 
   // ============ Effect Hooks ============
   // 元件載入時取得產品列表
@@ -165,10 +139,10 @@ export function MerchantProductsScreen() {
 
       setModalVisible(false);
       loadProducts();
-      Alert.alert(isZh ? '成功' : 'Success', translations.saveSuccess);
+      Alert.alert(t.common_success, t.merchant_saved);
     } catch (error) {
       console.error('Save failed:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', translations.saveFailed);
+      Alert.alert(t.common_error, t.common_saveFailed);
     } finally {
       setSaving(false);
     }
@@ -180,12 +154,12 @@ export function MerchantProductsScreen() {
    */
   const handleDelete = (product: MerchantProduct) => {
     Alert.alert(
-      isZh ? '確認刪除' : 'Confirm Delete',
-      translations.deleteConfirm,
+      t.common_confirmDelete,
+      t.merchant_deleteProductConfirm,
       [
-        { text: translations.cancel, style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: translations.delete,
+          text: t.common_delete,
           style: 'destructive',
           onPress: async () => {
             try {
@@ -193,7 +167,7 @@ export function MerchantProductsScreen() {
               if (!token) return;
               await apiService.deleteMerchantProduct(token, product.id);
               loadProducts();
-              Alert.alert(isZh ? '成功' : 'Success', translations.deleteSuccess);
+              Alert.alert(t.common_success, t.merchant_deleted);
             } catch (error) {
               console.error('Delete failed:', error);
             }
@@ -208,7 +182,7 @@ export function MerchantProductsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
-        <Text style={styles.loadingText}>{translations.loading}</Text>
+        <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
   }
@@ -227,24 +201,24 @@ export function MerchantProductsScreen() {
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
             <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
           </TouchableOpacity>
-          <Text style={styles.title}>{translations.title}</Text>
+          <Text style={styles.title}>{t.merchant_productMgmt}</Text>
         </View>
 
         {/* ============ 新增按鈕 ============ */}
         <TouchableOpacity style={styles.addButton} onPress={() => openModal()} accessibilityLabel="新增商品">
           <Ionicons name="add-circle-outline" size={24} color={MibuBrand.warmWhite} />
-          <Text style={styles.addButtonText}>{translations.addNew}</Text>
+          <Text style={styles.addButtonText}>{t.merchant_addProduct}</Text>
         </TouchableOpacity>
 
         {/* ============ 區塊標題 ============ */}
-        <Text style={styles.sectionTitle}>{translations.myProducts}</Text>
+        <Text style={styles.sectionTitle}>{t.merchant_myProducts}</Text>
 
         {/* ============ 產品列表 ============ */}
         {products.length === 0 ? (
           // 空狀態
           <EmptyState
             icon="cube-outline"
-            title={translations.noProducts}
+            title={t.merchant_noProducts}
           />
         ) : (
           // 產品卡片列表
@@ -284,7 +258,7 @@ export function MerchantProductsScreen() {
                         styles.statusText,
                         product.isActive ? styles.activeText : styles.inactiveText
                       ]}>
-                        {product.isActive ? translations.active : translations.inactive}
+                        {product.isActive ? t.merchant_activeStatus : t.merchant_inactiveStatus}
                       </Text>
                     </View>
                   </View>
@@ -323,28 +297,28 @@ export function MerchantProductsScreen() {
           <View style={styles.modalContent}>
             {/* 彈窗標題 */}
             <Text style={styles.modalTitle}>
-              {editingProduct ? translations.edit : translations.addNew}
+              {editingProduct ? t.common_edit : t.merchant_addProduct}
             </Text>
 
             {/* 表單內容 */}
             <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
               {/* 產品名稱 */}
-              <Text style={styles.inputLabel}>{translations.name}</Text>
+              <Text style={styles.inputLabel}>{t.merchant_productName}</Text>
               <TextInput
                 style={styles.input}
                 value={formData.name}
                 onChangeText={text => setFormData({ ...formData, name: text })}
-                placeholder={translations.name}
+                placeholder={t.merchant_productName}
                 placeholderTextColor={MibuBrand.tan}
               />
 
               {/* 產品描述 */}
-              <Text style={styles.inputLabel}>{translations.description}</Text>
+              <Text style={styles.inputLabel}>{t.merchant_productDesc}</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
                 value={formData.description}
                 onChangeText={text => setFormData({ ...formData, description: text })}
-                placeholder={translations.description}
+                placeholder={t.merchant_productDesc}
                 placeholderTextColor={MibuBrand.tan}
                 multiline
                 numberOfLines={3}
@@ -353,7 +327,7 @@ export function MerchantProductsScreen() {
               {/* 價格欄位（並排） */}
               <View style={styles.priceInputRow}>
                 <View style={styles.priceInputContainer}>
-                  <Text style={styles.inputLabel}>{translations.price}</Text>
+                  <Text style={styles.inputLabel}>{t.merchant_price}</Text>
                   <TextInput
                     style={styles.input}
                     value={formData.price}
@@ -364,7 +338,7 @@ export function MerchantProductsScreen() {
                   />
                 </View>
                 <View style={styles.priceInputContainer}>
-                  <Text style={styles.inputLabel}>{translations.discountPrice}</Text>
+                  <Text style={styles.inputLabel}>{t.merchant_discountPrice}</Text>
                   <TextInput
                     style={styles.input}
                     value={formData.discountPrice}
@@ -384,7 +358,7 @@ export function MerchantProductsScreen() {
                 onPress={() => setModalVisible(false)}
                 accessibilityLabel="取消"
               >
-                <Text style={styles.cancelModalButtonText}>{translations.cancel}</Text>
+                <Text style={styles.cancelModalButtonText}>{t.cancel}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.saveButton}
@@ -395,7 +369,7 @@ export function MerchantProductsScreen() {
                 {saving ? (
                   <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
                 ) : (
-                  <Text style={styles.saveButtonText}>{translations.save}</Text>
+                  <Text style={styles.saveButtonText}>{t.common_save}</Text>
                 )}
               </TouchableOpacity>
             </View>

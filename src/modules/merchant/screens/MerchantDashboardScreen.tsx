@@ -29,11 +29,12 @@ import { apiService } from '../../../services/api';
 import { MerchantDailyCode, MerchantCredits } from '../../../types';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
 import { MibuBrand } from '../../../../constants/Colors';
+import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 主元件 ============
 export function MerchantDashboardScreen() {
   // ============ Hooks ============
-  const { state, getToken, setUser } = useApp();
+  const { state, t, getToken, setUser } = useApp();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -46,24 +47,21 @@ export function MerchantDashboardScreen() {
   // purchasing: 購買點數進行中狀態
   const [purchasing, setPurchasing] = useState(false);
 
-  // isZh: 判斷是否為中文語系
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
+  // ============ 多語系翻譯（透過 t 字典） ============
   const translations = {
-    title: isZh ? '商家後台' : 'Merchant Dashboard',
-    dailyCode: isZh ? '今日核銷碼' : "Today's Verification Code",
-    expiresAt: isZh ? '有效期至' : 'Valid until',
-    credits: isZh ? '點數餘額' : 'Credit Balance',
-    points: isZh ? '點' : 'pts',
-    topUp: isZh ? '儲值' : 'Top Up',
-    useStripe: isZh ? '使用 Stripe 付款' : 'Pay with Stripe',
-    useRecur: isZh ? '使用 Recur 付款' : 'Pay with Recur',
-    purchaseAmount: isZh ? '購買點數' : 'Purchase Credits',
-    min100: isZh ? '最低 100 點' : 'Minimum 100 points',
-    loading: isZh ? '載入中...' : 'Loading...',
-    error: isZh ? '載入失敗' : 'Failed to load',
-    logout: isZh ? '登出' : 'Logout',
+    title: t.merchant_dashboard,
+    dailyCode: t.merchant_dailyCode,
+    expiresAt: t.merchant_expiresAt,
+    credits: t.merchant_creditBalance,
+    points: t.merchant_points,
+    topUp: t.merchant_topUp,
+    useStripe: t.merchant_payStripe,
+    useRecur: t.merchant_payRecur,
+    purchaseAmount: t.merchant_purchaseCredits,
+    min100: t.merchant_min100,
+    loading: t.loading,
+    error: t.common_loadFailed,
+    logout: t.common_logout,
   };
 
   // ============ 事件處理函數 ============
@@ -126,13 +124,13 @@ export function MerchantDashboardScreen() {
         await Linking.openURL(response.checkoutUrl);
       } else {
         Alert.alert(
-          isZh ? '成功' : 'Success',
-          response.message || (isZh ? '交易已建立' : 'Transaction created')
+          t.common_success,
+          response.message || t.merchant_transactionCreated
         );
       }
     } catch (error) {
       console.error('Purchase failed:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '購買失敗' : 'Purchase failed');
+      Alert.alert(t.common_error, t.merchant_purchaseFailed);
     } finally {
       setPurchasing(false);
     }
@@ -145,7 +143,7 @@ export function MerchantDashboardScreen() {
    */
   const formatExpiry = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString(isZh ? 'zh-TW' : 'en-US', {
+    return date.toLocaleString(LOCALE_MAP[state.language], {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -173,7 +171,7 @@ export function MerchantDashboardScreen() {
           {/* 店家選擇器 */}
           <TouchableOpacity style={styles.storeSelector} accessibilityLabel="選擇店家">
             <Text style={styles.storeName} numberOfLines={1}>
-              {state.user?.firstName || (isZh ? '示範咖啡廳' : 'Demo Cafe')}
+              {state.user?.firstName || t.merchant_demoCafe}
             </Text>
             <Ionicons name="chevron-down" size={16} color={MibuBrand.copper} />
           </TouchableOpacity>
@@ -205,8 +203,8 @@ export function MerchantDashboardScreen() {
             <Ionicons name="bar-chart-outline" size={22} color={MibuBrand.copper} />
           </View>
           <View style={styles.menuContent}>
-            <Text style={styles.menuTitle}>{isZh ? '數據分析' : 'Analytics'}</Text>
-            <Text style={styles.menuSubtitle}>{isZh ? '查看店家與優惠券統計' : 'View statistics and insights'}</Text>
+            <Text style={styles.menuTitle}>{t.merchant_analytics}</Text>
+            <Text style={styles.menuSubtitle}>{t.merchant_analyticsDesc}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
         </TouchableOpacity>
@@ -221,8 +219,8 @@ export function MerchantDashboardScreen() {
             <Ionicons name="storefront-outline" size={22} color={MibuBrand.copper} />
           </View>
           <View style={styles.menuContent}>
-            <Text style={styles.menuTitle}>{isZh ? '店家管理' : 'Store Management'}</Text>
-            <Text style={styles.menuSubtitle}>{isZh ? '管理您的店家資訊' : 'Manage your store info'}</Text>
+            <Text style={styles.menuTitle}>{t.merchant_storeManagement}</Text>
+            <Text style={styles.menuSubtitle}>{t.merchant_storeManagementDesc}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
         </TouchableOpacity>
@@ -237,8 +235,8 @@ export function MerchantDashboardScreen() {
             <Ionicons name="cube-outline" size={22} color={MibuBrand.copper} />
           </View>
           <View style={styles.menuContent}>
-            <Text style={styles.menuTitle}>{isZh ? '商品管理' : 'Product Management'}</Text>
-            <Text style={styles.menuSubtitle}>{isZh ? '管理商品與服務' : 'Manage products and services'}</Text>
+            <Text style={styles.menuTitle}>{t.merchant_productManagementLabel}</Text>
+            <Text style={styles.menuSubtitle}>{t.merchant_productManagementDesc}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
         </TouchableOpacity>
@@ -253,8 +251,8 @@ export function MerchantDashboardScreen() {
             <Ionicons name="pricetags-outline" size={22} color={MibuBrand.copper} />
           </View>
           <View style={styles.menuContent}>
-            <Text style={styles.menuTitle}>{isZh ? '優惠券管理' : 'Coupon Management'}</Text>
-            <Text style={styles.menuSubtitle}>{isZh ? '建立與管理優惠券' : 'Create and manage coupons'}</Text>
+            <Text style={styles.menuTitle}>{t.merchant_couponManagement}</Text>
+            <Text style={styles.menuSubtitle}>{t.merchant_couponManagementDesc}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
         </TouchableOpacity>
@@ -269,8 +267,8 @@ export function MerchantDashboardScreen() {
             <Ionicons name="person-outline" size={22} color={MibuBrand.copper} />
           </View>
           <View style={styles.menuContent}>
-            <Text style={styles.menuTitle}>{isZh ? '商家資料' : 'Merchant Profile'}</Text>
-            <Text style={styles.menuSubtitle}>{isZh ? '編輯商家基本資訊' : 'Edit basic merchant info'}</Text>
+            <Text style={styles.menuTitle}>{t.merchant_merchantProfile}</Text>
+            <Text style={styles.menuSubtitle}>{t.merchant_merchantProfileDesc}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
         </TouchableOpacity>

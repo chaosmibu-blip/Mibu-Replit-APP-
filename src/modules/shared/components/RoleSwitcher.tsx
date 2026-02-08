@@ -46,11 +46,11 @@ interface RoleSwitcherProps {
  * 各角色的配置資料
  * 包含標籤、顏色、圖示和對應路由
  */
-const ROLE_CONFIG: Record<UserRole, { label: { zh: string; en: string }; color: string; icon: string; route: string }> = {
-  traveler: { label: { zh: '旅客', en: 'Traveler' }, color: MibuBrand.brown, icon: 'airplane-outline', route: '/(tabs)' },
-  merchant: { label: { zh: '商家端', en: 'Merchant' }, color: RoleColors.merchant.main, icon: 'storefront-outline', route: '/merchant-dashboard' },
-  specialist: { label: { zh: '專員端', en: 'Specialist' }, color: RoleColors.specialist.main, icon: 'shield-checkmark-outline', route: '/specialist-dashboard' },
-  admin: { label: { zh: '管理端', en: 'Admin' }, color: '#f59e0b', icon: 'settings-outline', route: '/admin-dashboard' },
+const ROLE_CONFIG: Record<UserRole, { labelKey: string; color: string; icon: string; route: string }> = {
+  traveler: { labelKey: 'common_roleTraveler', color: MibuBrand.brown, icon: 'airplane-outline', route: '/(tabs)' },
+  merchant: { labelKey: 'common_roleMerchant', color: RoleColors.merchant.main, icon: 'storefront-outline', route: '/merchant-dashboard' },
+  specialist: { labelKey: 'common_roleSpecialist', color: RoleColors.specialist.main, icon: 'shield-checkmark-outline', route: '/specialist-dashboard' },
+  admin: { labelKey: 'common_roleAdmin', color: '#f59e0b', icon: 'settings-outline', route: '/admin-dashboard' },
 };
 
 // ============ 主元件 ============
@@ -63,7 +63,7 @@ const ROLE_CONFIG: Record<UserRole, { label: { zh: string; en: string }; color: 
  * - 用戶必須有超過一個可訪問的角色
  */
 export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
-  const { state, switchRole } = useApp();
+  const { state, switchRole, t } = useApp();
   const router = useRouter();
   // 控制選單/Modal 顯示狀態
   const [showMenu, setShowMenu] = useState(false);
@@ -77,8 +77,6 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
     return null;
   }
 
-  // 判斷語言
-  const isZh = state.language === 'zh-TW';
   // 取得目前角色（優先使用 activeRole，否則使用 role，預設 traveler）
   const currentRole = (user.activeRole || user.role || 'traveler') as UserRole;
   const currentConfig = ROLE_CONFIG[currentRole];
@@ -138,7 +136,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
           >
             <View style={styles.menuContainer}>
               <Text style={styles.menuTitle}>
-                {isZh ? '切換身份' : 'Switch Role'}
+                {t.common_switchRole}
               </Text>
               {switching ? (
                 <ActivityIndicator size="small" color={MibuBrand.brown} style={styles.loader} />
@@ -166,7 +164,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
                           isActive && { color: config.color, fontWeight: '700' },
                         ]}
                       >
-                        {isZh ? config.label.zh : config.label.en}
+                        {t[config.labelKey]}
                       </Text>
                       {/* 目前角色顯示勾選圖示 */}
                       {isActive && (
@@ -193,7 +191,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
       >
         <Ionicons name={currentConfig.icon as any} size={20} color={currentConfig.color} />
         <Text style={[styles.buttonText, { color: currentConfig.color }]}>
-          {isZh ? currentConfig.label.zh : currentConfig.label.en}
+          {t[currentConfig.labelKey]}
         </Text>
         <Ionicons
           name={showMenu ? 'chevron-up' : 'chevron-down'}
@@ -231,7 +229,7 @@ export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
                       isActive && { color: config.color, fontWeight: '700' },
                     ]}
                   >
-                    {isZh ? config.label.zh : config.label.en}
+                    {t[config.labelKey]}
                   </Text>
                 </TouchableOpacity>
               );

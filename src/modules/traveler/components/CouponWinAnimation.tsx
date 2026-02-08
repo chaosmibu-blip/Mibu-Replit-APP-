@@ -33,6 +33,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { CouponTier } from '../../../types';
 import { UIColors } from '../../../../constants/Colors';
+import { useApp } from '../../../context/AppContext';
+import { tFormat } from '../../../utils/i18n';
 
 // ============================================================
 // 常數定義
@@ -60,55 +62,49 @@ interface CouponWinAnimationProps {
  * - textColor: 文字色
  * - glowColor: 光暈色
  * - icon: 圖示名稱
- * - label/labelEn: 稀有度標籤（中/英）
+ * - labelKey: 翻譯字典 key
  */
 const TIER_CONFIG: Record<CouponTier, {
   bgColor: string;
   textColor: string;
   glowColor: string;
   icon: string;
-  label: string;
-  labelEn: string;
+  labelKey: string;
 }> = {
   SP: {
     bgColor: '#fef3c7',
     textColor: '#b45309',
     glowColor: '#fbbf24',
     icon: 'star',
-    label: '超稀有',
-    labelEn: 'SUPER RARE',
+    labelKey: 'gacha_tierSP',
   },
   SSR: {
     bgColor: '#fce7f3',
     textColor: '#be185d',
     glowColor: '#f472b6',
     icon: 'diamond',
-    label: '極稀有',
-    labelEn: 'ULTRA RARE',
+    labelKey: 'gacha_tierSSR',
   },
   SR: {
     bgColor: '#dbeafe',
     textColor: '#1d4ed8',
     glowColor: '#60a5fa',
     icon: 'ribbon',
-    label: '稀有',
-    labelEn: 'RARE',
+    labelKey: 'gacha_tierSR',
   },
   S: {
     bgColor: '#dcfce7',
     textColor: '#16a34a',
     glowColor: '#4ade80',
     icon: 'trophy',
-    label: '優質',
-    labelEn: 'SPECIAL',
+    labelKey: 'gacha_tierS',
   },
   R: {
     bgColor: '#f1f5f9',
     textColor: '#475569',
     glowColor: '#94a3b8',
     icon: 'ticket',
-    label: '一般',
-    labelEn: 'REGULAR',
+    labelKey: 'gacha_tierR',
   },
 };
 
@@ -158,8 +154,8 @@ export default function CouponWinAnimation({
   // 當前稀有度配置
   const config = TIER_CONFIG[tier];
 
-  // 語言判斷
-  const isZh = language === 'zh-TW';
+  // 多語系翻譯
+  const { t } = useApp();
 
   // 是否為高稀有度（有光暈效果）
   const isHighTier = tier === 'SP' || tier === 'SSR' || tier === 'SR';
@@ -180,16 +176,14 @@ export default function CouponWinAnimation({
    * - Native: 使用 React Native Share
    */
   const handleShare = async () => {
-    const shareText = isZh
-      ? `🎰 我在 Mibu 扭蛋抽到了【${tier}】優惠券！\n🎁 ${couponName}\n📍 ${placeName}\n\n快來一起玩 ➜ https://mibu.app`
-      : `🎰 I got a【${tier}】coupon from Mibu Gacha!\n🎁 ${couponName}\n📍 ${placeName}\n\nCome play ➜ https://mibu.app`;
+    const shareText = tFormat(t.economy_shareTextTemplate, { tier, couponName, placeName });
 
     try {
       if (Platform.OS === 'web') {
         // Web: Try Web Share API first, fallback to clipboard
         if (typeof navigator !== 'undefined' && navigator.share) {
           await navigator.share({
-            title: isZh ? 'Mibu 扭蛋中獎！' : 'Mibu Gacha Win!',
+            title: t.economy_shareTitle,
             text: shareText,
           });
         } else {
@@ -201,7 +195,7 @@ export default function CouponWinAnimation({
         // Native: Use React Native Share
         await Share.share({
           message: shareText,
-          title: isZh ? 'Mibu 扭蛋中獎！' : 'Mibu Gacha Win!',
+          title: t.economy_shareTitle,
         });
       }
     } catch (error: unknown) {
@@ -389,7 +383,7 @@ export default function CouponWinAnimation({
 
           {/* 稀有度標籤 */}
           <Text style={[styles.tierLabel, { color: config.textColor }]}>
-            {isZh ? config.label : config.labelEn}
+            {t[config.labelKey]}
           </Text>
 
           {/* 優惠券資訊 */}
@@ -400,7 +394,7 @@ export default function CouponWinAnimation({
 
           {/* 恭喜文字 */}
           <Text style={[styles.congratsText, { color: config.textColor }]}>
-            {isZh ? '🎉 恭喜獲得優惠券！' : '🎉 Congratulations!'}
+            {'🎉 ' + t.economy_congratsCoupon}
           </Text>
 
           {/* ========== 按鈕列 ========== */}
@@ -418,8 +412,8 @@ export default function CouponWinAnimation({
                 />
                 <Text style={[styles.shareButtonText, { color: config.textColor }]}>
                   {shareStatus === 'copied'
-                    ? (isZh ? '已複製' : 'Copied')
-                    : (isZh ? '分享' : 'Share')}
+                    ? t.economy_shareCopied
+                    : t.economy_share}
                 </Text>
               </TouchableOpacity>
             )}
@@ -433,7 +427,7 @@ export default function CouponWinAnimation({
               onPress={onClose}
             >
               <Text style={[styles.closeButtonText, { color: config.textColor }]}>
-                {isZh ? '領取' : 'Collect'}
+                {t.economy_collect}
               </Text>
             </TouchableOpacity>
           </View>

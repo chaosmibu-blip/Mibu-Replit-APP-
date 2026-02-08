@@ -15,14 +15,13 @@ import { MibuBrand } from '../constants/Colors';
 
 export default function RegisterSuccessScreen() {
   const router = useRouter();
-  const { state } = useApp();
-  const isZh = state.language === 'zh-TW';
+  const { t } = useApp();
 
   const texts = {
-    title: isZh ? '申請已送出！' : 'Application Submitted!',
-    message: isZh ? '已收到您的申請，立馬為您處理' : 'We have received your application and will process it shortly',
-    note: isZh ? '審核通過後，您將收到通知，届時即可使用帳號登入' : 'Once approved, you will receive a notification and can log in with your account',
-    backToLogin: isZh ? '返回登入頁面' : 'Back to Login',
+    title: t.auth_applicationSubmitted,
+    message: t.auth_applicationReceivedMsg,
+    note: t.auth_applicationApprovalNote,
+    backToLogin: t.auth_backToLogin,
   };
 
   return (

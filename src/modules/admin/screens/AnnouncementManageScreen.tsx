@@ -45,11 +45,11 @@ type EditMode = 'create' | 'edit' | null;
 
 // ============ 常數定義 ============
 
-/** 公告類型選項（含中英文標籤） */
-const TYPE_OPTIONS: { value: AnnouncementType; label: { zh: string; en: string } }[] = [
-  { value: 'announcement', label: { zh: '公告', en: 'Announcement' } },
-  { value: 'flash_event', label: { zh: '快閃活動', en: 'Flash Event' } },
-  { value: 'holiday_event', label: { zh: '節慶活動', en: 'Holiday Event' } },
+/** 公告類型選項（翻譯 key 對應） */
+const TYPE_OPTIONS: { value: AnnouncementType; labelKey: string }[] = [
+  { value: 'announcement', labelKey: 'admin_typeAnnouncement' },
+  { value: 'flash_event', labelKey: 'admin_typeFlashEvent' },
+  { value: 'holiday_event', labelKey: 'admin_typeHolidayEvent' },
 ];
 
 // ============ 主元件 ============
@@ -60,7 +60,7 @@ const TYPE_OPTIONS: { value: AnnouncementType; label: { zh: string; en: string }
  */
 export function AnnouncementManageScreen() {
   // ============ Hooks & Context ============
-  const { state, getToken } = useApp();
+  const { getToken, t } = useApp();
   const router = useRouter();
 
   // ============ 狀態管理 ============
@@ -91,33 +91,7 @@ export function AnnouncementManageScreen() {
     priority: 0,                                // 優先順序
   });
 
-  // ============ 多國語系 ============
-
-  /** 判斷是否為繁體中文 */
-  const isZh = state.language === 'zh-TW';
-
-  /** 翻譯文字對照表 */
-  const translations = {
-    title: isZh ? '公告管理' : 'Announcement Management',
-    back: isZh ? '返回' : 'Back',
-    add: isZh ? '新增' : 'Add',
-    edit: isZh ? '編輯' : 'Edit',
-    delete: isZh ? '刪除' : 'Delete',
-    save: isZh ? '儲存' : 'Save',
-    cancel: isZh ? '取消' : 'Cancel',
-    type: isZh ? '類型' : 'Type',
-    titleLabel: isZh ? '標題' : 'Title',
-    contentLabel: isZh ? '內容' : 'Content',
-    imageUrl: isZh ? '圖片網址' : 'Image URL',
-    linkUrl: isZh ? '連結網址' : 'Link URL',
-    active: isZh ? '啟用' : 'Active',
-    priority: isZh ? '優先順序' : 'Priority',
-    noData: isZh ? '尚無公告' : 'No announcements',
-    loading: isZh ? '載入中...' : 'Loading...',
-    confirmDelete: isZh ? '確定要刪除這則公告嗎？' : 'Delete this announcement?',
-    createTitle: isZh ? '新增公告' : 'Create Announcement',
-    editTitle: isZh ? '編輯公告' : 'Edit Announcement',
-  };
+  // ============ 多國語系（使用全域 t 翻譯字典） ============
 
   // ============ 副作用 ============
 
@@ -198,10 +172,10 @@ export function AnnouncementManageScreen() {
    * @param item - 要刪除的公告
    */
   const handleDelete = (item: Announcement) => {
-    Alert.alert(translations.delete, translations.confirmDelete, [
-      { text: translations.cancel, style: 'cancel' },
+    Alert.alert(t.common_delete, t.admin_confirmDeleteAnnouncement, [
+      { text: t.cancel, style: 'cancel' },
       {
-        text: translations.delete,
+        text: t.common_delete,
         style: 'destructive',
         onPress: async () => {
           try {
@@ -226,7 +200,7 @@ export function AnnouncementManageScreen() {
   const handleSave = async () => {
     // 驗證必填欄位
     if (!formData.title.trim() || !formData.content.trim()) {
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請填寫標題和內容' : 'Please fill in title and content');
+      Alert.alert(t.common_error, t.admin_fillTitleContent);
       return;
     }
 
@@ -257,7 +231,7 @@ export function AnnouncementManageScreen() {
       loadData();          // 重新載入列表
     } catch (error) {
       console.error('Failed to save announcement:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '儲存失敗' : 'Save failed');
+      Alert.alert(t.common_error, t.common_saveFailed);
     } finally {
       setActionLoading(false);
     }
@@ -272,7 +246,7 @@ export function AnnouncementManageScreen() {
    */
   const getTypeLabel = (type: AnnouncementType) => {
     const option = TYPE_OPTIONS.find(o => o.value === type);
-    return option ? option.label[isZh ? 'zh' : 'en'] : type;
+    return option ? t[option.labelKey] : type;
   };
 
   /**
@@ -295,7 +269,7 @@ export function AnnouncementManageScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
-        <Text style={styles.loadingText}>{translations.loading}</Text>
+        <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
   }
@@ -309,10 +283,10 @@ export function AnnouncementManageScreen() {
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color={MibuBrand.brown} />
-          <Text style={styles.backText}>{translations.back}</Text>
+          <Text style={styles.backText}>{t.back}</Text>
         </TouchableOpacity>
         {/* 標題 */}
-        <Text style={styles.title}>{translations.title}</Text>
+        <Text style={styles.title}>{t.admin_announcementManage}</Text>
         {/* 新增按鈕 */}
         <TouchableOpacity style={styles.addButton} onPress={handleCreate}>
           <Ionicons name="add" size={24} color={MibuBrand.warmWhite} />
@@ -325,7 +299,7 @@ export function AnnouncementManageScreen() {
           // 空狀態
           <View style={styles.emptyCard}>
             <Ionicons name="megaphone-outline" size={48} color={MibuBrand.tan} />
-            <Text style={styles.emptyText}>{translations.noData}</Text>
+            <Text style={styles.emptyText}>{t.admin_noAnnouncements}</Text>
           </View>
         ) : (
           // 公告卡片列表
@@ -341,7 +315,7 @@ export function AnnouncementManageScreen() {
                 </View>
                 {/* 狀態標籤 */}
                 <View style={[styles.statusBadge, item.isActive ? styles.activeStatus : styles.inactiveStatus]}>
-                  <Text style={styles.statusText}>{item.isActive ? (isZh ? '啟用' : 'Active') : (isZh ? '停用' : 'Inactive')}</Text>
+                  <Text style={styles.statusText}>{item.isActive ? t.common_active : t.common_inactive}</Text>
                 </View>
               </View>
 
@@ -356,12 +330,12 @@ export function AnnouncementManageScreen() {
                 {/* 編輯按鈕 */}
                 <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(item)}>
                   <Ionicons name="pencil" size={16} color={MibuBrand.brown} />
-                  <Text style={styles.editButtonText}>{translations.edit}</Text>
+                  <Text style={styles.editButtonText}>{t.common_edit}</Text>
                 </TouchableOpacity>
                 {/* 刪除按鈕 */}
                 <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item)}>
                   <Ionicons name="trash-outline" size={16} color={SemanticColors.errorDark} />
-                  <Text style={styles.deleteButtonText}>{translations.delete}</Text>
+                  <Text style={styles.deleteButtonText}>{t.common_delete}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -376,7 +350,7 @@ export function AnnouncementManageScreen() {
             {/* Modal 標題列 */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {editMode === 'create' ? translations.createTitle : translations.editTitle}
+                {editMode === 'create' ? t.admin_createAnnouncement : t.admin_editAnnouncement}
               </Text>
               <TouchableOpacity onPress={() => setEditMode(null)}>
                 <Ionicons name="close" size={24} color={MibuBrand.tan} />
@@ -386,7 +360,7 @@ export function AnnouncementManageScreen() {
             {/* 表單內容 */}
             <ScrollView style={styles.formScroll}>
               {/* 類型選擇 */}
-              <Text style={styles.label}>{translations.type}</Text>
+              <Text style={styles.label}>{t.admin_type}</Text>
               <View style={styles.typeSelector}>
                 {TYPE_OPTIONS.map(option => (
                   <TouchableOpacity
@@ -395,34 +369,34 @@ export function AnnouncementManageScreen() {
                     onPress={() => setFormData(prev => ({ ...prev, type: option.value }))}
                   >
                     <Text style={[styles.typeOptionText, formData.type === option.value && styles.typeOptionTextActive]}>
-                      {option.label[isZh ? 'zh' : 'en']}
+                      {t[option.labelKey]}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
               {/* 標題輸入 */}
-              <Text style={styles.label}>{translations.titleLabel}</Text>
+              <Text style={styles.label}>{t.admin_titleLabel}</Text>
               <TextInput
                 style={styles.input}
                 value={formData.title}
                 onChangeText={text => setFormData(prev => ({ ...prev, title: text }))}
-                placeholder={isZh ? '輸入標題' : 'Enter title'}
+                placeholder={t.admin_enterTitle}
               />
 
               {/* 內容輸入 */}
-              <Text style={styles.label}>{translations.contentLabel}</Text>
+              <Text style={styles.label}>{t.admin_contentLabel}</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
                 value={formData.content}
                 onChangeText={text => setFormData(prev => ({ ...prev, content: text }))}
-                placeholder={isZh ? '輸入內容' : 'Enter content'}
+                placeholder={t.admin_enterContent}
                 multiline
                 numberOfLines={4}
               />
 
               {/* 圖片網址輸入 */}
-              <Text style={styles.label}>{translations.imageUrl}</Text>
+              <Text style={styles.label}>{t.admin_imageUrl}</Text>
               <TextInput
                 style={styles.input}
                 value={formData.imageUrl}
@@ -431,7 +405,7 @@ export function AnnouncementManageScreen() {
               />
 
               {/* 連結網址輸入 */}
-              <Text style={styles.label}>{translations.linkUrl}</Text>
+              <Text style={styles.label}>{t.admin_linkUrl}</Text>
               <TextInput
                 style={styles.input}
                 value={formData.linkUrl}
@@ -441,7 +415,7 @@ export function AnnouncementManageScreen() {
 
               {/* 啟用開關 */}
               <View style={styles.switchRow}>
-                <Text style={styles.switchLabel}>{translations.active}</Text>
+                <Text style={styles.switchLabel}>{t.common_active}</Text>
                 <Switch
                   value={formData.isActive}
                   onValueChange={value => setFormData(prev => ({ ...prev, isActive: value }))}
@@ -455,14 +429,14 @@ export function AnnouncementManageScreen() {
             <View style={styles.modalActions}>
               {/* 取消按鈕 */}
               <TouchableOpacity style={styles.cancelButton} onPress={() => setEditMode(null)}>
-                <Text style={styles.cancelButtonText}>{translations.cancel}</Text>
+                <Text style={styles.cancelButtonText}>{t.cancel}</Text>
               </TouchableOpacity>
               {/* 儲存按鈕 */}
               <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={actionLoading}>
                 {actionLoading ? (
                   <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
                 ) : (
-                  <Text style={styles.saveButtonText}>{translations.save}</Text>
+                  <Text style={styles.saveButtonText}>{t.common_save}</Text>
                 )}
               </TouchableOpacity>
             </View>

@@ -24,10 +24,11 @@ import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { ServiceRelation } from '../../../types';
 import { UIColors } from '../../../../constants/Colors';
+import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 元件主體 ============
 export function SpecialistHistoryScreen() {
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -37,23 +38,6 @@ export function SpecialistHistoryScreen() {
   const [loading, setLoading] = useState(true);
   // filter: 目前的篩選條件（全部 / 進行中 / 已完成）
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
-
-  // 判斷目前語言是否為繁體中文
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
-  const translations = {
-    title: isZh ? '服務歷史' : 'Service History',
-    all: isZh ? '全部' : 'All',
-    active: isZh ? '進行中' : 'Active',
-    completed: isZh ? '已完成' : 'Completed',
-    cancelled: isZh ? '已取消' : 'Cancelled',
-    noServices: isZh ? '尚無服務記錄' : 'No service history',
-    loading: isZh ? '載入中...' : 'Loading...',
-    since: isZh ? '開始於' : 'Started',
-    traveler: isZh ? '旅客' : 'Traveler',
-    status: isZh ? '狀態' : 'Status',
-  };
 
   // 元件載入時取得服務紀錄
   useEffect(() => {
@@ -102,7 +86,7 @@ export function SpecialistHistoryScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(isZh ? 'zh-TW' : 'en-US', {
+    return date.toLocaleDateString(LOCALE_MAP[state.language], {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -118,9 +102,9 @@ export function SpecialistHistoryScreen() {
    */
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'active': return translations.active;
-      case 'completed': return translations.completed;
-      case 'cancelled': return translations.cancelled;
+      case 'active': return t.common_active;
+      case 'completed': return t.specialist_completed;
+      case 'cancelled': return t.specialist_cancelled;
       default: return status;
     }
   };
@@ -144,7 +128,7 @@ export function SpecialistHistoryScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#6366f1" />
-        <Text style={styles.loadingText}>{translations.loading}</Text>
+        <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
   }
@@ -158,7 +142,7 @@ export function SpecialistHistoryScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.title}>{translations.title}</Text>
+        <Text style={styles.title}>{t.specialist_serviceHistory}</Text>
       </View>
 
       {/* ============ 篩選按鈕區 ============ */}
@@ -170,7 +154,7 @@ export function SpecialistHistoryScreen() {
             onPress={() => setFilter(f)}
           >
             <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
-              {f === 'all' ? translations.all : f === 'active' ? translations.active : translations.completed}
+              {f === 'all' ? t.specialist_filterAll : f === 'active' ? t.common_active : t.specialist_completed}
             </Text>
           </TouchableOpacity>
         ))}
@@ -181,7 +165,7 @@ export function SpecialistHistoryScreen() {
         // 空狀態顯示
         <View style={styles.emptyCard}>
           <Ionicons name="time-outline" size={48} color="#94a3b8" />
-          <Text style={styles.emptyText}>{translations.noServices}</Text>
+          <Text style={styles.emptyText}>{t.specialist_noHistory}</Text>
         </View>
       ) : (
         // 服務卡片列表
@@ -197,10 +181,10 @@ export function SpecialistHistoryScreen() {
                 {/* 服務資訊 */}
                 <View style={styles.serviceInfo}>
                   <Text style={styles.serviceName}>
-                    {service.traveler?.name || `${translations.traveler} #${service.travelerId.slice(0, 8)}`}
+                    {service.traveler?.name || `${t.specialist_traveler} #${service.travelerId.slice(0, 8)}`}
                   </Text>
                   <Text style={styles.serviceDate}>
-                    {translations.since}: {formatDate(service.createdAt)}
+                    {t.specialist_since}: {formatDate(service.createdAt)}
                   </Text>
                 </View>
                 {/* 狀態標籤 */}

@@ -34,7 +34,7 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 // ============ 主元件 ============
 export function PlaceEditScreen() {
   // ============ Hooks ============
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   // 將路由參數轉為數字 ID
@@ -62,40 +62,37 @@ export function PlaceEditScreen() {
   // isPromoActive: 是否啟用優惠推廣
   const [isPromoActive, setIsPromoActive] = useState(false);
 
-  // isZh: 判斷是否為中文語系
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
+  // ============ 多語系翻譯（透過 t 字典） ============
   const translations = {
-    title: isZh ? '編輯店家' : 'Edit Place',
-    basicInfo: isZh ? '基本資訊（不可修改）' : 'Basic Info (Read-only)',
-    placeName: isZh ? '店家名稱' : 'Place Name',
-    location: isZh ? '地點' : 'Location',
-    status: isZh ? '狀態' : 'Status',
-    editableInfo: isZh ? '可編輯資訊' : 'Editable Info',
-    description: isZh ? '店家介紹' : 'Description',
-    descriptionPlaceholder: isZh ? '輸入店家介紹...' : 'Enter description...',
-    googleMapUrl: isZh ? 'Google 地圖連結' : 'Google Map URL',
-    googleMapUrlPlaceholder: isZh ? '貼上 Google 地圖連結' : 'Paste Google Map URL',
-    openingHours: isZh ? '營業時間' : 'Opening Hours',
-    openingHoursPlaceholder: isZh ? '例：週一至週五 09:00-18:00' : 'e.g., Mon-Fri 09:00-18:00',
-    openingHoursHint: isZh ? '每行一個時段，例如：\n週一: 09:00-18:00\n週二: 09:00-18:00' : 'One time slot per line, e.g.:\nMon: 09:00-18:00\nTue: 09:00-18:00',
-    promoSection: isZh ? '優惠推廣' : 'Promotion',
-    promoTitle: isZh ? '優惠標題' : 'Promo Title',
-    promoTitlePlaceholder: isZh ? '例：新客首購 9 折' : 'e.g., 10% off for new customers',
-    promoDescription: isZh ? '優惠說明' : 'Promo Description',
-    promoDescriptionPlaceholder: isZh ? '輸入優惠詳細說明...' : 'Enter promo details...',
-    isPromoActive: isZh ? '啟用優惠推廣' : 'Enable Promotion',
-    save: isZh ? '儲存' : 'Save',
-    saving: isZh ? '儲存中...' : 'Saving...',
-    loading: isZh ? '載入中...' : 'Loading...',
-    saveSuccess: isZh ? '儲存成功！' : 'Saved successfully!',
-    saveFailed: isZh ? '儲存失敗' : 'Save failed',
-    loadFailed: isZh ? '載入失敗' : 'Load failed',
-    back: isZh ? '返回' : 'Back',
-    statusPending: isZh ? '待審核' : 'Pending',
-    statusApproved: isZh ? '已核准' : 'Approved',
-    statusRejected: isZh ? '已拒絕' : 'Rejected',
+    title: t.merchant_editPlace,
+    basicInfo: t.merchant_basicInfoReadonly,
+    placeName: t.merchant_placeName,
+    location: t.merchant_location,
+    status: t.common_status,
+    editableInfo: t.merchant_editableInfo,
+    description: t.merchant_description,
+    descriptionPlaceholder: t.merchant_descriptionPlaceholder,
+    googleMapUrl: t.merchant_googleMapUrl,
+    googleMapUrlPlaceholder: t.merchant_googleMapUrlPlaceholder,
+    openingHours: t.merchant_openingHours,
+    openingHoursPlaceholder: t.merchant_openingHoursPlaceholder,
+    openingHoursHint: t.merchant_openingHoursHint,
+    promoSection: t.merchant_promoSection,
+    promoTitle: t.merchant_promoTitle,
+    promoTitlePlaceholder: t.merchant_promoTitlePlaceholder,
+    promoDescription: t.merchant_promoDescription,
+    promoDescriptionPlaceholder: t.merchant_promoDescriptionPlaceholder,
+    isPromoActive: t.merchant_enablePromo,
+    save: t.common_save,
+    saving: t.merchant_saving,
+    loading: t.loading,
+    saveSuccess: t.merchant_saveSuccess,
+    saveFailed: t.common_saveFailed,
+    loadFailed: t.common_loadFailed,
+    back: t.back,
+    statusPending: t.common_pending,
+    statusApproved: t.common_approved,
+    statusRejected: t.common_rejected,
   };
 
   // ============ Effect Hooks ============
@@ -137,7 +134,7 @@ export function PlaceEditScreen() {
       }
     } catch (error) {
       console.error('Failed to load place:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', translations.loadFailed);
+      Alert.alert(t.common_error, translations.loadFailed);
     } finally {
       setLoading(false);
     }
@@ -178,12 +175,12 @@ export function PlaceEditScreen() {
       };
 
       await merchantApi.updateMerchantPlace(token, placeId, params);
-      Alert.alert(isZh ? '成功' : 'Success', translations.saveSuccess, [
+      Alert.alert(t.common_success, translations.saveSuccess, [
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (error) {
       console.error('Failed to save place:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', translations.saveFailed);
+      Alert.alert(t.common_error, translations.saveFailed);
     } finally {
       setSaving(false);
     }

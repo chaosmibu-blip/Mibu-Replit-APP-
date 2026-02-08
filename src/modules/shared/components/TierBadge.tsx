@@ -34,8 +34,6 @@ import { getTierStyle } from '../../../constants/tierStyles';
 interface TierBadgeProps {
   /** 稀有度等級 */
   tier: MerchantCouponTier;
-  /** 是否使用中文（預設 true，目前僅影響未來可能的文字） */
-  isZh?: boolean;
   /** 徽章尺寸：small 小、medium 中、large 大（預設 medium） */
   size?: 'small' | 'medium' | 'large';
   /** 是否顯示抽中機率（預設 false） */
@@ -58,7 +56,7 @@ const SIZE_STYLES = {
  * 透過 getTierStyle 取得對應等級的配色，
  * 包含背景色、邊框色、文字色和機率數值。
  */
-export const TierBadge = React.memo(function TierBadge({ tier, isZh = true, size = 'medium', showProbability = false }: TierBadgeProps) {
+export const TierBadge = React.memo(function TierBadge({ tier, size = 'medium', showProbability = false }: TierBadgeProps) {
   // 取得該等級的樣式配置
   const style = getTierStyle(tier);
 

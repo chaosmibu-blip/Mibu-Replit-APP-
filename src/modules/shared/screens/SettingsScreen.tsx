@@ -90,7 +90,6 @@ export function SettingsScreen() {
   // ============================================================
   const { state, t, setLanguage, setUser, getToken } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   // ============================================================
   // 狀態管理
@@ -127,12 +126,12 @@ export function SettingsScreen() {
    */
   const handleLogout = async () => {
     Alert.alert(
-      isZh ? '確認登出' : 'Confirm Logout',
-      isZh ? '確定要登出嗎？' : 'Are you sure you want to logout?',
+      t.settings_confirmLogout,
+      t.settings_confirmLogoutDesc,
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: isZh ? '登出' : 'Logout',
+          text: t.settings_logout,
           style: 'destructive',
           onPress: async () => {
             try {
@@ -158,12 +157,12 @@ export function SettingsScreen() {
    */
   const handleDeleteAccount = () => {
     Alert.alert(
-      isZh ? '刪除帳號' : 'Delete Account',
-      isZh ? '確定要刪除您的帳號嗎？此操作無法復原。' : 'Are you sure you want to delete your account? This action cannot be undone.',
+      t.settings_deleteAccountTitle,
+      t.settings_deleteAccountDesc,
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: isZh ? '刪除' : 'Delete',
+          text: t.settings_deleteAccount,
           style: 'destructive',
           onPress: async () => {
             try {
@@ -181,19 +180,19 @@ export function SettingsScreen() {
 
                   // 特殊錯誤碼處理
                   if (response.code === 'MERCHANT_ACCOUNT_EXISTS') {
-                    errorMsg = isZh ? '請先解除商家帳號' : 'Please deactivate merchant account first';
+                    errorMsg = t.settings_deactivateMerchantFirst;
                   }
 
                   Alert.alert(
-                    isZh ? '無法刪除' : 'Cannot Delete',
-                    errorMsg || (isZh ? '刪除失敗，請稍後再試' : 'Delete failed, please try again')
+                    t.settings_cannotDelete,
+                    errorMsg || t.settings_deleteFailed
                   );
                 }
               }
             } catch {
               Alert.alert(
-                isZh ? '錯誤' : 'Error',
-                isZh ? '刪除失敗，請稍後再試' : 'Delete failed, please try again'
+                t.error,
+                t.settings_deleteFailed
               );
             }
           },
@@ -242,7 +241,7 @@ export function SettingsScreen() {
     try {
       const token = await getToken();
       if (!token) {
-        setMergeResult({ success: false, message: isZh ? '請先登入' : 'Please login first' });
+        setMergeResult({ success: false, message: t.settings_pleaseLoginFirst });
         setMergeStep('result');
         return;
       }
@@ -259,7 +258,7 @@ export function SettingsScreen() {
     } catch (error) {
       setMergeResult({
         success: false,
-        message: isZh ? '合併失敗，請稍後再試' : 'Merge failed, please try again',
+        message: t.settings_mergeFailedRetry,
       });
       setMergeStep('result');
     }
@@ -287,11 +286,11 @@ export function SettingsScreen() {
   const settingGroups: SettingGroup[] = state.isAuthenticated ? [
     // ===== 已登入狀態 =====
     {
-      title: isZh ? '帳號' : 'Account',
+      title: t.settings_account,
       items: [
         {
           icon: 'person-outline',
-          label: isZh ? '個人資料' : 'Profile',
+          label: t.settings_profile,
           action: () => router.push('/profile' as any),
           hasArrow: true,
           iconBg: SemanticColors.warningLight,
@@ -300,7 +299,7 @@ export function SettingsScreen() {
         // [HIDDEN] 送審隱藏 #1 推薦領好禮
         // {
         //   icon: 'gift-outline',
-        //   label: isZh ? '推薦領好禮' : 'Refer & Earn',
+        //   label: t.referAndEarn,
         //   action: () => router.push('/referral' as any),
         //   hasArrow: true,
         //   highlight: true,
@@ -309,7 +308,7 @@ export function SettingsScreen() {
         // },
         {
           icon: 'globe-outline',
-          label: isZh ? '語言設定' : 'Language',
+          label: t.settings_language,
           action: () => setShowLanguageDropdown(true),
           value: currentLang.label,
           hasArrow: true,
@@ -320,20 +319,20 @@ export function SettingsScreen() {
     },
     // [HIDDEN] 送審隱藏 #2 #3 探索群組（解鎖全球地圖 + 等級與成就）
     // {
-    //   title: isZh ? '探索' : 'Explore',
+    //   title: t.explore,
     //   items: [
     //     {
     //       icon: 'map-outline',
-    //       label: isZh ? '解鎖全球地圖' : 'Unlock World Map',
+    //       label: t.unlockWorldMap,
     //       action: () => router.push('/map' as any),
     //       hasArrow: true,
-    //       badge: isZh ? '1 已解鎖' : '1 Unlocked',
+    //       badge: t.unlocked1,
     //       iconBg: '#FEF3C7',
     //       iconColor: '#D97706',
     //     },
     //     {
     //       icon: 'trophy-outline',
-    //       label: isZh ? '等級與成就' : 'Level & Achievements',
+    //       label: t.levelAchievements,
     //       action: () => router.push('/economy' as any),
     //       hasArrow: true,
     //       badge: '2/10',
@@ -344,11 +343,11 @@ export function SettingsScreen() {
     // },
     // [HIDDEN] 送審隱藏 #4 #5 偏好設定群組（我的最愛/黑名單 + 推播通知）
     // {
-    //   title: isZh ? '偏好設定' : 'Preferences',
+    //   title: t.preferences,
     //   items: [
     //     {
     //       icon: 'heart-outline',
-    //       label: isZh ? '我的最愛/黑名單' : 'Favorites & Blacklist',
+    //       label: t.favoritesBlacklist,
     //       action: () => router.push('/favorites-management' as any),
     //       hasArrow: true,
     //       iconBg: '#FEE2E2',
@@ -356,7 +355,7 @@ export function SettingsScreen() {
     //     },
     //     {
     //       icon: 'notifications-outline',
-    //       label: isZh ? '推播通知' : 'Push Notifications',
+    //       label: t.pushNotifications,
     //       toggle: true,
     //       checked: notifications,
     //       onChange: setNotifications,
@@ -367,11 +366,11 @@ export function SettingsScreen() {
     // },
     // [HIDDEN] 送審隱藏 #6 #7 更多功能群組（帳號綁定 + 社群貢獻）
     // {
-    //   title: isZh ? '更多功能' : 'More Features',
+    //   title: t.moreFeatures,
     //   items: [
     //     {
     //       icon: 'link-outline',
-    //       label: isZh ? '帳號綁定' : 'Linked Accounts',
+    //       label: t.auth_linkedAccounts,
     //       action: () => router.push('/account' as any),
     //       hasArrow: true,
     //       iconBg: '#EEF2FF',
@@ -379,7 +378,7 @@ export function SettingsScreen() {
     //     },
     //     {
     //       icon: 'hand-left-outline',
-    //       label: isZh ? '社群貢獻' : 'Contributions',
+    //       label: t.contributions,
     //       action: () => router.push('/contribution' as any),
     //       hasArrow: true,
     //       iconBg: '#F0FDF4',
@@ -388,11 +387,11 @@ export function SettingsScreen() {
     //   ],
     // },
     {
-      title: isZh ? '關於' : 'About',
+      title: t.settings_about,
       items: [
         {
           icon: 'shield-checkmark-outline',
-          label: isZh ? '隱私政策' : 'Privacy Policy',
+          label: t.settings_privacyPolicy,
           action: () => Linking.openURL('https://mibu-travel.com/privacy'),
           hasArrow: true,
           iconBg: MibuBrand.highlight,
@@ -400,7 +399,7 @@ export function SettingsScreen() {
         },
         {
           icon: 'document-text-outline',
-          label: isZh ? '服務條款' : 'Terms of Service',
+          label: t.settings_termsOfService,
           action: () => Linking.openURL('https://mibu-travel.com/terms'),
           hasArrow: true,
           iconBg: MibuBrand.highlight,
@@ -408,7 +407,7 @@ export function SettingsScreen() {
         },
         {
           icon: 'help-circle-outline',
-          label: isZh ? '幫助中心' : 'Help Center',
+          label: t.settings_helpCenter,
           action: () => Linking.openURL('https://mibu-travel.com/support'),
           hasArrow: true,
           iconBg: MibuBrand.highlight,
@@ -419,11 +418,11 @@ export function SettingsScreen() {
   ] : [
     // ===== 未登入狀態 =====
     {
-      title: isZh ? '設定' : 'Settings',
+      title: t.settings_title,
       items: [
         {
           icon: 'globe-outline',
-          label: isZh ? '語言設定' : 'Language',
+          label: t.settings_language,
           action: () => setShowLanguageDropdown(true),
           value: currentLang.label,
           hasArrow: true,
@@ -433,11 +432,11 @@ export function SettingsScreen() {
       ],
     },
     {
-      title: isZh ? '關於' : 'About',
+      title: t.settings_about,
       items: [
         {
           icon: 'shield-checkmark-outline',
-          label: isZh ? '隱私政策' : 'Privacy Policy',
+          label: t.settings_privacyPolicy,
           action: () => Linking.openURL('https://mibu-travel.com/privacy'),
           hasArrow: true,
           iconBg: MibuBrand.highlight,
@@ -445,7 +444,7 @@ export function SettingsScreen() {
         },
         {
           icon: 'document-text-outline',
-          label: isZh ? '服務條款' : 'Terms of Service',
+          label: t.settings_termsOfService,
           action: () => Linking.openURL('https://mibu-travel.com/terms'),
           hasArrow: true,
           iconBg: MibuBrand.highlight,
@@ -453,7 +452,7 @@ export function SettingsScreen() {
         },
         {
           icon: 'help-circle-outline',
-          label: isZh ? '幫助中心' : 'Help Center',
+          label: t.settings_helpCenter,
           action: () => Linking.openURL('https://mibu-travel.com/support'),
           hasArrow: true,
           iconBg: MibuBrand.highlight,
@@ -529,7 +528,7 @@ export function SettingsScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* ========== 頁面標題 ========== */}
       <View style={styles.header}>
-        <Text style={styles.title}>{isZh ? '設定' : 'Settings'}</Text>
+        <Text style={styles.title}>{t.settings_title}</Text>
       </View>
 
       {/* ========== 設定群組列表 ========== */}
@@ -547,7 +546,7 @@ export function SettingsScreen() {
       {/* ========== 管理員專區（非超級管理員）========== */}
       {state.user?.role === 'admin' && !state.user?.isSuperAdmin && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '管理員' : 'Admin'}</Text>
+          <Text style={styles.sectionTitle}>{t.settings_admin}</Text>
           <View style={styles.card}>
             <TouchableOpacity
               style={styles.settingItem}
@@ -557,7 +556,7 @@ export function SettingsScreen() {
                 <Ionicons name="ban-outline" size={20} color={MibuBrand.brown} />
               </View>
               <Text style={styles.itemLabel}>
-                {isZh ? '全域排除管理' : 'Global Exclusions'}
+                {t.settings_globalExclusions}
               </Text>
               <Ionicons name="chevron-forward" size={20} color={UIColors.textSecondary} />
             </TouchableOpacity>
@@ -568,7 +567,7 @@ export function SettingsScreen() {
       {/* ========== 帳號管理（已登入）========== */}
       {state.isAuthenticated && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '帳號管理' : 'Account Management'}</Text>
+          <Text style={styles.sectionTitle}>{t.settings_accountManagement}</Text>
           <View style={styles.card}>
             {/* [HIDDEN] 送審隱藏 #8 合併帳號 */}
             {/* <TouchableOpacity
@@ -578,7 +577,7 @@ export function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: '#EEF2FF' }]}>
                 <Ionicons name="git-merge-outline" size={20} color="#6366f1" />
               </View>
-              <Text style={styles.itemLabel}>{isZh ? '合併帳號' : 'Merge Accounts'}</Text>
+              <Text style={styles.itemLabel}>{t.settings_mergeAccounts}</Text>
               <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
             </TouchableOpacity> */}
 
@@ -590,7 +589,7 @@ export function SettingsScreen() {
               <View style={[styles.iconContainer, { backgroundColor: SemanticColors.warningLight }]}>
                 <Ionicons name="log-out-outline" size={20} color={SemanticColors.warningDark} />
               </View>
-              <Text style={styles.itemLabel}>{isZh ? '登出' : 'Logout'}</Text>
+              <Text style={styles.itemLabel}>{t.settings_logout}</Text>
             </TouchableOpacity>
 
             {/* 刪除帳號 */}
@@ -602,7 +601,7 @@ export function SettingsScreen() {
                 <Ionicons name="trash-outline" size={20} color={SemanticColors.errorDark} />
               </View>
               <Text style={[styles.itemLabel, { color: SemanticColors.errorDark }]}>
-                {isZh ? '刪除帳號' : 'Delete Account'}
+                {t.settings_deleteAccount}
               </Text>
             </TouchableOpacity>
           </View>
@@ -612,7 +611,7 @@ export function SettingsScreen() {
       {/* ========== 登入按鈕（未登入）========== */}
       {!state.isAuthenticated && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{isZh ? '帳號' : 'Account'}</Text>
+          <Text style={styles.sectionTitle}>{t.settings_account}</Text>
           <TouchableOpacity style={styles.loginButton} onPress={() => setShowAuthModal(true)}>
             <Ionicons name="log-in-outline" size={20} color={UIColors.white} />
             <Text style={styles.loginButtonText}>{t.login}</Text>
@@ -649,7 +648,7 @@ export function SettingsScreen() {
         >
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {isZh ? '選擇語言' : 'Select Language'}
+              {t.settings_selectLanguage}
             </Text>
 
             {/* 語言選項列表 */}
@@ -698,12 +697,10 @@ export function SettingsScreen() {
                   <Ionicons name="warning-outline" size={48} color={SemanticColors.warningDark} />
                 </View>
                 <Text style={styles.mergeTitle}>
-                  {isZh ? '合併帳號' : 'Merge Accounts'}
+                  {t.settings_mergeAccounts}
                 </Text>
                 <Text style={styles.mergeDescription}>
-                  {isZh
-                    ? '此功能可將另一個帳號的資料（圖鑑、行程、成就等）合併到目前的帳號。\n\n⚠️ 合併後，副帳號將無法再登入。'
-                    : 'This feature merges data (collections, itineraries, achievements, etc.) from another account into your current account.\n\n⚠️ After merging, the secondary account will be disabled.'}
+                  {t.settings_mergeAccountsDesc}
                 </Text>
                 <View style={styles.mergeButtonRow}>
                   <TouchableOpacity
@@ -711,7 +708,7 @@ export function SettingsScreen() {
                     onPress={handleCloseMergeModal}
                   >
                     <Text style={styles.mergeButtonCancelText}>
-                      {isZh ? '取消' : 'Cancel'}
+                      {t.cancel}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -719,7 +716,7 @@ export function SettingsScreen() {
                     onPress={handleMergeConfirmWarning}
                   >
                     <Text style={styles.mergeButtonConfirmText}>
-                      {isZh ? '繼續' : 'Continue'}
+                      {t.settings_continue}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -741,12 +738,10 @@ export function SettingsScreen() {
                   <Ionicons name="person-add-outline" size={48} color={MibuBrand.brown} />
                 </View>
                 <Text style={styles.mergeTitle}>
-                  {isZh ? '登入副帳號' : 'Login Secondary Account'}
+                  {t.settings_loginSecondary}
                 </Text>
                 <Text style={styles.mergeDescription}>
-                  {isZh
-                    ? '請使用副帳號的登入方式進行驗證，以確認您擁有該帳號的存取權限。'
-                    : 'Please login with the secondary account to verify your ownership.'}
+                  {t.settings_loginSecondaryDesc}
                 </Text>
 
                 {/* 內嵌登入表單 */}
@@ -755,7 +750,7 @@ export function SettingsScreen() {
                   onClose={handleCloseMergeModal}
                   embedded={true}
                   onLoginSuccess={handleSecondaryLoginSuccess}
-                  title={isZh ? '登入要合併的帳號' : 'Login account to merge'}
+                  title={t.settings_loginToMerge}
                 />
               </>
             )}
@@ -765,10 +760,10 @@ export function SettingsScreen() {
               <>
                 <ActivityIndicator size="large" color={MibuBrand.brown} />
                 <Text style={[styles.mergeTitle, { marginTop: 20 }]}>
-                  {isZh ? '合併中...' : 'Merging...'}
+                  {t.settings_merging}
                 </Text>
                 <Text style={styles.mergeDescription}>
-                  {isZh ? '請稍候，正在合併帳號資料' : 'Please wait while we merge your accounts'}
+                  {t.settings_mergingDesc}
                 </Text>
               </>
             )}
@@ -784,52 +779,50 @@ export function SettingsScreen() {
                   />
                 </View>
                 <Text style={styles.mergeTitle}>
-                  {mergeResult.success
-                    ? (isZh ? '合併成功！' : 'Merge Successful!')
-                    : (isZh ? '合併失敗' : 'Merge Failed')}
+                  {mergeResult.success ? t.settings_mergeSuccess : t.settings_mergeFailed}
                 </Text>
 
                 {/* 成功：顯示合併摘要 */}
                 {mergeResult.success && mergeResult.summary ? (
                   <View style={styles.mergeSummary}>
                     <Text style={styles.mergeSummaryTitle}>
-                      {isZh ? '已合併的資料：' : 'Merged data:'}
+                      {t.settings_mergedData}
                     </Text>
                     {mergeResult.summary.collections > 0 && (
                       <Text style={styles.mergeSummaryItem}>
-                        • {isZh ? '圖鑑' : 'Collections'}: {mergeResult.summary.collections}
+                        • {t.settings_collections}: {mergeResult.summary.collections}
                       </Text>
                     )}
                     {mergeResult.summary.itineraries > 0 && (
                       <Text style={styles.mergeSummaryItem}>
-                        • {isZh ? '行程' : 'Itineraries'}: {mergeResult.summary.itineraries}
+                        • {t.settings_itineraries}: {mergeResult.summary.itineraries}
                       </Text>
                     )}
                     {mergeResult.summary.favorites > 0 && (
                       <Text style={styles.mergeSummaryItem}>
-                        • {isZh ? '收藏' : 'Favorites'}: {mergeResult.summary.favorites}
+                        • {t.settings_favorites}: {mergeResult.summary.favorites}
                       </Text>
                     )}
                     {mergeResult.summary.achievements > 0 && (
                       <Text style={styles.mergeSummaryItem}>
-                        • {isZh ? '成就' : 'Achievements'}: {mergeResult.summary.achievements}
+                        • {t.settings_achievements}: {mergeResult.summary.achievements}
                       </Text>
                     )}
                     {mergeResult.summary.expMerged > 0 && (
                       <Text style={styles.mergeSummaryItem}>
-                        • {isZh ? '金幣' : 'Coins'}: +{mergeResult.summary.expMerged}
+                        • {t.settings_coins}: +{mergeResult.summary.expMerged}
                       </Text>
                     )}
                     {mergeResult.summary.balanceMerged > 0 && (
                       <Text style={styles.mergeSummaryItem}>
-                        • {isZh ? '餘額' : 'Balance'}: +{mergeResult.summary.balanceMerged}
+                        • {t.settings_balance}: +{mergeResult.summary.balanceMerged}
                       </Text>
                     )}
                   </View>
                 ) : (
                   // 失敗：顯示錯誤訊息
                   <Text style={styles.mergeDescription}>
-                    {mergeResult.message || (isZh ? '發生未知錯誤' : 'An unknown error occurred')}
+                    {mergeResult.message || t.settings_unknownError}
                   </Text>
                 )}
 
@@ -839,7 +832,7 @@ export function SettingsScreen() {
                   onPress={handleCloseMergeModal}
                 >
                   <Text style={styles.mergeButtonConfirmText}>
-                    {isZh ? '完成' : 'Done'}
+                    {t.done}
                   </Text>
                 </TouchableOpacity>
               </>

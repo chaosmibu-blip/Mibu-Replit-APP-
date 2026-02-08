@@ -28,23 +28,23 @@ import { useApp } from '../../src/context/AppContext';
 import { eventApi } from '../../src/services/api';
 import { Event } from '../../src/types';
 import { MibuBrand } from '../../constants/Colors';
+import { LOCALE_MAP } from '../../src/utils/i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const EVENT_TYPE_CONFIG: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string; label: { zh: string; en: string } }> = {
-  announcement: { icon: 'megaphone', color: MibuBrand.brown, label: { zh: '公告', en: 'Announcement' } },
-  festival: { icon: 'calendar', color: '#dc2626', label: { zh: '節慶活動', en: 'Festival' } },
-  limited: { icon: 'time', color: '#7c3aed', label: { zh: '限時活動', en: 'Limited Event' } },
+/** 活動類型設定：icon 與顏色；label 改用 t.event_* 翻譯 key */
+const EVENT_TYPE_CONFIG: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string; labelKey: string }> = {
+  announcement: { icon: 'megaphone', color: MibuBrand.brown, labelKey: 'event_announcement' },
+  festival: { icon: 'calendar', color: '#dc2626', labelKey: 'event_festival' },
+  limited: { icon: 'time', color: '#7c3aed', labelKey: 'event_limited' },
 };
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { state } = useApp();
+  const { state, t } = useApp();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const isZh = state.language === 'zh-TW';
 
   useEffect(() => {
     if (id) {
@@ -86,7 +86,7 @@ export default function EventDetailScreen() {
 
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(state.language === 'zh-TW' ? 'zh-TW' : 'en-US', {
+    return date.toLocaleDateString(LOCALE_MAP[state.language], {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -116,11 +116,11 @@ export default function EventDetailScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <Ionicons name="alert-circle-outline" size={64} color={MibuBrand.copper} />
         <Text style={styles.errorText}>
-          {isZh ? '找不到此活動' : 'Event not found'}
+          {t.common_eventNotFound}
         </Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>
-            {isZh ? '返回' : 'Go Back'}
+            {t.common_goBack}
           </Text>
         </TouchableOpacity>
       </View>
@@ -157,7 +157,7 @@ export default function EventDetailScreen() {
           <View style={[styles.typeBadge, { backgroundColor: typeConfig.color }]}>
             <Ionicons name={typeConfig.icon} size={14} color="#ffffff" />
             <Text style={styles.typeBadgeText}>
-              {isZh ? typeConfig.label.zh : typeConfig.label.en}
+              {t[typeConfig.labelKey]}
             </Text>
           </View>
         )}
@@ -187,7 +187,7 @@ export default function EventDetailScreen() {
         {/* Description */}
         <View style={styles.descriptionSection}>
           <Text style={styles.sectionLabel}>
-            {isZh ? '活動說明' : 'Description'}
+            {t.common_description}
           </Text>
           <Text style={styles.descriptionText}>{getLocalizedDesc()}</Text>
         </View>
@@ -197,7 +197,7 @@ export default function EventDetailScreen() {
           <TouchableOpacity style={styles.externalLinkButton} onPress={handleExternalLink}>
             <Ionicons name="open-outline" size={20} color="#ffffff" />
             <Text style={styles.externalLinkText}>
-              {isZh ? '查看更多' : 'Learn More'}
+              {t.common_learnMore}
             </Text>
           </TouchableOpacity>
         )}

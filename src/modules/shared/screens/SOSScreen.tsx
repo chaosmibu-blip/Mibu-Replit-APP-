@@ -40,23 +40,13 @@ import { apiService } from '../../../services/api';
 import { SosAlert, SosAlertStatus } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
-
-// ============ 常數定義 ============
-
-/** SOS 狀態顏色對應 */
-const STATUS_COLORS: Record<SosAlertStatus, { bg: string; text: string; label: string; labelEn: string }> = {
-  pending: { bg: SemanticColors.warningLight, text: SemanticColors.warningDark, label: '等待處理', labelEn: 'Pending' },
-  acknowledged: { bg: '#dbeafe', text: '#2563eb', label: '已確認', labelEn: 'Acknowledged' },
-  resolved: { bg: SemanticColors.successLight, text: SemanticColors.successDark, label: '已解決', labelEn: 'Resolved' },
-  cancelled: { bg: '#f1f5f9', text: UIColors.textSecondary, label: '已取消', labelEn: 'Cancelled' },
-};
+import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 元件本體 ============
 
 export function SOSScreen() {
   const { t, state } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   // ============ 狀態管理 ============
 
@@ -72,6 +62,14 @@ export function SOSScreen() {
   // 長按動畫相關
   const progressAnim = useRef(new Animated.Value(0)).current; // 進度條動畫值
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // 長按計時器
+
+  /** SOS 狀態顏色對應（使用 t 翻譯） */
+  const STATUS_COLORS: Record<SosAlertStatus, { bg: string; text: string; label: string }> = {
+    pending: { bg: SemanticColors.warningLight, text: SemanticColors.warningDark, label: t.sos_statusPending },
+    acknowledged: { bg: '#dbeafe', text: '#2563eb', label: t.sos_statusAcknowledged },
+    resolved: { bg: SemanticColors.successLight, text: SemanticColors.successDark, label: t.sos_statusResolved },
+    cancelled: { bg: '#f1f5f9', text: UIColors.textSecondary, label: t.sos_statusCancelled },
+  };
 
   // ============ 資料載入 ============
 
@@ -238,8 +236,8 @@ export function SOSScreen() {
 
       if (response.success) {
         Alert.alert(
-          isZh ? '求救訊號已發送' : 'SOS Alert Sent',
-          response.message || (isZh ? '我們會盡快聯繫您' : 'We will contact you as soon as possible'),
+          t.sos_alertSent,
+          response.message || t.sos_willContactYou,
           [{ text: 'OK', onPress: fetchData }]
         );
       }
@@ -262,8 +260,8 @@ export function SOSScreen() {
       }
 
       Alert.alert(
-        isZh ? '發送失敗' : 'Failed to Send',
-        isZh ? '請稍後再試' : 'Please try again later'
+        t.sos_sendFailed,
+        t.sos_tryAgainLater
       );
     } finally {
       setSending(false);
@@ -275,12 +273,12 @@ export function SOSScreen() {
    */
   const handleCancelAlert = async (alertId: number) => {
     Alert.alert(
-      isZh ? '確認取消' : 'Confirm Cancel',
-      isZh ? '確定要取消這個求救訊號嗎？' : 'Are you sure you want to cancel this alert?',
+      t.sos_confirmCancel,
+      t.sos_confirmCancelDesc,
       [
-        { text: isZh ? '否' : 'No', style: 'cancel' },
+        { text: t.sos_no, style: 'cancel' },
         {
-          text: isZh ? '是' : 'Yes',
+          text: t.sos_yes,
           style: 'destructive',
           onPress: async () => {
             try {
@@ -291,8 +289,8 @@ export function SOSScreen() {
               fetchData();
             } catch (error) {
               Alert.alert(
-                isZh ? '錯誤' : 'Error',
-                isZh ? '取消失敗' : 'Failed to cancel'
+                t.common_error,
+                t.sos_cancelFailed
               );
             }
           },
@@ -304,11 +302,11 @@ export function SOSScreen() {
   // ============ 輔助函數 ============
 
   /**
-   * 格式化日期顯示
+   * 格式化日期顯示（使用 LOCALE_MAP 取得正確 locale）
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString(isZh ? 'zh-TW' : 'en-US', {
+    return date.toLocaleString(LOCALE_MAP[state.language], {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -345,7 +343,7 @@ export function SOSScreen() {
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Ionicons name="shield-checkmark" size={22} color={MibuBrand.brownDark} />
-          <Text style={styles.headerTitle}>{isZh ? '安全中心' : 'Safety Center'}</Text>
+          <Text style={styles.headerTitle}>{t.safetyCenter}</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -358,17 +356,17 @@ export function SOSScreen() {
               <Ionicons name="lock-closed" size={48} color={UIColors.textSecondary} />
             </View>
             <Text style={styles.lockedTitle}>
-              {isZh ? 'SOS 功能已鎖定' : 'SOS Feature Locked'}
+              {t.sos_featureLocked}
             </Text>
             <Text style={styles.lockedText}>
-              {eligibilityReason || (isZh ? '需購買旅程服務才能使用安全中心功能' : 'Purchase travel service to unlock Safety Center')}
+              {eligibilityReason || t.sos_requirePurchase}
             </Text>
             <TouchableOpacity
               style={styles.purchaseButton}
               onPress={() => router.push('/purchase-service' as any)}
             >
               <Text style={styles.purchaseButtonText}>
-                {isZh ? '購買服務' : 'Purchase Service'}
+                {t.sos_purchaseService}
               </Text>
             </TouchableOpacity>
           </View>
@@ -385,11 +383,9 @@ export function SOSScreen() {
 
             {/* ===== 緊急求救區塊 ===== */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{isZh ? '緊急求救' : 'Emergency SOS'}</Text>
+              <Text style={styles.sectionTitle}>{t.sos_emergencySOS}</Text>
               <Text style={styles.sectionDescription}>
-                {isZh
-                  ? '長按下方按鈕 3 秒發送求救訊號，我們會立即通知您的旅程策畫師'
-                  : 'Press and hold the button for 3 seconds to send an SOS alert'}
+                {t.sos_holdToSend}
               </Text>
 
               {/* SOS 按鈕 */}
@@ -415,7 +411,7 @@ export function SOSScreen() {
                       <Ionicons name="warning" size={40} color={UIColors.white} />
                       <Text style={styles.sosButtonText}>SOS</Text>
                       <Text style={styles.sosButtonHint}>
-                        {isZh ? '長按 3 秒' : 'Hold 3 sec'}
+                        {t.sos_hold3sec}
                       </Text>
                     </>
                   )}
@@ -426,7 +422,7 @@ export function SOSScreen() {
             {/* ===== 求救記錄區塊 ===== */}
             {alerts.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{isZh ? '求救記錄' : 'Alert History'}</Text>
+                <Text style={styles.sectionTitle}>{t.sos_alertHistory}</Text>
                 {alerts.map(alert => {
                   const statusInfo = STATUS_COLORS[alert.status];
                   return (
@@ -435,7 +431,7 @@ export function SOSScreen() {
                       <View style={styles.alertHeader}>
                         <View style={[styles.statusBadge, { backgroundColor: statusInfo.bg }]}>
                           <Text style={[styles.statusText, { color: statusInfo.text }]}>
-                            {isZh ? statusInfo.label : statusInfo.labelEn}
+                            {statusInfo.label}
                           </Text>
                         </View>
                         <Text style={styles.alertDate}>
@@ -458,7 +454,7 @@ export function SOSScreen() {
                           onPress={() => handleCancelAlert(alert.id)}
                         >
                           <Text style={styles.cancelAlertButtonText}>
-                            {isZh ? '取消求救' : 'Cancel Alert'}
+                            {t.sos_cancelAlert}
                           </Text>
                         </TouchableOpacity>
                       )}

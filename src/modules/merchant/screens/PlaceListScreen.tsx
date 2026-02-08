@@ -25,15 +25,15 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
+import { tFormat } from '../../../utils/i18n';
 import { MerchantPlace } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function PlaceListScreen() {
   // ============ Hooks ============
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   // ============ 狀態變數 ============
   // places: 店家列表
@@ -42,20 +42,6 @@ export function PlaceListScreen() {
   const [loading, setLoading] = useState(true);
   // refreshing: 下拉刷新狀態
   const [refreshing, setRefreshing] = useState(false);
-
-  // ============ 多語系翻譯 ============
-  const t = {
-    title: isZh ? '我的店家' : 'My Places',
-    subtitle: isZh ? '管理您認領的店家' : 'Manage your claimed places',
-    noPlaces: isZh ? '尚未認領任何店家' : 'No places claimed yet',
-    noPlacesHint: isZh ? '開始認領或新增您的店家' : 'Start claiming or adding your places',
-    claimPlace: isZh ? '認領現有店家' : 'Claim Existing Place',
-    addPlace: isZh ? '新增自有店家' : 'Add New Place',
-    verified: isZh ? '已驗證' : 'Verified',
-    pending: isZh ? '待驗證' : 'Pending',
-    loading: isZh ? '載入中...' : 'Loading...',
-    placesCount: (n: number) => isZh ? `共 ${n} 間店家` : `${n} place${n !== 1 ? 's' : ''}`,
-  };
 
   // ============ 資料載入函數 ============
 
@@ -100,6 +86,7 @@ export function PlaceListScreen() {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{t.loading}</Text>
+
       </View>
     );
   }
@@ -120,8 +107,8 @@ export function PlaceListScreen() {
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         <View style={styles.headerText}>
-          <Text style={styles.title}>{t.title}</Text>
-          <Text style={styles.subtitle}>{t.subtitle}</Text>
+          <Text style={styles.title}>{t.merchant_myPlaces}</Text>
+          <Text style={styles.subtitle}>{t.merchant_myPlacesSubtitle}</Text>
         </View>
       </View>
 
@@ -134,7 +121,7 @@ export function PlaceListScreen() {
           accessibilityLabel="認領現有店家"
         >
           <Ionicons name="search" size={20} color={MibuBrand.brown} />
-          <Text style={styles.actionButtonText}>{t.claimPlace}</Text>
+          <Text style={styles.actionButtonText}>{t.merchant_claimExisting}</Text>
         </TouchableOpacity>
         {/* 新增自有店家按鈕 */}
         <TouchableOpacity
@@ -143,7 +130,7 @@ export function PlaceListScreen() {
           accessibilityLabel="新增自有店家"
         >
           <Ionicons name="add" size={20} color={UIColors.white} />
-          <Text style={[styles.actionButtonText, styles.actionButtonTextPrimary]}>{t.addPlace}</Text>
+          <Text style={[styles.actionButtonText, styles.actionButtonTextPrimary]}>{t.merchant_addNewPlace}</Text>
         </TouchableOpacity>
       </View>
 
@@ -154,14 +141,14 @@ export function PlaceListScreen() {
           <View style={styles.emptyIcon}>
             <Ionicons name="storefront-outline" size={48} color={UIColors.textSecondary} />
           </View>
-          <Text style={styles.emptyTitle}>{t.noPlaces}</Text>
-          <Text style={styles.emptySubtitle}>{t.noPlacesHint}</Text>
+          <Text style={styles.emptyTitle}>{t.merchant_noPlaces}</Text>
+          <Text style={styles.emptySubtitle}>{t.merchant_noPlacesHint}</Text>
         </View>
       ) : (
         // 店家卡片列表
         <>
           {/* 店家數量統計 */}
-          <Text style={styles.countText}>{t.placesCount(places.length)}</Text>
+          <Text style={styles.countText}>{tFormat(t.merchant_placesCount, { n: places.length })}</Text>
           <View style={styles.placesList}>
             {places.map((place) => (
               <TouchableOpacity
@@ -201,7 +188,7 @@ export function PlaceListScreen() {
                         place.isVerified ? styles.verifiedText : styles.pendingText,
                       ]}
                     >
-                      {place.isVerified ? t.verified : t.pending}
+                      {place.isVerified ? t.common_verified : t.common_pending}
                     </Text>
                   </View>
                   {/* 右箭頭 */}

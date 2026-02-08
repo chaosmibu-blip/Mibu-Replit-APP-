@@ -30,7 +30,7 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 // ============ 主元件 ============
 export function MerchantVerifyScreen() {
   // ============ Hooks ============
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -43,25 +43,6 @@ export function MerchantVerifyScreen() {
   // result: 驗證結果
   const [result, setResult] = useState<{ valid: boolean; message?: string } | null>(null);
 
-  // isZh: 判斷是否為中文語系
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
-  const translations = {
-    title: isZh ? '驗證核銷碼' : 'Verify Code',
-    merchantIdLabel: isZh ? '商家 ID' : 'Merchant ID',
-    merchantIdPlaceholder: isZh ? '輸入商家 ID' : 'Enter Merchant ID',
-    codeLabel: isZh ? '核銷碼' : 'Verification Code',
-    codePlaceholder: isZh ? '輸入核銷碼' : 'Enter code',
-    verify: isZh ? '驗證' : 'Verify',
-    verifying: isZh ? '驗證中...' : 'Verifying...',
-    valid: isZh ? '驗證成功' : 'Valid',
-    invalid: isZh ? '驗證失敗' : 'Invalid',
-    errorEmpty: isZh ? '請輸入商家 ID 和核銷碼' : 'Please enter merchant ID and code',
-    back: isZh ? '返回' : 'Back',
-    tryAgain: isZh ? '再試一次' : 'Try Again',
-  };
-
   // ============ 事件處理函數 ============
 
   /**
@@ -71,14 +52,14 @@ export function MerchantVerifyScreen() {
   const handleVerify = async () => {
     // 驗證必填欄位
     if (!code.trim() || !merchantId.trim()) {
-      Alert.alert('', translations.errorEmpty);
+      Alert.alert('', t.merchant_errorEmpty);
       return;
     }
 
     // 驗證商家 ID 為數字
     const merchantIdNum = parseInt(merchantId.trim(), 10);
     if (isNaN(merchantIdNum)) {
-      Alert.alert('', isZh ? '商家 ID 必須是數字' : 'Merchant ID must be a number');
+      Alert.alert('', t.merchant_merchantIdMustBeNumber);
       return;
     }
 
@@ -92,12 +73,12 @@ export function MerchantVerifyScreen() {
       setResult({
         valid: response.valid,
         message: response.valid
-          ? (isZh ? '核銷碼有效' : 'Code is valid')
-          : (response.error || (isZh ? '核銷碼無效' : 'Code is invalid'))
+          ? t.merchant_codeValid
+          : (response.error || t.merchant_codeInvalid)
       });
     } catch (error) {
       console.error('Verify failed:', error);
-      setResult({ valid: false, message: isZh ? '驗證失敗' : 'Verification failed' });
+      setResult({ valid: false, message: t.merchant_verifyFailed });
     } finally {
       setLoading(false);
     }
@@ -125,7 +106,7 @@ export function MerchantVerifyScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
-        <Text style={styles.title}>{translations.title}</Text>
+        <Text style={styles.title}>{t.merchant_verifyTitle}</Text>
       </View>
 
       {/* ============ 主要內容區 ============ */}
@@ -144,7 +125,7 @@ export function MerchantVerifyScreen() {
             </View>
             {/* 結果標題 */}
             <Text style={styles.resultTitle}>
-              {result.valid ? translations.valid : translations.invalid}
+              {result.valid ? t.merchant_verifyValid : t.merchant_verifyInvalid}
             </Text>
             {/* 結果訊息 */}
             {result.message && (
@@ -152,7 +133,7 @@ export function MerchantVerifyScreen() {
             )}
             {/* 重試按鈕 */}
             <TouchableOpacity style={styles.resetButton} onPress={handleReset} accessibilityLabel="再試一次">
-              <Text style={styles.resetButtonText}>{translations.tryAgain}</Text>
+              <Text style={styles.resetButtonText}>{t.merchant_tryAgain}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -160,12 +141,12 @@ export function MerchantVerifyScreen() {
           <View style={styles.formCard}>
             {/* 商家 ID 輸入 */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{translations.merchantIdLabel}</Text>
+              <Text style={styles.inputLabel}>{t.merchant_merchantIdLabel}</Text>
               <TextInput
                 style={styles.input}
                 value={merchantId}
                 onChangeText={setMerchantId}
-                placeholder={translations.merchantIdPlaceholder}
+                placeholder={t.merchant_merchantIdPlaceholder}
                 placeholderTextColor={UIColors.textSecondary}
                 keyboardType="number-pad"
               />
@@ -173,12 +154,12 @@ export function MerchantVerifyScreen() {
 
             {/* 核銷碼輸入 */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{translations.codeLabel}</Text>
+              <Text style={styles.inputLabel}>{t.merchant_codeLabel}</Text>
               <TextInput
                 style={[styles.input, styles.codeInput]}
                 value={code}
                 onChangeText={(text: string) => setCode(text.toUpperCase())}
-                placeholder={translations.codePlaceholder}
+                placeholder={t.merchant_codePlaceholder}
                 placeholderTextColor={UIColors.textSecondary}
                 autoCapitalize="characters"
                 maxLength={6}
@@ -197,7 +178,7 @@ export function MerchantVerifyScreen() {
               ) : (
                 <>
                   <Ionicons name="shield-checkmark" size={20} color={UIColors.white} />
-                  <Text style={styles.verifyButtonText}>{translations.verify}</Text>
+                  <Text style={styles.verifyButtonText}>{t.merchant_verify}</Text>
                 </>
               )}
             </TouchableOpacity>

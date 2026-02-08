@@ -29,7 +29,7 @@ import { UIColors } from '../../../../constants/Colors';
 
 // ============ 元件主體 ============
 export function SpecialistProfileScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -39,26 +39,6 @@ export function SpecialistProfileScreen() {
   const [loading, setLoading] = useState(true);
   // updating: 是否正在更新可接單狀態
   const [updating, setUpdating] = useState(false);
-
-  // 判斷目前語言是否為繁體中文
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
-  const translations = {
-    title: isZh ? '專員資料' : 'Specialist Profile',
-    name: isZh ? '姓名' : 'Name',
-    region: isZh ? '服務地區' : 'Service Region',
-    status: isZh ? '帳號狀態' : 'Account Status',
-    online: isZh ? '上線狀態' : 'Online Status',
-    available: isZh ? '可接單' : 'Available',
-    unavailable: isZh ? '暫停接單' : 'Unavailable',
-    onlineYes: isZh ? '上線中' : 'Online',
-    onlineNo: isZh ? '離線' : 'Offline',
-    currentTravelers: isZh ? '目前服務中' : 'Currently Serving',
-    maxTravelers: isZh ? '最大服務人數' : 'Max Travelers',
-    loading: isZh ? '載入中...' : 'Loading...',
-    people: isZh ? '人' : '',
-  };
 
   // 元件載入時取得專員資訊
   useEffect(() => {
@@ -111,7 +91,7 @@ export function SpecialistProfileScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#6366f1" />
-        <Text style={styles.loadingText}>{translations.loading}</Text>
+        <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
   }
@@ -125,7 +105,7 @@ export function SpecialistProfileScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.title}>{translations.title}</Text>
+        <Text style={styles.title}>{t.specialist_profile}</Text>
       </View>
 
       {/* ============ 頭像與名稱區 ============ */}
@@ -149,7 +129,7 @@ export function SpecialistProfileScreen() {
             styles.onlineText,
             specialist?.isOnline ? styles.onlineTextActive : styles.onlineTextInactive
           ]}>
-            {specialist?.isOnline ? translations.onlineYes : translations.onlineNo}
+            {specialist?.isOnline ? t.specialist_online : t.specialist_offline}
           </Text>
         </View>
       </View>
@@ -168,7 +148,7 @@ export function SpecialistProfileScreen() {
           {/* 狀態文字 */}
           <View style={styles.availabilityContent}>
             <Text style={styles.availabilityLabel}>
-              {specialist?.isAvailable ? translations.available : translations.unavailable}
+              {specialist?.isAvailable ? t.specialist_available : t.specialist_unavailable}
             </Text>
           </View>
         </View>
@@ -193,7 +173,7 @@ export function SpecialistProfileScreen() {
             <Ionicons name="location-outline" size={20} color="#6366f1" />
           </View>
           <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>{translations.region}</Text>
+            <Text style={styles.infoLabel}>{t.specialist_serviceRegion}</Text>
             <Text style={styles.infoValue}>
               {specialist?.serviceRegion || '-'}
             </Text>
@@ -208,9 +188,9 @@ export function SpecialistProfileScreen() {
             <Ionicons name="people-outline" size={20} color="#6366f1" />
           </View>
           <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>{translations.currentTravelers}</Text>
+            <Text style={styles.infoLabel}>{t.specialist_currentlyServing}</Text>
             <Text style={styles.infoValue}>
-              {specialist?.currentTravelers ?? 0} {translations.people}
+              {specialist?.currentTravelers ?? 0} {t.specialist_people}
             </Text>
           </View>
         </View>
@@ -223,9 +203,9 @@ export function SpecialistProfileScreen() {
             <Ionicons name="person-add-outline" size={20} color="#6366f1" />
           </View>
           <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>{translations.maxTravelers}</Text>
+            <Text style={styles.infoLabel}>{t.specialist_maxTravelers}</Text>
             <Text style={styles.infoValue}>
-              {specialist?.maxTravelers ?? 5} {translations.people}
+              {specialist?.maxTravelers ?? 5} {t.specialist_people}
             </Text>
           </View>
         </View>

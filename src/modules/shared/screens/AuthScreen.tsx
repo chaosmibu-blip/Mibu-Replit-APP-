@@ -50,17 +50,17 @@ type AuthMode = 'login' | 'register';
 
 // ============ 常數定義 ============
 
-/** 角色選項設定 */
-const ROLE_OPTIONS: { value: UserRole; labelZh: string; labelEn: string; icon: string }[] = [
-  { value: 'traveler', labelZh: '旅客', labelEn: 'Traveler', icon: 'airplane-outline' },
-  { value: 'merchant', labelZh: '商家', labelEn: 'Merchant', icon: 'storefront-outline' },
-  { value: 'specialist', labelZh: '專員', labelEn: 'Specialist', icon: 'shield-checkmark-outline' },
+/** 角色選項設定（使用 labelKey 對應 translations key） */
+const ROLE_OPTIONS: { value: UserRole; labelKey: string; icon: string }[] = [
+  { value: 'traveler', labelKey: 'auth_roleTraveler', icon: 'airplane-outline' },
+  { value: 'merchant', labelKey: 'auth_roleMerchant', icon: 'storefront-outline' },
+  { value: 'specialist', labelKey: 'auth_roleSpecialist', icon: 'shield-checkmark-outline' },
 ];
 
 // ============ 元件本體 ============
 
 export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }: AuthScreenProps) {
-  const { setUser, state } = useApp();
+  const { setUser, t } = useApp();
 
   // ============ 狀態管理 ============
 
@@ -73,26 +73,6 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
   const [password, setPassword] = useState(''); // 密碼
   const [name, setName] = useState(''); // 姓名（註冊時使用）
   const [selectedRole, setSelectedRole] = useState<UserRole>('traveler'); // 選擇的身份
-
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
-
-  const translations = {
-    login: isZh ? '登入' : 'Sign In',
-    register: isZh ? '註冊' : 'Sign Up',
-    username: isZh ? '帳號（Email）' : 'Username (Email)',
-    password: isZh ? '密碼' : 'Password',
-    name: isZh ? '姓名' : 'Name',
-    selectRole: isZh ? '選擇身份' : 'Select Role',
-    noAccount: isZh ? '還沒有帳號？' : "Don't have an account?",
-    hasAccount: isZh ? '已有帳號？' : 'Already have an account?',
-    guestLogin: isZh ? '以訪客身份繼續' : 'Continue as Guest',
-    guestNote: isZh ? '訪客模式下，資料僅保存在本機裝置' : 'In guest mode, data is only saved locally',
-    pendingApproval: isZh ? '商家和專員帳號需管理員審核後才能使用' : 'Merchant and Specialist accounts require admin approval',
-    loginFailed: isZh ? '登入失敗，請檢查帳號密碼' : 'Login failed, please check your credentials',
-    registerFailed: isZh ? '註冊失敗，請稀後再試' : 'Registration failed, please try again',
-  };
 
   // ============ 輔助函數 ============
 
@@ -117,7 +97,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
   const handleLogin = async () => {
     // 驗證必填欄位
     if (!username.trim() || !password.trim()) {
-      setError(isZh ? '請填寫帳號和密碼' : 'Please enter username and password');
+      setError(t.auth_enterUsernamePassword);
       return;
     }
 
@@ -140,7 +120,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
       onClose();
     } catch (err) {
       console.error('Login error:', err);
-      setError(translations.loginFailed);
+      setError(t.auth_loginFailed);
     } finally {
       setLoading(false);
     }
@@ -153,7 +133,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
   const handleRegister = async () => {
     // 驗證必填欄位
     if (!username.trim() || !password.trim() || !name.trim()) {
-      setError(isZh ? '請填寫所有欄位' : 'Please fill in all fields');
+      setError(t.auth_fillAllFields);
       return;
     }
 
@@ -172,7 +152,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
       onClose();
     } catch (err) {
       console.error('Register error:', err);
-      setError(translations.registerFailed);
+      setError(t.auth_registerFailed);
     } finally {
       setLoading(false);
     }
@@ -218,7 +198,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
       {!embedded && (
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
-            {title || (mode === 'login' ? translations.login : translations.register)}
+            {title || (mode === 'login' ? t.auth_signIn : t.auth_signUp)}
           </Text>
           <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
             <Ionicons name="close" size={24} color={MibuBrand.copper} />
@@ -247,7 +227,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
           {mode === 'register' && (
             <TextInput
               style={styles.input}
-              placeholder={translations.name}
+              placeholder={t.auth_name}
               value={name}
               onChangeText={setName}
               placeholderTextColor={UIColors.textSecondary}
@@ -258,7 +238,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
           {/* ===== 帳號欄位 ===== */}
           <TextInput
             style={styles.input}
-            placeholder={translations.username}
+            placeholder={t.auth_username}
             value={username}
             onChangeText={setUsername}
             placeholderTextColor={UIColors.textSecondary}
@@ -269,7 +249,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
           {/* ===== 密碼欄位 ===== */}
           <TextInput
             style={styles.input}
-            placeholder={translations.password}
+            placeholder={t.auth_password}
             value={password}
             onChangeText={setPassword}
             placeholderTextColor={UIColors.textSecondary}
@@ -279,7 +259,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
           {/* ===== 身份選擇（僅註冊模式） ===== */}
           {mode === 'register' && (
             <>
-              <Text style={styles.roleLabel}>{translations.selectRole}</Text>
+              <Text style={styles.roleLabel}>{t.auth_selectRole}</Text>
               <View style={styles.roleGrid}>
                 {ROLE_OPTIONS.map(role => (
                   <TouchableOpacity
@@ -299,14 +279,14 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
                       styles.roleText,
                       selectedRole === role.value && styles.roleTextActive,
                     ]}>
-                      {isZh ? role.labelZh : role.labelEn}
+                      {t[role.labelKey]}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
               {/* 非旅客身份的審核提示 */}
               {selectedRole !== 'traveler' && (
-                <Text style={styles.approvalNote}>{translations.pendingApproval}</Text>
+                <Text style={styles.approvalNote}>{t.auth_pendingApproval}</Text>
               )}
             </>
           )}
@@ -321,7 +301,7 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
               <ActivityIndicator color={UIColors.white} />
             ) : (
               <Text style={styles.submitButtonText}>
-                {mode === 'login' ? translations.login : translations.register}
+                {mode === 'login' ? t.auth_signIn : t.auth_signUp}
               </Text>
             )}
           </TouchableOpacity>
@@ -335,9 +315,9 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
             }}
           >
             <Text style={styles.switchText}>
-              {mode === 'login' ? translations.noAccount : translations.hasAccount}
+              {mode === 'login' ? t.auth_noAccount : t.auth_hasAccount}
               <Text style={styles.switchTextBold}>
-                {' '}{mode === 'login' ? translations.register : translations.login}
+                {' '}{mode === 'login' ? t.auth_signUp : t.auth_signIn}
               </Text>
             </Text>
           </TouchableOpacity>
@@ -353,10 +333,10 @@ export function AuthScreen({ visible, onClose, embedded, onLoginSuccess, title }
 
               <TouchableOpacity style={styles.guestButton} onPress={handleGuestLogin}>
                 <Ionicons name="person-outline" size={20} color={MibuBrand.brown} />
-                <Text style={styles.guestButtonText}>{translations.guestLogin}</Text>
+                <Text style={styles.guestButtonText}>{t.auth_guestLogin}</Text>
               </TouchableOpacity>
 
-              <Text style={styles.note}>{translations.guestNote}</Text>
+              <Text style={styles.note}>{t.auth_guestNote}</Text>
             </>
           )}
         </View>

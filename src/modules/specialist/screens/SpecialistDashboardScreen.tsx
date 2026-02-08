@@ -29,10 +29,11 @@ import { apiService } from '../../../services/api';
 import { SpecialistInfo, ServiceRelation } from '../../../types';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
 import { MibuBrand } from '../../../../constants/Colors';
+import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 元件主體 ============
 export function SpecialistDashboardScreen() {
-  const { state, getToken, setUser } = useApp();
+  const { state, getToken, setUser, t } = useApp();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -44,23 +45,6 @@ export function SpecialistDashboardScreen() {
   const [loading, setLoading] = useState(true);
   // toggling: 是否正在切換上線狀態
   const [toggling, setToggling] = useState(false);
-
-  // 判斷目前語言是否為繁體中文
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
-  const translations = {
-    title: isZh ? '專員後台' : 'Specialist Dashboard',
-    online: isZh ? '上線中' : 'Online',
-    offline: isZh ? '離線' : 'Offline',
-    toggleOnline: isZh ? '上線狀態' : 'Online Status',
-    activeServices: isZh ? '服務中旅客' : 'Active Services',
-    noServices: isZh ? '目前無服務中旅客' : 'No active services',
-    loading: isZh ? '載入中...' : 'Loading...',
-    since: isZh ? '開始於' : 'Since',
-    region: isZh ? '地區' : 'Region',
-    logout: isZh ? '登出' : 'Logout',
-  };
 
   // ============ 事件處理函數 ============
 
@@ -129,7 +113,7 @@ export function SpecialistDashboardScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString(isZh ? 'zh-TW' : 'en-US', {
+    return date.toLocaleString(LOCALE_MAP[state.language], {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -142,7 +126,7 @@ export function SpecialistDashboardScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
-        <Text style={styles.loadingText}>{translations.loading}</Text>
+        <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
   }
@@ -153,14 +137,14 @@ export function SpecialistDashboardScreen() {
       {/* ============ 頁面標題區 ============ */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.title}>{translations.title}</Text>
+          <Text style={styles.title}>{t.specialist_dashboard}</Text>
           {/* 超級管理員才顯示角色切換器 */}
           {state.user?.isSuperAdmin && <RoleSwitcher compact />}
         </View>
         {/* 登出按鈕 */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-          <Text style={styles.logoutText}>{translations.logout}</Text>
+          <Text style={styles.logoutText}>{t.common_logout}</Text>
         </TouchableOpacity>
       </View>
 
@@ -174,7 +158,7 @@ export function SpecialistDashboardScreen() {
               specialist?.isOnline ? styles.statusOnline : styles.statusOffline,
             ]} />
             <Text style={styles.statusText}>
-              {specialist?.isOnline ? translations.online : translations.offline}
+              {specialist?.isOnline ? t.specialist_online : t.specialist_offline}
             </Text>
           </View>
           {/* 上線狀態開關 */}
@@ -191,11 +175,11 @@ export function SpecialistDashboardScreen() {
             )}
           </View>
         </View>
-        <Text style={styles.toggleLabel}>{translations.toggleOnline}</Text>
+        <Text style={styles.toggleLabel}>{t.specialist_onlineStatus}</Text>
         {/* 服務地區資訊 */}
         {specialist?.serviceRegion && (
           <Text style={styles.regionText}>
-            {translations.region}: {specialist.serviceRegion}
+            {t.specialist_region}: {specialist.serviceRegion}
           </Text>
         )}
       </View>
@@ -211,8 +195,8 @@ export function SpecialistDashboardScreen() {
             <Ionicons name="people-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
-            <Text style={styles.menuTitle}>{isZh ? '服務中旅客' : 'Active Travelers'}</Text>
-            <Text style={styles.menuSubtitle}>{isZh ? '查看服務中的旅客' : 'View travelers being served'}</Text>
+            <Text style={styles.menuTitle}>{t.specialist_activeTravelers}</Text>
+            <Text style={styles.menuSubtitle}>{t.specialist_viewTravelers}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
@@ -226,8 +210,8 @@ export function SpecialistDashboardScreen() {
             <Ionicons name="map-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
-            <Text style={styles.menuTitle}>{isZh ? '即時位置追蹤' : 'Live Tracking'}</Text>
-            <Text style={styles.menuSubtitle}>{isZh ? '在地圖上查看旅客位置' : 'View travelers on map'}</Text>
+            <Text style={styles.menuTitle}>{t.specialist_liveTracking}</Text>
+            <Text style={styles.menuSubtitle}>{t.specialist_viewTravelersOnMap}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
@@ -241,8 +225,8 @@ export function SpecialistDashboardScreen() {
             <Ionicons name="time-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
-            <Text style={styles.menuTitle}>{isZh ? '服務歷史' : 'Service History'}</Text>
-            <Text style={styles.menuSubtitle}>{isZh ? '查看過往服務記錄' : 'View past service records'}</Text>
+            <Text style={styles.menuTitle}>{t.specialist_serviceHistory}</Text>
+            <Text style={styles.menuSubtitle}>{t.specialist_viewPastRecords}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
@@ -256,22 +240,22 @@ export function SpecialistDashboardScreen() {
             <Ionicons name="person-circle-outline" size={24} color={MibuBrand.brown} />
           </View>
           <View style={styles.menuContent}>
-            <Text style={styles.menuTitle}>{isZh ? '專員資料' : 'Specialist Profile'}</Text>
-            <Text style={styles.menuSubtitle}>{isZh ? '查看與編輯個人資料' : 'View and edit profile'}</Text>
+            <Text style={styles.menuTitle}>{t.specialist_profile}</Text>
+            <Text style={styles.menuSubtitle}>{t.specialist_viewEditProfile}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.copper} />
         </TouchableOpacity>
       </View>
 
       {/* ============ 服務中旅客區塊標題 ============ */}
-      <Text style={styles.sectionTitle}>{translations.activeServices}</Text>
+      <Text style={styles.sectionTitle}>{t.specialist_activeServices}</Text>
 
       {/* ============ 服務中旅客列表 ============ */}
       {services.length === 0 ? (
         // 空狀態顯示
         <View style={styles.emptyCard}>
           <Ionicons name="people-outline" size={48} color="#94a3b8" />
-          <Text style={styles.emptyText}>{translations.noServices}</Text>
+          <Text style={styles.emptyText}>{t.specialist_noServices}</Text>
         </View>
       ) : (
         // 旅客卡片列表
@@ -288,7 +272,7 @@ export function SpecialistDashboardScreen() {
                   {service.traveler?.name || `Traveler #${service.travelerId}`}
                 </Text>
                 <Text style={styles.serviceDate}>
-                  {translations.since}: {formatDate(service.createdAt)}
+                  {t.specialist_since}: {formatDate(service.createdAt)}
                 </Text>
               </View>
               {/* 服務狀態標籤 */}

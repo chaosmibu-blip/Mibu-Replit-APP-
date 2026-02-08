@@ -36,20 +36,19 @@ import { MerchantApplyParams } from '../src/types';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
 
 const BUSINESS_CATEGORIES = [
-  { value: 'restaurant', labelZh: '餐飲業', labelEn: 'Restaurant' },
-  { value: 'hotel', labelZh: '住宿業', labelEn: 'Hotel/Accommodation' },
-  { value: 'attraction', labelZh: '景點/遊樂', labelEn: 'Attraction/Entertainment' },
-  { value: 'shopping', labelZh: '購物零售', labelEn: 'Shopping/Retail' },
-  { value: 'transportation', labelZh: '交通服務', labelEn: 'Transportation' },
-  { value: 'experience', labelZh: '體驗活動', labelEn: 'Experience/Activity' },
-  { value: 'culture', labelZh: '文化藝術', labelEn: 'Culture/Art' },
-  { value: 'other', labelZh: '其他', labelEn: 'Other' },
+  { value: 'restaurant', labelKey: 'merchant_catRestaurant' },
+  { value: 'hotel', labelKey: 'merchant_catHotel' },
+  { value: 'attraction', labelKey: 'merchant_catAttraction' },
+  { value: 'shopping', labelKey: 'merchant_catShopping' },
+  { value: 'transportation', labelKey: 'merchant_catTransportation' },
+  { value: 'experience', labelKey: 'merchant_catExperience' },
+  { value: 'culture', labelKey: 'merchant_catCulture' },
+  { value: 'other', labelKey: 'merchant_catOther' },
 ];
 
 export default function MerchantRegisterScreen() {
-  const { state } = useApp();
+  const { state, t } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   const [loading, setLoading] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
@@ -63,34 +62,35 @@ export default function MerchantRegisterScreen() {
   const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
 
+  // 使用全域 t 翻譯字典（來自 useApp）
   const translations = {
-    title: isZh ? '商家註冊' : 'Merchant Registration',
-    subtitle: isZh ? '填寫資料以申請成為合作商家' : 'Fill in your details to apply as a partner merchant',
-    ownerName: isZh ? '負責人姓名' : 'Owner Name',
-    ownerNamePlaceholder: isZh ? '請輸入負責人姓名' : 'Enter owner name',
-    businessName: isZh ? '商家名稱' : 'Business Name',
-    businessNamePlaceholder: isZh ? '請輸入商家名稱' : 'Enter business name',
-    taxId: isZh ? '統一編號（選填）' : 'Tax ID (Optional)',
-    taxIdPlaceholder: isZh ? '請輸入統一編號' : 'Enter tax ID',
-    businessCategory: isZh ? '營業類別' : 'Business Category',
-    businessCategoryPlaceholder: isZh ? '請選擇營業類別' : 'Select business category',
-    address: isZh ? '商家地址' : 'Business Address',
-    addressPlaceholder: isZh ? '請輸入商家地址' : 'Enter business address',
-    phone: isZh ? '電話（選填）' : 'Phone (Optional)',
-    phonePlaceholder: isZh ? '請輸入電話' : 'Enter phone number',
-    mobile: isZh ? '手機' : 'Mobile',
-    mobilePlaceholder: isZh ? '請輸入手機號碼' : 'Enter mobile number',
-    email: isZh ? 'Email' : 'Email',
-    emailPlaceholder: isZh ? '請輸入 Email' : 'Enter email',
-    cancel: isZh ? '取消' : 'Cancel',
-    submit: isZh ? '送審' : 'Submit for Review',
-    submitting: isZh ? '提交中...' : 'Submitting...',
-    success: isZh ? '送審成功' : 'Submitted Successfully',
-    successMessage: isZh ? '您的申請已提交，請等待審核通過。' : 'Your application has been submitted. Please wait for approval.',
-    error: isZh ? '錯誤' : 'Error',
-    errorMessage: isZh ? '提交失敗，請稍後再試' : 'Submission failed. Please try again.',
-    requiredFields: isZh ? '請填寫所有必填欄位' : 'Please fill in all required fields',
-    invalidEmail: isZh ? '請輸入有效的 Email' : 'Please enter a valid email',
+    title: t.merchant_registration,
+    subtitle: t.merchant_registrationSubtitle,
+    ownerName: t.merchant_regOwnerName,
+    ownerNamePlaceholder: t.merchant_regOwnerNamePlaceholder,
+    businessName: t.merchant_regBusinessName,
+    businessNamePlaceholder: t.merchant_regBusinessNamePlaceholder,
+    taxId: t.merchant_regTaxId,
+    taxIdPlaceholder: t.merchant_regTaxIdPlaceholder,
+    businessCategory: t.merchant_regBusinessCategory,
+    businessCategoryPlaceholder: t.merchant_regBusinessCategoryPlaceholder,
+    address: t.merchant_regAddress,
+    addressPlaceholder: t.merchant_regAddressPlaceholder,
+    phone: t.merchant_regPhone,
+    phonePlaceholder: t.merchant_regPhonePlaceholder,
+    mobile: t.merchant_regMobile,
+    mobilePlaceholder: t.merchant_regMobilePlaceholder,
+    email: t.common_email,
+    emailPlaceholder: t.merchant_regEmailPlaceholder,
+    cancel: t.cancel,
+    submit: t.merchant_regSubmitReview,
+    submitting: t.merchant_regSubmitting,
+    success: t.merchant_regSubmitSuccess,
+    successMessage: t.merchant_regSubmitSuccessMsg,
+    error: t.common_error,
+    errorMessage: t.merchant_regSubmitFailed,
+    requiredFields: t.merchant_regFillRequired,
+    invalidEmail: t.merchant_regInvalidEmail,
   };
 
   const validateForm = (): boolean => {
@@ -209,7 +209,7 @@ export default function MerchantRegisterScreen() {
           >
             <Text style={[styles.pickerText, !selectedCategory && styles.placeholderText]}>
               {selectedCategory 
-                ? (isZh ? selectedCategory.labelZh : selectedCategory.labelEn)
+                ? t[selectedCategory.labelKey]
                 : translations.businessCategoryPlaceholder
               }
             </Text>
@@ -237,7 +237,7 @@ export default function MerchantRegisterScreen() {
                     styles.pickerOptionText,
                     businessCategory === cat.value && styles.pickerOptionTextSelected
                   ]}>
-                    {isZh ? cat.labelZh : cat.labelEn}
+                    {t[cat.labelKey]}
                   </Text>
                   {businessCategory === cat.value && (
                     <Ionicons name="checkmark" size={18} color={MibuBrand.brown} />

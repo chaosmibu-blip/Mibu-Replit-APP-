@@ -30,10 +30,8 @@ export interface TierStyle {
   gradientColors: [string, string];
   /** 光暈色（用於動畫） */
   glowColor: string;
-  /** 中文標籤 */
-  label: string;
-  /** 英文標籤 */
-  labelEn: string;
+  /** 翻譯字典 key */
+  labelKey: string;
   /** 抽中機率（百分比） */
   probability: number;
 }
@@ -56,8 +54,7 @@ export const TIER_STYLES: Record<MerchantCouponTier, TierStyle> = {
     textColor: '#8B6914',
     gradientColors: ['#F5D78E', '#D4A24C'],
     glowColor: 'rgba(212, 162, 76, 0.4)',
-    label: '傳說',
-    labelEn: 'Legendary',
+    labelKey: 'gacha_tierSP',
     probability: 2,
   },
   /** SSR 超稀有等級 - 粉紅色系 */
@@ -67,8 +64,7 @@ export const TIER_STYLES: Record<MerchantCouponTier, TierStyle> = {
     textColor: '#8B4D5C',
     gradientColors: ['#E8A8B8', '#C97B8B'],
     glowColor: 'rgba(201, 123, 139, 0.35)',
-    label: '超稀有',
-    labelEn: 'Super Rare',
+    labelKey: 'gacha_tierSSR',
     probability: 8,
   },
   /** SR 稀有等級 - 紫色系 */
@@ -78,8 +74,7 @@ export const TIER_STYLES: Record<MerchantCouponTier, TierStyle> = {
     textColor: '#6B4B88',
     gradientColors: ['#B8A0D0', '#9B7BB8'],
     glowColor: 'rgba(155, 123, 184, 0.3)',
-    label: '稀有',
-    labelEn: 'Rare',
+    labelKey: 'gacha_tierSR',
     probability: 15,
   },
   /** S 高級等級 - 藍色系 */
@@ -89,8 +84,7 @@ export const TIER_STYLES: Record<MerchantCouponTier, TierStyle> = {
     textColor: '#4B6B88',
     gradientColors: ['#A0C0D0', '#7BA0B8'],
     glowColor: 'rgba(123, 160, 184, 0.25)',
-    label: '高級',
-    labelEn: 'Superior',
+    labelKey: 'gacha_tierS',
     probability: 23,
   },
   /** R 普通等級 - 使用品牌色系 */
@@ -100,8 +94,7 @@ export const TIER_STYLES: Record<MerchantCouponTier, TierStyle> = {
     textColor: MibuBrand.brownDark,
     gradientColors: [MibuBrand.tanLight, MibuBrand.tan],
     glowColor: 'rgba(176, 136, 96, 0.2)',
-    label: '普通',
-    labelEn: 'Regular',
+    labelKey: 'gacha_tierR',
     probability: 32,
   },
 };

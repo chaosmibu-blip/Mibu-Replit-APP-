@@ -22,18 +22,18 @@ interface MerchantRegistrationFormProps {
   onCancel: () => void;
 }
 
-const BUSINESS_CATEGORIES = [
-  { value: 'restaurant', labelZh: '餐飲', labelEn: 'Restaurant' },
-  { value: 'retail', labelZh: '零售', labelEn: 'Retail' },
-  { value: 'hotel', labelZh: '住宿', labelEn: 'Hotel' },
-  { value: 'entertainment', labelZh: '娛樂', labelEn: 'Entertainment' },
-  { value: 'service', labelZh: '服務', labelEn: 'Service' },
-  { value: 'other', labelZh: '其他', labelEn: 'Other' },
-];
+// 商家類型對應的翻譯 key
+const BUSINESS_CATEGORY_KEYS = [
+  { value: 'restaurant', tKey: 'merchant_catRestaurant' },
+  { value: 'retail', tKey: 'merchant_catRetail' },
+  { value: 'hotel', tKey: 'merchant_catHotel' },
+  { value: 'entertainment', tKey: 'merchant_catEntertainment' },
+  { value: 'service', tKey: 'merchant_catService' },
+  { value: 'other', tKey: 'merchant_catOther' },
+] as const;
 
 export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegistrationFormProps) {
-  const { state, getToken } = useApp();
-  const isZh = state.language === 'zh-TW';
+  const { state, t, getToken } = useApp();
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<MerchantApplyParams>({
@@ -47,29 +47,11 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
     email: state.user?.email || '',
   });
 
-  const translations = {
-    title: isZh ? '商家入駐申請' : 'Merchant Application',
-    subtitle: isZh ? '填寫以下資料，我們將在 1-3 個工作天內審核' : 'Fill in the details below. Review takes 1-3 business days.',
-    ownerName: isZh ? '負責人姓名 *' : 'Owner Name *',
-    businessName: isZh ? '商家名稱 *' : 'Business Name *',
-    taxId: isZh ? '統一編號' : 'Tax ID',
-    businessCategory: isZh ? '商家類型 *' : 'Business Category *',
-    address: isZh ? '商家地址 *' : 'Business Address *',
-    phone: isZh ? '市話' : 'Phone',
-    mobile: isZh ? '手機號碼 *' : 'Mobile *',
-    email: isZh ? '聯絡信箱 *' : 'Contact Email *',
-    submit: isZh ? '提交申請' : 'Submit Application',
-    cancel: isZh ? '取消' : 'Cancel',
-    requiredFields: isZh ? '請填寫所有必填欄位' : 'Please fill all required fields',
-    submitSuccess: isZh ? '申請已提交，請等待審核' : 'Application submitted. Awaiting review.',
-    submitFailed: isZh ? '提交失敗，請稍後再試' : 'Submission failed. Please try again.',
-  };
-
   const handleSubmit = async () => {
     if (!formData.ownerName.trim() || !formData.businessName.trim() || 
         !formData.businessCategory || !formData.address.trim() ||
         !formData.mobile.trim() || !formData.email.trim()) {
-      Alert.alert(isZh ? '錯誤' : 'Error', translations.requiredFields);
+      Alert.alert(t.common_error, t.merchant_requiredFields);
       return;
     }
 
@@ -80,13 +62,13 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
 
       await apiService.applyMerchant(token, formData);
       Alert.alert(
-        isZh ? '成功' : 'Success',
-        translations.submitSuccess,
+        t.common_success,
+        t.merchant_submitSuccess,
         [{ text: 'OK', onPress: onSuccess }]
       );
     } catch (error) {
       console.error('Apply failed:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', translations.submitFailed);
+      Alert.alert(t.common_error, t.merchant_submitFailed);
     } finally {
       setLoading(false);
     }
@@ -108,37 +90,37 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
         <View style={styles.headerIcon}>
           <Ionicons name="storefront" size={32} color={MibuBrand.brown} />
         </View>
-        <Text style={styles.title}>{translations.title}</Text>
-        <Text style={styles.subtitle}>{translations.subtitle}</Text>
+        <Text style={styles.title}>{t.merchant_appFormTitle}</Text>
+        <Text style={styles.subtitle}>{t.merchant_appFormSubtitle}</Text>
       </View>
 
       <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
-          <Text style={styles.label}>{translations.ownerName}</Text>
+          <Text style={styles.label}>{t.merchant_ownerName}</Text>
           <TextInput
             style={styles.input}
             value={formData.ownerName}
             onChangeText={text => updateField('ownerName', text)}
-            placeholder={isZh ? '請輸入負責人姓名' : 'Enter owner name'}
+            placeholder={t.merchant_enterOwnerName}
             placeholderTextColor={UIColors.textSecondary}
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>{translations.businessName}</Text>
+          <Text style={styles.label}>{t.merchant_businessName}</Text>
           <TextInput
             style={styles.input}
             value={formData.businessName}
             onChangeText={text => updateField('businessName', text)}
-            placeholder={isZh ? '請輸入商家名稱' : 'Enter business name'}
+            placeholder={t.merchant_enterBusinessName}
             placeholderTextColor={UIColors.textSecondary}
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>{translations.businessCategory}</Text>
+          <Text style={styles.label}>{t.merchant_businessCategoryLabel}</Text>
           <View style={styles.categoryGrid}>
-            {BUSINESS_CATEGORIES.map(cat => (
+            {BUSINESS_CATEGORY_KEYS.map(cat => (
               <TouchableOpacity
                 key={cat.value}
                 style={[
@@ -146,13 +128,13 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
                   formData.businessCategory === cat.value && styles.categoryOptionActive,
                 ]}
                 onPress={() => updateField('businessCategory', cat.value)}
-                accessibilityLabel={`商家類型：${cat.labelZh}`}
+                accessibilityLabel={t[cat.tKey]}
               >
                 <Text style={[
                   styles.categoryText,
                   formData.businessCategory === cat.value && styles.categoryTextActive,
                 ]}>
-                  {isZh ? cat.labelZh : cat.labelEn}
+                  {t[cat.tKey]}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -160,24 +142,24 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>{translations.taxId}</Text>
+          <Text style={styles.label}>{t.merchant_taxId}</Text>
           <TextInput
             style={styles.input}
             value={formData.taxId}
             onChangeText={text => updateField('taxId', text)}
-            placeholder={isZh ? '選填' : 'Optional'}
+            placeholder={t.merchant_optional}
             placeholderTextColor={UIColors.textSecondary}
             keyboardType="number-pad"
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>{translations.address}</Text>
+          <Text style={styles.label}>{t.common_address} *</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
             value={formData.address}
             onChangeText={text => updateField('address', text)}
-            placeholder={isZh ? '請輸入商家地址' : 'Enter business address'}
+            placeholder={t.merchant_enterAddress}
             placeholderTextColor={UIColors.textSecondary}
             multiline
           />
@@ -185,7 +167,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
 
         <View style={styles.row}>
           <View style={styles.halfSection}>
-            <Text style={styles.label}>{translations.phone}</Text>
+            <Text style={styles.label}>{t.merchant_merchantPhone}</Text>
             <TextInput
               style={styles.input}
               value={formData.phone}
@@ -196,7 +178,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
             />
           </View>
           <View style={styles.halfSection}>
-            <Text style={styles.label}>{translations.mobile}</Text>
+            <Text style={styles.label}>{t.merchant_merchantMobile}</Text>
             <TextInput
               style={styles.input}
               value={formData.mobile}
@@ -209,7 +191,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>{translations.email}</Text>
+          <Text style={styles.label}>{t.merchant_contactEmail}</Text>
           <TextInput
             style={styles.input}
             value={formData.email}
@@ -223,7 +205,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
 
         <View style={styles.buttons}>
           <TouchableOpacity style={styles.cancelButton} onPress={onCancel} accessibilityLabel="取消">
-            <Text style={styles.cancelButtonText}>{translations.cancel}</Text>
+            <Text style={styles.cancelButtonText}>{t.cancel}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.submitButton, loading && styles.submitButtonDisabled]}
@@ -236,7 +218,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
             ) : (
               <>
                 <Ionicons name="paper-plane" size={18} color={UIColors.white} />
-                <Text style={styles.submitButtonText}>{translations.submit}</Text>
+                <Text style={styles.submitButtonText}>{t.merchant_submitAppForm}</Text>
               </>
             )}
           </TouchableOpacity>

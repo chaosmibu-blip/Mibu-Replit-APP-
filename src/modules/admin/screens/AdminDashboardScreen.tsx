@@ -35,6 +35,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
+import { LOCALE_MAP } from '../../../utils/i18n';
 import { AdminUser, PlaceDraft, GlobalExclusion } from '../../../types';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';
@@ -52,7 +53,7 @@ type Tab = 'pending' | 'users' | 'drafts' | 'exclusions' | 'announcements';
  */
 export function AdminDashboardScreen() {
   // ============ Hooks & Context ============
-  const { state, getToken, setUser } = useApp();
+  const { state, getToken, setUser, t } = useApp();
   const router = useRouter();
 
   // ============ 狀態管理 ============
@@ -81,39 +82,6 @@ export function AdminDashboardScreen() {
   /** 操作進行中的項目 ID（用於顯示該項目的 loading） */
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // ============ 多國語系 ============
-
-  /** 判斷是否為繁體中文 */
-  const isZh = state.language === 'zh-TW';
-
-  /** 翻譯文字對照表 */
-  const translations = {
-    title: isZh ? '管理後台' : 'Admin Dashboard',
-    pendingTab: isZh ? '待審核' : 'Pending',
-    usersTab: isZh ? '用戶' : 'Users',
-    draftsTab: isZh ? '草稿' : 'Drafts',
-    exclusionsTab: isZh ? '排除' : 'Exclusions',
-    announcementsTab: isZh ? '公告' : 'Announcements',
-    approve: isZh ? '核准' : 'Approve',
-    reject: isZh ? '拒絕' : 'Reject',
-    publish: isZh ? '發布' : 'Publish',
-    delete: isZh ? '刪除' : 'Delete',
-    loading: isZh ? '載入中...' : 'Loading...',
-    noData: isZh ? '沒有資料' : 'No data',
-    noPending: isZh ? '沒有待審核用戶' : 'No pending users',
-    merchant: isZh ? '商家' : 'Merchant',
-    specialist: isZh ? '專員' : 'Specialist',
-    traveler: isZh ? '旅客' : 'Traveler',
-    admin: isZh ? '管理員' : 'Admin',
-    approved: isZh ? '已核准' : 'Approved',
-    pending: isZh ? '待審核' : 'Pending',
-    confirmApprove: isZh ? '確定要核准這位用戶嗎？' : 'Approve this user?',
-    confirmReject: isZh ? '確定要拒絕這位用戶嗎？' : 'Reject this user?',
-    confirmPublish: isZh ? '確定要發布這個草稿嗎？' : 'Publish this draft?',
-    confirmDelete: isZh ? '確定要刪除嗎？' : 'Delete this item?',
-    logout: isZh ? '登出' : 'Logout',
-  };
-
   // ============ 事件處理函數 ============
 
   /**
@@ -127,10 +95,10 @@ export function AdminDashboardScreen() {
 
   /** 角色名稱對照表 */
   const roleLabels: Record<string, string> = {
-    merchant: translations.merchant,
-    specialist: translations.specialist,
-    traveler: translations.traveler,
-    admin: translations.admin,
+    merchant: t.admin_merchant,
+    specialist: t.admin_specialist,
+    traveler: t.admin_traveler,
+    admin: t.admin_admin,
   };
 
   /**
@@ -213,12 +181,12 @@ export function AdminDashboardScreen() {
    */
   const handleApproveUser = async (userId: string, approve: boolean) => {
     Alert.alert(
-      approve ? translations.approve : translations.reject,
-      approve ? translations.confirmApprove : translations.confirmReject,
+      approve ? t.admin_approve : t.admin_reject,
+      approve ? t.admin_confirmApprove : t.admin_confirmReject,
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: isZh ? '確定' : 'Confirm',
+          text: t.common_confirm,
           style: approve ? 'default' : 'destructive',
           onPress: async () => {
             try {
@@ -245,10 +213,10 @@ export function AdminDashboardScreen() {
    * @param draftId - 草稿 ID
    */
   const handlePublishDraft = async (draftId: number) => {
-    Alert.alert(translations.publish, translations.confirmPublish, [
-      { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+    Alert.alert(t.admin_publish, t.admin_confirmPublish, [
+      { text: t.cancel, style: 'cancel' },
       {
-        text: isZh ? '確定' : 'Confirm',
+        text: t.common_confirm,
         onPress: async () => {
           try {
             setActionLoading(`draft-${draftId}`);
@@ -271,10 +239,10 @@ export function AdminDashboardScreen() {
    * @param draftId - 草稿 ID
    */
   const handleDeleteDraft = async (draftId: number) => {
-    Alert.alert(translations.delete, translations.confirmDelete, [
-      { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+    Alert.alert(t.common_delete, t.admin_confirmDelete, [
+      { text: t.cancel, style: 'cancel' },
       {
-        text: isZh ? '確定' : 'Confirm',
+        text: t.common_confirm,
         style: 'destructive',
         onPress: async () => {
           try {
@@ -300,10 +268,10 @@ export function AdminDashboardScreen() {
    * @param exclusionId - 排除項目 ID
    */
   const handleDeleteExclusion = async (exclusionId: number) => {
-    Alert.alert(translations.delete, translations.confirmDelete, [
-      { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+    Alert.alert(t.common_delete, t.admin_confirmDelete, [
+      { text: t.cancel, style: 'cancel' },
       {
-        text: isZh ? '確定' : 'Confirm',
+        text: t.common_confirm,
         style: 'destructive',
         onPress: async () => {
           try {
@@ -331,7 +299,7 @@ export function AdminDashboardScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(isZh ? 'zh-TW' : 'en-US', {
+    return date.toLocaleDateString(LOCALE_MAP[state.language], {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -353,7 +321,7 @@ export function AdminDashboardScreen() {
           onPress={() => setActiveTab(tab)}
         >
           <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-            {translations[`${tab}Tab` as keyof typeof translations]}
+            {t[`admin_${tab}Tab`]}
             {/* 待審核分頁顯示待處理數量 */}
             {tab === 'pending' && pendingUsers.length > 0 && (
               <Text style={styles.badgeText}> ({pendingUsers.length})</Text>
@@ -376,7 +344,7 @@ export function AdminDashboardScreen() {
       {pendingUsers.length === 0 ? (
         <View style={styles.emptyCard}>
           <Ionicons name="checkmark-circle-outline" size={48} color={SemanticColors.success.main} />
-          <Text style={styles.emptyText}>{translations.noPending}</Text>
+          <Text style={styles.emptyText}>{t.admin_noPending}</Text>
         </View>
       ) : (
         // 用戶卡片列表
@@ -442,7 +410,7 @@ export function AdminDashboardScreen() {
       {allUsers.length === 0 ? (
         <View style={styles.emptyCard}>
           <Ionicons name="people-outline" size={48} color={UIColors.textSecondary} />
-          <Text style={styles.emptyText}>{translations.noData}</Text>
+          <Text style={styles.emptyText}>{t.common_noData}</Text>
         </View>
       ) : (
         // 用戶卡片列表
@@ -465,7 +433,7 @@ export function AdminDashboardScreen() {
                   {/* 審核狀態標籤 */}
                   <View style={[styles.statusBadge, user.isApproved ? styles.statusApproved : styles.statusPending]}>
                     <Text style={styles.statusBadgeText}>
-                      {user.isApproved ? translations.approved : translations.pending}
+                      {user.isApproved ? t.common_approved : t.common_pending}
                     </Text>
                   </View>
                 </View>
@@ -489,7 +457,7 @@ export function AdminDashboardScreen() {
       {drafts.length === 0 ? (
         <View style={styles.emptyCard}>
           <Ionicons name="document-outline" size={48} color={UIColors.textSecondary} />
-          <Text style={styles.emptyText}>{translations.noData}</Text>
+          <Text style={styles.emptyText}>{t.common_noData}</Text>
         </View>
       ) : (
         // 草稿卡片列表
@@ -551,7 +519,7 @@ export function AdminDashboardScreen() {
       {exclusions.length === 0 ? (
         <View style={styles.emptyCard}>
           <Ionicons name="ban-outline" size={48} color={UIColors.textSecondary} />
-          <Text style={styles.emptyText}>{translations.noData}</Text>
+          <Text style={styles.emptyText}>{t.common_noData}</Text>
         </View>
       ) : (
         // 排除項目卡片列表
@@ -567,7 +535,7 @@ export function AdminDashboardScreen() {
               </Text>
               {/* 扣分值 */}
               <Text style={styles.exclusionScore}>
-                {isZh ? '扣分' : 'Penalty'}: {exclusion.penaltyScore}
+                {t.admin_penalty}: {exclusion.penaltyScore}
               </Text>
             </View>
             {/* 刪除按鈕 */}
@@ -600,7 +568,7 @@ export function AdminDashboardScreen() {
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={MibuBrand.info} />
-          <Text style={styles.loadingText}>{translations.loading}</Text>
+          <Text style={styles.loadingText}>{t.loading}</Text>
         </View>
       );
     }
@@ -633,7 +601,7 @@ export function AdminDashboardScreen() {
             >
               <Ionicons name="megaphone-outline" size={20} color="#FFFEFA" />
               <Text style={{ fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: '#FFFEFA' }}>
-                {isZh ? '前往公告管理' : 'Go to Announcement Manager'}
+                {t.admin_goToAnnouncement}
               </Text>
             </TouchableOpacity>
           </View>
@@ -647,11 +615,11 @@ export function AdminDashboardScreen() {
     <View style={styles.container}>
       {/* 頂部標題列 */}
       <View style={styles.header}>
-        <Text style={styles.title}>{translations.title}</Text>
+        <Text style={styles.title}>{t.admin_title}</Text>
         {/* 登出按鈕 */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={20} color={SemanticColors.error.main} />
-          <Text style={styles.logoutText}>{translations.logout}</Text>
+          <Text style={styles.logoutText}>{t.common_logout}</Text>
         </TouchableOpacity>
       </View>
 

@@ -36,6 +36,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
+import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 import { contributionApi } from '../../../services/contributionApi';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import {
@@ -61,11 +62,11 @@ type TabType = 'report' | 'suggest' | 'vote';
 /**
  * 回報原因選項
  */
-const REPORT_REASONS: { value: ReportReason; label: { zh: string; en: string } }[] = [
-  { value: 'closed', label: { zh: '已歇業', en: 'Closed' } },
-  { value: 'relocated', label: { zh: '已搬遷', en: 'Relocated' } },
-  { value: 'wrong_info', label: { zh: '資訊有誤', en: 'Wrong Info' } },
-  { value: 'other', label: { zh: '其他', en: 'Other' } },
+const REPORT_REASONS: { value: ReportReason; labelKey: string }[] = [
+  { value: 'closed', labelKey: 'contribution_reasonClosed' },
+  { value: 'relocated', labelKey: 'contribution_reasonRelocated' },
+  { value: 'wrong_info', labelKey: 'contribution_reasonWrongInfo' },
+  { value: 'other', labelKey: 'contribution_reasonOther' },
 ];
 
 // ============================================================
@@ -73,11 +74,9 @@ const REPORT_REASONS: { value: ReportReason; label: { zh: string; en: string } }
 // ============================================================
 
 export function ContributionScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
 
-  // 語言判斷
-  const isZh = state.language === 'zh-TW';
 
   // ============================================================
   // 狀態管理
@@ -132,10 +131,7 @@ export function ContributionScreen() {
       }
     } catch (error) {
       console.error('Failed to load contribution data:', error);
-      Alert.alert(
-        isZh ? '載入失敗' : 'Load Failed',
-        isZh ? '無法載入貢獻資料，請稍後再試' : 'Failed to load contribution data. Please try again later.'
-      );
+      Alert.alert(t.contribution_loadFailed, t.contribution_loadFailedDesc);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -168,13 +164,13 @@ export function ContributionScreen() {
       if (result.success) {
         setPendingVotes(prev => prev.filter(p => p.placeId !== placeId));
         Alert.alert(
-          isZh ? '投票成功' : 'Vote Submitted',
-          isZh ? `獲得 ${result.expEarned} 金幣` : `You earned ${result.expEarned} coins`
+          t.contribution_voteSuccess,
+          tFormat(t.contribution_voteEarned, { amount: result.expEarned })
         );
       }
     } catch (error) {
       console.error('Vote failed:', error);
-      Alert.alert(isZh ? '投票失敗' : 'Vote Failed', isZh ? '請稍後再試' : 'Please try again');
+      Alert.alert(t.contribution_voteFailed, t.contribution_voteTryAgain);
     } finally {
       setVotingId(null);
     }
@@ -192,13 +188,13 @@ export function ContributionScreen() {
       if (result.success) {
         setPendingSuggestions(prev => prev.filter(s => s.id !== suggestionId));
         Alert.alert(
-          isZh ? '投票成功' : 'Vote Submitted',
-          isZh ? `獲得 ${result.expEarned} 金幣` : `You earned ${result.expEarned} coins`
+          t.contribution_voteSuccess,
+          tFormat(t.contribution_voteEarned, { amount: result.expEarned })
         );
       }
     } catch (error) {
       console.error('Vote failed:', error);
-      Alert.alert(isZh ? '投票失敗' : 'Vote Failed', isZh ? '請稍後再試' : 'Please try again');
+      Alert.alert(t.contribution_voteFailed, t.contribution_voteTryAgain);
     } finally {
       setVotingId(null);
     }
@@ -224,20 +220,17 @@ export function ContributionScreen() {
       {/* Quick Report Button */}
       <TouchableOpacity
         style={styles.actionCard}
-        onPress={() => Alert.alert(
-          isZh ? '回報功能' : 'Report Feature',
-          isZh ? '請從收藏庫的景點卡片中點擊「回報」按鈕' : 'Please use the "Report" button on place cards in your collection'
-        )}
+        onPress={() => Alert.alert(t.contribution_reportFeature, t.contribution_reportFeatureDesc)}
       >
         <View style={styles.actionIcon}>
           <Ionicons name="flag" size={24} color={MibuBrand.brown} />
         </View>
         <View style={styles.actionInfo}>
           <Text style={styles.actionTitle}>
-            {isZh ? '回報歇業/搬遷' : 'Report Closure'}
+            {t.contribution_reportClosure}
           </Text>
           <Text style={styles.actionDesc}>
-            {isZh ? '協助更新景點資訊可獲得金幣' : 'Earn coins by helping update place info'}
+            {t.contribution_reportClosureDesc}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
@@ -245,21 +238,21 @@ export function ContributionScreen() {
 
       {/* My Reports */}
       <Text style={styles.sectionTitle}>
-        {isZh ? '我的回報' : 'My Reports'} ({myReports.length})
+        {t.contribution_myReports} ({myReports.length})
       </Text>
 
       {myReports.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons name="flag-outline" size={48} color={MibuBrand.tan} />
           <Text style={styles.emptyText}>
-            {isZh ? '尚無回報記錄' : 'No reports yet'}
+            {t.contribution_noReports}
           </Text>
         </View>
       ) : (
         <View style={styles.itemsList}>
           {myReports.map(report => {
             const statusStyle = getStatusStyle(report.status);
-            const reasonLabel = REPORT_REASONS.find(r => r.value === report.reason)?.label;
+            const reasonLabelKey = REPORT_REASONS.find(r => r.value === report.reason)?.labelKey;
 
             return (
               <View key={report.id} style={styles.itemCard}>
@@ -269,19 +262,19 @@ export function ContributionScreen() {
                   </Text>
                   <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
                     <Text style={[styles.statusText, { color: statusStyle.text }]}>
-                      {report.status === 'pending' && (isZh ? '審核中' : 'Pending')}
-                      {report.status === 'verified' && (isZh ? '已確認' : 'Verified')}
-                      {report.status === 'rejected' && (isZh ? '已駁回' : 'Rejected')}
+                      {report.status === 'pending' && t.contribution_statusPending}
+                      {report.status === 'verified' && t.contribution_statusVerified}
+                      {report.status === 'rejected' && t.contribution_statusRejected}
                     </Text>
                   </View>
                 </View>
                 <View style={styles.itemMeta}>
                   <Text style={styles.itemMetaText}>
-                    {reasonLabel?.[isZh ? 'zh' : 'en'] || report.reason}
+                    {(reasonLabelKey ? t[reasonLabelKey] : report.reason)}
                   </Text>
                   <Text style={styles.itemMetaText}>•</Text>
                   <Text style={styles.itemMetaText}>
-                    {new Date(report.createdAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
+                    {new Date(report.createdAt).toLocaleDateString(LOCALE_MAP[state.language])}
                   </Text>
                   {report.expEarned > 0 && (
                     <>
@@ -303,20 +296,17 @@ export function ContributionScreen() {
       {/* Quick Suggest Button */}
       <TouchableOpacity
         style={styles.actionCard}
-        onPress={() => Alert.alert(
-          isZh ? '建議功能' : 'Suggest Feature',
-          isZh ? '景點建議功能即將推出' : 'Place suggestion feature coming soon'
-        )}
+        onPress={() => Alert.alert(t.contribution_suggestFeature, t.contribution_suggestFeatureDesc)}
       >
         <View style={styles.actionIcon}>
           <Ionicons name="add-circle" size={24} color={MibuBrand.brown} />
         </View>
         <View style={styles.actionInfo}>
           <Text style={styles.actionTitle}>
-            {isZh ? '建議新景點' : 'Suggest a Place'}
+            {t.contribution_suggestPlace}
           </Text>
           <Text style={styles.actionDesc}>
-            {isZh ? '推薦值得一訪的景點可獲得金幣' : 'Earn coins by recommending great places'}
+            {t.contribution_suggestPlaceDesc}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
@@ -324,14 +314,14 @@ export function ContributionScreen() {
 
       {/* My Suggestions */}
       <Text style={styles.sectionTitle}>
-        {isZh ? '我的建議' : 'My Suggestions'} ({mySuggestions.length})
+        {t.contribution_mySuggestions} ({mySuggestions.length})
       </Text>
 
       {mySuggestions.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons name="bulb-outline" size={48} color={MibuBrand.tan} />
           <Text style={styles.emptyText}>
-            {isZh ? '尚無建議記錄' : 'No suggestions yet'}
+            {t.contribution_noSuggestions}
           </Text>
         </View>
       ) : (
@@ -347,10 +337,10 @@ export function ContributionScreen() {
                   </Text>
                   <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
                     <Text style={[styles.statusText, { color: statusStyle.text }]}>
-                      {suggestion.status === 'pending' && (isZh ? '審核中' : 'Pending')}
-                      {suggestion.status === 'voting' && (isZh ? '投票中' : 'Voting')}
-                      {suggestion.status === 'approved' && (isZh ? '已通過' : 'Approved')}
-                      {suggestion.status === 'rejected' && (isZh ? '已駁回' : 'Rejected')}
+                      {suggestion.status === 'pending' && t.contribution_statusPending}
+                      {suggestion.status === 'voting' && t.contribution_statusVoting}
+                      {suggestion.status === 'approved' && t.contribution_statusApproved}
+                      {suggestion.status === 'rejected' && t.contribution_statusRejected}
                     </Text>
                   </View>
                 </View>
@@ -361,7 +351,7 @@ export function ContributionScreen() {
                   <Text style={styles.itemMetaText}>{suggestion.category}</Text>
                   <Text style={styles.itemMetaText}>•</Text>
                   <Text style={styles.itemMetaText}>
-                    {new Date(suggestion.createdAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
+                    {new Date(suggestion.createdAt).toLocaleDateString(LOCALE_MAP[state.language])}
                   </Text>
                   {suggestion.expEarned > 0 && (
                     <>
@@ -391,9 +381,7 @@ export function ContributionScreen() {
       <View style={styles.infoCard}>
         <Ionicons name="information-circle" size={20} color={MibuBrand.info} />
         <Text style={styles.infoText}>
-          {isZh
-            ? '達到 Lv.7 可參與社群投票，幫助維護景點品質'
-            : 'Reach Lv.7 to participate in community voting'}
+          {t.contribution_voteInfo}
         </Text>
       </View>
 
@@ -401,7 +389,7 @@ export function ContributionScreen() {
       {pendingVotes.length > 0 && (
         <>
           <Text style={styles.sectionTitle}>
-            {isZh ? '待排除投票' : 'Exclusion Votes'} ({pendingVotes.length})
+            {t.contribution_exclusionVotes} ({pendingVotes.length})
           </Text>
           <View style={styles.itemsList}>
             {pendingVotes.map(place => (
@@ -422,7 +410,7 @@ export function ContributionScreen() {
                   {place.reportReasons.slice(0, 3).map((reason, i) => (
                     <View key={i} style={styles.reasonTag}>
                       <Text style={styles.reasonText}>
-                        {REPORT_REASONS.find(r => r.value === reason)?.label[isZh ? 'zh' : 'en'] || reason}
+                        {REPORT_REASONS.find(r => r.value === reason)?.labelKey ? t[REPORT_REASONS.find(r => r.value === reason)!.labelKey] : reason}
                       </Text>
                     </View>
                   ))}
@@ -444,10 +432,10 @@ export function ContributionScreen() {
                   </View>
                   <View style={styles.voteBarLabels}>
                     <Text style={styles.voteBarLabel}>
-                      {isZh ? '排除' : 'Exclude'} {place.currentVotes.exclude}
+                      {t.contribution_exclude} {place.currentVotes.exclude}
                     </Text>
                     <Text style={styles.voteBarLabel}>
-                      {place.currentVotes.keep} {isZh ? '保留' : 'Keep'}
+                      {place.currentVotes.keep} {t.contribution_keep}
                     </Text>
                   </View>
                 </View>
@@ -462,7 +450,7 @@ export function ContributionScreen() {
                     ) : (
                       <>
                         <Ionicons name="close" size={18} color={UIColors.white} />
-                        <Text style={styles.voteBtnText}>{isZh ? '排除' : 'Exclude'}</Text>
+                        <Text style={styles.voteBtnText}>{t.contribution_exclude}</Text>
                       </>
                     )}
                   </TouchableOpacity>
@@ -476,7 +464,7 @@ export function ContributionScreen() {
                     ) : (
                       <>
                         <Ionicons name="checkmark" size={18} color={UIColors.white} />
-                        <Text style={styles.voteBtnText}>{isZh ? '保留' : 'Keep'}</Text>
+                        <Text style={styles.voteBtnText}>{t.contribution_keep}</Text>
                       </>
                     )}
                   </TouchableOpacity>
@@ -491,7 +479,7 @@ export function ContributionScreen() {
       {pendingSuggestions.length > 0 && (
         <>
           <Text style={styles.sectionTitle}>
-            {isZh ? '新景點審核' : 'New Place Reviews'} ({pendingSuggestions.length})
+            {t.contribution_newPlaceReviews} ({pendingSuggestions.length})
           </Text>
           <View style={styles.itemsList}>
             {pendingSuggestions.map(suggestion => (
@@ -547,7 +535,7 @@ export function ContributionScreen() {
                     ) : (
                       <>
                         <Ionicons name="thumbs-up" size={18} color={UIColors.white} />
-                        <Text style={styles.voteBtnText}>{isZh ? '贊成' : 'Approve'}</Text>
+                        <Text style={styles.voteBtnText}>{t.contribution_approve}</Text>
                       </>
                     )}
                   </TouchableOpacity>
@@ -561,7 +549,7 @@ export function ContributionScreen() {
                     ) : (
                       <>
                         <Ionicons name="thumbs-down" size={18} color={UIColors.white} />
-                        <Text style={styles.voteBtnText}>{isZh ? '反對' : 'Reject'}</Text>
+                        <Text style={styles.voteBtnText}>{t.contribution_reject}</Text>
                       </>
                     )}
                   </TouchableOpacity>
@@ -576,7 +564,7 @@ export function ContributionScreen() {
         <View style={styles.emptyState}>
           <Ionicons name="thumbs-up-outline" size={48} color={MibuBrand.tan} />
           <Text style={styles.emptyText}>
-            {isZh ? '目前沒有待投票項目' : 'No pending votes'}
+            {t.contribution_noPendingVotes}
           </Text>
         </View>
       )}
@@ -600,7 +588,7 @@ export function ContributionScreen() {
         <View style={styles.headerCenter}>
           <Ionicons name="heart" size={24} color={MibuBrand.brownDark} />
           <Text style={styles.headerTitle}>
-            {isZh ? '社群貢獻' : 'Contributions'}
+            {t.contribution_title}
           </Text>
         </View>
         <View style={styles.headerPlaceholder} />
@@ -615,9 +603,9 @@ export function ContributionScreen() {
             onPress={() => setActiveTab(tab)}
           >
             <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-              {tab === 'report' && (isZh ? '回報' : 'Report')}
-              {tab === 'suggest' && (isZh ? '建議' : 'Suggest')}
-              {tab === 'vote' && (isZh ? '投票' : 'Vote')}
+              {tab === 'report' && t.contribution_tabReport}
+              {tab === 'suggest' && t.contribution_tabSuggest}
+              {tab === 'vote' && t.contribution_tabVote}
             </Text>
           </TouchableOpacity>
         ))}

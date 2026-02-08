@@ -20,19 +20,29 @@ import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
-const CATEGORIES = [
-  { id: 'food', label: '美食', labelEn: 'Food', icon: 'restaurant' },
-  { id: 'stay', label: '住宿', labelEn: 'Stay', icon: 'bed' },
-  { id: 'scenery', label: '景點', labelEn: 'Scenery', icon: 'camera' },
-  { id: 'shopping', label: '購物', labelEn: 'Shopping', icon: 'cart' },
-  { id: 'entertainment', label: '娛樂', labelEn: 'Entertainment', icon: 'game-controller' },
-  { id: 'education', label: '文化教育', labelEn: 'Education', icon: 'school' },
-];
+// 分類選項定義：透過 t key 取得多語系標籤
+const CATEGORY_IDS = ['food', 'stay', 'scenery', 'shopping', 'entertainment', 'education'] as const;
+const CATEGORY_ICONS: Record<string, string> = {
+  food: 'restaurant',
+  stay: 'bed',
+  scenery: 'camera',
+  shopping: 'cart',
+  entertainment: 'game-controller',
+  education: 'school',
+};
+// 翻譯 key 對應：分類 id → t key
+const CATEGORY_T_KEYS: Record<string, string> = {
+  food: 'merchant_catFood',
+  stay: 'merchant_catStay',
+  scenery: 'merchant_catScenery',
+  shopping: 'merchant_catShopping',
+  entertainment: 'merchant_catEntertainment',
+  education: 'merchant_catEducation',
+};
 
 export function NewPlaceScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -44,35 +54,13 @@ export function NewPlaceScreen() {
     description: '',
   });
 
-  const t = {
-    title: isZh ? '新增店家' : 'Add New Place',
-    subtitle: isZh ? '填寫您的店家資訊' : 'Fill in your place information',
-    placeName: isZh ? '店家名稱' : 'Place Name',
-    placeNamePlaceholder: isZh ? '輸入店家名稱' : 'Enter place name',
-    category: isZh ? '分類' : 'Category',
-    selectCategory: isZh ? '選擇分類' : 'Select category',
-    district: isZh ? '區域' : 'District',
-    districtPlaceholder: isZh ? '例：大安區' : 'e.g. Da\'an District',
-    city: isZh ? '城市' : 'City',
-    cityPlaceholder: isZh ? '例：台北市' : 'e.g. Taipei',
-    address: isZh ? '地址' : 'Address',
-    addressPlaceholder: isZh ? '完整地址' : 'Full address',
-    description: isZh ? '店家介紹' : 'Description',
-    descriptionPlaceholder: isZh ? '簡短介紹您的店家...' : 'Brief introduction of your place...',
-    submit: isZh ? '提交申請' : 'Submit',
-    required: isZh ? '必填' : 'Required',
-    success: isZh ? '申請已提交！我們將盡快審核' : 'Application submitted! We will review it soon.',
-    error: isZh ? '提交失敗，請稍後再試' : 'Submit failed, please try again',
-    fillRequired: isZh ? '請填寫必要欄位' : 'Please fill required fields',
-  };
-
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
     if (!formData.placeName.trim() || !formData.category || !formData.city.trim()) {
-      Alert.alert(isZh ? '提示' : 'Notice', t.fillRequired);
+      Alert.alert(t.merchant_notice, t.common_fillRequired);
       return;
     }
 
@@ -92,12 +80,12 @@ export function NewPlaceScreen() {
         country: '台灣',
       });
 
-      Alert.alert(isZh ? '成功' : 'Success', t.success, [
+      Alert.alert(t.common_success, t.merchant_applicationSubmitted, [
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (error) {
       console.error('Submit failed:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', t.error);
+      Alert.alert(t.common_error, t.merchant_submitError);
     } finally {
       setSaving(false);
     }
@@ -118,8 +106,8 @@ export function NewPlaceScreen() {
             <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <View style={styles.headerText}>
-            <Text style={styles.title}>{t.title}</Text>
-            <Text style={styles.subtitle}>{t.subtitle}</Text>
+            <Text style={styles.title}>{t.merchant_addPlace}</Text>
+            <Text style={styles.subtitle}>{t.merchant_addPlaceSubtitle}</Text>
           </View>
         </View>
 
@@ -128,14 +116,14 @@ export function NewPlaceScreen() {
           {/* Place Name */}
           <View style={styles.field}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>{t.placeName}</Text>
-              <Text style={styles.required}>{t.required}</Text>
+              <Text style={styles.label}>{t.merchant_placeName}</Text>
+              <Text style={styles.required}>{t.common_required}</Text>
             </View>
             <TextInput
               style={styles.input}
               value={formData.placeName}
               onChangeText={(v) => updateField('placeName', v)}
-              placeholder={t.placeNamePlaceholder}
+              placeholder={t.merchant_placeNamePlaceholder}
               placeholderTextColor={UIColors.textSecondary}
             />
           </View>
@@ -143,32 +131,32 @@ export function NewPlaceScreen() {
           {/* Category */}
           <View style={styles.field}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>{t.category}</Text>
-              <Text style={styles.required}>{t.required}</Text>
+              <Text style={styles.label}>{t.merchant_category}</Text>
+              <Text style={styles.required}>{t.common_required}</Text>
             </View>
             <View style={styles.categoryGrid}>
-              {CATEGORIES.map((cat) => (
+              {CATEGORY_IDS.map((catId) => (
                 <TouchableOpacity
-                  key={cat.id}
+                  key={catId}
                   style={[
                     styles.categoryButton,
-                    formData.category === cat.id && styles.categoryButtonActive,
+                    formData.category === catId && styles.categoryButtonActive,
                   ]}
-                  onPress={() => updateField('category', cat.id)}
-                  accessibilityLabel={`分類：${cat.label}`}
+                  onPress={() => updateField('category', catId)}
+                  accessibilityLabel={`分類：${(t as any)[CATEGORY_T_KEYS[catId]]}`}
                 >
                   <Ionicons
-                    name={cat.icon as any}
+                    name={CATEGORY_ICONS[catId] as any}
                     size={20}
-                    color={formData.category === cat.id ? MibuBrand.brown : UIColors.textSecondary}
+                    color={formData.category === catId ? MibuBrand.brown : UIColors.textSecondary}
                   />
                   <Text
                     style={[
                       styles.categoryText,
-                      formData.category === cat.id && styles.categoryTextActive,
+                      formData.category === catId && styles.categoryTextActive,
                     ]}
                   >
-                    {isZh ? cat.label : cat.labelEn}
+                    {(t as any)[CATEGORY_T_KEYS[catId]]}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -179,24 +167,24 @@ export function NewPlaceScreen() {
           <View style={styles.row}>
             <View style={[styles.field, { flex: 1 }]}>
               <View style={styles.labelRow}>
-                <Text style={styles.label}>{t.city}</Text>
-                <Text style={styles.required}>{t.required}</Text>
+                <Text style={styles.label}>{t.merchant_city}</Text>
+                <Text style={styles.required}>{t.common_required}</Text>
               </View>
               <TextInput
                 style={styles.input}
                 value={formData.city}
                 onChangeText={(v) => updateField('city', v)}
-                placeholder={t.cityPlaceholder}
+                placeholder={t.merchant_cityPlaceholder}
                 placeholderTextColor={UIColors.textSecondary}
               />
             </View>
             <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>{t.district}</Text>
+              <Text style={styles.label}>{t.merchant_district}</Text>
               <TextInput
                 style={styles.input}
                 value={formData.district}
                 onChangeText={(v) => updateField('district', v)}
-                placeholder={t.districtPlaceholder}
+                placeholder={t.merchant_districtPlaceholder}
                 placeholderTextColor={UIColors.textSecondary}
               />
             </View>
@@ -204,24 +192,24 @@ export function NewPlaceScreen() {
 
           {/* Address */}
           <View style={styles.field}>
-            <Text style={styles.label}>{t.address}</Text>
+            <Text style={styles.label}>{t.merchant_placeAddress}</Text>
             <TextInput
               style={styles.input}
               value={formData.address}
               onChangeText={(v) => updateField('address', v)}
-              placeholder={t.addressPlaceholder}
+              placeholder={t.merchant_addressPlaceholder}
               placeholderTextColor={UIColors.textSecondary}
             />
           </View>
 
           {/* Description */}
           <View style={styles.field}>
-            <Text style={styles.label}>{t.description}</Text>
+            <Text style={styles.label}>{t.merchant_placeDesc}</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
               value={formData.description}
               onChangeText={(v) => updateField('description', v)}
-              placeholder={t.descriptionPlaceholder}
+              placeholder={t.merchant_placeDescPlaceholder}
               placeholderTextColor={UIColors.textSecondary}
               multiline
               numberOfLines={4}
@@ -242,7 +230,7 @@ export function NewPlaceScreen() {
           ) : (
             <>
               <Ionicons name="checkmark-circle" size={20} color={UIColors.white} />
-              <Text style={styles.submitButtonText}>{t.submit}</Text>
+              <Text style={styles.submitButtonText}>{t.merchant_submitApplication}</Text>
             </>
           )}
         </TouchableOpacity>

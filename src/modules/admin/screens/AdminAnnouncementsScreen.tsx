@@ -44,7 +44,7 @@ import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../
  */
 export function AdminAnnouncementsScreen() {
   // ============ Hooks & Context ============
-  const { state, getToken } = useApp();
+  const { getToken, t } = useApp();
   const router = useRouter();
 
   // ============ 狀態管理 ============
@@ -80,47 +80,11 @@ export function AdminAnnouncementsScreen() {
     priority: 0,               // 優先順序
   });
 
-  // ============ 多國語系 ============
-
-  /** 判斷是否為繁體中文 */
-  const isZh = state.language === 'zh-TW';
-
-  /** 翻譯文字對照表 */
-  const translations = {
-    title: isZh ? '公告管理' : 'Announcement Management',
-    back: isZh ? '返回' : 'Back',
-    add: isZh ? '新增' : 'Add',
-    edit: isZh ? '編輯' : 'Edit',
-    delete: isZh ? '刪除' : 'Delete',
-    save: isZh ? '儲存' : 'Save',
-    cancel: isZh ? '取消' : 'Cancel',
-    loading: isZh ? '載入中...' : 'Loading...',
-    noData: isZh ? '沒有公告' : 'No announcements',
-    announcement: isZh ? '一般公告' : 'Announcement',
-    flashEvent: isZh ? '快閃活動' : 'Flash Event',
-    holidayEvent: isZh ? '節日限定' : 'Holiday Event',
-    typeLabel: isZh ? '類型' : 'Type',
-    titleLabel: isZh ? '標題' : 'Title',
-    contentLabel: isZh ? '內容' : 'Content',
-    imageUrlLabel: isZh ? '圖片網址' : 'Image URL',
-    linkUrlLabel: isZh ? '連結網址' : 'Link URL',
-    startDateLabel: isZh ? '開始日期' : 'Start Date',
-    endDateLabel: isZh ? '結束日期' : 'End Date',
-    priorityLabel: isZh ? '優先順序' : 'Priority',
-    isActiveLabel: isZh ? '啟用' : 'Active',
-    confirmDelete: isZh ? '確定要刪除這則公告嗎？' : 'Delete this announcement?',
-    addTitle: isZh ? '新增公告' : 'Add Announcement',
-    editTitle: isZh ? '編輯公告' : 'Edit Announcement',
-    active: isZh ? '啟用中' : 'Active',
-    inactive: isZh ? '已停用' : 'Inactive',
-    datePlaceholder: isZh ? 'YYYY-MM-DD' : 'YYYY-MM-DD',
-  };
-
   /** 公告類型標籤對照表 */
   const typeLabels: Record<AnnouncementType, string> = {
-    announcement: translations.announcement,
-    flash_event: translations.flashEvent,
-    holiday_event: translations.holidayEvent,
+    announcement: t.admin_typeAnnouncement,
+    flash_event: t.admin_typeFlashEvent,
+    holiday_event: t.admin_typeHolidayEvent,
   };
 
   /** 公告類型顏色對照表 */
@@ -223,7 +187,7 @@ export function AdminAnnouncementsScreen() {
 
       // 驗證必填欄位
       if (!formData.title.trim() || !formData.content.trim()) {
-        Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '請填寫標題和內容' : 'Please fill in title and content');
+        Alert.alert(t.common_error, t.admin_fillTitleContent);
         return;
       }
 
@@ -253,7 +217,7 @@ export function AdminAnnouncementsScreen() {
       loadData(); // 重新載入列表
     } catch (error) {
       console.error('Failed to save announcement:', error);
-      Alert.alert(isZh ? '錯誤' : 'Error', isZh ? '儲存失敗' : 'Failed to save');
+      Alert.alert(t.common_error, t.common_saveFailed);
     }
   };
 
@@ -264,12 +228,12 @@ export function AdminAnnouncementsScreen() {
    */
   const handleDelete = (id: number) => {
     Alert.alert(
-      isZh ? '確認刪除' : 'Confirm Delete',
-      translations.confirmDelete,
+      t.common_confirmDelete,
+      t.admin_confirmDeleteAnnouncement,
       [
-        { text: translations.cancel, style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: translations.delete,
+          text: t.common_delete,
           style: 'destructive',
           onPress: async () => {
             try {
@@ -328,7 +292,7 @@ export function AdminAnnouncementsScreen() {
         {/* 狀態標籤 */}
         <View style={[styles.statusBadge, item.isActive ? styles.statusActive : styles.statusInactive]}>
           <Text style={[styles.statusText, item.isActive ? styles.statusTextActive : styles.statusTextInactive]}>
-            {item.isActive ? translations.active : translations.inactive}
+            {item.isActive ? t.common_active : t.common_inactive}
           </Text>
         </View>
       </View>
@@ -412,7 +376,7 @@ export function AdminAnnouncementsScreen() {
           {/* Modal 標題列 */}
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>
-              {editingAnnouncement ? translations.editTitle : translations.addTitle}
+              {editingAnnouncement ? t.admin_editAnnouncement : t.admin_createAnnouncement}
             </Text>
             <TouchableOpacity onPress={() => setModalVisible(false)}>
               <Ionicons name="close" size={24} color={UIColors.textSecondary} />
@@ -422,7 +386,7 @@ export function AdminAnnouncementsScreen() {
           {/* Modal 表單內容 */}
           <ScrollView style={styles.modalBody}>
             {/* 類型選擇 */}
-            <Text style={styles.inputLabel}>{translations.typeLabel}</Text>
+            <Text style={styles.inputLabel}>{t.admin_type}</Text>
             <View style={styles.typeButtons}>
               {(['announcement', 'flash_event', 'holiday_event'] as AnnouncementType[]).map((type) => (
                 <TouchableOpacity
@@ -446,27 +410,27 @@ export function AdminAnnouncementsScreen() {
             </View>
 
             {/* 標題輸入 */}
-            <Text style={styles.inputLabel}>{translations.titleLabel} *</Text>
+            <Text style={styles.inputLabel}>{t.admin_titleLabel} *</Text>
             <TextInput
               style={styles.input}
               value={formData.title}
               onChangeText={(text) => setFormData({ ...formData, title: text })}
-              placeholder={translations.titleLabel}
+              placeholder={t.admin_titleLabel}
             />
 
             {/* 內容輸入 */}
-            <Text style={styles.inputLabel}>{translations.contentLabel} *</Text>
+            <Text style={styles.inputLabel}>{t.admin_contentLabel} *</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
               value={formData.content}
               onChangeText={(text) => setFormData({ ...formData, content: text })}
-              placeholder={translations.contentLabel}
+              placeholder={t.admin_contentLabel}
               multiline
               numberOfLines={4}
             />
 
             {/* 圖片網址輸入 */}
-            <Text style={styles.inputLabel}>{translations.imageUrlLabel}</Text>
+            <Text style={styles.inputLabel}>{t.admin_imageUrl}</Text>
             <TextInput
               style={styles.input}
               value={formData.imageUrl}
@@ -475,7 +439,7 @@ export function AdminAnnouncementsScreen() {
             />
 
             {/* 連結網址輸入 */}
-            <Text style={styles.inputLabel}>{translations.linkUrlLabel}</Text>
+            <Text style={styles.inputLabel}>{t.admin_linkUrl}</Text>
             <TextInput
               style={styles.input}
               value={formData.linkUrl}
@@ -487,28 +451,28 @@ export function AdminAnnouncementsScreen() {
             <View style={styles.dateRow}>
               {/* 開始日期 */}
               <View style={styles.dateInput}>
-                <Text style={styles.inputLabel}>{translations.startDateLabel}</Text>
+                <Text style={styles.inputLabel}>{t.admin_startDateLabel}</Text>
                 <TextInput
                   style={styles.input}
                   value={formData.startDate}
                   onChangeText={(text) => setFormData({ ...formData, startDate: text })}
-                  placeholder={translations.datePlaceholder}
+                  placeholder={t.admin_datePlaceholder}
                 />
               </View>
               {/* 結束日期 */}
               <View style={styles.dateInput}>
-                <Text style={styles.inputLabel}>{translations.endDateLabel}</Text>
+                <Text style={styles.inputLabel}>{t.admin_endDateLabel}</Text>
                 <TextInput
                   style={styles.input}
                   value={formData.endDate}
                   onChangeText={(text) => setFormData({ ...formData, endDate: text })}
-                  placeholder={translations.datePlaceholder}
+                  placeholder={t.admin_datePlaceholder}
                 />
               </View>
             </View>
 
             {/* 優先順序輸入 */}
-            <Text style={styles.inputLabel}>{translations.priorityLabel}</Text>
+            <Text style={styles.inputLabel}>{t.admin_priority}</Text>
             <TextInput
               style={styles.input}
               value={String(formData.priority || 0)}
@@ -519,7 +483,7 @@ export function AdminAnnouncementsScreen() {
 
             {/* 啟用開關 */}
             <View style={styles.switchRow}>
-              <Text style={styles.inputLabel}>{translations.isActiveLabel}</Text>
+              <Text style={styles.inputLabel}>{t.admin_isActiveLabel}</Text>
               <Switch
                 value={formData.isActive}
                 onValueChange={(value) => setFormData({ ...formData, isActive: value })}
@@ -533,11 +497,11 @@ export function AdminAnnouncementsScreen() {
           <View style={styles.modalFooter}>
             {/* 取消按鈕 */}
             <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
-              <Text style={styles.cancelButtonText}>{translations.cancel}</Text>
+              <Text style={styles.cancelButtonText}>{t.cancel}</Text>
             </TouchableOpacity>
             {/* 儲存按鈕 */}
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>{translations.save}</Text>
+              <Text style={styles.saveButtonText}>{t.common_save}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -556,7 +520,7 @@ export function AdminAnnouncementsScreen() {
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         {/* 標題 */}
-        <Text style={styles.headerTitle}>{translations.title}</Text>
+        <Text style={styles.headerTitle}>{t.admin_announcementManage}</Text>
         {/* 新增按鈕 */}
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
           <Ionicons name="add" size={24} color="#fff" />
@@ -568,7 +532,7 @@ export function AdminAnnouncementsScreen() {
         // 載入中狀態
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={MibuBrand.info} />
-          <Text style={styles.loadingText}>{translations.loading}</Text>
+          <Text style={styles.loadingText}>{t.loading}</Text>
         </View>
       ) : (
         // 公告列表
@@ -582,7 +546,7 @@ export function AdminAnnouncementsScreen() {
             // 空狀態
             <View style={styles.emptyContainer}>
               <Ionicons name="megaphone-outline" size={48} color={UIColors.textSecondary} />
-              <Text style={styles.emptyText}>{translations.noData}</Text>
+              <Text style={styles.emptyText}>{t.admin_noAnnouncements}</Text>
             </View>
           ) : (
             // 公告卡片列表

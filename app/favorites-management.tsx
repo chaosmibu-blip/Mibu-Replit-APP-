@@ -38,20 +38,19 @@ const MOCK_BLACKLIST = [
 
 export default function FavoritesManagementScreen() {
   const router = useRouter();
-  const { state } = useApp();
-  const isZh = state.language === 'zh-TW';
+  const { t } = useApp();
   const [activeTab, setActiveTab] = useState<TabType>('favorites');
   const [favorites, setFavorites] = useState(MOCK_FAVORITES);
   const [blacklist, setBlacklist] = useState(MOCK_BLACKLIST);
 
   const handleRemoveFavorite = (id: number) => {
     Alert.alert(
-      isZh ? '移除最愛' : 'Remove Favorite',
-      isZh ? '確定要從最愛移除嗎？' : 'Remove from favorites?',
+      t.itinerary_removeFavorite,
+      t.itinerary_removeFavoriteConfirm,
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: isZh ? '移除' : 'Remove',
+          text: t.common_remove,
           style: 'destructive',
           onPress: () => {
             setFavorites(prev => prev.filter(item => item.id !== id));
@@ -63,12 +62,12 @@ export default function FavoritesManagementScreen() {
 
   const handleRemoveBlacklist = (id: number) => {
     Alert.alert(
-      isZh ? '移除黑名單' : 'Remove from Blacklist',
-      isZh ? '確定要從黑名單移除嗎？' : 'Remove from blacklist?',
+      t.itinerary_removeBlacklist,
+      t.itinerary_removeBlacklistConfirm,
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: isZh ? '移除' : 'Remove',
+          text: t.common_remove,
           onPress: () => {
             setBlacklist(prev => prev.filter(item => item.id !== id));
           },
@@ -91,7 +90,7 @@ export default function FavoritesManagementScreen() {
           <Ionicons name="chevron-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.title}>
-          {isZh ? '我的最愛/黑名單' : 'Favorites & Blacklist'}
+          {t.itinerary_favoritesAndBlacklist}
         </Text>
         <View style={{ width: 40 }} />
       </View>
@@ -108,7 +107,7 @@ export default function FavoritesManagementScreen() {
             color={activeTab === 'favorites' ? MibuBrand.tierSP : MibuBrand.tan}
           />
           <Text style={[styles.tabText, activeTab === 'favorites' && styles.tabTextActive]}>
-            {isZh ? '我的最愛' : 'Favorites'}
+            {t.itinerary_favorites}
           </Text>
           <View style={[styles.tabBadge, activeTab === 'favorites' && styles.tabBadgeActive]}>
             <Text style={[styles.tabBadgeText, activeTab === 'favorites' && styles.tabBadgeTextActive]}>
@@ -127,7 +126,7 @@ export default function FavoritesManagementScreen() {
             color={activeTab === 'blacklist' ? MibuBrand.copper : MibuBrand.tan}
           />
           <Text style={[styles.tabText, activeTab === 'blacklist' && styles.tabTextActive]}>
-            {isZh ? '黑名單' : 'Blacklist'}
+            {t.itinerary_blacklist}
           </Text>
           <View style={[styles.tabBadge, activeTab === 'blacklist' && styles.tabBadgeActive]}>
             <Text style={[styles.tabBadgeText, activeTab === 'blacklist' && styles.tabBadgeTextActive]}>
@@ -148,13 +147,13 @@ export default function FavoritesManagementScreen() {
             />
             <Text style={styles.emptyText}>
               {activeTab === 'favorites'
-                ? (isZh ? '尚無最愛項目' : 'No favorites yet')
-                : (isZh ? '尚無黑名單項目' : 'No blacklisted items')}
+                ? t.itinerary_noFavorites
+                : t.itinerary_noBlacklist}
             </Text>
             <Text style={styles.emptySubtext}>
               {activeTab === 'favorites'
-                ? (isZh ? '在圖鑑中點擊愛心加入最愛' : 'Tap the heart icon to add favorites')
-                : (isZh ? '在圖鑑中將不喜歡的項目加入黑名單' : 'Add items you don\'t like to blacklist')}
+                ? t.itinerary_addFavoritesHint
+                : t.itinerary_addBlacklistHint}
             </Text>
           </View>
         ) : (
@@ -184,8 +183,8 @@ export default function FavoritesManagementScreen() {
         <Ionicons name="information-circle-outline" size={18} color={MibuBrand.copper} />
         <Text style={styles.infoText}>
           {activeTab === 'favorites'
-            ? (isZh ? '最愛的景點會優先出現在扭蛋結果中' : 'Favorite places will appear more often in gacha')
-            : (isZh ? '黑名單項目不會出現在扭蛋結果中' : 'Blacklisted items won\'t appear in gacha')}
+            ? t.itinerary_favoritesGachaHint
+            : t.itinerary_blacklistGachaHint}
         </Text>
       </View>
     </View>

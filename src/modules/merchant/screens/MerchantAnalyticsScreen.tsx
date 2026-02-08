@@ -35,9 +35,8 @@ import {
 // ============ 主元件 ============
 export function MerchantAnalyticsScreen() {
   // ============ Hooks ============
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   // ============ 狀態變數 ============
   // loading: 初始載入狀態
@@ -58,33 +57,11 @@ export function MerchantAnalyticsScreen() {
   // ============ 常數定義 ============
   // 時間區間選項
   const periods: { value: AnalyticsPeriod; label: string }[] = [
-    { value: '7d', label: isZh ? '7 天' : '7 Days' },
-    { value: '30d', label: isZh ? '30 天' : '30 Days' },
-    { value: '90d', label: isZh ? '90 天' : '90 Days' },
-    { value: 'all', label: isZh ? '全部' : 'All' },
+    { value: '7d', label: t.merchant_7days },
+    { value: '30d', label: t.merchant_30days },
+    { value: '90d', label: t.merchant_90days },
+    { value: 'all', label: t.merchant_allPeriod },
   ];
-
-  // ============ 多語系翻譯 ============
-  const translations = {
-    title: isZh ? '數據分析' : 'Analytics',
-    loading: isZh ? '載入中...' : 'Loading...',
-    overview: isZh ? '總覽' : 'Overview',
-    totalExposures: isZh ? '總曝光次數' : 'Total Exposures',
-    totalCollectors: isZh ? '圖鑑收錄人數' : 'Total Collectors',
-    couponIssued: isZh ? '優惠券發放' : 'Coupons Issued',
-    couponRedeemed: isZh ? '優惠券核銷' : 'Coupons Redeemed',
-    redemptionRate: isZh ? '核銷率' : 'Redemption Rate',
-    topCoupons: isZh ? '熱門優惠券' : 'Top Coupons',
-    placeBreakdown: isZh ? '各店數據' : 'Place Breakdown',
-    allPlaces: isZh ? '全部店家' : 'All Places',
-    selectPlace: isZh ? '選擇店家' : 'Select Place',
-    noData: isZh ? '暫無數據' : 'No data',
-    times: isZh ? '次' : 'times',
-    people: isZh ? '人' : 'people',
-    issued: isZh ? '發放' : 'Issued',
-    redeemed: isZh ? '核銷' : 'Redeemed',
-    collectionCount: isZh ? '收錄數' : 'Collections',
-  };
 
   // ============ Effect Hooks ============
   // 元件載入時取得初始資料
@@ -176,9 +153,9 @@ export function MerchantAnalyticsScreen() {
    * @returns 店家名稱或「全部店家」
    */
   const getSelectedPlaceName = () => {
-    if (!selectedPlaceId) return translations.allPlaces;
+    if (!selectedPlaceId) return t.merchant_allPlaces;
     const place = places.find(p => p.id === selectedPlaceId);
-    return place?.placeName || translations.allPlaces;
+    return place?.placeName || t.merchant_allPlaces;
   };
 
   // ============ 載入中畫面 ============
@@ -186,7 +163,7 @@ export function MerchantAnalyticsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
-        <Text style={styles.loadingText}>{translations.loading}</Text>
+        <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
   }
@@ -237,7 +214,7 @@ export function MerchantAnalyticsScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
-        <Text style={styles.title}>{translations.title}</Text>
+        <Text style={styles.title}>{t.merchant_analytics}</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -305,7 +282,7 @@ export function MerchantAnalyticsScreen() {
                       !selectedPlaceId && styles.placeDropdownTextActive,
                     ]}
                   >
-                    {translations.allPlaces}
+                    {t.merchant_allPlaces}
                   </Text>
                 </TouchableOpacity>
                 {/* 各店家選項 */}
@@ -345,35 +322,35 @@ export function MerchantAnalyticsScreen() {
         }
       >
         {/* ============ 總覽區塊 ============ */}
-        <Text style={styles.sectionTitle}>{translations.overview}</Text>
+        <Text style={styles.sectionTitle}>{t.merchant_overview}</Text>
         <View style={styles.statsGrid}>
           {/* 總曝光次數 */}
           <StatCard
             icon="eye-outline"
-            label={translations.totalExposures}
+            label={t.merchant_totalExposures}
             value={analytics?.overview?.totalExposures}
-            unit={translations.times}
+            unit={t.merchant_times}
             color={MibuBrand.info}
           />
           {/* 圖鑑收錄人數 */}
           <StatCard
             icon="people-outline"
-            label={translations.totalCollectors}
+            label={t.merchant_totalCollectors}
             value={analytics?.overview?.totalCollectors}
-            unit={translations.people}
+            unit={t.merchant_people}
             color={MibuBrand.brown}
           />
           {/* 優惠券發放數 */}
           <StatCard
             icon="pricetag-outline"
-            label={translations.couponIssued}
+            label={t.merchant_couponIssued}
             value={analytics?.overview?.couponIssued}
             color={MibuBrand.success}
           />
           {/* 優惠券核銷數 */}
           <StatCard
             icon="checkmark-circle-outline"
-            label={translations.couponRedeemed}
+            label={t.merchant_couponRedeemed}
             value={analytics?.overview?.couponRedeemed}
             color={SemanticColors.warningDark}
           />
@@ -383,7 +360,7 @@ export function MerchantAnalyticsScreen() {
         <View style={styles.rateCard}>
           <View style={styles.rateHeader}>
             <Ionicons name="trending-up-outline" size={24} color={MibuBrand.brown} />
-            <Text style={styles.rateLabel}>{translations.redemptionRate}</Text>
+            <Text style={styles.rateLabel}>{t.merchant_redemptionRate}</Text>
           </View>
           <Text style={styles.rateValue}>
             {analytics?.overview?.redemptionRate !== undefined
@@ -395,7 +372,7 @@ export function MerchantAnalyticsScreen() {
         {/* ============ 熱門優惠券列表 ============ */}
         {analytics?.topCoupons && analytics.topCoupons.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>{translations.topCoupons}</Text>
+            <Text style={styles.sectionTitle}>{t.merchant_topCoupons}</Text>
             <View style={styles.listContainer}>
               {analytics.topCoupons.map((coupon, index) => (
                 <View key={coupon.couponId} style={styles.listItem}>
@@ -410,10 +387,10 @@ export function MerchantAnalyticsScreen() {
                     </Text>
                     <View style={styles.listStats}>
                       <Text style={styles.listStatText}>
-                        {translations.issued}: {coupon.issued}
+                        {t.merchant_issued}: {coupon.issued}
                       </Text>
                       <Text style={styles.listStatText}>
-                        {translations.redeemed}: {coupon.redeemed}
+                        {t.merchant_redeemed}: {coupon.redeemed}
                       </Text>
                       <Text style={styles.listStatRate}>
                         {coupon.redemptionRate.toFixed(1)}%
@@ -429,7 +406,7 @@ export function MerchantAnalyticsScreen() {
         {/* ============ 各店數據列表 ============ */}
         {analytics?.placeBreakdown && analytics.placeBreakdown.length > 0 && !selectedPlaceId && (
           <>
-            <Text style={styles.sectionTitle}>{translations.placeBreakdown}</Text>
+            <Text style={styles.sectionTitle}>{t.merchant_placeBreakdown}</Text>
             <View style={styles.listContainer}>
               {analytics.placeBreakdown.map((place, index) => (
                 <TouchableOpacity
@@ -448,7 +425,7 @@ export function MerchantAnalyticsScreen() {
                       {place.placeName}
                     </Text>
                     <Text style={styles.listStatText}>
-                      {translations.collectionCount}: {place.collectionCount}
+                      {t.merchant_collectionCount}: {place.collectionCount}
                     </Text>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />

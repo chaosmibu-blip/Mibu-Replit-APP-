@@ -40,18 +40,16 @@ import { useApp } from '../../../context/AppContext';
 import { collectionApi } from '../../../services/collectionApi';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { FavoriteItem } from '../../../types/collection';
+import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 
 // ============================================================
 // 主元件
 // ============================================================
 
 export function FavoritesScreen() {
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
   const theme = useTheme();
-
-  // 語言判斷
-  const isZh = state.language === 'zh-TW';
 
   // ============================================================
   // 狀態管理
@@ -118,14 +116,12 @@ export function FavoritesScreen() {
    */
   const handleRemoveFavorite = async (placeId: string, placeName: string) => {
     Alert.alert(
-      isZh ? '移除最愛' : 'Remove Favorite',
-      isZh
-        ? `確定要將「${placeName}」從最愛中移除嗎？`
-        : `Remove "${placeName}" from favorites?`,
+      t.favorites_removeFavorite,
+      tFormat(t.favorites_confirmRemove, { name: placeName }),
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: isZh ? '移除' : 'Remove',
+          text: t.favorites_remove,
           style: 'destructive',
           onPress: async () => {
             try {
@@ -139,10 +135,7 @@ export function FavoritesScreen() {
               }
             } catch (error) {
               console.error('Failed to remove favorite:', error);
-              Alert.alert(
-                isZh ? '錯誤' : 'Error',
-                isZh ? '無法移除最愛' : 'Failed to remove favorite'
-              );
+              Alert.alert(t.favorites_error, t.favorites_removeFailed);
             }
           },
         },
@@ -221,8 +214,8 @@ export function FavoritesScreen() {
 
           {/* 加入時間 */}
           <Text variant="labelSmall" style={styles.addedAt}>
-            {isZh ? '加入於 ' : 'Added '}
-            {new Date(item.addedAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
+            {t.favorites_addedAt}
+            {new Date(item.addedAt).toLocaleDateString(LOCALE_MAP[state.language])}
           </Text>
         </View>
 
@@ -267,7 +260,7 @@ export function FavoritesScreen() {
         <View style={styles.headerCenter}>
           <Ionicons name="heart" size={24} color={SemanticColors.errorDark} />
           <Text variant="titleLarge" style={{ color: theme.colors.onSurface, marginLeft: 8 }}>
-            {isZh ? '我的最愛' : 'My Favorites'}
+            {t.favorites_title}
           </Text>
         </View>
         <View style={styles.headerPlaceholder} />
@@ -276,7 +269,7 @@ export function FavoritesScreen() {
       {/* Stats */}
       <Surface style={styles.statsBar} elevation={0}>
         <Text variant="labelLarge" style={{ color: theme.colors.secondary }}>
-          {isZh ? `共 ${total} 個收藏` : `${total} favorites`}
+          {tFormat(t.favorites_totalCount, { count: total })}
         </Text>
       </Surface>
 
@@ -304,12 +297,10 @@ export function FavoritesScreen() {
         <View style={styles.emptyContainer}>
           <Ionicons name="heart-outline" size={64} color={theme.colors.outline} />
           <Text variant="titleMedium" style={[styles.emptyTitle, { color: theme.colors.onSurface }]}>
-            {isZh ? '還沒有最愛' : 'No favorites yet'}
+            {t.favorites_noFavorites}
           </Text>
           <Text variant="bodyMedium" style={[styles.emptySubtitle, { color: theme.colors.outline }]}>
-            {isZh
-              ? '在圖鑑中點擊愛心即可加入最愛'
-              : 'Tap the heart icon in your collection to add favorites'}
+            {t.favorites_tapToAdd}
           </Text>
         </View>
       )}

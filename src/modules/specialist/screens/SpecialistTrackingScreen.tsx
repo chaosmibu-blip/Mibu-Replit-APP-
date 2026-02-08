@@ -26,6 +26,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { io, Socket } from 'socket.io-client';
 import { useApp } from '../../../context/AppContext';
 import { API_BASE_URL } from '../../../constants/translations';
+import { LOCALE_MAP } from '../../../utils/i18n';
 import { UIColors } from '../../../../constants/Colors';
 
 // ============ 型別定義 ============
@@ -44,7 +45,7 @@ interface TravelerLocation {
 
 // ============ 元件主體 ============
 export function SpecialistTrackingScreen() {
-  const { state, getToken } = useApp();
+  const { state, getToken, t } = useApp();
   const router = useRouter();
   const params = useLocalSearchParams();
 
@@ -57,20 +58,6 @@ export function SpecialistTrackingScreen() {
   const [connected, setConnected] = useState(false);
   // loading: 是否正在載入/連線中
   const [loading, setLoading] = useState(true);
-
-  // 判斷目前語言是否為繁體中文
-  const isZh = state.language === 'zh-TW';
-
-  // ============ 多語系翻譯 ============
-  const translations = {
-    title: isZh ? '即時位置追蹤' : 'Live Location Tracking',
-    connecting: isZh ? '連線中...' : 'Connecting...',
-    connected: isZh ? '已連線' : 'Connected',
-    disconnected: isZh ? '已斷線' : 'Disconnected',
-    noLocations: isZh ? '尚無旅客位置資料' : 'No traveler locations yet',
-    lastUpdate: isZh ? '最後更新' : 'Last update',
-    travelers: isZh ? '旅客' : 'travelers',
-  };
 
   // 元件載入時初始化 WebSocket，卸載時斷開連線
   useEffect(() => {
@@ -153,7 +140,7 @@ export function SpecialistTrackingScreen() {
    */
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString(isZh ? 'zh-TW' : 'en-US', {
+    return date.toLocaleTimeString(LOCALE_MAP[state.language], {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
@@ -168,7 +155,7 @@ export function SpecialistTrackingScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#6366f1" />
-        <Text style={styles.loadingText}>{translations.connecting}</Text>
+        <Text style={styles.loadingText}>{t.specialist_connecting}</Text>
       </View>
     );
   }
@@ -182,12 +169,12 @@ export function SpecialistTrackingScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#1e293b" />
         </TouchableOpacity>
-        <Text style={styles.title}>{translations.title}</Text>
+        <Text style={styles.title}>{t.specialist_liveTracking}</Text>
         {/* 連線狀態標籤 */}
         <View style={[styles.connectionStatus, connected ? styles.statusConnected : styles.statusDisconnected]}>
           <View style={[styles.statusDot, connected ? styles.dotConnected : styles.dotDisconnected]} />
           <Text style={styles.statusText}>
-            {connected ? translations.connected : translations.disconnected}
+            {connected ? t.specialist_connected : t.specialist_disconnected}
           </Text>
         </View>
       </View>
@@ -200,17 +187,17 @@ export function SpecialistTrackingScreen() {
           <View style={styles.webMapPlaceholder}>
             <Ionicons name="map-outline" size={64} color="#94a3b8" />
             <Text style={styles.webMapText}>
-              {isZh ? '地圖在網頁版不可用' : 'Map not available on web'}
+              {t.specialist_mapNotAvailableWeb}
             </Text>
             <Text style={styles.travelerCount}>
-              {locationArray.length} {translations.travelers}
+              {locationArray.length} {t.specialist_travelers}
             </Text>
           </View>
         ) : (
           // 原生版：地圖容器（需要 react-native-maps）
           <View style={styles.mapContainer}>
             <Text style={styles.mapPlaceholderText}>
-              {isZh ? '地圖區域 - 需要 react-native-maps' : 'Map Area - requires react-native-maps'}
+              {t.specialist_mapRequiresNative}
             </Text>
           </View>
         )}
@@ -218,11 +205,11 @@ export function SpecialistTrackingScreen() {
         {/* ============ 旅客位置列表卡片 ============ */}
         <View style={styles.travelerListCard}>
           <Text style={styles.listTitle}>
-            {isZh ? '旅客位置' : 'Traveler Locations'} ({locationArray.length})
+            {t.specialist_travelerLocations} ({locationArray.length})
           </Text>
           {locationArray.length === 0 ? (
             // 空狀態顯示
-            <Text style={styles.noDataText}>{translations.noLocations}</Text>
+            <Text style={styles.noDataText}>{t.specialist_noLocations}</Text>
           ) : (
             // 旅客位置列表
             <View style={styles.travelerList}>
@@ -241,7 +228,7 @@ export function SpecialistTrackingScreen() {
                       {loc.lat.toFixed(6)}, {loc.lng.toFixed(6)}
                     </Text>
                     <Text style={styles.travelerTime}>
-                      {translations.lastUpdate}: {formatTime(loc.timestamp)}
+                      {t.specialist_lastUpdate}: {formatTime(loc.timestamp)}
                     </Text>
                   </View>
                   {/* 定位按鈕 */}

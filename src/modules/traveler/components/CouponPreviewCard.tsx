@@ -23,6 +23,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { CouponTier } from '../../../types';
 import { UIColors } from '../../../../constants/Colors';
+import { useApp } from '../../../context/AppContext';
+import { tFormat } from '../../../utils/i18n';
 
 // ============================================================
 // Props 介面定義
@@ -116,8 +118,8 @@ const CouponPreviewCard = React.memo(function CouponPreviewCard({
   // 根據稀有度和緊湊模式生成樣式（useMemo 避免每次渲染重建 StyleSheet）
   const styles = useMemo(() => createStyles(TIER_STYLES[tier], isCompact), [tier, isCompact]);
 
-  // 語言判斷
-  const isZh = language === 'zh-TW';
+  // 多語系翻譯
+  const { t } = useApp();
 
   /**
    * 格式化有效期限
@@ -126,9 +128,10 @@ const CouponPreviewCard = React.memo(function CouponPreviewCard({
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return isZh
-      ? `${date.getMonth() + 1}/${date.getDate()} 到期`
-      : `Exp: ${date.getMonth() + 1}/${date.getDate()}`;
+    return tFormat(t.economy_couponExpiry, {
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+    });
   };
 
   // 可點擊時使用 TouchableOpacity，否則使用 View

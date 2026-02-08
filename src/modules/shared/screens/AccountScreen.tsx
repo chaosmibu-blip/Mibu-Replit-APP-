@@ -32,19 +32,20 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { useApp } from '../../../context/AppContext';
 import { authApi, LinkedIdentity } from '../../../services/authApi';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { LOCALE_MAP, tFormat } from '../../../utils/i18n';
 
 // ============ 常數定義 ============
 
 /** OAuth 提供者資訊 */
-const PROVIDER_INFO: Record<string, { icon: string; label: { zh: string; en: string }; color: string }> = {
+const PROVIDER_INFO: Record<string, { icon: string; label: string; color: string }> = {
   apple: {
     icon: 'logo-apple',
-    label: { zh: 'Apple', en: 'Apple' },
+    label: 'Apple',
     color: '#000000',
   },
   google: {
     icon: 'logo-google',
-    label: { zh: 'Google', en: 'Google' },
+    label: 'Google',
     color: '#4285F4',
   },
 };
@@ -52,9 +53,8 @@ const PROVIDER_INFO: Record<string, { icon: string; label: { zh: string; en: str
 // ============ 元件本體 ============
 
 export function AccountScreen() {
-  const { state, getToken } = useApp();
+  const { state, t, getToken } = useApp();
   const router = useRouter();
-  const isZh = state.language === 'zh-TW';
 
   // ============ 狀態管理 ============
 
@@ -146,8 +146,8 @@ export function AccountScreen() {
       if (result.success) {
         setIdentities(prev => [...prev, result.identity]);
         Alert.alert(
-          isZh ? '綁定成功' : 'Linked!',
-          isZh ? 'Apple 帳號已成功綁定' : 'Apple account has been linked'
+          t.auth_linkSuccess,
+          t.auth_appleLinkSuccess
         );
       }
     } catch (error: any) {
@@ -155,8 +155,8 @@ export function AccountScreen() {
       if (error.code !== 'ERR_REQUEST_CANCELED') {
         console.error('Apple binding failed:', error);
         Alert.alert(
-          isZh ? '綁定失敗' : 'Link Failed',
-          isZh ? '無法綁定 Apple 帳號' : 'Failed to link Apple account'
+          t.auth_linkFailed,
+          t.auth_appleLinkFailed
         );
       }
     } finally {
@@ -170,8 +170,8 @@ export function AccountScreen() {
    */
   const handleBindGoogle = async () => {
     Alert.alert(
-      isZh ? '功能開發中' : 'Coming Soon',
-      isZh ? 'Google 綁定功能即將推出' : 'Google linking will be available soon'
+      t.auth_comingSoon,
+      t.auth_googleComingSoon
     );
   };
 
@@ -185,8 +185,8 @@ export function AccountScreen() {
     // 檢查是否為唯一身份
     if (identities.length <= 1) {
       Alert.alert(
-        isZh ? '無法解除綁定' : 'Cannot Unlink',
-        isZh ? '至少需要保留一個登入方式' : 'You must keep at least one login method'
+        t.auth_cannotUnlink,
+        t.auth_keepOneMethod
       );
       return;
     }
@@ -194,22 +194,21 @@ export function AccountScreen() {
     // 檢查是否為主要身份
     if (identity.isPrimary) {
       Alert.alert(
-        isZh ? '無法解除綁定' : 'Cannot Unlink',
-        isZh ? '無法解除主要登入方式，請先設定其他帳號為主要登入方式' : 'Cannot unlink primary login method. Please set another account as primary first.'
+        t.auth_cannotUnlink,
+        t.auth_cannotUnlinkPrimary
       );
       return;
     }
 
-    // 確認對話框
+    // 確認對話框（B-class：動態插值 provider 名稱）
+    const providerName = PROVIDER_INFO[identity.provider]?.label || identity.provider;
     Alert.alert(
-      isZh ? '確認解除綁定' : 'Confirm Unlink',
-      isZh
-        ? `確定要解除 ${PROVIDER_INFO[identity.provider]?.label.zh || identity.provider} 帳號的綁定嗎？`
-        : `Are you sure you want to unlink your ${PROVIDER_INFO[identity.provider]?.label.en || identity.provider} account?`,
+      t.auth_confirmUnlink,
+      tFormat(t.auth_confirmUnlinkDesc, { provider: providerName }),
       [
-        { text: isZh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: isZh ? '解除綁定' : 'Unlink',
+          text: t.auth_unlink,
           style: 'destructive',
           onPress: async () => {
             setUnlinkingId(identity.id);
@@ -222,8 +221,8 @@ export function AccountScreen() {
               if (result.success) {
                 setIdentities(prev => prev.filter(i => i.id !== identity.id));
                 Alert.alert(
-                  isZh ? '解除成功' : 'Unlinked!',
-                  isZh ? '已解除帳號綁定' : 'Account has been unlinked'
+                  t.auth_unlinkSuccess,
+                  t.auth_unlinkSuccessDesc
                 );
               } else {
                 throw new Error(result.message);
@@ -231,8 +230,8 @@ export function AccountScreen() {
             } catch (error) {
               console.error('Unlink failed:', error);
               Alert.alert(
-                isZh ? '解除失敗' : 'Unlink Failed',
-                isZh ? '無法解除綁定，請稍後再試' : 'Failed to unlink, please try again'
+                t.auth_unlinkFailed,
+                t.auth_unlinkFailedRetry
               );
             } finally {
               setUnlinkingId(null);
@@ -273,7 +272,7 @@ export function AccountScreen() {
         <View style={styles.headerCenter}>
           <Ionicons name="link" size={24} color={MibuBrand.brownDark} />
           <Text style={styles.headerTitle}>
-            {isZh ? '帳號綁定' : 'Linked Accounts'}
+            {t.auth_linkedAccounts}
           </Text>
         </View>
         <View style={styles.headerPlaceholder} />
@@ -295,16 +294,14 @@ export function AccountScreen() {
         <View style={styles.infoCard}>
           <Ionicons name="information-circle" size={24} color={MibuBrand.info} />
           <Text style={styles.infoText}>
-            {isZh
-              ? '綁定多個帳號可讓您使用不同方式登入，並保護帳號安全。'
-              : 'Link multiple accounts to sign in with different methods and secure your account.'}
+            {t.auth_linkMultipleDesc}
           </Text>
         </View>
 
         {/* ===== 已綁定的帳號列表 ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            {isZh ? '已綁定的帳號' : 'Linked Accounts'}
+            {t.auth_linkedAccountsSection}
           </Text>
 
           {identities.length === 0 ? (
@@ -312,7 +309,7 @@ export function AccountScreen() {
             <View style={styles.emptyState}>
               <Ionicons name="link-outline" size={48} color={MibuBrand.tan} />
               <Text style={styles.emptyText}>
-                {isZh ? '尚未綁定任何帳號' : 'No accounts linked'}
+                {t.auth_noAccountsLinked}
               </Text>
             </View>
           ) : (
@@ -335,23 +332,23 @@ export function AccountScreen() {
                     <View style={styles.identityInfo}>
                       <View style={styles.identityHeader}>
                         <Text style={styles.providerName}>
-                          {provider?.label[isZh ? 'zh' : 'en'] || identity.provider}
+                          {provider?.label || identity.provider}
                         </Text>
                         {/* 主要身份標籤 */}
                         {identity.isPrimary && (
                           <View style={styles.primaryBadge}>
                             <Text style={styles.primaryBadgeText}>
-                              {isZh ? '主要' : 'Primary'}
+                              {t.auth_primary}
                             </Text>
                           </View>
                         )}
                       </View>
                       <Text style={styles.identityEmail} numberOfLines={1}>
-                        {identity.email || isZh ? '（未提供 Email）' : '(No email provided)'}
+                        {identity.email || t.auth_noEmailProvided}
                       </Text>
                       <Text style={styles.linkedDate}>
-                        {isZh ? '綁定於 ' : 'Linked '}
-                        {new Date(identity.linkedAt).toLocaleDateString(isZh ? 'zh-TW' : 'en-US')}
+                        {t.auth_linkedAt}
+                        {new Date(identity.linkedAt).toLocaleDateString(LOCALE_MAP[state.language])}
                       </Text>
                     </View>
 
@@ -379,7 +376,7 @@ export function AccountScreen() {
         {/* ===== 新增綁定區塊 ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            {isZh ? '新增綁定' : 'Add Account'}
+            {t.auth_addAccount}
           </Text>
 
           <View style={styles.bindOptions}>
@@ -399,10 +396,10 @@ export function AccountScreen() {
                 </View>
                 <View style={styles.bindInfo}>
                   <Text style={styles.bindLabel}>
-                    {isZh ? '綁定 Apple' : 'Link Apple'}
+                    {t.auth_linkApple}
                   </Text>
                   <Text style={styles.bindDesc}>
-                    {isZh ? '使用 Apple ID 登入' : 'Sign in with Apple ID'}
+                    {t.auth_signInApple}
                   </Text>
                 </View>
                 <Ionicons name="add-circle" size={24} color={MibuBrand.brown} />
@@ -425,10 +422,10 @@ export function AccountScreen() {
                 </View>
                 <View style={styles.bindInfo}>
                   <Text style={styles.bindLabel}>
-                    {isZh ? '綁定 Google' : 'Link Google'}
+                    {t.auth_linkGoogle}
                   </Text>
                   <Text style={styles.bindDesc}>
-                    {isZh ? '使用 Google 帳號登入' : 'Sign in with Google'}
+                    {t.auth_signInGoogle}
                   </Text>
                 </View>
                 <Ionicons name="add-circle" size={24} color={MibuBrand.brown} />
@@ -440,7 +437,7 @@ export function AccountScreen() {
               <View style={styles.allLinkedState}>
                 <Ionicons name="checkmark-circle" size={32} color={MibuBrand.success} />
                 <Text style={styles.allLinkedText}>
-                  {isZh ? '已綁定所有可用帳號' : 'All available accounts linked'}
+                  {t.auth_allLinked}
                 </Text>
               </View>
             )}
