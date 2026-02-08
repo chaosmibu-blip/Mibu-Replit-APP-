@@ -11,7 +11,7 @@
 > **跨端對應**
 > - 後端：（無直接對應，前端專屬）
 
-> 最後更新: 2026-01-11
+> 最後更新: 2026-02-08
 
 ## 圖片資源
 
@@ -24,6 +24,16 @@ assets/
 │   ├── splash.png         # 啟動畫面
 │   ├── splash-icon.png    # 啟動圖示
 │   ├── favicon.png        # Web Favicon
+│   ├── avatars/           # 頭像插畫（圓形裁切版）
+│   │   ├── avatar-chef.png
+│   │   ├── avatar-artist.png
+│   │   ├── avatar-musician.png
+│   │   ├── avatar-gardener.png
+│   │   ├── avatar-explorer.png
+│   │   ├── avatar-astronaut.png
+│   │   ├── avatar-diver.png
+│   │   ├── avatar-camper.png
+│   │   └── originals/     # 原始圖片備份（含自帶邊框）
 │   ├── partial-react-logo.png   # Expo 預設圖片 (可刪除)
 │   ├── react-logo.png           # Expo 預設圖片 (可刪除)
 │   ├── react-logo@2x.png        # Expo 預設圖片 (可刪除)
@@ -31,6 +41,28 @@ assets/
 ├── fonts/                  # 自定義字體
 └── animations/             # Lottie 動畫
 ```
+
+### 頭像圖片處理（2026-02-08）
+
+**問題**：原始頭像圖片 256x256 內含一圈手繪邊框，與 CSS borderRadius + borderWidth 的頭像框對不齊。
+三次 CSS 方案（transform scale、絕對定位）都失敗。
+
+**解法**：用 ImageMagick 裁切圖片，去掉自帶邊框：
+```bash
+magick original.png -alpha on \
+  \( -size 256x256 xc:none -fill white -draw "circle 130,150 130,52" \) \
+  -compose DstIn -composite \
+  -trim +repage \
+  -resize 256x256! \
+  \( -size 256x256 xc:none -fill white -draw "circle 128,128 128,0" \) \
+  -compose DstIn -composite \
+  output.png
+```
+- 原始圖片圓心偏移約 (130, 150)，邊框半徑約 103-112px
+- 步驟：提取內容圓 → trim → resize 填滿 256x256 → 置中圓形 mask
+- 處理後圖片為純圓形 + 透明角落，RN 端只需 `width: '100%', height: '100%'` + `borderRadius`
+
+**未完成**：ProfileScreen / HomeScreen 的 avatar 渲染程式碼需簡化（移除絕對定位 hack）
 
 ### Splash Screen 設定
 - **圖片**: `./assets/images/splash.png`

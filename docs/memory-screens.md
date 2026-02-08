@@ -262,6 +262,27 @@ GET /api/announcements
 
 ---
 
+---
+
+## 2026-02-08 變更紀錄
+
+### 已完成
+| 項目 | 影響檔案 | 說明 |
+|------|----------|------|
+| GachaScreen 429 錯誤處理 | `GachaScreen.tsx`, `translations.ts` | 429→頻率限制提示、401→引導登入、通用錯誤 |
+| GachaScreen i18n 遷移 | `GachaScreen.tsx`, `translations.ts` | ~19 處 `isZh` 改用 `t` 字典，新增 23 key×4 語系 |
+| 行程建立月曆選擇器 | `ItineraryScreenV2.tsx` | TextInput → `react-native-calendars` Calendar 元件 |
+| 圖鑑分類全景點滑動 | `ItineraryScreenV2.tsx` | 移除 `.slice(0,15)` 截斷 + "還有XX個景點" |
+| 登入語系選單收合 | `app/login.tsx` | overlay 從 header 移到 root container，全螢幕點擊收合 |
+| 頭像圖片圓形裁切 | `assets/images/avatars/*.png` | ImageMagick 去除自帶邊框，純圓形 + 透明角落 |
+
+### 未完成
+| 項目 | 影響檔案 | 說明 |
+|------|----------|------|
+| 頭像渲染程式碼簡化 | `ProfileScreen.tsx`, `HomeScreen.tsx` | 圖片已裁切，需將絕對定位 hack 改回 `width:'100%' height:'100%'` |
+
+---
+
 ## 待補充
 - [ ] 各頁面狀態管理
 - [ ] Deep Linking 設定

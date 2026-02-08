@@ -147,6 +147,34 @@ Animated.timing(value, { toValue: 1, duration: 300, useNativeDriver: true });
 
 ---
 
+---
+
+## 頭像系統（2026-02-08）
+
+### 頭像預設選項
+- 8 隻貓咪系列插畫，定義在 `ProfileScreen.tsx` 的 `DEFAULT_AVATAR_PRESETS`
+- 圖片位於 `assets/images/avatars/avatar-{id}.png`，256x256 圓形（已用 ImageMagick 去除自帶邊框）
+- 背景色統一為 `#F5E6D3`
+
+### 頭像框尺寸
+| 位置 | 容器尺寸 | borderWidth | 內容區 |
+|------|----------|-------------|--------|
+| 主頭像（ProfileScreen） | 100×100 | 4px | 92×92 |
+| 選項（Modal） | 64×64 (含 padding 3 + border 3) | 3px | ~52×52 |
+| 首頁（HomeScreen） | 64×64 | 無 | 64×64 |
+
+### 渲染方式
+圖片已裁切為圓形，渲染只需：
+```tsx
+<View style={{ width: 100, height: 100, borderRadius: 50, overflow: 'hidden' }}>
+  <Image source={preset.image} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+</View>
+```
+
+**待完成**：ProfileScreen / HomeScreen 尚需將絕對定位 hack 改回簡單渲染
+
+---
+
 ## 待補充
 - [ ] 完整元件 Props 文檔
 - [ ] 無障礙 (A11y) 設定
