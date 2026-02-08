@@ -93,7 +93,6 @@ class RevenueCatService {
       }
 
       this.isConfigured = true;
-      console.log('RevenueCat configured successfully');
     } catch (error) {
       console.error('Failed to configure RevenueCat:', error);
     }

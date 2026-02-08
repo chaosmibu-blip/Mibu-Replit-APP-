@@ -118,16 +118,11 @@ class GachaApiService extends ApiBase {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    console.log('🎰 [Gacha] Calling API:', url);
-    console.log('🎰 [Gacha] Params:', JSON.stringify(params));
-
     const response = await fetch(url, {
       method: 'POST',
       headers,
       body: JSON.stringify(params),
     });
-
-    console.log('🎰 [Gacha] Response status:', response.status);
 
     // 處理 HTTP 錯誤狀態碼
     if (!response.ok) {
@@ -166,7 +161,6 @@ class GachaApiService extends ApiBase {
     }
 
     const data = await response.json();
-    console.log('🎰 [Gacha] Response success:', data.success, 'items:', data.itinerary?.length || 0);
     return data;
   }
 
@@ -315,16 +309,11 @@ class GachaApiService extends ApiBase {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    console.log('🎰 [Gacha V2] Calling API:', url);
-    console.log('🎰 [Gacha V2] Params:', JSON.stringify(params));
-
     const response = await fetch(url, {
       method: 'POST',
       headers,
       body: JSON.stringify(params),
     });
-
-    console.log('🎰 [Gacha V2] Response status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -333,7 +322,6 @@ class GachaApiService extends ApiBase {
     }
 
     const data = await response.json();
-    console.log('🎰 [Gacha V2] Success:', data.cards?.length || 0, 'cards');
     return data;
   }
 

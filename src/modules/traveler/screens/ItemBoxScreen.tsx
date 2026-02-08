@@ -418,10 +418,10 @@ export function ItemBoxScreen() {
   /**
    * 下拉重新整理
    */
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     setRefreshing(true);
     loadInventory();
-  };
+  }, [loadInventory]);
 
   // ============================================================
   // 事件處理

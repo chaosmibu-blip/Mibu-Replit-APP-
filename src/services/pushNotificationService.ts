@@ -64,7 +64,7 @@ try {
   }
 } catch (error) {
   // 在不支援的環境（如 Web）靜默處理
-  console.log('Push notifications not available in this environment');
+  console.warn('Push notifications not available in this environment');
   isNotificationsAvailable = false;
 }
 
@@ -121,13 +121,13 @@ class PushNotificationService {
   async registerForPushNotifications(): Promise<string | null> {
     // 檢查環境支援
     if (!this.isAvailable() || !Notifications || !Device) {
-      console.log('Push notifications not available');
+      console.warn('Push notifications not available');
       return null;
     }
 
     // 只在實體設備上運行（模擬器無法收到推播）
     if (!Device.isDevice) {
-      console.log('Push notifications require a physical device');
+      console.warn('Push notifications require a physical device');
       return null;
     }
 
@@ -144,7 +144,7 @@ class PushNotificationService {
 
       // 用戶拒絕授權
       if (finalStatus !== 'granted') {
-        console.log('Push notification permission denied');
+        console.warn('Push notification permission denied');
         return null;
       }
 
@@ -153,7 +153,6 @@ class PushNotificationService {
       const tokenData = await Notifications.getExpoPushTokenAsync();
 
       this.expoPushToken = tokenData.data;
-      console.log('Expo Push Token:', this.expoPushToken);
 
       // Android 需要設定通知頻道（Android 8.0+）
       if (Platform.OS === 'android') {
@@ -200,7 +199,7 @@ class PushNotificationService {
     try {
       // 檢查 API 方法是否存在（避免未導出時報錯）
       if (typeof apiService.registerPushToken !== 'function') {
-        console.log('registerPushToken API not available yet');
+        console.warn('registerPushToken API not available yet');
         return false;
       }
 
@@ -209,11 +208,10 @@ class PushNotificationService {
         token: this.expoPushToken!,
         platform: Platform.OS as 'ios' | 'android',
       });
-      console.log('Push token registered with backend');
       return true;
     } catch (error) {
       // 靜默處理錯誤，不影響用戶體驗
-      console.log('Push token registration skipped:', error);
+      console.warn('Push token registration skipped:', error);
       return false;
     }
   }
@@ -236,7 +234,6 @@ class PushNotificationService {
     try {
       // 呼叫後端取消註冊 API（如果有的話）
       // 目前後端可能沒有 unregister 端點，這裡預留
-      console.log('Push token unregistered');
       this.expoPushToken = null;
     } catch (error) {
       console.error('Failed to unregister push token:', error);

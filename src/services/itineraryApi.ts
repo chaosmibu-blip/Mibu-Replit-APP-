@@ -138,9 +138,6 @@ class ItineraryApi extends ApiBase {
     token: string
   ): Promise<ItineraryMutationResponse> {
     try {
-      console.log('[ItineraryApi] createItinerary request:', JSON.stringify(data));
-      console.log('[ItineraryApi] token check:', token ? `Bearer ${token.substring(0, 20)}...` : 'NO TOKEN');
-
       // 後端直接回傳 Itinerary 物件（HTTP 201）
       const itinerary = await this.request<Itinerary>('/api/itinerary', {
         method: 'POST',
@@ -160,15 +157,8 @@ class ItineraryApi extends ApiBase {
       let serverMessage: string | undefined;
       if (error instanceof ApiError) {
         serverMessage = error.serverMessage;
-        console.log('[ItineraryApi] ApiError details:', {
-          status: error.status,
-          message: error.message,
-          serverMessage: error.serverMessage,
-          code: error.code,
-        });
       } else if (error instanceof Error) {
         serverMessage = error.message;
-        console.log('[ItineraryApi] Generic error:', error.message);
       }
 
       return {
@@ -201,17 +191,14 @@ class ItineraryApi extends ApiBase {
     data: UpdateItineraryRequest,
     token: string
   ): Promise<ItineraryMutationResponse> {
-    console.log('[ItineraryApi] updateItinerary called:', { id, data });
     try {
       const res = await this.request<ItineraryMutationResponse>(`/api/itinerary/${id}`, {
         method: 'PUT',
         headers: this.authHeaders(token),
         body: JSON.stringify(data),
       });
-      console.log('[ItineraryApi] updateItinerary response:', JSON.stringify(res, null, 2));
       // 確保 success 欄位存在（後端可能不回傳 success，HTTP 200 視為成功）
       if (res.success === undefined && res.itinerary) {
-        console.log('[ItineraryApi] Adding success: true (was undefined)');
         return { ...res, success: true };
       }
       return res;
@@ -280,7 +267,6 @@ class ItineraryApi extends ApiBase {
    */
   async getAvailablePlaces(id: number, token: string): Promise<AvailablePlacesResponse> {
     try {
-      console.log('[ItineraryApi] getAvailablePlaces called for itinerary:', id);
       const data = await this.request<{ categories: AvailablePlacesByCategory[] }>(
         `/api/itinerary/${id}/available-places`,
         {
@@ -288,13 +274,10 @@ class ItineraryApi extends ApiBase {
           headers: this.authHeaders(token),
         }
       );
-      console.log('[ItineraryApi] getAvailablePlaces raw response:', JSON.stringify(data));
-
       // 後端沒有 success 欄位，HTTP 200 就是成功
       const categories = data.categories || [];
       // 計算總景點數
       const totalCount = categories.reduce((sum, cat) => sum + cat.places.length, 0);
-      console.log('[ItineraryApi] getAvailablePlaces parsed:', { categoriesCount: categories.length, totalCount });
 
       return { success: true, categories, totalCount };
     } catch (error) {
@@ -452,11 +435,9 @@ class ItineraryApi extends ApiBase {
       try {
         // 非首次嘗試時，先等待再重試
         if (attempt > 0) {
-          console.log(`[ItineraryApi] aiChat retry attempt ${attempt}/${MAX_RETRIES}`);
           await delay(RETRY_DELAY);
         }
 
-        console.log('[ItineraryApi] aiChat request:', JSON.stringify(data));
         const result = await this.request<{
           message: string;
           response: string;
@@ -474,7 +455,6 @@ class ItineraryApi extends ApiBase {
           headers: this.authHeaders(token),
           body: JSON.stringify(data),
         });
-        console.log('[ItineraryApi] aiChat response:', JSON.stringify(result));
 
         // 後端直接回傳資料，包裝成 APP 期望的格式
         return {
