@@ -61,8 +61,8 @@ export function ClaimPlaceScreen() {
       setSearchResults(data.places || []);
     } catch (error: unknown) {
       console.error('Search failed:', error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage === 'UNAUTHORIZED') {
+      // 401 未授權：Token 過期或無效，導回登入頁
+      if ((error as any)?.status === 401) {
         router.push('/login');
         return;
       }

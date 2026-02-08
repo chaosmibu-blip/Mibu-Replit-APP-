@@ -231,16 +231,14 @@ class ContributionApiService extends ApiBase {
    * await contributionApi.removeFromBlacklist(token, 'place-123');
    */
   async removeFromBlacklist(token: string, placeId: string): Promise<BlacklistActionResponse> {
-    // 直接使用 fetch，因為 DELETE 請求處理方式不同
-    const url = `${this.baseUrl}/api/collection/${placeId}/blacklist`;
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    return response.json();
+    // 改用 this.request() 統一走 base.ts（含超時機制）
+    return this.request<BlacklistActionResponse>(
+      `/api/collection/${placeId}/blacklist`,
+      {
+        method: 'DELETE',
+        headers: this.authHeaders(token),
+      }
+    );
   }
 
   // ========== 投票系統 ==========

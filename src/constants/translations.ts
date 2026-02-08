@@ -24,8 +24,9 @@ export const MAX_LEVEL = 12;
 /** 預設等級 */
 export const DEFAULT_LEVEL = 5;
 
-/** 每日最大行程生成次數 */
-export const MAX_DAILY_GENERATIONS = 3;
+// #043: 移除 MAX_DAILY_GENERATIONS 常數
+// 限額由後端 GET /api/gacha/quota 或 GET /api/user/perks 回傳的 dailyPullLimit 控制
+// 限額單位是「卡片張數」（預設 36 張），不是生成次數
 
 /** API 基礎 URL（從環境變數讀取，有預設值） */
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://gacha-travel--s8869420.replit.app';
@@ -62,7 +63,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
   'zh-TW': {
     // 每日限制
     dailyLimitReached: '今日額度已達上限',
-    dailyLimitReachedDesc: '每日最多生成 3 次行程。請明天再來！',
+    dailyLimitReachedDesc: '今日抽取額度已用完，請明天再來！',
 
     // 應用程式標題
     appTitle: '行程扭蛋',
@@ -237,7 +238,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
   // ========== 英文 ==========
   'en': {
     dailyLimitReached: 'Daily Limit Reached',
-    dailyLimitReachedDesc: 'You can generate up to 3 itineraries per day. Come back tomorrow!',
+    dailyLimitReachedDesc: 'Your daily pull quota has been used up. Come back tomorrow!',
     appTitle: 'MIBU TRIP',
     appSubtitle: 'AI Travel Gacha',
     destination: 'Destination',
@@ -364,7 +365,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
   // ========== 日文 ==========
   'ja': {
     dailyLimitReached: '本日の上限に達しました',
-    dailyLimitReachedDesc: '1日3回まで生成可能です。また明日お越しください！',
+    dailyLimitReachedDesc: '本日の抽選枠を使い切りました。また明日お越しください！',
     appTitle: 'MIBU 旅ガチャ',
     appSubtitle: 'AI トラベルガチャ',
     destination: '目的地',
@@ -485,7 +486,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
   // ========== 韓文 ==========
   'ko': {
     dailyLimitReached: '일일 한도 도달',
-    dailyLimitReachedDesc: '하루에 최대 3개의 여행 일정을 생성할 수 있습니다. 내일 다시 와주세요!',
+    dailyLimitReachedDesc: '오늘의 뽑기 한도가 모두 소진되었습니다. 내일 다시 와주세요!',
     appTitle: 'MIBU 트립',
     appSubtitle: 'AI 여행 가챠',
     destination: '목적지',

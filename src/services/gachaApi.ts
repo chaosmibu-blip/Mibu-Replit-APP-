@@ -107,61 +107,21 @@ class GachaApiService extends ApiBase {
     language?: string;
     deviceId?: string;
   }, token?: string): Promise<ItineraryGenerateResponse> {
-    const url = `${this.baseUrl}/api/gacha/itinerary/v3`;
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-
-    // 若有 token 則加入認證標頭
+    // 改用 base.ts request()，超時 120 秒（AI 生成需要 1-2 分鐘）
+    const headers: Record<string, string> = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(params),
-    });
-
-    // 處理 HTTP 錯誤狀態碼
-    if (!response.ok) {
-      console.error('🎰 [Gacha] HTTP Error:', response.status, response.statusText);
-
-      // 嘗試解析錯誤回應
-      try {
-        const errorData = await response.json();
-        console.error('🎰 [Gacha] Error response:', JSON.stringify(errorData));
-        return {
-          success: false,
-          error: errorData.error || errorData.message || `HTTP ${response.status}`,
-          code: errorData.code || 'HTTP_ERROR',
-          itinerary: [],
-        } as ItineraryGenerateResponse;
-      } catch {
-        // 如果無法解析 JSON（例如 HTML 錯誤頁面）
-        // 根據 HTTP 狀態碼給出更友善的錯誤訊息
-        let errorMessage = `伺服器錯誤 (${response.status})`;
-        if (response.status === 503) {
-          errorMessage = '伺服器正在啟動中，請稍後再試';
-        } else if (response.status === 502) {
-          errorMessage = '無法連線到伺服器，請稍後再試';
-        } else if (response.status === 504) {
-          errorMessage = '伺服器回應超時，請稍後再試';
-        } else if (response.status >= 500) {
-          errorMessage = '伺服器忙碌中，請稍後再試';
-        }
-        return {
-          success: false,
-          error: errorMessage,
-          code: 'HTTP_ERROR',
-          itinerary: [],
-        } as ItineraryGenerateResponse;
-      }
-    }
-
-    const data = await response.json();
-    return data;
+    return this.request<ItineraryGenerateResponse>(
+      '/api/gacha/itinerary/v3',
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(params),
+      },
+      120_000, // AI 生成超時 120 秒
+    );
   }
 
   /**
@@ -299,30 +259,16 @@ class GachaApiService extends ApiBase {
    * @returns V2 格式的抽取結果
    */
   async pullGachaV2(params: V2GachaPullRequest, token?: string): Promise<V2GachaPullResponse> {
-    const url = `${this.baseUrl}/api/v2/gacha/pull`;
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-
+    const headers: Record<string, string> = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(url, {
+    return this.request<V2GachaPullResponse>('/api/v2/gacha/pull', {
       method: 'POST',
       headers,
       body: JSON.stringify(params),
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('🎰 [Gacha V2] Error:', errorData);
-      throw new Error(errorData.error || `HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
   }
 
   // ============ #009 新增 ============

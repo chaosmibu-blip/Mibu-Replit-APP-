@@ -51,7 +51,7 @@ import { apiService } from '../../../services/api';
 import { preloadService } from '../../../services/preloadService';
 import { gachaApi, getDeviceId } from '../../../services/gachaApi';
 import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoolCoupon, PrizePoolCoupon, PrizePoolResponse, ItineraryItemRaw, LocalizedContent, GachaMeta, CouponWon } from '../../../types';
-import { MAX_DAILY_GENERATIONS, getCategoryColor } from '../../../constants/translations';
+import { getCategoryColor } from '../../../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorCode, isAuthError } from '../../../shared/errors';
@@ -61,10 +61,7 @@ import { ErrorState } from '../../shared/components/ui/ErrorState';
 // 常數定義
 // ============================================================
 
-// 不限次數的特殊帳號（測試用）
-const UNLIMITED_EMAILS = ['s8869420@gmail.com'];
-
-// 每日扭蛋次數儲存 key（來自集中管理）
+// #043: 移除 UNLIMITED_EMAILS 硬編碼白名單，改用後端 isSuperAdmin 判斷
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
 
 // 螢幕寬度（用於計算獎池項目寬度）
@@ -335,56 +332,34 @@ export function GachaScreen() {
   // ============================================================
 
   /**
-   * 檢查是否還有每日扭蛋次數
-   * 超級管理員或特殊帳號（UNLIMITED_EMAILS）不受限制
+   * 檢查是否還有每日扭蛋額度
+   *
+   * #043: 改用後端 API 判斷，移除前端本地追蹤
+   * - 超管 isSuperAdmin → 無限
+   * - 一般用戶 → 呼叫 getQuota() 檢查後端額度
+   * - API 失敗 → 放行（讓後端在抽取時擋）
+   *
+   * 限額單位是「卡片張數」（36 張），不是生成次數
    */
   const checkDailyLimit = async (): Promise<boolean> => {
-    // 超級管理員不限次數
+    // 超級管理員不限次數（後端 isSuperAdmin 判斷，不用 email）
     if (state.user?.isSuperAdmin) {
       return true;
     }
 
-    // 特殊帳號不限次數
-    if (state.user?.email && UNLIMITED_EMAILS.includes(state.user.email)) {
-      return true;
-    }
-
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const stored = await AsyncStorage.getItem(STORAGE_KEYS.DAILY_LIMIT);
+      const token = await getToken();
+      if (!token) return true; // 未登入讓後續流程處理
 
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        // 如果是今天且已達上限，返回 false
-        if (parsed.date === today && parsed.count >= MAX_DAILY_GENERATIONS) {
-          return false;
-        }
-      }
+      const quota = await gachaApi.getQuota(token);
+      // dailyLimit === -1 表示無限（超管或特殊權益）
+      if (quota.dailyLimit === -1) return true;
+      // remaining > 0 才允許抽
+      if (quota.remaining !== undefined && quota.remaining <= 0) return false;
       return true;
     } catch {
+      // API 失敗時放行，讓後端在實際抽取時擋
       return true;
-    }
-  };
-
-  /**
-   * 增加今日扭蛋次數計數
-   */
-  const incrementDailyCount = async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const stored = await AsyncStorage.getItem(STORAGE_KEYS.DAILY_LIMIT);
-
-      let count = 1;
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.date === today) {
-          count = parsed.count + 1;
-        }
-      }
-
-      await AsyncStorage.setItem(STORAGE_KEYS.DAILY_LIMIT, JSON.stringify({ date: today, count }));
-    } catch (error) {
-      console.error('Failed to increment daily count:', error);
     }
   };
 
@@ -604,8 +579,7 @@ export function GachaScreen() {
         };
       }) as GachaItem[];
 
-      // 更新每日計數
-      await incrementDailyCount();
+      // #043: 不再前端追蹤每日計數，由後端管理額度
 
       // ========== 暫存結果，等待載入動畫結束 ==========
       pendingResultRef.current = {

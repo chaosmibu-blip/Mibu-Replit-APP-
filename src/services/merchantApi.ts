@@ -319,25 +319,14 @@ class MerchantApiService extends ApiBase {
    * @returns 搜尋結果
    */
   async searchMerchantPlaces(token: string, query: string): Promise<{ places: PlaceSearchResult[] }> {
-    // 使用原生 fetch 處理特殊的錯誤情況
-    const response = await fetch(`${this.baseUrl}/api/merchant/places/search?query=${encodeURIComponent(query)}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // 特別處理 401 未授權
-    if (response.status === 401) {
-      throw new Error('UNAUTHORIZED');
-    }
-
-    if (!response.ok) {
-      throw new Error(`Search failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
+    // 改用 this.request() 統一走 base.ts（含超時機制）
+    // 401 會拋出 ApiError { status: 401 }，caller 改用 error.status === 401 判斷
+    return this.request<{ places: PlaceSearchResult[] }>(
+      `/api/merchant/places/search?query=${encodeURIComponent(query)}`,
+      {
+        headers: this.authHeaders(token),
+      }
+    );
   }
 
   /**

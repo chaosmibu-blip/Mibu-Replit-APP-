@@ -351,16 +351,13 @@ class AuthApiService extends ApiBase {
     token: string,
     identityId: string
   ): Promise<{ success: boolean; message: string }> {
-    // 使用原生 fetch 因為需要動態路徑
-    const url = `${this.baseUrl}/api/auth/identities/${identityId}`;
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    return response.json();
+    return this.request<{ success: boolean; message: string }>(
+      `/api/auth/identities/${identityId}`,
+      {
+        method: 'DELETE',
+        headers: this.authHeaders(token),
+      }
+    );
   }
 
   // ============ #036 帳號合併 ============
@@ -452,39 +449,28 @@ class AuthApiService extends ApiBase {
     mimeType: string = 'image/jpeg'
   ): Promise<UploadAvatarResponse> {
     try {
-      const url = `${this.baseUrl}/api/avatar/upload`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          image: base64,
-          mimeType,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        return {
-          success: false,
-          message: result.message || '上傳失敗',
-          code: result.code,
-        };
-      }
-
+      // 改用 this.request() 統一走 base.ts（含超時機制）
+      const result = await this.request<{ avatarUrl: string; message?: string }>(
+        '/api/avatar/upload',
+        {
+          method: 'POST',
+          headers: this.authHeaders(token),
+          body: JSON.stringify({ image: base64, mimeType }),
+        }
+      );
       return {
         success: true,
         avatarUrl: result.avatarUrl,
         message: result.message || '上傳成功',
       };
     } catch (error) {
+      // 保留 try-catch：caller 依賴 { success: false } 回傳，不可改為 throw
       console.error('Upload avatar error:', error);
+      const apiError = error as any;
       return {
         success: false,
-        message: '上傳失敗，請稍後再試',
+        message: apiError.serverMessage || apiError.message || '上傳失敗，請稍後再試',
+        code: apiError.code,
       };
     }
   }
