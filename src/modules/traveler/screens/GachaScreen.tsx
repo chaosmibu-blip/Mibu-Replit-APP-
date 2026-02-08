@@ -55,6 +55,7 @@ import { getCategoryColor } from '../../../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorCode, isAuthError } from '../../../shared/errors';
+import { ApiError } from '../../../services/base';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============================================================
@@ -462,11 +463,11 @@ export function GachaScreen() {
     const token = await getToken();
     if (!token) {
       Alert.alert(
-        state.language === 'zh-TW' ? '請先登入' : 'Login Required',
-        state.language === 'zh-TW' ? '使用扭蛋功能需要登入帳號' : 'Please login to use the gacha feature',
+        t.gacha_loginRequired,
+        t.gacha_loginRequiredDesc,
         [
-          { text: state.language === 'zh-TW' ? '取消' : 'Cancel', style: 'cancel' },
-          { text: state.language === 'zh-TW' ? '前往登入' : 'Login', onPress: () => router.push('/login') }
+          { text: t.cancel, style: 'cancel' },
+          { text: t.gacha_goToLogin, onPress: () => router.push('/login') },
         ]
       );
       return;
@@ -499,20 +500,14 @@ export function GachaScreen() {
       // ========== 錯誤處理 ==========
       if (!response.success) {
         setShowLoadingAd(false);
-        Alert.alert(
-          state.language === 'zh-TW' ? '提示' : 'Notice',
-          state.language === 'zh-TW' ? '發生錯誤，請稍後再試' : 'An error occurred. Please try again.'
-        );
+        Alert.alert(t.common_notice, t.common_errorTryAgain);
         return;
       }
 
       // ========== 處理額度不足 ==========
       if (response.meta?.remainingQuota !== undefined && response.meta.remainingQuota < 0) {
         setShowLoadingAd(false);
-        Alert.alert(
-          state.language === 'zh-TW' ? '今日額度已用完' : 'Daily Limit Reached',
-          state.language === 'zh-TW' ? '請明天再來抽卡！' : 'Please come back tomorrow!'
-        );
+        Alert.alert(t.dailyLimitReached, t.dailyLimitReachedDesc);
         return;
       }
 
@@ -520,10 +515,7 @@ export function GachaScreen() {
       const cards = response.cards || [];
       if (cards.length === 0) {
         setShowLoadingAd(false);
-        Alert.alert(
-          state.language === 'zh-TW' ? '提示' : 'Notice',
-          state.language === 'zh-TW' ? '該區域暫無景點，請嘗試其他地區' : 'No places available in this area. Please try another region.'
-        );
+        Alert.alert(t.common_notice, t.gacha_noPlacesInArea);
         return;
       }
 
@@ -617,10 +609,20 @@ export function GachaScreen() {
 
       console.error('Gacha failed:', error);
       setShowLoadingAd(false);
-      Alert.alert(
-        state.language === 'zh-TW' ? '錯誤' : 'Error',
-        state.language === 'zh-TW' ? '生成行程失敗，請稍後再試' : 'Failed to generate itinerary. Please try again.'
-      );
+
+      // 依據錯誤類型顯示對應訊息
+      if (error instanceof ApiError && error.status === 429) {
+        // 429 限速：操作太頻繁
+        Alert.alert(t.common_notice, t.gacha_rateLimited);
+      } else if (error instanceof ApiError && error.status === 401) {
+        // 401 認證過期：導向重新登入
+        Alert.alert(t.gacha_loginRequired, t.gacha_loginRequiredDesc, [
+          { text: t.cancel, style: 'cancel' },
+          { text: t.gacha_goToLogin, onPress: () => router.push('/login') },
+        ]);
+      } else {
+        Alert.alert(t.common_error, t.gacha_generationFailed);
+      }
     }
   };
 
@@ -800,7 +802,7 @@ export function GachaScreen() {
           MIBU
         </Text>
         <Text style={{ fontSize: 15, color: MibuBrand.brownLight, marginTop: 6, fontWeight: '500' }}>
-          {state.language === 'zh-TW' ? '今天去哪玩？老天說了算' : 'Let Fate Decide Your Trip'}
+          {t.appSubtitle}
         </Text>
       </View>
 
@@ -808,8 +810,8 @@ export function GachaScreen() {
       {countriesError && countries.length === 0 && (
         <ErrorState
           icon="globe-outline"
-          message={state.language === 'zh-TW' ? '無法載入區域資料' : 'Failed to load regions'}
-          detail={state.language === 'zh-TW' ? '請檢查網路連線後再試' : 'Please check your connection and try again'}
+          message={t.gacha_loadRegionsFailed}
+          detail={t.gacha_loadRegionsRetry}
           onRetry={loadCountries}
         />
       )}
@@ -832,13 +834,13 @@ export function GachaScreen() {
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
           <Ionicons name="globe-outline" size={20} color={MibuBrand.copper} />
           <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.brown, marginLeft: 8 }}>
-            {state.language === 'zh-TW' ? '選擇探索區域' : 'Select Region'}
+            {t.gacha_selectExploreRegion}
           </Text>
         </View>
 
         {/* 國家下拉選單 */}
         <Select
-          label={state.language === 'zh-TW' ? '國家' : 'Country'}
+          label={t.gacha_countryLabel}
           options={countryOptions}
           value={selectedCountryId}
           onChange={(value) => {
@@ -898,7 +900,7 @@ export function GachaScreen() {
         {selectedCountryId && (
           <View style={{ marginTop: 12 }}>
             <Select
-              label={state.language === 'zh-TW' ? '城市/地區' : 'City/Region'}
+              label={t.gacha_cityRegionLabel}
               options={regionOptions}
               value={selectedRegionId}
               onChange={(value) => {
@@ -930,7 +932,7 @@ export function GachaScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', position: 'relative' }}>
               <Text style={{ fontSize: 15, fontWeight: '600', color: MibuBrand.copper }}>
-                {state.language === 'zh-TW' ? '扭蛋次數' : 'Pull Count'}
+                {t.gacha_pullCountLabel}
               </Text>
               {/* 說明按鈕（點擊顯示 Tooltip） */}
               <TouchableOpacity
@@ -969,14 +971,14 @@ export function GachaScreen() {
                   }}
                 >
                   <Text style={{ fontSize: 13, color: UIColors.white, fontWeight: '500' }}>
-                    {state.language === 'zh-TW' ? '每日扭蛋限額最高36次' : 'Daily limit: 36 pulls'}
+                    {t.gacha_dailyLimitInfo}
                   </Text>
                 </Animated.View>
               )}
             </View>
             {/* 當前選擇的次數 */}
             <Text style={{ fontSize: 28, fontWeight: '800', color: MibuBrand.brownDark }}>
-              {pullCount} <Text style={{ fontSize: 16, fontWeight: '600' }}>{state.language === 'zh-TW' ? '次' : 'pulls'}</Text>
+              {pullCount} <Text style={{ fontSize: 16, fontWeight: '600' }}>{t.gacha_pullUnit}</Text>
             </Text>
           </View>
 
@@ -1032,10 +1034,10 @@ export function GachaScreen() {
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={{ fontSize: 15, fontWeight: '700', color: SemanticColors.errorDark }}>
-              {state.language === 'zh-TW' ? '道具箱已滿' : 'Item Box Full'}
+              {t.gacha_itemBoxFull}
             </Text>
             <Text style={{ fontSize: 13, color: SemanticColors.errorDark, marginTop: 2 }}>
-              {state.language === 'zh-TW' ? '請先清理道具箱再抽卡' : 'Please clear some items first'}
+              {t.gacha_itemBoxFullDesc}
             </Text>
           </View>
           <TouchableOpacity
@@ -1048,7 +1050,7 @@ export function GachaScreen() {
             }}
           >
             <Text style={{ fontSize: 13, fontWeight: '700', color: UIColors.white }}>
-              {state.language === 'zh-TW' ? '前往' : 'Go'}
+              {t.gacha_goTo}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1066,9 +1068,7 @@ export function GachaScreen() {
         }}>
           <Ionicons name="alert-circle" size={20} color={MibuBrand.copper} />
           <Text style={{ fontSize: 14, color: MibuBrand.brown, marginLeft: 10, flex: 1 }}>
-            {state.language === 'zh-TW'
-              ? `道具箱剩餘 ${inventoryRemaining} 格`
-              : `${inventoryRemaining} slots remaining`}
+            {t.gacha_slotsRemaining.replace('{count}', String(inventoryRemaining))}
           </Text>
         </View>
       )}
@@ -1099,9 +1099,7 @@ export function GachaScreen() {
           color: (!canSubmit || showLoadingAd) ? MibuBrand.brownLight : MibuBrand.warmWhite,
           letterSpacing: 1,
         }}>
-          {isInventoryFull
-            ? (state.language === 'zh-TW' ? '道具箱已滿' : 'Item Box Full')
-            : (state.language === 'zh-TW' ? '開始扭蛋！' : 'Start Gacha!')}
+          {isInventoryFull ? t.gacha_itemBoxFull : t.gacha_startGachaExcl}
         </Text>
       </TouchableOpacity>
 
@@ -1123,7 +1121,7 @@ export function GachaScreen() {
         >
           <Ionicons name="information-circle-outline" size={18} color="#6366f1" />
           <Text style={{ fontSize: 14, color: '#6366f1', marginLeft: 6, fontWeight: '600' }}>
-            {state.language === 'zh-TW' ? '機率說明' : 'Probability Info'}
+            {t.gacha_probabilityInfo}
           </Text>
         </TouchableOpacity>
       */}
@@ -1209,7 +1207,7 @@ export function GachaScreen() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                       <Ionicons name="ticket" size={18} color={SemanticColors.warningDark} />
                       <Text style={{ fontSize: 14, fontWeight: '700', color: SemanticColors.warningDark, marginLeft: 6 }}>
-                        {state.language === 'zh-TW' ? 'SP/SSR 稀有優惠券' : 'SP/SSR Rare Coupons'} ({(prizePoolData?.coupons?.length || 0) + (Array.isArray(couponPoolData) ? couponPoolData.length : 0)})
+                        {t.gacha_rareCoupons} ({(prizePoolData?.coupons?.length || 0) + (Array.isArray(couponPoolData) ? couponPoolData.length : 0)})
                       </Text>
                     </View>
 
@@ -1330,7 +1328,7 @@ export function GachaScreen() {
                       <Ionicons name="ticket-outline" size={40} color={SemanticColors.warningDark} />
                     </View>
                     <Text style={{ fontSize: 14, color: MibuBrand.tan, textAlign: 'center' }}>
-                      {state.language === 'zh-TW' ? '此區域尚無稀有優惠券' : 'No rare coupons in this region'}
+                      {t.gacha_noRareCoupons}
                     </Text>
                   </View>
                 )}
