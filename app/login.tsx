@@ -709,9 +709,11 @@ export default function LoginScreen() {
           />
           <Text style={styles.headerTitle}>MIBU</Text>
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.globeButton}
           onPress={() => setShowLanguageMenu(!showLanguageMenu)}
+          accessibilityLabel={state.language === 'zh-TW' ? '切換語言' : 'Switch language'}
+          accessibilityRole="button"
         >
           <Ionicons name="globe-outline" size={28} color={MibuBrand.copper} />
         </TouchableOpacity>
@@ -728,6 +730,8 @@ export default function LoginScreen() {
                   setLanguage(lang.code);
                   setShowLanguageMenu(false);
                 }}
+                accessibilityLabel={`${state.language === 'zh-TW' ? '切換至' : 'Switch to'} ${lang.label}`}
+                accessibilityRole="menuitem"
               >
                 <Text style={styles.languageFlag}>{lang.flag}</Text>
                 <Text style={[
@@ -743,9 +747,11 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.portalSwitcher}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.switchButton}
           onPress={() => setShowPortalMenu(!showPortalMenu)}
+          accessibilityLabel={texts.switchPortal}
+          accessibilityRole="button"
         >
           <Text style={[styles.switchButtonText, { color: currentPortal.color }]}>
             {texts.switchPortal}
@@ -765,6 +771,8 @@ export default function LoginScreen() {
                   setSelectedPortal(portal.type);
                   setShowPortalMenu(false);
                 }}
+                accessibilityLabel={`${state.language === 'zh-TW' ? '切換至' : 'Switch to'} ${portal.label}`}
+                accessibilityRole="menuitem"
               >
                 <Text style={[
                   styles.portalMenuText,
@@ -788,6 +796,8 @@ export default function LoginScreen() {
             style={[styles.loginButton, { backgroundColor: currentPortal.color }]}
             onPress={handleLogin}
             disabled={loading}
+            accessibilityLabel={texts.login}
+            accessibilityRole="button"
           >
             {loading ? (
               <ActivityIndicator color={UIColors.white} />

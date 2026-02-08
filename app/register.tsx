@@ -207,6 +207,8 @@ export default function RegisterScreen() {
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
+          accessibilityLabel={t.login}
+          accessibilityRole="button"
         >
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brown} />
         </TouchableOpacity>
@@ -242,7 +244,13 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               placeholderTextColor={MibuBrand.tan}
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              accessibilityLabel={showPassword
+                ? (state.language === 'zh-TW' ? '隱藏密碼' : 'Hide password')
+                : (state.language === 'zh-TW' ? '顯示密碼' : 'Show password')}
+              accessibilityRole="button"
+            >
               <Ionicons
                 name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={20}
@@ -262,7 +270,13 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               placeholderTextColor={MibuBrand.tan}
             />
-            <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+            <TouchableOpacity
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              accessibilityLabel={showConfirmPassword
+                ? (state.language === 'zh-TW' ? '隱藏確認密碼' : 'Hide confirm password')
+                : (state.language === 'zh-TW' ? '顯示確認密碼' : 'Show confirm password')}
+              accessibilityRole="button"
+            >
               <Ionicons
                 name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={20}
@@ -287,6 +301,8 @@ export default function RegisterScreen() {
             style={[styles.registerButton, loading && styles.registerButtonDisabled]}
             onPress={handleRegister}
             disabled={loading}
+            accessibilityLabel={t.register}
+            accessibilityRole="button"
           >
             {loading ? (
               <ActivityIndicator color="#ffffff" />
@@ -301,7 +317,11 @@ export default function RegisterScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>{t.hasAccount}</Text>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            accessibilityLabel={t.login}
+            accessibilityRole="link"
+          >
             <Text style={styles.loginLink}>{t.login}</Text>
           </TouchableOpacity>
         </View>
