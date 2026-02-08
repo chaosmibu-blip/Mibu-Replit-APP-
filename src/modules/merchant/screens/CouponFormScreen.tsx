@@ -176,7 +176,7 @@ export function CouponFormScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
             <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <Text style={styles.title}>{isEdit ? t.titleEdit : t.titleNew}</Text>
@@ -215,6 +215,7 @@ export function CouponFormScreen() {
                     formData.tier === tier.id && { borderColor: tier.color },
                   ]}
                   onPress={() => updateField('tier', tier.id)}
+                  accessibilityLabel={`稀有度 ${tier.label}，機率 ${tier.prob}`}
                 >
                   <Text
                     style={[
@@ -299,6 +300,7 @@ export function CouponFormScreen() {
           <TouchableOpacity
             style={styles.toggleRow}
             onPress={() => updateField('isActive', !formData.isActive)}
+            accessibilityLabel={formData.isActive ? '停用優惠券' : '啟用優惠券'}
           >
             <Text style={styles.toggleLabel}>{t.isActive}</Text>
             <View
@@ -322,6 +324,7 @@ export function CouponFormScreen() {
           style={[styles.saveButton, saving && styles.saveButtonDisabled]}
           onPress={handleSave}
           disabled={saving}
+          accessibilityLabel="儲存"
         >
           {saving ? (
             <ActivityIndicator size="small" color={UIColors.white} />

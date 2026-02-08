@@ -234,7 +234,7 @@ export function PlaceEditScreen() {
         <Ionicons name="alert-circle-outline" size={48} color={UIColors.textSecondary} />
         <Text style={styles.loadingText}>{translations.loadFailed}</Text>
         {/* 返回按鈕 */}
-        <TouchableOpacity style={styles.backButtonLarge} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButtonLarge} onPress={() => router.back()} accessibilityLabel="返回">
           <Text style={styles.backButtonText}>{translations.back}</Text>
         </TouchableOpacity>
       </View>
@@ -255,7 +255,7 @@ export function PlaceEditScreen() {
         {/* ============ 頂部標題區 ============ */}
         <View style={styles.header}>
           {/* 返回按鈕 */}
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
             <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <Text style={styles.title}>{translations.title}</Text>
@@ -387,6 +387,7 @@ export function PlaceEditScreen() {
           style={[styles.saveButton, saving && styles.saveButtonDisabled]}
           onPress={handleSave}
           disabled={saving}
+          accessibilityLabel="儲存"
         >
           {saving ? (
             <ActivityIndicator size="small" color={UIColors.white} />

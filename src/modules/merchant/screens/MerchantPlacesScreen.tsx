@@ -223,7 +223,7 @@ export function MerchantPlacesScreen() {
         {/* ============ 頂部標題區 ============ */}
         <View style={styles.header}>
           {/* 返回按鈕 */}
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
             <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
           </TouchableOpacity>
           <Text style={styles.title}>{translations.title}</Text>
@@ -236,6 +236,7 @@ export function MerchantPlacesScreen() {
             <TouchableOpacity
               style={styles.claimButton}
               onPress={() => setShowSearch(true)}
+              accessibilityLabel="認領新店家"
             >
               <Ionicons name="add-circle-outline" size={24} color={MibuBrand.warmWhite} />
               <Text style={styles.claimButtonText}>{translations.claimNew}</Text>
@@ -262,6 +263,7 @@ export function MerchantPlacesScreen() {
                       style={styles.placeCard}
                       onPress={() => router.push(`/merchant/place/${place.id}`)}
                       activeOpacity={0.7}
+                      accessibilityLabel={`查看 ${place.placeName}`}
                     >
                       {/* 店家圖示 */}
                       <View style={styles.placeIcon}>
@@ -309,6 +311,7 @@ export function MerchantPlacesScreen() {
                   style={styles.searchButton}
                   onPress={handleSearch}
                   disabled={searching}
+                  accessibilityLabel="搜尋"
                 >
                   {searching ? (
                     <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
@@ -325,6 +328,7 @@ export function MerchantPlacesScreen() {
                   setSearchQuery('');
                   setSearchResults([]);
                 }}
+                accessibilityLabel="取消搜尋"
               >
                 <Text style={styles.cancelButtonText}>{translations.cancel}</Text>
               </TouchableOpacity>
@@ -363,6 +367,7 @@ export function MerchantPlacesScreen() {
                         style={styles.claimBadge}
                         onPress={() => handleClaim(result)}
                         disabled={claiming === result.placeId}
+                        accessibilityLabel={`認領 ${result.placeName}`}
                       >
                         {claiming === result.placeId ? (
                           <ActivityIndicator size="small" color={MibuBrand.warmWhite} />

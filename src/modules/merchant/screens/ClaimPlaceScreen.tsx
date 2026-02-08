@@ -107,7 +107,7 @@ export function ClaimPlaceScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
             <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <View style={styles.headerText}>
@@ -134,6 +134,7 @@ export function ClaimPlaceScreen() {
             style={[styles.searchButton, !searchQuery.trim() && styles.searchButtonDisabled]}
             onPress={handleSearch}
             disabled={searching || !searchQuery.trim()}
+            accessibilityLabel="搜尋"
           >
             {searching ? (
               <ActivityIndicator size="small" color={UIColors.white} />
@@ -157,6 +158,7 @@ export function ClaimPlaceScreen() {
             <TouchableOpacity
               style={styles.addNewButton}
               onPress={() => router.push('/merchant/new-place' as any)}
+              accessibilityLabel="新增自有店家"
             >
               <Ionicons name="add-circle-outline" size={20} color={MibuBrand.brown} />
               <Text style={styles.addNewButtonText}>{t.addNewPlace}</Text>
@@ -185,6 +187,7 @@ export function ClaimPlaceScreen() {
                     style={styles.claimButton}
                     onPress={() => handleClaim(place)}
                     disabled={claiming === place.placeId}
+                    accessibilityLabel={`認領 ${place.placeName}`}
                   >
                     {claiming === place.placeId ? (
                       <ActivityIndicator size="small" color={UIColors.white} />

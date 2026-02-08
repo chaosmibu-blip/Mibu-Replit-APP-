@@ -172,7 +172,7 @@ export function MerchantProfileScreen() {
       {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
         {/* 返回按鈕 */}
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
@@ -267,7 +267,7 @@ export function MerchantProfileScreen() {
       <View style={styles.dangerCard}>
         <Text style={styles.dangerTitle}>{translations.dangerZone}</Text>
         {/* 刪除帳號按鈕 */}
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount}>
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount} accessibilityLabel="刪除帳號">
           <Ionicons name="trash-outline" size={20} color={UIColors.white} />
           <Text style={styles.deleteButtonText}>{translations.deleteAccount}</Text>
         </TouchableOpacity>

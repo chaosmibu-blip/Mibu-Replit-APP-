@@ -114,7 +114,7 @@ export function NewPlaceScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
             <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
           <View style={styles.headerText}>
@@ -155,6 +155,7 @@ export function NewPlaceScreen() {
                     formData.category === cat.id && styles.categoryButtonActive,
                   ]}
                   onPress={() => updateField('category', cat.id)}
+                  accessibilityLabel={`分類：${cat.label}`}
                 >
                   <Ionicons
                     name={cat.icon as any}
@@ -234,6 +235,7 @@ export function NewPlaceScreen() {
           style={[styles.submitButton, saving && styles.submitButtonDisabled]}
           onPress={handleSubmit}
           disabled={saving}
+          accessibilityLabel="提交申請"
         >
           {saving ? (
             <ActivityIndicator size="small" color={UIColors.white} />

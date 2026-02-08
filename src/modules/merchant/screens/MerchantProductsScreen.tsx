@@ -224,14 +224,14 @@ export function MerchantProductsScreen() {
         {/* ============ 頂部標題區 ============ */}
         <View style={styles.header}>
           {/* 返回按鈕 */}
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
             <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
           </TouchableOpacity>
           <Text style={styles.title}>{translations.title}</Text>
         </View>
 
         {/* ============ 新增按鈕 ============ */}
-        <TouchableOpacity style={styles.addButton} onPress={() => openModal()}>
+        <TouchableOpacity style={styles.addButton} onPress={() => openModal()} accessibilityLabel="新增商品">
           <Ionicons name="add-circle-outline" size={24} color={MibuBrand.warmWhite} />
           <Text style={styles.addButtonText}>{translations.addNew}</Text>
         </TouchableOpacity>
@@ -295,6 +295,7 @@ export function MerchantProductsScreen() {
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => openModal(product)}
+                    accessibilityLabel={`編輯 ${product.name}`}
                   >
                     <Ionicons name="pencil-outline" size={20} color={MibuBrand.copper} />
                   </TouchableOpacity>
@@ -302,6 +303,7 @@ export function MerchantProductsScreen() {
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => handleDelete(product)}
+                    accessibilityLabel={`刪除 ${product.name}`}
                   >
                     <Ionicons name="trash-outline" size={20} color={MibuBrand.error} />
                   </TouchableOpacity>
@@ -380,6 +382,7 @@ export function MerchantProductsScreen() {
               <TouchableOpacity
                 style={styles.cancelModalButton}
                 onPress={() => setModalVisible(false)}
+                accessibilityLabel="取消"
               >
                 <Text style={styles.cancelModalButtonText}>{translations.cancel}</Text>
               </TouchableOpacity>
@@ -387,6 +390,7 @@ export function MerchantProductsScreen() {
                 style={styles.saveButton}
                 onPress={handleSave}
                 disabled={saving}
+                accessibilityLabel="儲存"
               >
                 {saving ? (
                   <ActivityIndicator size="small" color={MibuBrand.warmWhite} />

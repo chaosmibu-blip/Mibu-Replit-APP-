@@ -234,7 +234,7 @@ export function MerchantAnalyticsScreen() {
       {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
         {/* 返回按鈕 */}
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
@@ -253,6 +253,7 @@ export function MerchantAnalyticsScreen() {
                 selectedPeriod === period.value && styles.periodButtonActive,
               ]}
               onPress={() => handlePeriodChange(period.value)}
+              accessibilityLabel={`篩選 ${period.label}`}
             >
               <Text
                 style={[
@@ -273,6 +274,7 @@ export function MerchantAnalyticsScreen() {
             <TouchableOpacity
               style={styles.placeFilterButton}
               onPress={() => setShowPlaceDropdown(!showPlaceDropdown)}
+              accessibilityLabel="篩選店家"
             >
               <Ionicons name="storefront-outline" size={18} color={MibuBrand.copper} />
               <Text style={styles.placeFilterText} numberOfLines={1}>
@@ -295,6 +297,7 @@ export function MerchantAnalyticsScreen() {
                     !selectedPlaceId && styles.placeDropdownItemActive,
                   ]}
                   onPress={() => handlePlaceSelect(null)}
+                  accessibilityLabel="全部店家"
                 >
                   <Text
                     style={[
@@ -314,6 +317,7 @@ export function MerchantAnalyticsScreen() {
                       selectedPlaceId === place.id && styles.placeDropdownItemActive,
                     ]}
                     onPress={() => handlePlaceSelect(place.id)}
+                    accessibilityLabel={`選擇 ${place.placeName}`}
                   >
                     <Text
                       style={[
@@ -432,6 +436,7 @@ export function MerchantAnalyticsScreen() {
                   key={place.placeId}
                   style={styles.listItem}
                   onPress={() => handlePlaceSelect(place.placeId)}
+                  accessibilityLabel={`查看 ${place.placeName} 數據`}
                 >
                   {/* 店家圖示 */}
                   <View style={[styles.listRank, { backgroundColor: `${MibuBrand.brown}15` }]}>

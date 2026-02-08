@@ -316,12 +316,12 @@ export function MerchantCouponsScreen() {
       {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
         {/* 返回按鈕 */}
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{translations.title}</Text>
         {/* 新增按鈕 */}
-        <TouchableOpacity onPress={openCreateModal} style={styles.addButton}>
+        <TouchableOpacity onPress={openCreateModal} style={styles.addButton} accessibilityLabel="新增優惠券">
           <Ionicons name="add" size={24} color={MibuBrand.warmWhite} />
         </TouchableOpacity>
       </View>
@@ -352,7 +352,7 @@ export function MerchantCouponsScreen() {
           <View style={styles.emptyState}>
             <Ionicons name="pricetag-outline" size={64} color={MibuBrand.tan} />
             <Text style={styles.emptyText}>{translations.noCoupons}</Text>
-            <TouchableOpacity style={styles.emptyAddButton} onPress={openCreateModal}>
+            <TouchableOpacity style={styles.emptyAddButton} onPress={openCreateModal} accessibilityLabel="新增優惠券">
               <Ionicons name="add" size={20} color={MibuBrand.warmWhite} />
               <Text style={styles.emptyAddText}>{translations.addCoupon}</Text>
             </TouchableOpacity>
@@ -367,6 +367,7 @@ export function MerchantCouponsScreen() {
                 !coupon.isActive && styles.couponCardInactive,
               ]}
               onPress={() => openEditModal(coupon)}
+              accessibilityLabel={`編輯 ${coupon.name}`}
             >
               {/* 卡片頂部：稀有度 + 狀態 */}
               <View style={styles.couponHeader}>
@@ -411,6 +412,7 @@ export function MerchantCouponsScreen() {
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => toggleActive(coupon)}
+                  accessibilityLabel={coupon.isActive ? `停用 ${coupon.name}` : `啟用 ${coupon.name}`}
                 >
                   <Ionicons
                     name={coupon.isActive ? 'pause-circle-outline' : 'play-circle-outline'}
@@ -422,6 +424,7 @@ export function MerchantCouponsScreen() {
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => handleDelete(coupon.id)}
+                  accessibilityLabel={`刪除 ${coupon.name}`}
                 >
                   <Ionicons name="trash-outline" size={20} color={SemanticColors.errorDark} />
                 </TouchableOpacity>
@@ -446,7 +449,7 @@ export function MerchantCouponsScreen() {
               <Text style={styles.modalTitle}>
                 {editingCoupon ? translations.editCoupon : translations.addCoupon}
               </Text>
-              <TouchableOpacity onPress={() => setShowModal(false)}>
+              <TouchableOpacity onPress={() => setShowModal(false)} accessibilityLabel="關閉">
                 <Ionicons name="close" size={24} color={MibuBrand.copper} />
               </TouchableOpacity>
             </View>
@@ -479,6 +482,7 @@ export function MerchantCouponsScreen() {
                         },
                       ]}
                       onPress={() => setFormData({ ...formData, tier })}
+                      accessibilityLabel={`稀有度 ${tier}，機率 ${tierStyle.probability}%`}
                     >
                       <Text style={[
                         styles.tierOptionText,
@@ -546,6 +550,7 @@ export function MerchantCouponsScreen() {
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => setShowModal(false)}
+                accessibilityLabel="取消"
               >
                 <Text style={styles.cancelButtonText}>{translations.cancel}</Text>
               </TouchableOpacity>
@@ -553,6 +558,7 @@ export function MerchantCouponsScreen() {
                 style={[styles.saveButton, saving && styles.saveButtonDisabled]}
                 onPress={handleSave}
                 disabled={saving}
+                accessibilityLabel="儲存"
               >
                 {saving ? (
                   <ActivityIndicator color={MibuBrand.warmWhite} size="small" />

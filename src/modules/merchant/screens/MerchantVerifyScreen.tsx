@@ -122,7 +122,7 @@ export function MerchantVerifyScreen() {
       {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
         {/* 返回按鈕 */}
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>
@@ -151,7 +151,7 @@ export function MerchantVerifyScreen() {
               <Text style={styles.resultMessage}>{result.message}</Text>
             )}
             {/* 重試按鈕 */}
-            <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+            <TouchableOpacity style={styles.resetButton} onPress={handleReset} accessibilityLabel="再試一次">
               <Text style={styles.resetButtonText}>{translations.tryAgain}</Text>
             </TouchableOpacity>
           </View>
@@ -190,6 +190,7 @@ export function MerchantVerifyScreen() {
               style={[styles.verifyButton, loading && styles.verifyButtonDisabled]}
               onPress={handleVerify}
               disabled={loading}
+              accessibilityLabel="驗證"
             >
               {loading ? (
                 <ActivityIndicator size="small" color={UIColors.white} />

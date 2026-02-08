@@ -170,7 +170,7 @@ export function CouponListScreen() {
     >
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <View style={styles.headerText}>
@@ -183,6 +183,7 @@ export function CouponListScreen() {
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => router.push('/merchant/coupon/new' as any)}
+        accessibilityLabel="新增優惠券"
       >
         <Ionicons name="add-circle" size={20} color={UIColors.white} />
         <Text style={styles.addButtonText}>{t.addCoupon}</Text>
@@ -251,6 +252,7 @@ export function CouponListScreen() {
                     <TouchableOpacity
                       style={styles.iconButton}
                       onPress={() => router.push(`/merchant/coupon/${coupon.id}` as any)}
+                      accessibilityLabel={`編輯 ${coupon.name}`}
                     >
                       <Ionicons name="create-outline" size={20} color={MibuBrand.brown} />
                     </TouchableOpacity>
@@ -258,6 +260,7 @@ export function CouponListScreen() {
                       style={styles.iconButton}
                       onPress={() => handleDelete(coupon)}
                       disabled={deleting === coupon.id}
+                      accessibilityLabel={`刪除 ${coupon.name}`}
                     >
                       {deleting === coupon.id ? (
                         <ActivityIndicator size="small" color={SemanticColors.errorDark} />

@@ -153,7 +153,7 @@ export function MerchantTransactionsScreen() {
       {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
         {/* 返回按鈕 */}
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         <Text style={styles.title}>{translations.title}</Text>

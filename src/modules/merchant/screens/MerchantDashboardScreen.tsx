@@ -171,7 +171,7 @@ export function MerchantDashboardScreen() {
         <Text style={styles.title}>{translations.title}</Text>
         <View style={styles.headerRight}>
           {/* 店家選擇器 */}
-          <TouchableOpacity style={styles.storeSelector}>
+          <TouchableOpacity style={styles.storeSelector} accessibilityLabel="選擇店家">
             <Text style={styles.storeName} numberOfLines={1}>
               {state.user?.firstName || (isZh ? '示範咖啡廳' : 'Demo Cafe')}
             </Text>
@@ -181,11 +181,12 @@ export function MerchantDashboardScreen() {
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => router.push('/merchant/places' as any)}
+            accessibilityLabel="新增店家"
           >
             <Ionicons name="add" size={24} color={MibuBrand.copper} />
           </TouchableOpacity>
           {/* 登出按鈕 */}
-          <TouchableOpacity style={styles.iconButton} onPress={handleLogout}>
+          <TouchableOpacity style={styles.iconButton} onPress={handleLogout} accessibilityLabel="登出">
             <Ionicons name="log-out-outline" size={22} color={MibuBrand.copper} />
           </TouchableOpacity>
         </View>
@@ -198,6 +199,7 @@ export function MerchantDashboardScreen() {
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/merchant/analytics' as any)}
+          accessibilityLabel="數據分析"
         >
           <View style={styles.menuIcon}>
             <Ionicons name="bar-chart-outline" size={22} color={MibuBrand.copper} />
@@ -213,6 +215,7 @@ export function MerchantDashboardScreen() {
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/merchant/places' as any)}
+          accessibilityLabel="店家管理"
         >
           <View style={styles.menuIcon}>
             <Ionicons name="storefront-outline" size={22} color={MibuBrand.copper} />
@@ -228,6 +231,7 @@ export function MerchantDashboardScreen() {
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/merchant/products' as any)}
+          accessibilityLabel="商品管理"
         >
           <View style={styles.menuIcon}>
             <Ionicons name="cube-outline" size={22} color={MibuBrand.copper} />
@@ -243,6 +247,7 @@ export function MerchantDashboardScreen() {
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/merchant/coupons' as any)}
+          accessibilityLabel="優惠券管理"
         >
           <View style={styles.menuIcon}>
             <Ionicons name="pricetags-outline" size={22} color={MibuBrand.copper} />
@@ -258,6 +263,7 @@ export function MerchantDashboardScreen() {
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/merchant/profile' as any)}
+          accessibilityLabel="商家資料"
         >
           <View style={styles.menuIcon}>
             <Ionicons name="person-outline" size={22} color={MibuBrand.copper} />

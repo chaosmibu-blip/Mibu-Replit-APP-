@@ -102,7 +102,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.header}>
-        <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
+        <TouchableOpacity onPress={onCancel} style={styles.closeButton} accessibilityLabel="關閉">
           <Ionicons name="close" size={24} color={UIColors.textSecondary} />
         </TouchableOpacity>
         <View style={styles.headerIcon}>
@@ -146,6 +146,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
                   formData.businessCategory === cat.value && styles.categoryOptionActive,
                 ]}
                 onPress={() => updateField('businessCategory', cat.value)}
+                accessibilityLabel={`商家類型：${cat.labelZh}`}
               >
                 <Text style={[
                   styles.categoryText,
@@ -221,13 +222,14 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
         </View>
 
         <View style={styles.buttons}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+          <TouchableOpacity style={styles.cancelButton} onPress={onCancel} accessibilityLabel="取消">
             <Text style={styles.cancelButtonText}>{translations.cancel}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.submitButton, loading && styles.submitButtonDisabled]}
             onPress={handleSubmit}
             disabled={loading}
+            accessibilityLabel="提交申請"
           >
             {loading ? (
               <ActivityIndicator color={UIColors.white} size="small" />

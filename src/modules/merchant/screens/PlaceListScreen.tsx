@@ -116,7 +116,7 @@ export function PlaceListScreen() {
       {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
         {/* 返回按鈕 */}
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
         <View style={styles.headerText}>
@@ -131,6 +131,7 @@ export function PlaceListScreen() {
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => router.push('/merchant/claim-place' as any)}
+          accessibilityLabel="認領現有店家"
         >
           <Ionicons name="search" size={20} color={MibuBrand.brown} />
           <Text style={styles.actionButtonText}>{t.claimPlace}</Text>
@@ -139,6 +140,7 @@ export function PlaceListScreen() {
         <TouchableOpacity
           style={[styles.actionButton, styles.actionButtonPrimary]}
           onPress={() => router.push('/merchant/new-place' as any)}
+          accessibilityLabel="新增自有店家"
         >
           <Ionicons name="add" size={20} color={UIColors.white} />
           <Text style={[styles.actionButtonText, styles.actionButtonTextPrimary]}>{t.addPlace}</Text>
@@ -166,6 +168,7 @@ export function PlaceListScreen() {
                 key={place.id}
                 style={styles.placeCard}
                 onPress={() => router.push(`/merchant/place/${place.linkId}` as any)}
+                accessibilityLabel={`查看 ${place.placeName}`}
               >
                 {/* 店家圖示 */}
                 <View style={styles.placeIcon}>
