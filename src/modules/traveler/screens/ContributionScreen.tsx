@@ -132,6 +132,10 @@ export function ContributionScreen() {
       }
     } catch (error) {
       console.error('Failed to load contribution data:', error);
+      Alert.alert(
+        isZh ? '載入失敗' : 'Load Failed',
+        isZh ? '無法載入貢獻資料，請稍後再試' : 'Failed to load contribution data. Please try again later.'
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);

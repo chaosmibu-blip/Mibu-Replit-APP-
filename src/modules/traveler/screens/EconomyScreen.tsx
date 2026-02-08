@@ -26,6 +26,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -153,6 +154,11 @@ export function EconomyScreen() {
       setAchievements(achievementsData.achievements);
     } catch (error) {
       console.error('Failed to load economy data:', error);
+      // 用戶可見的錯誤提示
+      Alert.alert(
+        isZh ? '載入失敗' : 'Load Failed',
+        isZh ? '無法載入經濟資料，請稍後再試' : 'Unable to load economy data. Please try again later.'
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);

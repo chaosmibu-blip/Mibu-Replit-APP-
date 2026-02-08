@@ -356,6 +356,7 @@ export function ItineraryScreenV2() {
       }
     } catch (error) {
       console.error('Failed to fetch itineraries:', error);
+      Alert.alert('載入失敗', '無法載入行程列表，請稍後再試');
     }
   }, [getToken, activeItineraryId]);
 
@@ -434,6 +435,7 @@ export function ItineraryScreenV2() {
       }
     } catch (error) {
       console.error('Failed to fetch itinerary detail:', error);
+      Alert.alert('載入失敗', '無法載入行程詳情，請稍後再試');
     }
   }, [getToken, loadMessages, saveMessages]);
 

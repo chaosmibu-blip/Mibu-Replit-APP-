@@ -24,6 +24,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Platform,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -178,6 +179,10 @@ export function CrowdfundingScreen() {
 
     } catch (error) {
       console.error('Failed to load crowdfunding data:', error);
+      Alert.alert(
+        isZh ? '載入失敗' : 'Load Failed',
+        isZh ? '無法載入募資活動，請稍後再試' : 'Failed to load crowdfunding campaigns. Please try again later.'
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);

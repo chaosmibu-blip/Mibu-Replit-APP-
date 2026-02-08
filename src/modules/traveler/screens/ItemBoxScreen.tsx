@@ -380,6 +380,10 @@ export function ItemBoxScreen() {
       setUnreadCount(unreadCount);
     } catch (error) {
       console.error('Failed to load inventory:', error);
+      Alert.alert(
+        state.language === 'zh-TW' ? '載入失敗' : 'Load Failed',
+        state.language === 'zh-TW' ? '無法載入背包物品，請稍後再試' : 'Failed to load inventory items. Please try again later.'
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
