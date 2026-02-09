@@ -24,7 +24,7 @@
  *
  * 更新日期：2026-02-07（手風琴改麵包屑導航 + 搜尋）
  */
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -40,6 +40,7 @@ import {
   FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
 import { collectionApi } from '../../../services/collectionApi';
 import { contributionApi } from '../../../services/contributionApi';
@@ -323,10 +324,23 @@ export function CollectionScreen() {
     }
   }, [getToken]);
 
+  // 首次掛載時載入
+  const hasInitialLoaded = useRef(false);
   useEffect(() => {
     loadCollections();
     loadPromoUpdates(); // #028
+    hasInitialLoaded.current = true;
   }, [loadCollections, loadPromoUpdates]);
+
+  // 每次頁面獲得焦點時重新載入（修復：登入後切回圖鑑不會重新拉資料的問題）
+  useFocusEffect(
+    useCallback(() => {
+      // 跳過首次（useEffect 已處理），避免重複呼叫
+      if (!hasInitialLoaded.current) return;
+      loadCollections();
+      loadPromoUpdates();
+    }, [loadCollections, loadPromoUpdates])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
