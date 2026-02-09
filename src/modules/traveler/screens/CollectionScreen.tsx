@@ -37,6 +37,7 @@ import {
   SafeAreaView,
   TextInput,
   Dimensions,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
@@ -1086,9 +1087,18 @@ export function CollectionScreen() {
                 })}
               </ScrollView>
 
-              {/* 景點網格（2 欄） */}
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md }}>
-                {filteredPlaces.map((item, idx) => renderPlaceCard(item, idx, 'grid'))}
+              {/* 景點網格（2 欄）— FlatList 內部滾動，避免大量卡片拖慢整頁滾動 */}
+              <View style={{ height: Dimensions.get('window').height - 280 }}>
+                <FlatList
+                  data={filteredPlaces}
+                  numColumns={2}
+                  nestedScrollEnabled
+                  renderItem={({ item, index }) => renderPlaceCard(item, index, 'grid')}
+                  keyExtractor={(item, index) => String(item.id || item.placeId || index)}
+                  columnWrapperStyle={{ gap: Spacing.md }}
+                  contentContainerStyle={{ gap: Spacing.md, paddingBottom: 20 }}
+                  showsVerticalScrollIndicator={false}
+                />
               </View>
             </>
           )}
