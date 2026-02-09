@@ -338,6 +338,8 @@ export function CollectionScreen() {
     useCallback(() => {
       // 跳過首次（useEffect 已處理），避免重複呼叫
       if (!hasInitialLoaded.current) return;
+      // 重置載入狀態，讓 loading guard 生效，避免閃現舊數量
+      setHasLoadedFromApi(false);
       loadCollections();
       loadPromoUpdates();
     }, [loadCollections, loadPromoUpdates])
@@ -356,18 +358,15 @@ export function CollectionScreen() {
     const token = await getToken();
     if (!token || !item.collectionId) return;
 
-    // 如果是未讀項目，標記為已讀
+    // 如果是未讀項目，樂觀更新 UI 為已讀
+    // 注意：後端尚未實作 PATCH /api/collections/:id/read（契約無此端點）
+    // 目前僅前端標記，下次 loadCollections 會以後端 isRead 為準
     if (item.isRead === false) {
-      try {
-        await collectionApi.markCollectionItemRead(token, item.collectionId);
-        setApiCollection(prev =>
-          prev.map(i =>
-            i.collectionId === item.collectionId ? { ...i, isRead: true } : i
-          )
-        );
-      } catch (error) {
-        console.error('Failed to mark item as read:', error);
-      }
+      setApiCollection(prev =>
+        prev.map(i =>
+          i.collectionId === item.collectionId ? { ...i, isRead: true } : i
+        )
+      );
     }
 
     // #028 如果有優惠更新，標記優惠已讀
