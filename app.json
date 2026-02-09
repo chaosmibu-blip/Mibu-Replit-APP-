@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.chaos.mibu",
-      "buildNumber": "7",
+      "buildNumber": "8",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Mibu 需要您的位置，以便在扭蛋時自動鎖定您所在的縣市，並為您導航至景點。",
         "ITSAppUsesNonExemptEncryption": false,
@@ -52,6 +52,13 @@
           "icon": "./assets/images/notification-icon.png",
           "color": "#8B6914",
           "sounds": []
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "允許 Mibu 儲存圖片到您的相簿",
+          "savePhotosPermission": "允許 Mibu 儲存圖片到您的相簿"
         }
       ]
     ],
