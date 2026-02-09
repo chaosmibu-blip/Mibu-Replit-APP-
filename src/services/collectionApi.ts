@@ -109,7 +109,7 @@ class CollectionApiService extends ApiBase {
    */
   async markCollectionItemRead(token: string, collectionId: number): Promise<{ success: boolean }> {
     return this.request<{ success: boolean }>(`/api/collections/${collectionId}/read`, {
-      method: 'POST',
+      method: 'PATCH',
       headers: this.authHeaders(token),
     });
   }
