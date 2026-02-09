@@ -46,6 +46,8 @@ export const STORAGE_KEYS = {
   AVATAR_PRESET: '@mibu_avatar_preset',
   /** 自訂頭像 URL */
   CUSTOM_AVATAR_URL: '@mibu_custom_avatar_url',
+  /** 頭像清單快取（API 成功後存，斷網時 fallback） */
+  AVATAR_PRESETS_CACHE: '@mibu_avatar_presets_cache',
 
   // --- 登入流程 ---
   /** 登入後目標入口（暫存用，登入完成後刪除） */

@@ -16,47 +16,23 @@
  * @see 後端合約: contracts/APP.md Phase 2
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Modal, Image, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Modal, Image as RNImage, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import { Image as ExpoImage } from 'expo-image';
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { authApi } from '../../../services/authApi';
+import { avatarService } from '../../../services/avatarService';
 import { ApiError } from '../../../services/base';
 import { TagInput } from '../components/TagInput';
-import { UserProfile, Gender } from '../../../types';
+import { UserProfile, Gender, AvatarPreset } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
 
 // ============ 常數定義 ============
-
-/**
- * 頭像選項型別
- * 支援本地圖片或 Ionicons 圖示
- */
-interface AvatarPreset {
-  id: string;
-  icon?: string;      // Ionicons 圖示名稱（預設頭像用）
-  image?: any;        // require() 本地圖片
-  imageUrl?: string;  // 圖片網址（自訂頭像用）
-  color: string;
-}
-
-/**
- * 預設頭像選項 — 貓咪系列插畫
- */
-const DEFAULT_AVATAR_PRESETS: AvatarPreset[] = [
-  { id: 'chef', image: require('../../../../assets/images/avatars/avatar-chef.png'), color: '#F5E6D3' },
-  { id: 'artist', image: require('../../../../assets/images/avatars/avatar-artist.png'), color: '#F5E6D3' },
-  { id: 'musician', image: require('../../../../assets/images/avatars/avatar-musician.png'), color: '#F5E6D3' },
-  { id: 'gardener', image: require('../../../../assets/images/avatars/avatar-gardener.png'), color: '#F5E6D3' },
-  { id: 'explorer', image: require('../../../../assets/images/avatars/avatar-explorer.png'), color: '#F5E6D3' },
-  { id: 'astronaut', image: require('../../../../assets/images/avatars/avatar-astronaut.png'), color: '#F5E6D3' },
-  { id: 'diver', image: require('../../../../assets/images/avatars/avatar-diver.png'), color: '#F5E6D3' },
-  { id: 'camper', image: require('../../../../assets/images/avatars/avatar-camper.png'), color: '#F5E6D3' },
-];
 
 /** 性別選項（labelKey 對應 translations.ts 翻譯鍵） */
 const GENDER_OPTIONS: { value: Gender; labelKey: string }[] = [
@@ -122,8 +98,8 @@ export function ProfileScreen() {
   const [showAvatarModal, setShowAvatarModal] = useState(false); // 顯示頭像選擇 Modal
   const [selectedAvatar, setSelectedAvatar] = useState<string>('default'); // 選中的頭像
 
-  // 【截圖 19-21】頭像選項（支援動態載入）
-  const [avatarPresets, setAvatarPresets] = useState<AvatarPreset[]>(DEFAULT_AVATAR_PRESETS);
+  // 頭像選項（從 avatarService 動態載入）
+  const [avatarPresets, setAvatarPresets] = useState<AvatarPreset[]>([]);
 
   // #038 自訂頭像上傳
   const [customAvatarUrl, setCustomAvatarUrl] = useState<string | null>(null);
@@ -167,6 +143,8 @@ export function ProfileScreen() {
   useEffect(() => {
     loadProfile();
     loadSavedAvatar();
+    // 從 avatarService 載入頭像清單（Cloudinary URL）
+    avatarService.getPresets().then(setAvatarPresets).catch(() => {});
   }, []);
 
   /**
@@ -459,20 +437,21 @@ export function ProfileScreen() {
           >
             {/* #038 支援自訂頭像顯示 */}
             {selectedAvatar === 'custom' && customAvatarUrl ? (
-              <Image
+              <ExpoImage
                 source={{ uri: customAvatarUrl }}
                 style={styles.avatar}
+                contentFit="cover"
               />
             ) : (() => {
               const preset = avatarPresets.find(a => a.id === selectedAvatar);
-              // 有圖片的頭像（貓咪系列）
-              if (preset?.image) {
+              // 有圖片 URL 的頭像（Cloudinary）
+              if (preset?.imageUrl) {
                 return (
                   <View style={[styles.avatar, { backgroundColor: preset.color, overflow: 'hidden' }]}>
-                    <Image
-                      source={preset.image}
+                    <ExpoImage
+                      source={{ uri: preset.imageUrl }}
                       style={{ width: '100%', height: '100%' }}
-                      resizeMode="cover"
+                      contentFit="cover"
                     />
                   </View>
                 );
@@ -729,8 +708,8 @@ export function ProfileScreen() {
                   }}
                 >
                   <View style={[styles.avatarOptionCircle, { backgroundColor: preset.color }]}>
-                    {preset.image ? (
-                      <Image source={preset.image} style={styles.avatarOptionImage} />
+                    {preset.imageUrl ? (
+                      <ExpoImage source={{ uri: preset.imageUrl }} style={styles.avatarOptionImage} contentFit="cover" />
                     ) : (
                       <Text style={styles.avatarOptionText}>
                         {firstName?.charAt(0) || '?'}
@@ -783,7 +762,7 @@ export function ProfileScreen() {
             {/* 圓形預覽 */}
             <View style={styles.avatarPreviewCircle}>
               {pendingAvatarAsset?.uri && (
-                <Image
+                <RNImage
                   source={{ uri: pendingAvatarAsset.uri }}
                   style={{ width: '100%', height: '100%' }}
                   resizeMode="cover"

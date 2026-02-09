@@ -24,11 +24,11 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
-  Image,
   SafeAreaView,
   Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Image as ExpoImage } from 'expo-image';
 
 // 取得螢幕高度，用於計算活動內容區最小高度
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -40,24 +40,13 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
+import { avatarService } from '../../../services/avatarService';
+import { AvatarPreset } from '../../../types/asset';
 
 // StorageKeys 已統一集中管理
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
 
-/**
- * 預設頭像選項
- * 與 ProfileScreen 保持一致
- */
-const AVATAR_PRESETS = [
-  { id: 'chef', image: require('../../../../assets/images/avatars/avatar-chef.png'), color: '#F5E6D3' },
-  { id: 'artist', image: require('../../../../assets/images/avatars/avatar-artist.png'), color: '#F5E6D3' },
-  { id: 'musician', image: require('../../../../assets/images/avatars/avatar-musician.png'), color: '#F5E6D3' },
-  { id: 'gardener', image: require('../../../../assets/images/avatars/avatar-gardener.png'), color: '#F5E6D3' },
-  { id: 'explorer', image: require('../../../../assets/images/avatars/avatar-explorer.png'), color: '#F5E6D3' },
-  { id: 'astronaut', image: require('../../../../assets/images/avatars/avatar-astronaut.png'), color: '#F5E6D3' },
-  { id: 'diver', image: require('../../../../assets/images/avatars/avatar-diver.png'), color: '#F5E6D3' },
-  { id: 'camper', image: require('../../../../assets/images/avatars/avatar-camper.png'), color: '#F5E6D3' },
-];
+// 頭像預設從 avatarService 動態載入（Cloudinary URL）
 
 // ============================================================
 // 型別定義
@@ -119,6 +108,8 @@ export function HomeScreen() {
   const [userAvatar, setUserAvatar] = useState<string>('default');
   // #038 自訂頭像 URL（上傳的照片）
   const [customAvatarUrl, setCustomAvatarUrl] = useState<string | null>(null);
+  // 頭像預設列表（從 avatarService 動態載入）
+  const [avatarPresets, setAvatarPresets] = useState<AvatarPreset[]>([]);
 
   // 用戶金幣資料（#039 重構）
   const [userCoins, setUserCoins] = useState<UserCoinsData>({
@@ -250,16 +241,15 @@ export function HomeScreen() {
    */
   const loadUserAvatar = useCallback(async () => {
     try {
-      const savedAvatar = await AsyncStorage.getItem(STORAGE_KEYS.AVATAR_PRESET);
-      if (savedAvatar) {
-        setUserAvatar(savedAvatar);
-      }
-      // #038 載入自訂頭像 URL
-      const savedCustomUrl = await AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_AVATAR_URL);
-      if (savedCustomUrl) {
-        setCustomAvatarUrl(savedCustomUrl);
-      }
-    } catch (error) {
+      const [savedAvatar, savedCustomUrl, presets] = await Promise.all([
+        AsyncStorage.getItem(STORAGE_KEYS.AVATAR_PRESET),
+        AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_AVATAR_URL),
+        avatarService.getPresets(),
+      ]);
+      if (savedAvatar) setUserAvatar(savedAvatar);
+      if (savedCustomUrl) setCustomAvatarUrl(savedCustomUrl);
+      setAvatarPresets(presets);
+    } catch {
       // 頭像載入失敗，使用預設頭像
     }
   }, []);
@@ -369,22 +359,23 @@ export function HomeScreen() {
             {(() => {
               if (userAvatar === 'custom' && customAvatarUrl) {
                 return (
-                  <Image
+                  <ExpoImage
                     source={{ uri: customAvatarUrl }}
                     style={styles.levelAvatar}
+                    contentFit="cover"
                   />
                 );
               }
-              const avatarPreset = AVATAR_PRESETS.find(a => a.id === userAvatar);
+              const avatarPreset = avatarPresets.find(a => a.id === userAvatar);
               const avatarColor = avatarPreset?.color || MibuBrand.brown;
-              // 有圖片的頭像（貓咪系列）
-              if (avatarPreset?.image) {
+              // 有圖片 URL 的頭像（Cloudinary）
+              if (avatarPreset?.imageUrl) {
                 return (
                   <View style={[styles.levelAvatar, { backgroundColor: avatarColor, overflow: 'hidden' }]}>
-                    <Image
-                      source={avatarPreset.image}
+                    <ExpoImage
+                      source={{ uri: avatarPreset.imageUrl }}
                       style={{ width: '100%', height: '100%' }}
-                      resizeMode="cover"
+                      contentFit="cover"
                     />
                   </View>
                 );

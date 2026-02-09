@@ -15,6 +15,7 @@
 
 import { apiService } from './api';
 import { Country, Region } from '../types/location';
+import { avatarService } from './avatarService';
 
 class PreloadService {
   // ========== 快取儲存 ==========
@@ -97,6 +98,8 @@ class PreloadService {
     this.getCountries().catch(() => {
       // 靜默失敗，用戶進入畫面時會再試
     });
+    // 背景預載入頭像清單（Cloudinary URL）
+    avatarService.preload();
   }
 
   /**
@@ -107,6 +110,7 @@ class PreloadService {
     this.regionsCache.clear();
     this.countriesPromise = null;
     this.regionsPromises.clear();
+    avatarService.clearCache();
   }
 
   // ========== 快取狀態查詢 ==========

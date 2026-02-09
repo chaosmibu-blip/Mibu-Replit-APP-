@@ -90,6 +90,9 @@ export { eventApi } from './eventApi';
 // 行程規劃 (sync-app #026, #027)
 export { itineraryApi } from './itineraryApi';
 
+// 素材資源（Cloudinary 託管：頭像、成就圖片等）
+export { assetApi } from './assetApi';
+
 // ============ 統一 API Service（向後兼容） ============
 
 /**

@@ -75,3 +75,7 @@ export * from './event';
 // ============ 行程規劃系統 ============
 // 對應後端 sync-app #026, #027
 export * from './itinerary';
+
+// ============ 素材資源系統 ============
+// 對應後端 GET /api/assets（Cloudinary 託管）
+export * from './asset';
