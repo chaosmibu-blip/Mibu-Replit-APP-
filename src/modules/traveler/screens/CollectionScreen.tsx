@@ -621,8 +621,8 @@ export function CollectionScreen() {
     );
   }
 
-  // API 尚未回傳時顯示 loading，避免短暫閃現「尚未有收藏」
-  if (collection.length === 0 && !hasLoadedFromApi) {
+  // API 尚未回傳時顯示 loading，避免閃現舊快取的錯誤數量
+  if (!hasLoadedFromApi) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: MibuBrand.warmWhite }}>

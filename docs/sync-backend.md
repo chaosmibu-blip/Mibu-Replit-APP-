@@ -37,7 +37,7 @@
 | 項目 | 內容 |
 |------|------|
 | 來源 | APP 端測試發現 |
-| 狀態 | 🟡 待後端確認 |
+| 狀態 | ✅ 後端已修復 |
 | 嚴重度 | 中（超管無法使用無限扭蛋等特權） |
 
 **問題描述**
@@ -716,7 +716,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
 | 技術債 | 02-08 | 多語系 isZh→t 字典遷移（963處/43檔案） | 🟡 待執行 |
-| BUG | 02-07 | Apple 登入超管帳號 isSuperAdmin 未被識別 | 🟡 待後端 |
+| BUG | 02-07 | Apple 登入超管帳號 isSuperAdmin 未被識別 | ✅ |
 | 041 | 02-07 | 超管無限額度支援（dailyPullLimit=-1、inventorySlots=999） | ✅ |
 | 040-B | 02-07 | PATCH profile 回應欄位補齊（isSuperAdmin、roles、createdAt、token） | ✅ |
 | 040 | 02-05 | AI 對話體驗優化（打字機效果 + V2.3 API） | ✅ |
