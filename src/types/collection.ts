@@ -59,10 +59,7 @@ export interface CollectionItem {
  * GET /api/collections
  */
 export interface CollectionResponse {
-  success: boolean;              // 是否成功
-  items: CollectionItem[];       // 收藏列表
-  total: number;                 // 總數量
-  pagination?: Pagination;       // 分頁資訊
+  collections: CollectionItem[]; // 收藏列表（後端欄位名為 collections）
 }
 
 /**
