@@ -288,9 +288,16 @@ export function CollectionScreen() {
     try {
       setLoadError(false);
       const token = await getToken();
+      console.log('[Collection] loadCollections token:', token ? `${token.substring(0, 20)}...` : 'NULL');
       if (!token) return;
 
       const response = await collectionApi.getCollections(token, { sort: 'unread' });
+      console.log('[Collection] API response:', JSON.stringify({
+        hasItems: !!response.items,
+        itemCount: response.items?.length ?? 'undefined',
+        total: response.total,
+        success: response.success,
+      }));
       if (response.items) {
         // 將 CollectionItem 轉換為 GachaItemWithRead
         const items = response.items.map(item => ({
@@ -315,11 +322,12 @@ export function CollectionScreen() {
           isCoupon: item.isCoupon,
           couponData: item.couponData,
         })) as GachaItemWithRead[];
+        console.log('[Collection] setApiCollection:', items.length, 'items');
         setApiCollection(items);
         setHasLoadedFromApi(true);
       }
     } catch (error) {
-      console.error('Failed to load collections:', error);
+      console.error('[Collection] Failed to load:', error);
       setLoadError(true);
     }
   }, [getToken]);
