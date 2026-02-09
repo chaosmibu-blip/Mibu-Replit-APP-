@@ -384,6 +384,8 @@ magick "原圖.png" -trim +repage -resize 512x512^ -gravity center -extent 512x5
 
 **CSS 實作模板**：
 ```typescript
+import { Image as ExpoImage } from 'expo-image';
+
 // 容器（圓形裁切 + 選中邊框）
 <View style={{
   width: SIZE,
@@ -393,10 +395,10 @@ magick "原圖.png" -trim +repage -resize 512x512^ -gravity center -extent 512x5
   borderWidth: isSelected ? BORDER_WIDTH : 0,
   borderColor: MibuBrand.brown,
 }}>
-  <Image
-    source={imageSource}
+  <ExpoImage
+    source={{ uri: imageUrl }}
     style={{ width: '100%', height: '100%' }}
-    resizeMode="cover"
+    contentFit="cover"
   />
 </View>
 ```
@@ -423,9 +425,109 @@ magick "原圖.png" -trim +repage -resize 512x512^ -gravity center -extent 512x5
 1. 確認圖片無裝飾邊框 → 有的話請設計師/Canva 移除
 2. 確認圖片尺寸 ≥ 512×512 → 太小會模糊
 3. ImageMagick trim + resize 到 512×512
-4. CSS 用 100% + overflow hidden + borderRadius
+4. CSS 用 ExpoImage + overflow hidden + borderRadius
 5. 選中狀態用 borderColor 區分，不動圖片
 ```
+
+**CSS 實作模板（ExpoImage 版）**：
+```typescript
+import { Image as ExpoImage } from 'expo-image';
+
+// 遠端圖片（Cloudinary URL）
+<View style={{
+  width: SIZE,
+  height: SIZE,
+  borderRadius: SIZE / 2,
+  overflow: 'hidden',
+  borderWidth: isSelected ? BORDER_WIDTH : 0,
+  borderColor: MibuBrand.brown,
+}}>
+  <ExpoImage
+    source={{ uri: imageUrl }}
+    style={{ width: '100%', height: '100%' }}
+    contentFit="cover"
+  />
+</View>
+```
+
+---
+
+### /remote-asset — 圖片資源遠端化（新增圖片類素材時觸發）
+
+**核心原則**：圖片放後端（Cloudinary），App 用 URL 載入。以後換圖/加圖不用重新送審。
+
+**觸發時機**：新增或修改圖片類素材時（頭像、成就圖片、AI 機器人頭貼等）
+
+**架構**：
+```
+後端上傳圖片到 Cloudinary
+  → 管理員 API 加一筆到 assets 表
+  → App 呼叫 GET /api/assets?category=xxx 拿清單
+  → avatarService / assetService 快取 + expo-image 預取
+  → UI 用 ExpoImage + URL 顯示
+```
+
+**已有的基礎建設**：
+
+| 元件 | 位置 | 用途 |
+|------|------|------|
+| `AssetItem` 型別 | `src/types/asset.ts` | 後端素材回傳格式 |
+| `AvatarPreset` 型別 | `src/types/asset.ts` | 前端頭像選項格式 |
+| `assetApi` | `src/services/assetApi.ts` | `GET /api/assets?category=xxx` |
+| `avatarService` | `src/services/avatarService.ts` | 頭像三層快取（記憶體→AsyncStorage→首字母） |
+| `AVATAR_PRESETS_CACHE` | `src/constants/storageKeys.ts` | AsyncStorage 快取 key |
+
+**三層快取策略**：
+```
+1. 記憶體快取 → 立即回傳（App session 內有效）
+2. API 成功 → 存記憶體 + 存 AsyncStorage（下次斷網可用）
+3. API 失敗 → 讀 AsyncStorage 上次成功的清單
+4. AsyncStorage 也沒有 → 空陣列（UI 顯示 fallback）
+```
+
+**新增素材分類時的步驟**：
+```
+1. 請後端在 Cloudinary 建新資料夾，上傳圖片
+2. 後端新增 asset category（如 'achievement_badge'）
+3. 前端新增對應的 service（參考 avatarService 模式）：
+   a. 定義型別（src/types/asset.ts 擴充或新增）
+   b. 建立 xxxService（快取 + fallback + 預取）
+   c. 掛進 preloadService
+   d. UI 元件用 ExpoImage 載入
+4. storageKeys 新增快取 key
+5. preloadService 登入後預載 + 登出清除
+```
+
+**圖片顯示統一用 ExpoImage**：
+```typescript
+import { Image as ExpoImage } from 'expo-image';
+
+// 遠端圖片（自動磁碟快取）
+<ExpoImage
+  source={{ uri: item.imageUrl }}
+  style={{ width: SIZE, height: SIZE }}
+  contentFit="cover"
+/>
+
+// 不要用 RN 的 Image 載入遠端圖片（沒有磁碟快取）
+```
+
+**本地 vs 遠端判斷**：
+
+| 圖片類型 | 放哪裡 | 原因 |
+|---------|--------|------|
+| App icon / splash | 本地 assets | 啟動時需要，不能等 API |
+| 金幣 icon 等 UI 固定素材 | 本地 assets | 不會變，體積小 |
+| 頭像預設 | **Cloudinary** | 會新增，避免送審 |
+| 成就/徽章圖片 | **Cloudinary** | 會新增 |
+| AI 機器人頭貼 | **Cloudinary** | 會新增 |
+| 用戶上傳的圖片 | **Cloudinary** | 本來就是遠端 |
+
+**注意事項**：
+- expo-image 已安裝（`~3.0.11`），自帶 LRU 磁碟快取
+- `ExpoImage.prefetch(urls)` 可背景預取一批圖片
+- 登出時呼叫 `xxxService.clearCache()` 清記憶體和 AsyncStorage
+- AsyncStorage 白名單制登出會自動清除（除非加到 keepKeys）
 
 ---
 
@@ -609,6 +711,9 @@ magick "原圖.png" -trim +repage -resize 512x512^ -gravity center -extent 512x5
 | Design Token | `src/theme/designTokens.ts` |
 | 品牌色彩 | `constants/Colors.ts` |
 | 共用型別 | `@chaosmibu-blip/mibu-shared` |
+| 素材型別（圖片資源） | `src/types/asset.ts` |
+| 頭像快取服務 | `src/services/avatarService.ts` |
+| 素材 API | `src/services/assetApi.ts` |
 | 用戶截圖/設計參考 | `截圖/` 資料夾（根目錄） |
 
 ### 更新原則
