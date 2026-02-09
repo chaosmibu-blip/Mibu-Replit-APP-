@@ -43,7 +43,6 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-  Image,
   Linking,
   Alert,
   ActivityIndicator,
@@ -54,6 +53,7 @@ import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
+import { Image as ExpoImage } from 'expo-image';
 import { Calendar } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -197,22 +197,8 @@ const getPlaceCategory = (place: ItineraryPlaceItem) => {
  * @param city 城市名稱
  * @returns 對應的頭像 source
  */
-const getCityAvatar = (city: string | undefined) => {
-  // TODO: 根據城市載入不同頭像
-  // 目前使用預設頭像，之後可以擴展城市頭像映射
-  // 例如: { '台北市': require('...taipei.png'), '高雄市': require('...kaohsiung.png') }
-  const defaultAvatar = require('../../../../assets/images/icon.png');
-
-  // 城市頭像映射（之後擴展）
-  // const cityAvatars: Record<string, any> = {
-  //   '台北市': require('../../../../assets/images/avatars/taipei.png'),
-  //   '高雄市': require('../../../../assets/images/avatars/kaohsiung.png'),
-  //   // ... 更多城市
-  // };
-  // return city && cityAvatars[city] ? cityAvatars[city] : defaultAvatar;
-
-  return defaultAvatar;
-};
+/** Mini AI 助手頭像 URL（Cloudinary 託管） */
+const MINI_AVATAR_URL = 'https://res.cloudinary.com/dgts6a89y/image/upload/v1770652592/mibu/ai-chat/mini-avatar.png';
 
 export function ItineraryScreenV2() {
   const insets = useSafeAreaInsets();
@@ -1530,10 +1516,10 @@ export function ItineraryScreenV2() {
             {msg.role === 'assistant' && (
               <>
                 <View style={[styles.avatarContainer, { alignSelf: 'flex-start' }]}>
-                  <Image
-                    source={getCityAvatar(currentItinerary?.city)}
+                  <ExpoImage
+                    source={{ uri: MINI_AVATAR_URL }}
                     style={styles.avatarIcon}
-                    resizeMode="contain"
+                    contentFit="cover"
                   />
                 </View>
                 <View style={{ flex: 1, flexDirection: 'column' }}>
@@ -1568,10 +1554,10 @@ export function ItineraryScreenV2() {
           <View style={[styles.messageRow, styles.assistantMessageRow]}>
             {/* AI 頭像（LINE 風格，與對話訊息一致） */}
             <View style={[styles.avatarContainer, { alignSelf: 'flex-start' }]}>
-              <Image
-                source={getCityAvatar(currentItinerary?.city)}
+              <ExpoImage
+                source={{ uri: MINI_AVATAR_URL }}
                 style={styles.avatarIcon}
-                resizeMode="contain"
+                contentFit="cover"
               />
             </View>
             <View style={{ flex: 1, flexDirection: 'column' }}>
