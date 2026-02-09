@@ -38,6 +38,7 @@ import {
   TextInput,
   Dimensions,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -615,6 +616,17 @@ export function CollectionScreen() {
           detail={language === 'zh-TW' ? '請檢查網路連線後再試' : 'Please check your connection and try again'}
             onRetry={loadCollections}
           />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // API 尚未回傳時顯示 loading，避免短暫閃現「尚未有收藏」
+  if (collection.length === 0 && !hasLoadedFromApi) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: MibuBrand.warmWhite }}>
+          <ActivityIndicator size="large" color={MibuBrand.brown} />
         </View>
       </SafeAreaView>
     );
