@@ -54,6 +54,8 @@ import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
 import { Image as ExpoImage } from 'expo-image';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as MediaLibrary from 'expo-media-library';
 import { Calendar } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -238,6 +240,7 @@ export function ItineraryScreenV2() {
 
   // 【截圖 9】使用說明 Tooltip 狀態（淡入淡出）
   const [showHelpTooltip, setShowHelpTooltip] = useState(false);
+  const [showAvatarPreview, setShowAvatarPreview] = useState(false);
   const helpTooltipOpacity = useRef(new Animated.Value(0)).current;
 
   // 【截圖 9-15 #8 #11】Toast 通知狀態（淡入淡出 3 秒）
@@ -1170,6 +1173,24 @@ export function ItineraryScreenV2() {
    * 【截圖 9】顯示使用說明 Tooltip（淡入淡出，持續 3 秒）
    * 【預防卡住】正確清理 timer 避免記憶體洩漏
    */
+  /** 儲存 Mini 頭像到相簿 */
+  const saveAvatarToGallery = useCallback(async () => {
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('需要權限', '請允許存取相簿以儲存圖片');
+        return;
+      }
+      const fileUri = FileSystem.cacheDirectory + 'mini-avatar.png';
+      await FileSystem.downloadAsync(MINI_AVATAR_URL, fileUri);
+      await MediaLibrary.saveToLibraryAsync(fileUri);
+      Alert.alert('儲存成功', 'Mini 的頭像已儲存到相簿');
+    } catch (error) {
+      console.error('[ItineraryScreen] saveAvatar error:', error);
+      Alert.alert('儲存失敗', '請稍後再試');
+    }
+  }, []);
+
   const showHelpInfo = useCallback(() => {
     // 清理之前的 timer
     if (helpTimerRef.current) {
@@ -1515,15 +1536,17 @@ export function ItineraryScreenV2() {
             {/* AI 訊息：頭像 + 名稱 + 對話框（LINE 風格） */}
             {msg.role === 'assistant' && (
               <>
-                <View style={[styles.avatarContainer, { alignSelf: 'flex-start' }]}>
-                  <ExpoImage
-                    source={{ uri: MINI_AVATAR_URL }}
-                    style={styles.avatarIcon}
-                    contentFit="cover"
-                  />
-                </View>
-                <View style={{ flex: 1, flexDirection: 'column' }}>
-                  <Text style={{ fontSize: 10, fontWeight: '600', color: MibuBrand.brownLight, marginBottom: 2, marginLeft: 2 }}>Mini</Text>
+                <TouchableOpacity activeOpacity={0.7} onPress={() => setShowAvatarPreview(true)} style={{ alignSelf: 'flex-start' }}>
+                  <View style={styles.avatarContainer}>
+                    <ExpoImage
+                      source={{ uri: MINI_AVATAR_URL }}
+                      style={styles.avatarIcon}
+                      contentFit="cover"
+                    />
+                  </View>
+                </TouchableOpacity>
+                <View style={{ flex: 1, flexDirection: 'column', marginTop: 16 }}>
+                  <Text style={{ fontSize: 10, fontWeight: '600', color: MibuBrand.brownLight, marginBottom: 2, marginLeft: -4, marginTop: -4 }}>Mini</Text>
                   <View style={[styles.messageBubble, styles.assistantBubble]}>
                     {index === typingMessageIndex ? (
                       <TypewriterText
@@ -1553,15 +1576,17 @@ export function ItineraryScreenV2() {
         {aiLoading && (
           <View style={[styles.messageRow, styles.assistantMessageRow]}>
             {/* AI 頭像（LINE 風格，與對話訊息一致） */}
-            <View style={[styles.avatarContainer, { alignSelf: 'flex-start' }]}>
-              <ExpoImage
-                source={{ uri: MINI_AVATAR_URL }}
-                style={styles.avatarIcon}
-                contentFit="cover"
-              />
-            </View>
+            <TouchableOpacity activeOpacity={0.7} onPress={() => setShowAvatarPreview(true)} style={{ alignSelf: 'flex-start' }}>
+              <View style={styles.avatarContainer}>
+                <ExpoImage
+                  source={{ uri: MINI_AVATAR_URL }}
+                  style={styles.avatarIcon}
+                  contentFit="cover"
+                />
+              </View>
+            </TouchableOpacity>
             <View style={{ flex: 1, flexDirection: 'column' }}>
-              <Text style={{ fontSize: 10, fontWeight: '600', color: MibuBrand.brownLight, marginBottom: 2, marginLeft: 2 }}>Mini</Text>
+              <Text style={{ fontSize: 10, fontWeight: '600', color: MibuBrand.brownLight, marginBottom: 2, marginLeft: -4, marginTop: -4 }}>Mini</Text>
               <View style={[styles.messageBubble, styles.assistantBubble]}>
                 <ActivityIndicator size="small" color={MibuBrand.brown} />
               </View>
@@ -2398,6 +2423,37 @@ export function ItineraryScreenV2() {
       {/* Modal 不管有沒有行程都要渲染，這樣空狀態也能建立行程 */}
       {renderCreateModal()}
       {renderToast()}
+
+      {/* Mini 頭像放大預覽（LINE 風格） */}
+      <Modal
+        visible={showAvatarPreview}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowAvatarPreview(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowAvatarPreview(false)}
+          style={styles.avatarPreviewOverlay}
+        >
+          <View style={styles.avatarPreviewContainer}>
+            <Text style={styles.avatarPreviewName}>Mini</Text>
+            <ExpoImage
+              source={{ uri: MINI_AVATAR_URL }}
+              style={styles.avatarPreviewImage}
+              contentFit="cover"
+            />
+          </View>
+          {/* 右下角儲存按鈕 */}
+          <TouchableOpacity
+            style={styles.avatarSaveButton}
+            onPress={(e) => { e.stopPropagation(); saveAvatarToGallery(); }}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="download-outline" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -2571,7 +2627,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   chatContent: {
-    paddingHorizontal: Spacing.lg,
+    paddingLeft: 0,
+    paddingRight: Spacing.sm,
     paddingTop: Spacing.lg,
     paddingBottom: Spacing.xxl,
   },
@@ -2619,17 +2676,51 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   avatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: Radius.full,
-    backgroundColor: MibuBrand.highlight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.sm,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    overflow: 'hidden',
+    marginRight: 0,
   },
   avatarIcon: {
-    width: 20,
-    height: 20,
+    width: '100%',
+    height: '100%',
+  },
+  /** Mini 頭像放大預覽 - 半透黑背景 */
+  avatarPreviewOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  /** Mini 頭像放大預覽 - 內容容器 */
+  avatarPreviewContainer: {
+    alignItems: 'center',
+  },
+  /** Mini 頭像放大預覽 - 名稱 */
+  avatarPreviewName: {
+    fontSize: FontSize.lg,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: Spacing.md,
+  },
+  /** Mini 頭像放大預覽 - 大圖 */
+  avatarPreviewImage: {
+    width: 256,
+    height: 256,
+    borderRadius: 128,
+  },
+  /** Mini 頭像放大預覽 - 右下角儲存按鈕 */
+  avatarSaveButton: {
+    position: 'absolute',
+    bottom: 48,
+    right: 32,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   messageBubble: {
     maxWidth: '75%',
