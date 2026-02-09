@@ -300,8 +300,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       if (token) {
         await saveToken(token);
-        // 登入成功後註冊推播通知
+        // 登入成功後註冊推播通知 + 背景預載入常用資料
         pushNotificationService.registerTokenWithBackend(token).catch(console.error);
+        preloadService.preloadAfterAuth();
       }
     } else {
       // === 登出流程 ===
@@ -310,10 +311,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (currentToken) {
         pushNotificationService.unregisterToken(currentToken).catch(console.error);
       }
-      // 白名單制：清除所有 AsyncStorage，只保留語言偏好
+      // 白名單制：清除所有 AsyncStorage，只保留 UX 相關設定
+      // 這些跟裝置走（非敏感用戶資料），登出後不需重設
       const allKeys = await AsyncStorage.getAllKeys();
-      const keepKeys: string[] = [STORAGE_KEYS.LANGUAGE];
-      const keysToRemove = allKeys.filter(k => !keepKeys.includes(k));
+      const keepKeys: string[] = [
+        STORAGE_KEYS.LANGUAGE,
+        STORAGE_KEYS.AVATAR_PRESET,
+        STORAGE_KEYS.CUSTOM_AVATAR_URL,
+      ];
+      const TUTORIAL_PREFIX = '@mibu_tutorial_';
+      const keysToRemove = allKeys.filter(k =>
+        !keepKeys.includes(k) && !k.startsWith(TUTORIAL_PREFIX)
+      );
       if (keysToRemove.length > 0) {
         await AsyncStorage.multiRemove(keysToRemove);
       }
