@@ -53,7 +53,7 @@ export function SpecialistDashboardScreen() {
    * 清除用戶狀態並導航至登入頁面
    */
   const handleLogout = async () => {
-    setUser(null);
+    await setUser(null);
     router.replace('/login');
   };
 

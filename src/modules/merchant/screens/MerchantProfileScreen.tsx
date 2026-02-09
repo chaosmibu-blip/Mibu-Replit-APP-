@@ -140,7 +140,7 @@ export function MerchantProfileScreen() {
               const token = await getToken();
               if (!token) return;
               await authApi.deleteAccount(token);
-              setUser(null);
+              await setUser(null);
               Alert.alert(translations.deleteSuccess);
             } catch (error) {
               console.error('Failed to delete account:', error);

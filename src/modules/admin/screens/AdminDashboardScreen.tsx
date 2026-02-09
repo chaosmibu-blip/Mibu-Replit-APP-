@@ -89,7 +89,7 @@ export function AdminDashboardScreen() {
    * 清除用戶狀態並導向登入頁
    */
   const handleLogout = async () => {
-    setUser(null);
+    await setUser(null);
     router.replace('/login');
   };
 

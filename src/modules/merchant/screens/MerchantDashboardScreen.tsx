@@ -71,7 +71,7 @@ export function MerchantDashboardScreen() {
    * 清除用戶資料並導向登入頁
    */
   const handleLogout = async () => {
-    setUser(null);
+    await setUser(null);
     router.replace('/login');
   };
 

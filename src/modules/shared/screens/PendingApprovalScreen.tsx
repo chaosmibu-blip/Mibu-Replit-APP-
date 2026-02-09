@@ -44,9 +44,8 @@ export function PendingApprovalScreen() {
    * 清除 Token 並導向登入頁
    */
   const handleLogout = async () => {
-    // 修正：原本用錯 key 'token'，改用正確的 '@mibu_token'
-    await AsyncStorage.removeItem('@mibu_token');
-    setUser(null);
+    // setUser(null) 內部已包含 removeToken()，不需額外清除
+    await setUser(null);
     router.replace('/login');
   };
 

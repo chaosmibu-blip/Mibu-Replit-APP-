@@ -142,8 +142,8 @@ export function SettingsScreen() {
               }
             } catch {}
 
-            // 清除本地用戶狀態
-            setUser(null);
+            // 清除本地用戶狀態（必須 await，否則清理尚未完成就跳轉，導致競態條件）
+            await setUser(null);
             router.replace('/login');
           },
         },
@@ -172,7 +172,7 @@ export function SettingsScreen() {
 
                 if (response.success) {
                   // 刪除成功：清除狀態並跳轉
-                  setUser(null);
+                  await setUser(null);
                   router.replace('/');
                 } else {
                   // 刪除失敗：顯示錯誤訊息
