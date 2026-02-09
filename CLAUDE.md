@@ -861,6 +861,16 @@ fontSize: FontSize.md       // 不要 14
   - 搜尋 `setUser(null)` 全專案共 7 處，全部漏了 `await`（同類問題批量修復）
   - 類似模式：`logout()` / `clearSession()` / `resetState()` 等 async 清理函數
 
+### #010 型別定義跟後端實際回傳不符，靠本地快取掩蓋問題（2026-02-09）
+- **問題**：登出 → 重新登入後圖鑑顯示空白，但後端確認有 457 筆資料
+- **原因**：`CollectionResponse` 型別定義 `{ items: [...] }`，但後端實際回傳 `{ collections: [...] }`。APP 讀 `response.items` 永遠是 `undefined`，一直沒接到 API 資料。之前靠 `state.collection`（本地快取）顯示，登出清快取後才暴露
+- **解法**：用 `console.log(Object.keys(response))` 比對後端實際回傳的 key，修正型別和讀取欄位
+- **舉一反三**：
+  - 串接 API 時，永遠用 log 驗證實際回傳格式，不要只信型別定義
+  - 如果功能「看起來正常」但其實是 fallback 在撐（本地快取、預設值），問題會在極端情況才爆出來
+  - 新增 API 串接後，測試順序：**先斷網確認 fallback → 再連網確認 API 資料正確載入**
+  - 型別定義要跟後端契約 APP.md 對齊，發現不符立即修正並回報
+
 ---
 
 ## 協作
