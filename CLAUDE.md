@@ -851,6 +851,16 @@ fontSize: FontSize.md       // 不要 14
   - 匯出尺寸要夠大（≥ 768），縮小不糊，放大會糊
   - 已建立 `/img-fit` skill 記錄完整流程
 
+### #009 async function 登出未 await 導致競態條件（2026-02-09）
+- **問題**：登出 → 重新登入後，圖鑑顯示 0 筆。後端確認資料正常（457 筆）
+- **原因**：`setUser(null)` 是 async function（內含 `removeToken()` + `multiRemove()`），但所有登出路徑都沒 `await`，直接 `router.replace('/login')`。清理在背景跑，若用戶快速重新登入，舊的 `removeToken()` 會刪掉新存的 token
+- **解法**：所有登出路徑加 `await setUser(null)`，確保清理完成才跳轉
+- **舉一反三**：
+  - 呼叫 async function 時，問自己：「後面的程式碼是否依賴這個 function 完成？」→ 是就 `await`
+  - 特別注意「清理 → 跳轉 → 重新初始化」的流程，清理沒做完就初始化 = 競態條件
+  - 搜尋 `setUser(null)` 全專案共 7 處，全部漏了 `await`（同類問題批量修復）
+  - 類似模式：`logout()` / `clearSession()` / `resetState()` 等 async 清理函數
+
 ---
 
 ## 協作
