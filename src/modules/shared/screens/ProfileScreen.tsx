@@ -443,14 +443,12 @@ export function ProfileScreen() {
               const preset = avatarPresets.find(a => a.id === selectedAvatar);
               // 有圖片的頭像（貓咪系列）
               if (preset?.image) {
-                // /img-fit: 絕對定位 + 超尺寸裁切圖片自帶圓框
-                // 容器 100x100, border 4 → 內容區 92x92
-                // 圖片放大到 112x112 (約 1.22x)，負偏移置中
+                // 圖片已裁切為純圓形，直接填滿容器即可
                 return (
                   <View style={[styles.avatar, { backgroundColor: preset.color, overflow: 'hidden' }]}>
                     <Image
                       source={preset.image}
-                      style={{ position: 'absolute', top: -10, left: -10, width: 112, height: 112 }}
+                      style={{ width: '100%', height: '100%' }}
                       resizeMode="cover"
                     />
                   </View>
@@ -1010,12 +1008,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarOptionImage: {
-    // /img-fit: 絕對定位裁切（avatarOptionCircle 52x52）
-    position: 'absolute',
-    top: -6,
-    left: -6,
-    width: 64,
-    height: 64,
+    // 圖片已裁切為純圓形，直接填滿容器
+    width: '100%',
+    height: '100%',
     resizeMode: 'cover',
   },
   avatarOptionText: {

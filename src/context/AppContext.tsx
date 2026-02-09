@@ -280,11 +280,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
    */
   const setUser = useCallback(async (user: User | null, token?: string | null) => {
     // 更新 state
-    setState(prev => ({
-      ...prev,
-      user,
-      isAuthenticated: !!user
-    }));
+    if (user) {
+      // 登入：更新用戶狀態
+      setState(prev => ({
+        ...prev,
+        user,
+        isAuthenticated: true
+      }));
+    } else {
+      // 登出：回歸初始狀態，只保留語言偏好（跟裝置走不跟帳號走）
+      setState(prev => ({
+        ...defaultState,
+        language: prev.language,
+      }));
+    }
 
     if (user) {
       // === 登入流程 ===
@@ -301,8 +310,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (currentToken) {
         pushNotificationService.unregisterToken(currentToken).catch(console.error);
       }
-      // 清除本地資料 + 預載入快取
-      await AsyncStorage.removeItem(STORAGE_KEYS.USER);
+      // 白名單制：清除所有 AsyncStorage，只保留語言偏好
+      const allKeys = await AsyncStorage.getAllKeys();
+      const keepKeys: string[] = [STORAGE_KEYS.LANGUAGE];
+      const keysToRemove = allKeys.filter(k => !keepKeys.includes(k));
+      if (keysToRemove.length > 0) {
+        await AsyncStorage.multiRemove(keysToRemove);
+      }
       await removeToken();
       preloadService.clearCache();
     }
