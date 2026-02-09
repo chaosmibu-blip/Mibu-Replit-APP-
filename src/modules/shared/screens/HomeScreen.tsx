@@ -379,7 +379,6 @@ export function HomeScreen() {
               const avatarColor = avatarPreset?.color || MibuBrand.brown;
               // 有圖片的頭像（貓咪系列）
               if (avatarPreset?.image) {
-                // 圖片已裁切為純圓形，直接填滿容器即可
                 return (
                   <View style={[styles.levelAvatar, { backgroundColor: avatarColor, overflow: 'hidden' }]}>
                     <Image

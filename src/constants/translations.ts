@@ -1163,6 +1163,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     profile_avatarUploaded: '頭像上傳成功',
     profile_uploadFailed: '上傳失敗',
     profile_uploadFailedRetry: '上傳失敗，請稍後再試',
+    profile_previewAvatar: '預覽頭像',
+    profile_previewConfirm: '確認使用',
+    profile_previewCancel: '重新選擇',
     profile_genderMale: '男',
     profile_genderFemale: '女',
     profile_genderOther: '其他',
@@ -2284,6 +2287,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     profile_avatarUploaded: 'Avatar uploaded successfully',
     profile_uploadFailed: 'Upload failed',
     profile_uploadFailedRetry: 'Upload failed, please try again',
+    profile_previewAvatar: 'Preview Avatar',
+    profile_previewConfirm: 'Use This',
+    profile_previewCancel: 'Choose Again',
     profile_genderMale: 'Male',
     profile_genderFemale: 'Female',
     profile_genderOther: 'Other',
@@ -3397,6 +3403,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     profile_avatarUploaded: 'Avatar uploaded', /* TODO: ja */
     profile_uploadFailed: 'Upload failed', /* TODO: ja */
     profile_uploadFailedRetry: 'Upload failed, please try again', /* TODO: ja */
+    profile_previewAvatar: 'アバタープレビュー',
+    profile_previewConfirm: '使用する',
+    profile_previewCancel: '選び直す',
     profile_genderMale: '男性',
     profile_genderFemale: '女性',
     profile_genderOther: 'その他',
@@ -4510,6 +4519,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     profile_avatarUploaded: 'Avatar uploaded', /* TODO: ko */
     profile_uploadFailed: 'Upload failed', /* TODO: ko */
     profile_uploadFailedRetry: 'Upload failed, please try again', /* TODO: ko */
+    profile_previewAvatar: '아바타 미리보기',
+    profile_previewConfirm: '사용하기',
+    profile_previewCancel: '다시 선택',
     profile_genderMale: '남성',
     profile_genderFemale: '여성',
     profile_genderOther: '기타',

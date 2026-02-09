@@ -276,10 +276,15 @@ GET /api/announcements
 | 登入語系選單收合 | `app/login.tsx` | overlay 從 header 移到 root container，全螢幕點擊收合 |
 | 頭像圖片圓形裁切 | `assets/images/avatars/*.png` | ImageMagick 去除自帶邊框，純圓形 + 透明角落 |
 
-### 未完成
+## 2026-02-09 變更紀錄
+
+### 已完成
 | 項目 | 影響檔案 | 說明 |
 |------|----------|------|
-| 頭像渲染程式碼簡化 | `ProfileScreen.tsx`, `HomeScreen.tsx` | 圖片已裁切，需將絕對定位 hack 改回 `width:'100%' height:'100%'` |
+| 頭像圖片全面更新 | `assets/images/avatars/*.png` | 用戶用 Adobe Express 重製 8 張無邊框版本（768→512×512） |
+| 頭像渲染簡化 | `ProfileScreen.tsx`, `HomeScreen.tsx` | CSS 從 `115%` hack 改回 `width:'100%' height:'100%'` |
+| 登出白名單清除 | `AppContext.tsx` | AsyncStorage 改用白名單制（只保留 LANGUAGE），記憶體狀態重置為 defaultState |
+| CLAUDE.md /img-fit 更新 | `CLAUDE.md` | 重寫圖片對齊 skill，記錄正確流程 + 教訓 #008 |
 
 ---
 

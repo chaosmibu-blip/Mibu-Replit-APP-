@@ -350,94 +350,82 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 
 ---
 
-### /img-fit — 圖片對齊裁切（圖片與外框不對齊時觸發）
+### /img-fit — 圖片放入圓形框架（新增或更換頭像圖片時觸發）
 
-**核心原則**：圖片自帶的邊框/圓框與 CSS 框架衝突時，用 scale + overflow 裁切解決，不重做圖片。
+**核心原則**：圖片不帶邊框，邊框由 CSS 負責。圖片職責是「內容」，CSS 職責是「框架」。
 
-**觸發時機**：任何圖片需要嵌入圓形/方形框架，且出現以下情況：
-- 圖片自帶的邊框與 CSS border 產生雙框
-- 圖片內容沒有填滿框架，有空隙
-- 圖片比例不對，導致變形或偏移
+**觸發時機**：需要將圖片嵌入圓形/方形框架時（如頭像、圖示）
 
-**三層結構（由外到內）**：
+**正確做法（源頭解決）**：
 ```
-┌─ 框架層（View + border / frame 圖片）─────┐
-│  ┌─ 遮罩層（overflow: hidden + 形狀）──┐  │
-│  │  ┌─ 圖片層（scale 放大裁切）────┐  │  │
-│  │  │                              │  │  │
-│  │  └──────────────────────────────┘  │  │
-│  └──────────────────────────────────────┘  │
-└────────────────────────────────────────────┘
+1. 圖片端：無裝飾邊框，圓形內容填滿畫布，角落透明
+2. CSS 端：overflow hidden + borderRadius 裁切，border 畫選中框
+3. 圖片 100% 填滿容器，不需要 scale hack
 ```
 
-**實作模板（絕對定位法，最穩定）**：
+**圖片規格（給設計師/Canva）**：
+
+| 項目 | 規格 |
+|------|------|
+| 畫布尺寸 | 768×768 px（匯出用，會縮到 512×512） |
+| 內容形狀 | 圓形，填滿整個畫布（直徑 = 畫布寬度） |
+| 邊框 | **無**（不要裝飾邊框，CSS 會畫） |
+| 角落 | 透明（PNG with transparency） |
+| 格式 | PNG |
+
+**ImageMagick 處理指令**：
+```bash
+# 從原圖（768×768）處理成 App 用的 512×512
+magick "原圖.png" -trim +repage -resize 512x512^ -gravity center -extent 512x512 "輸出.png"
+```
+- `-trim +repage`：去除多餘空白邊距
+- `-resize 512x512^`：等比縮放，短邊至少 512
+- `-gravity center -extent 512x512`：置中裁切為正方形
+
+**CSS 實作模板**：
 ```typescript
-// 計算公式：
-// 內容區 = SIZE - FRAME_WIDTH * 2
-// 圖片尺寸 = 內容區 * 1.22（放大 22% 裁掉圖片自帶框）
-// 偏移量 = (圖片尺寸 - 內容區) / 2（置中）
-
+// 容器（圓形裁切 + 選中邊框）
 <View style={{
   width: SIZE,
   height: SIZE,
   borderRadius: SIZE / 2,
-  borderWidth: FRAME_WIDTH,
-  borderColor: FRAME_COLOR,
   overflow: 'hidden',
+  borderWidth: isSelected ? BORDER_WIDTH : 0,
+  borderColor: MibuBrand.brown,
 }}>
   <Image
     source={imageSource}
-    style={{
-      position: 'absolute',
-      top: -OFFSET,
-      left: -OFFSET,
-      width: IMAGE_SIZE,
-      height: IMAGE_SIZE,
-    }}
+    style={{ width: '100%', height: '100%' }}
     resizeMode="cover"
   />
 </View>
-
-// 範例（100px 容器 + 4px border）：
-// 內容區 = 92, 圖片 = 112, 偏移 = 10
-// 範例（64px 容器 + 無 border）：
-// 內容區 = 64, 圖片 = 78, 偏移 = 7
-// 範例（52px 容器，modal 選擇器）：
-// 內容區 = 52, 圖片 = 64, 偏移 = 6
 ```
 
-**Scale 決策表**：
+**本專案頭像尺寸對照**：
 
-| 圖片狀況 | Scale 值 | 說明 |
-|---------|---------|------|
-| 圖片有細邊框線（1-2px） | 1.05 | 輕微放大，裁掉邊框線 |
-| 圖片有明顯圓框（3-5px） | 1.15 | 標準裁切，本專案頭像用這個 |
-| 圖片有粗框 + 留白 | 1.12~1.15 | 激進裁切，注意是否裁到主體 |
-| 圖片無框，但有透明邊距 | 1.03~1.05 | 消除邊距 |
+| 使用位置 | 容器尺寸 | 圖片尺寸 |
+|---------|---------|---------|
+| 個人資料主頭像 | 100×100 + border 4 | 512×512（5x，超清晰） |
+| 選擇器 Modal 小圖 | 52×52（64 - padding/border） | 512×512 |
+| 首頁等級卡片 | 依 styles.levelAvatar | 512×512 |
+
+**常見錯誤（不要踩）**：
+
+| 錯誤做法 | 為什麼錯 | 正確做法 |
+|---------|---------|---------|
+| 用 CSS scale/115% 裁掉圖片邊框 | 每張圖邊框不同，scale 值無法統一 | 源頭去除邊框 |
+| 用 ImageMagick 做圓形裁切 | 圓形 PNG 邊緣有鋸齒，跟 CSS 圓角衝突 | 保持方形，讓 CSS 裁圓 |
+| 圖片太小再放大 | 模糊 | 匯出 ≥ 768，縮小到 512 |
+| 圖片帶邊框 + CSS 也畫邊框 | 雙框 | 圖片不帶框 |
 
 **檢查流程**：
 ```
-1. 辨識問題 → 是雙框？空隙？偏移？
-2. 看圖片 → 圖片自帶什麼邊框/留白？
-3. 選 scale → 參考決策表選初始值
-4. 確認結構 → 容器有 overflow: hidden 嗎？
-5. 套用 → 加 transform: [{ scale }]
-6. 舉一反三 → 搜尋專案中所有同類圖片渲染，一次修完
+1. 確認圖片無裝飾邊框 → 有的話請設計師/Canva 移除
+2. 確認圖片尺寸 ≥ 512×512 → 太小會模糊
+3. ImageMagick trim + resize 到 512×512
+4. CSS 用 100% + overflow hidden + borderRadius
+5. 選中狀態用 borderColor 區分，不動圖片
 ```
-
-**舉一反三搜尋**：
-```bash
-# 找所有可能有同樣問題的圖片渲染
-grep -rn "resizeMode.*cover" src/
-grep -rn "borderRadius.*overflow" src/
-grep -rn "Image.*source.*preset\|avatar\|frame" src/
-```
-
-**注意事項**：
-- 優先使用絕對定位法（`position: absolute` + 負偏移），比 `transform: scale` 更穩定
-- 必須確認父容器有 `overflow: 'hidden'`，否則放大的部分會溢出
-- 自訂上傳的圖片（非預設圖）通常不需要 scale，因為沒有預畫框
-- 如果 scale 後主體被裁太多 → 降低 scale 或考慮重做圖片
 
 ---
 
@@ -747,6 +735,16 @@ fontSize: FontSize.md       // 不要 14
 - **舉一反三**：
   - 收到後端任務時，先用 curl 或 Postman 測試 API 是否存在
   - 新 API 上線前，保留舊 API 的呼叫作為 fallback
+
+### #008 用 CSS hack 修圖片問題，方向錯了（2026-02-09）
+- **問題**：頭像圖片自帶裝飾邊框，用 CSS scale 115%/絕對定位/ImageMagick 圓形裁切都無法統一解決 8 張不同圖片的對齊問題
+- **原因**：每張圖的邊框粗細、位置不同，一個 scale 值不可能適用所有圖。ImageMagick 圓形裁切會產生鋸齒跟 CSS borderRadius 衝突
+- **解法**：源頭解決 — 請用戶用 Canva/Adobe Express 重新匯出無邊框版本（768×768），再用 ImageMagick 縮到 512×512，CSS 只用 `width: '100%', height: '100%'`
+- **教訓**：
+  - 圖片問題在圖片端解決，不要在 CSS 端硬修
+  - 如果一直改不好，退後一步看方向對不對
+  - 匯出尺寸要夠大（≥ 768），縮小不糊，放大會糊
+  - 已建立 `/img-fit` skill 記錄完整流程
 
 ---
 

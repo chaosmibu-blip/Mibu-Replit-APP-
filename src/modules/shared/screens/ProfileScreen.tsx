@@ -128,6 +128,9 @@ export function ProfileScreen() {
   // #038 自訂頭像上傳
   const [customAvatarUrl, setCustomAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  // 圓形預覽：暫存用戶選好但尚未上傳的圖片
+  const [pendingAvatarAsset, setPendingAvatarAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [showAvatarPreview, setShowAvatarPreview] = useState(false);
 
   // 【截圖 19】Toast 訊息（取代彈窗）
   const [toastMessage, setToastMessage] = useState('');
@@ -202,6 +205,7 @@ export function ProfileScreen() {
    * #038 上傳自訂頭像
    * 使用 expo-image-picker 選擇圖片並上傳到後端
    */
+  // 步驟一：選圖 → 顯示圓形預覽
   const handleUploadAvatar = async () => {
     try {
       // 請求相簿權限
@@ -232,10 +236,24 @@ export function ProfileScreen() {
         return;
       }
 
+      // 暫存圖片，顯示圓形預覽讓用戶確認
+      setPendingAvatarAsset(asset);
       setShowAvatarModal(false);
-      setUploadingAvatar(true);
+      setShowAvatarPreview(true);
+    } catch (error) {
+      console.error('Pick avatar error:', error);
+      showToastMessage(t.profile_uploadFailedRetry);
+    }
+  };
 
-      // 取得 token
+  // 步驟二：用戶確認 → 上傳
+  const handleConfirmUpload = async () => {
+    if (!pendingAvatarAsset?.base64) return;
+
+    setShowAvatarPreview(false);
+    setUploadingAvatar(true);
+
+    try {
       const token = await getToken();
       if (!token) {
         showToastMessage(t.settings_pleaseLoginFirst);
@@ -244,19 +262,17 @@ export function ProfileScreen() {
       }
 
       // 判斷 mimeType（從副檔名判斷）
-      const mimeType = asset.uri?.match(/\.png$/i) ? 'image/png'
-        : asset.uri?.match(/\.webp$/i) ? 'image/webp'
+      const mimeType = pendingAvatarAsset.uri?.match(/\.png$/i) ? 'image/png'
+        : pendingAvatarAsset.uri?.match(/\.webp$/i) ? 'image/webp'
         : 'image/jpeg';
 
       // 上傳圖片（Base64 JSON 格式）
-      const uploadResult = await authApi.uploadAvatar(token, asset.base64, mimeType);
+      const uploadResult = await authApi.uploadAvatar(token, pendingAvatarAsset.base64, mimeType);
 
       if (uploadResult.success && uploadResult.avatarUrl) {
-        // 更新自訂頭像 URL
         setCustomAvatarUrl(uploadResult.avatarUrl);
         setSelectedAvatar('custom');
         await saveAvatarChoice('custom');
-        // 儲存自訂頭像 URL 到 AsyncStorage
         await AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_AVATAR_URL, uploadResult.avatarUrl);
         showToastMessage(t.profile_avatarUploaded);
       } else {
@@ -267,7 +283,15 @@ export function ProfileScreen() {
       showToastMessage(t.profile_uploadFailedRetry);
     } finally {
       setUploadingAvatar(false);
+      setPendingAvatarAsset(null);
     }
+  };
+
+  // 取消預覽 → 回到頭像選擇器
+  const handleCancelPreview = () => {
+    setShowAvatarPreview(false);
+    setPendingAvatarAsset(null);
+    setShowAvatarModal(true);
   };
 
   // ============ 資料載入 ============
@@ -443,7 +467,6 @@ export function ProfileScreen() {
               const preset = avatarPresets.find(a => a.id === selectedAvatar);
               // 有圖片的頭像（貓咪系列）
               if (preset?.image) {
-                // 圖片已裁切為純圓形，直接填滿容器即可
                 return (
                   <View style={[styles.avatar, { backgroundColor: preset.color, overflow: 'hidden' }]}>
                     <Image
@@ -742,6 +765,45 @@ export function ProfileScreen() {
         </TouchableOpacity>
       </Modal>
 
+      {/* 自訂頭像圓形預覽 Modal */}
+      <Modal
+        visible={showAvatarPreview}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCancelPreview}
+      >
+        <TouchableOpacity
+          style={styles.avatarModalOverlay}
+          activeOpacity={1}
+          onPress={handleCancelPreview}
+        >
+          <View style={styles.avatarPreviewContainer} onStartShouldSetResponder={() => true}>
+            <Text style={styles.avatarModalTitle}>{t.profile_previewAvatar}</Text>
+
+            {/* 圓形預覽 */}
+            <View style={styles.avatarPreviewCircle}>
+              {pendingAvatarAsset?.uri && (
+                <Image
+                  source={{ uri: pendingAvatarAsset.uri }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+              )}
+            </View>
+
+            {/* 確認 / 取消按鈕 */}
+            <View style={styles.avatarPreviewButtons}>
+              <TouchableOpacity style={styles.avatarPreviewCancelBtn} onPress={handleCancelPreview}>
+                <Text style={styles.avatarPreviewCancelText}>{t.profile_previewCancel}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.avatarPreviewConfirmBtn} onPress={handleConfirmUpload}>
+                <Text style={styles.avatarPreviewConfirmText}>{t.profile_previewConfirm}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       {/* 【截圖 19】Toast 訊息 - 淡入淡出 3 秒 */}
       {showToast && (
         <Animated.View
@@ -989,9 +1051,9 @@ const styles = StyleSheet.create({
   },
   avatarOption: {
     position: 'relative',
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
     padding: 3,
     backgroundColor: 'transparent',
     borderWidth: 3,
@@ -1002,13 +1064,12 @@ const styles = StyleSheet.create({
   },
   avatarOptionCircle: {
     flex: 1,
-    borderRadius: 26,       // 內圈 52px 的一半（64 - 2*(3 padding + 3 border) = 52）
+    borderRadius: 38,       // 內圈 76px 的一半（88 - 2*(3 padding + 3 border) = 76）
     overflow: 'hidden',     // 裁切圖片超出圓形範圍
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarOptionImage: {
-    // 圖片已裁切為純圓形，直接填滿容器
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
@@ -1068,5 +1129,53 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: UIColors.white,
     textAlign: 'center',
+  },
+  // 自訂頭像圓形預覽
+  avatarPreviewContainer: {
+    backgroundColor: UIColors.white,
+    borderRadius: 24,
+    padding: 28,
+    alignItems: 'center',
+    width: '80%',
+    maxWidth: 320,
+  },
+  avatarPreviewCircle: {
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    overflow: 'hidden',
+    backgroundColor: MibuBrand.creamLight,
+    marginVertical: 20,
+    borderWidth: 4,
+    borderColor: MibuBrand.creamLight,
+  },
+  avatarPreviewButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  avatarPreviewCancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: MibuBrand.creamLight,
+    alignItems: 'center',
+  },
+  avatarPreviewCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: MibuBrand.brown,
+  },
+  avatarPreviewConfirmBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: MibuBrand.brown,
+    alignItems: 'center',
+  },
+  avatarPreviewConfirmText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: UIColors.white,
   },
 });
