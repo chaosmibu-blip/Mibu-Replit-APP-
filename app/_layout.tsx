@@ -47,6 +47,15 @@ const MibuLightTheme = {
 const PRELOAD_IMAGES = [
   require('../assets/images/icon.png'),
   require('../assets/images/coin-icon.png'),
+  // 頭像預載入（避免選擇器 Modal 開啟時才載入導致空白）
+  require('../assets/images/avatars/avatar-chef.png'),
+  require('../assets/images/avatars/avatar-artist.png'),
+  require('../assets/images/avatars/avatar-musician.png'),
+  require('../assets/images/avatars/avatar-gardener.png'),
+  require('../assets/images/avatars/avatar-explorer.png'),
+  require('../assets/images/avatars/avatar-astronaut.png'),
+  require('../assets/images/avatars/avatar-diver.png'),
+  require('../assets/images/avatars/avatar-camper.png'),
 ];
 
 /**
