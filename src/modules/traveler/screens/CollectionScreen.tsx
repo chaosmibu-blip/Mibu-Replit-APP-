@@ -292,12 +292,8 @@ export function CollectionScreen() {
       if (!token) return;
 
       const response = await collectionApi.getCollections(token, { sort: 'unread' });
-      console.log('[Collection] API response:', JSON.stringify({
-        hasItems: !!response.items,
-        itemCount: response.items?.length ?? 'undefined',
-        total: response.total,
-        success: response.success,
-      }));
+      console.log('[Collection] API response keys:', Object.keys(response));
+      console.log('[Collection] API response raw:', JSON.stringify(response).substring(0, 500));
       if (response.items) {
         // 將 CollectionItem 轉換為 GachaItemWithRead
         const items = response.items.map(item => ({
