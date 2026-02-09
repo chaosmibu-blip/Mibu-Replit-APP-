@@ -995,6 +995,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     itinerary_helpText: '告訴我你的旅遊偏好，我會推薦景點並加入行程\n點擊左上角查看行程列表，點擊右上角查看行程表',
     itinerary_inputPlaceholder: '想去哪裡？告訴我...',
     itinerary_sendMessage: '發送訊息',
+    itinerary_unknownPlace: '未知景點',
+    itinerary_hereLocation: '這裡',
+    itinerary_aiWelcome: '嗨！{city}之旅想怎麼玩？告訴我你的喜好，我來幫你安排行程 ✨',
     itinerary_myTrips: '我的行程',
     itinerary_tripsCount: '個行程',
     itinerary_selectMode: '選擇',
@@ -2119,6 +2122,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     itinerary_helpText: "Tell me your preferences, I'll recommend places\nTap top-left for trip list, top-right for itinerary",
     itinerary_inputPlaceholder: 'Where do you want to go?',
     itinerary_sendMessage: 'Send message',
+    itinerary_unknownPlace: 'Unknown Place',
+    itinerary_hereLocation: 'here',
+    itinerary_aiWelcome: 'Hi! How do you want to explore {city}? Tell me your preferences and I\'ll plan the itinerary ✨',
     itinerary_myTrips: 'My Trips',
     itinerary_tripsCount: 'trips',
     itinerary_selectMode: 'Select',
@@ -3141,6 +3147,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     itinerary_helpText: "Tell me your preferences, I'll recommend places\nTap top-left for trip list, top-right for itinerary", /* TODO: ja */
     itinerary_inputPlaceholder: 'Where do you want to go?', /* TODO: ja */
     itinerary_sendMessage: 'Send message', /* TODO: ja */
+    itinerary_unknownPlace: '不明なスポット', /* TODO: ja */
+    itinerary_hereLocation: 'ここ', /* TODO: ja */
+    itinerary_aiWelcome: 'こんにちは！{city}の旅をどう楽しみたいですか？好みを教えてください、旅程を組みます ✨', /* TODO: ja */
     itinerary_myTrips: 'My Trips', /* TODO: ja */
     itinerary_tripsCount: 'trips', /* TODO: ja */
     itinerary_selectMode: 'Select', /* TODO: ja */
@@ -4257,6 +4266,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     itinerary_helpText: "Tell me your preferences, I'll recommend places\nTap top-left for trip list, top-right for itinerary", /* TODO: ko */
     itinerary_inputPlaceholder: 'Where do you want to go?', /* TODO: ko */
     itinerary_sendMessage: 'Send message', /* TODO: ko */
+    itinerary_unknownPlace: '알 수 없는 장소', /* TODO: ko */
+    itinerary_hereLocation: '여기', /* TODO: ko */
+    itinerary_aiWelcome: '안녕! {city} 여행 어떻게 즐기고 싶어? 취향을 알려주면 일정을 짜줄게 ✨', /* TODO: ko */
     itinerary_myTrips: 'My Trips', /* TODO: ko */
     itinerary_tripsCount: 'trips', /* TODO: ko */
     itinerary_selectMode: 'Select', /* TODO: ko */

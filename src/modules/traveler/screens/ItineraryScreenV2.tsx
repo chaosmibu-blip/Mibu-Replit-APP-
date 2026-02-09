@@ -180,8 +180,8 @@ const getPlaceDescription = (place: ItineraryPlaceItem) => {
  * 取得景點的名稱
  * 支援新舊 API 回應結構
  */
-const getPlaceName = (place: ItineraryPlaceItem) => {
-  return place.name ?? place.place?.name ?? '未知景點';
+const getPlaceName = (place: ItineraryPlaceItem, fallback = '') => {
+  return place.name ?? place.place?.name ?? fallback;
 };
 
 // 取得景點的分類（支援新舊結構）
@@ -426,10 +426,10 @@ export function ItineraryScreenV2() {
           setMessages(savedMessages);
         } else {
           // 初始化 AI 歡迎訊息
-          const city = res.itinerary.city || res.itinerary.country || '這裡';
+          const city = res.itinerary.city || res.itinerary.country || t.itinerary_hereLocation;
           const welcomeMessage: AiChatMessage = {
             role: 'assistant',
-            content: `嗨！${city}之旅想怎麼玩？告訴我你的喜好，我來幫你安排行程 ✨`,
+            content: tFormat(t.itinerary_aiWelcome, { city }),
           };
           setMessages([welcomeMessage]);
           // 保存歡迎訊息
@@ -605,10 +605,10 @@ export function ItineraryScreenV2() {
       if (savedMessages.length > 0) {
         setMessages(savedMessages);
       } else {
-        const city = cached.city || cached.country || '這裡';
+        const city = cached.city || cached.country || t.itinerary_hereLocation;
         const welcomeMessage: AiChatMessage = {
           role: 'assistant',
-          content: `嗨！${city}之旅想怎麼玩？告訴我你的喜好，我來幫你安排行程 ✨`,
+          content: tFormat(t.itinerary_aiWelcome, { city }),
         };
         setMessages([welcomeMessage]);
         saveMessages(id, [welcomeMessage]);
@@ -1837,7 +1837,7 @@ export function ItineraryScreenV2() {
               const index = getIndex() ?? 0;
               const categoryToken = getCategoryToken(getPlaceCategory(place));
               const description = getPlaceDescription(place);
-              const name = getPlaceName(place);
+              const name = getPlaceName(place, t.itinerary_unknownPlace);
               const isFirst = index === 0;
               const isLast = index === (currentItinerary?.places.length ?? 1) - 1;
 
