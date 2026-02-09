@@ -112,7 +112,7 @@ export function InfoToast({ visible, message, duration = 3000, onHide }: InfoToa
     >
       <View style={styles.toast}>
         {/* 資訊圖示 */}
-        <Ionicons name="information-circle" size={20} color={SemanticColors.warning.dark} style={styles.icon} />
+        <Ionicons name="information-circle" size={20} color="#FFFFFF" style={styles.icon} />
         {/* 訊息文字 */}
         <Text style={styles.message}>{message}</Text>
       </View>
@@ -132,27 +132,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
   },
-  /** 吐司本體：橫向排列、警告色調 */
+  /** 吐司本體：橫向排列、半透灰底（與扭蛋說明 Tooltip 一致） */
   toast: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: SemanticColors.warning.light,
+    backgroundColor: 'rgba(128, 128, 128, 0.5)',
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: MibuBrand.warning,
-    ...Shadow.md,
   },
   /** 圖示右側間距 */
   icon: {
     marginRight: Spacing.sm + 2,
   },
-  /** 訊息文字：深色、允許換行 */
+  /** 訊息文字：白色、允許換行 */
   message: {
     flex: 1,
     fontSize: FontSize.md,
-    color: SemanticColors.warning.dark,
+    color: '#FFFFFF',
     fontWeight: '500',
     lineHeight: 20,
   },

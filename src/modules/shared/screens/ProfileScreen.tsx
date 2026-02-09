@@ -22,6 +22,31 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { Image as ExpoImage } from 'expo-image';
+import { Calendar, LocaleConfig } from 'react-native-calendars';
+
+// ============ 月曆語系設定（全域生效） ============
+LocaleConfig.locales['zh-TW'] = {
+  monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+  monthNamesShort: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+  dayNames: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+  dayNamesShort: ['日', '一', '二', '三', '四', '五', '六'],
+  today: '今天',
+};
+LocaleConfig.locales['ja'] = {
+  monthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+  monthNamesShort: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+  dayNames: ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'],
+  dayNamesShort: ['日', '月', '火', '水', '木', '金', '土'],
+  today: '今日',
+};
+LocaleConfig.locales['ko'] = {
+  monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+  monthNamesShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+  dayNames: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'],
+  dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
+  today: '오늘',
+};
+// en 是預設，不需要額外設定
 import { useApp } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { authApi } from '../../../services/authApi';
@@ -67,6 +92,9 @@ const displayUserId = (userId: string | undefined): string => {
 
 export function ProfileScreen() {
   const { state, t, getToken, setUser } = useApp();
+
+  // 根據語系切換月曆顯示語言（LocaleConfig 是全域的，行程頁月曆也會跟著變）
+  LocaleConfig.defaultLocale = state.language === 'en' ? '' : state.language;
   const router = useRouter();
 
   // ============ 狀態管理 ============
@@ -81,6 +109,9 @@ export function ProfileScreen() {
   const [lastName, setLastName] = useState(''); // 姓
   const [gender, setGender] = useState<Gender | null>(null); // 性別
   const [birthDate, setBirthDate] = useState(''); // 出生日期
+  const [showBirthCalendar, setShowBirthCalendar] = useState(false); // 生日月曆開關
+  // 月曆顯示的年月（用於年份快速切換，格式 YYYY-MM-DD）
+  const [calendarViewDate, setCalendarViewDate] = useState('');
   const [phone, setPhone] = useState(''); // 手機號碼
 
   // 健康資訊欄位
@@ -560,16 +591,90 @@ export function ProfileScreen() {
           )}
         </View>
 
-        {/* ===== 出生日期欄位 ===== */}
+        {/* ===== 出生日期欄位（月曆選擇器） ===== */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.profile_birthDate}</Text>
-          <TextInput
-            style={styles.input}
-            value={birthDate}
-            onChangeText={setBirthDate}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={UIColors.textSecondary}
-          />
+          <TouchableOpacity
+            style={[styles.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+            onPress={() => setShowBirthCalendar(!showBirthCalendar)}
+            activeOpacity={0.7}
+          >
+            <Text style={{ fontSize: 16, color: birthDate ? MibuBrand.dark : UIColors.textSecondary }}>
+              {birthDate || 'YYYY-MM-DD'}
+            </Text>
+            <Ionicons
+              name={showBirthCalendar ? 'chevron-up' : 'chevron-down'}
+              size={16}
+              color={MibuBrand.copper}
+            />
+          </TouchableOpacity>
+          {showBirthCalendar && (() => {
+            // 決定月曆顯示的日期（優先用切換狀態 → 已選日期 → 今天）
+            const viewDate = calendarViewDate || birthDate || new Date().toISOString().split('T')[0];
+            const viewYear = parseInt(viewDate.substring(0, 4), 10);
+            const thisYear = new Date().getFullYear();
+            // 年份快速跳轉
+            const jumpYear = (delta: number) => {
+              const d = new Date(viewDate);
+              d.setFullYear(d.getFullYear() + delta);
+              setCalendarViewDate(d.toISOString().split('T')[0]);
+            };
+            return (
+              <View style={{ marginTop: 8, borderRadius: 12, overflow: 'hidden', backgroundColor: MibuBrand.warmWhite }}>
+                {/* 年份快速切換列 */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, gap: 16 }}>
+                  <TouchableOpacity onPress={() => jumpYear(-10)} style={{ padding: 8 }}>
+                    <Ionicons name="play-back" size={14} color={MibuBrand.copper} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => jumpYear(-1)} style={{ padding: 8 }}>
+                    <Ionicons name="chevron-back" size={18} color={MibuBrand.copper} />
+                  </TouchableOpacity>
+                  <Text style={{ fontSize: 18, fontWeight: '700', color: MibuBrand.brownDark, minWidth: 50, textAlign: 'center' }}>
+                    {viewYear}
+                  </Text>
+                  <TouchableOpacity onPress={() => jumpYear(1)} disabled={viewYear >= thisYear} style={{ padding: 8, opacity: viewYear >= thisYear ? 0.3 : 1 }}>
+                    <Ionicons name="chevron-forward" size={18} color={MibuBrand.copper} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => jumpYear(10)} disabled={viewYear >= thisYear} style={{ padding: 8, opacity: viewYear >= thisYear ? 0.3 : 1 }}>
+                    <Ionicons name="play-forward" size={14} color={MibuBrand.copper} />
+                  </TouchableOpacity>
+                </View>
+                <Calendar
+                  key={viewDate.substring(0, 7)}
+                  current={viewDate}
+                  maxDate={new Date().toISOString().split('T')[0]}
+                  onDayPress={(day: { dateString: string }) => {
+                    setBirthDate(day.dateString);
+                    setCalendarViewDate('');
+                    setShowBirthCalendar(false);
+                  }}
+                  onMonthChange={(month: { dateString: string }) => {
+                    setCalendarViewDate(month.dateString);
+                  }}
+                  markedDates={birthDate ? {
+                    [birthDate]: { selected: true, selectedColor: MibuBrand.brown },
+                  } : {}}
+                  theme={{
+                    backgroundColor: MibuBrand.warmWhite,
+                    calendarBackground: MibuBrand.warmWhite,
+                    todayTextColor: MibuBrand.copper,
+                    selectedDayBackgroundColor: MibuBrand.brown,
+                    selectedDayTextColor: MibuBrand.warmWhite,
+                    arrowColor: MibuBrand.copper,
+                    monthTextColor: MibuBrand.brownDark,
+                    dayTextColor: MibuBrand.brownDark,
+                    textDisabledColor: MibuBrand.tan,
+                    textDayFontWeight: '500' as const,
+                    textMonthFontWeight: '700' as const,
+                    textDayHeaderFontWeight: '600' as const,
+                    textDayFontSize: 14,
+                    textMonthFontSize: 16,
+                    textDayHeaderFontSize: 12,
+                  }}
+                />
+              </View>
+            );
+          })()}
         </View>
 
         {/* ===== 手機欄位 ===== */}

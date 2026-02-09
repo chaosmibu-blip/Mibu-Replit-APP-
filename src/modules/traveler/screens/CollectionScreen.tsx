@@ -771,11 +771,6 @@ export function CollectionScreen() {
             {language === 'zh-TW' ? '我的圖鑑' : 'My Collection'}
           </Text>
         </View>
-        {unreadCount > 0 && (
-          <Text style={{ fontSize: FontSize.sm, color: MibuBrand.copper, marginTop: Spacing.xs, marginLeft: 12 }}>
-            {language === 'zh-TW' ? `${unreadCount} 個新景點` : `${unreadCount} new places`}
-          </Text>
-        )}
       </View>
 
       <View style={{
@@ -892,7 +887,7 @@ export function CollectionScreen() {
     {isGridMode ? (
       <FlatList
         style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}
-        contentContainerStyle={{ paddingHorizontal: Spacing.lg, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingTop: Spacing.lg, paddingHorizontal: Spacing.lg, paddingBottom: 40 }}
         data={filteredPlaces}
         numColumns={2}
         renderItem={({ item, index }) => renderPlaceCard(item, index, 'grid')}
@@ -967,7 +962,7 @@ export function CollectionScreen() {
     /* ========== 非 Level 2：原本的 ScrollView ========== */
     <ScrollView
       style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}
-      contentContainerStyle={{ paddingHorizontal: Spacing.lg, paddingBottom: 120 }}
+      contentContainerStyle={{ paddingTop: Spacing.lg, paddingHorizontal: Spacing.lg, paddingBottom: 40 }}
       refreshControl={refreshControl}
     >
       {headerBlock}
