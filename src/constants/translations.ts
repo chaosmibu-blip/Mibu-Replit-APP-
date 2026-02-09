@@ -983,7 +983,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     itinerary_deleteFailed: '刪除失敗',
     itinerary_loginRequired: '登入以使用行程助手',
     itinerary_noItineraries: '還沒有行程',
-    itinerary_noItinerariesDesc: '建立行程，讓 AI 幫你規劃完美旅途',
+    itinerary_noItinerariesDesc: '下一趟旅行，從這裡開始',
     itinerary_tipAi: 'AI 智慧推薦景點',
     itinerary_tipPlanning: '自動安排每日行程',
     itinerary_tipNav: '即時導航帶你走',
@@ -2110,7 +2110,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     itinerary_deleteFailed: 'Delete failed',
     itinerary_loginRequired: 'Login to use Trip Assistant',
     itinerary_noItineraries: 'No itineraries yet',
-    itinerary_noItinerariesDesc: 'Create a trip and let AI plan for you',
+    itinerary_noItinerariesDesc: 'Your next adventure starts here',
     itinerary_tipAi: 'AI recommends spots',
     itinerary_tipPlanning: 'Auto daily planning',
     itinerary_tipNav: 'Real-time navigation',
@@ -3135,7 +3135,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     itinerary_deleteFailed: 'Delete failed', /* TODO: ja */
     itinerary_loginRequired: 'Login to use Trip Assistant', /* TODO: ja */
     itinerary_noItineraries: 'No itineraries yet', /* TODO: ja */
-    itinerary_noItinerariesDesc: 'Create a trip and let AI plan for you', /* TODO: ja */
+    itinerary_noItinerariesDesc: 'Your next adventure starts here', /* TODO: ja */
     itinerary_tipAi: 'AI recommends spots', /* TODO: ja */
     itinerary_tipPlanning: 'Auto daily planning', /* TODO: ja */
     itinerary_tipNav: 'Real-time navigation', /* TODO: ja */
@@ -4254,7 +4254,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     itinerary_deleteFailed: 'Delete failed', /* TODO: ko */
     itinerary_loginRequired: 'Login to use Trip Assistant', /* TODO: ko */
     itinerary_noItineraries: 'No itineraries yet', /* TODO: ko */
-    itinerary_noItinerariesDesc: 'Create a trip and let AI plan for you', /* TODO: ko */
+    itinerary_noItinerariesDesc: 'Your next adventure starts here', /* TODO: ko */
     itinerary_tipAi: 'AI recommends spots', /* TODO: ko */
     itinerary_tipPlanning: 'Auto daily planning', /* TODO: ko */
     itinerary_tipNav: 'Real-time navigation', /* TODO: ko */

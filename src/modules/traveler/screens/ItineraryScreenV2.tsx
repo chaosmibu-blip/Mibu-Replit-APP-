@@ -1400,20 +1400,6 @@ export function ItineraryScreenV2() {
         {t.itinerary_noItinerariesDesc}
       </Text>
 
-      {/* 功能提示卡片 */}
-      <View style={styles.emptyTipsCard}>
-        {[
-          { icon: 'sparkles' as const, text: t.itinerary_tipAi },
-          { icon: 'calendar-outline' as const, text: t.itinerary_tipPlanning },
-          { icon: 'navigate-outline' as const, text: t.itinerary_tipNav },
-        ].map((tip) => (
-          <View key={tip.icon} style={styles.emptyTipRow}>
-            <Ionicons name={tip.icon} size={18} color={MibuBrand.copper} />
-            <Text style={styles.emptyTipText}>{tip.text}</Text>
-          </View>
-        ))}
-      </View>
-
       {/* 建立按鈕 */}
       <TouchableOpacity
         style={styles.emptyCreateButton}
@@ -1517,7 +1503,6 @@ export function ItineraryScreenV2() {
           >
             <Ionicons name="help-circle-outline" size={22} color={MibuBrand.copper} />
           </TouchableOpacity>
-          <Text style={styles.welcomeTitle}>Mibu {t.itinerary_tripAssistant}</Text>
           <Text style={styles.welcomeSubtitle}>
             {t.itinerary_welcomeSubtitle}
           </Text>
@@ -1541,41 +1526,39 @@ export function ItineraryScreenV2() {
               msg.role === 'user' ? styles.userMessageRow : styles.assistantMessageRow,
             ]}
           >
-            {/* 【截圖 9 修改】AI 頭像根據城市可更換 */}
+            {/* AI 訊息：頭像 + 名稱 + 對話框（LINE 風格） */}
             {msg.role === 'assistant' && (
-              <View style={styles.avatarContainer}>
-                <Image
-                  source={getCityAvatar(currentItinerary?.city)}
-                  style={styles.avatarIcon}
-                  resizeMode="contain"
-                />
+              <>
+                <View style={[styles.avatarContainer, { alignSelf: 'flex-start' }]}>
+                  <Image
+                    source={getCityAvatar(currentItinerary?.city)}
+                    style={styles.avatarIcon}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={{ flex: 1, flexDirection: 'column' }}>
+                  <Text style={{ fontSize: 10, fontWeight: '600', color: MibuBrand.brownLight, marginBottom: 2, marginLeft: 2 }}>Mini</Text>
+                  <View style={[styles.messageBubble, styles.assistantBubble]}>
+                    {index === typingMessageIndex ? (
+                      <TypewriterText
+                        text={msg.content}
+                        style={styles.messageText}
+                        speed={25}
+                        onComplete={() => setTypingMessageIndex(-1)}
+                      />
+                    ) : (
+                      <Text style={styles.messageText}>{msg.content}</Text>
+                    )}
+                  </View>
+                </View>
+              </>
+            )}
+            {/* 用戶訊息：靠右對齊 */}
+            {msg.role === 'user' && (
+              <View style={[styles.messageBubble, styles.userBubble]}>
+                <Text style={[styles.messageText, styles.userMessageText]}>{msg.content}</Text>
               </View>
             )}
-            <View
-              style={[
-                styles.messageBubble,
-                msg.role === 'user' ? styles.userBubble : styles.assistantBubble,
-              ]}
-            >
-              {/* AI 訊息使用打字機效果（僅對正在打字的訊息） */}
-              {msg.role === 'assistant' && index === typingMessageIndex ? (
-                <TypewriterText
-                  text={msg.content}
-                  style={styles.messageText}
-                  speed={25}
-                  onComplete={() => setTypingMessageIndex(-1)}
-                />
-              ) : (
-                <Text
-                  style={[
-                    styles.messageText,
-                    msg.role === 'user' && styles.userMessageText,
-                  ]}
-                >
-                  {msg.content}
-                </Text>
-              )}
-            </View>
           </View>
         ))}
 
@@ -1583,15 +1566,19 @@ export function ItineraryScreenV2() {
         {/* 【截圖 9 修改】AI 頭像根據城市可更換 */}
         {aiLoading && (
           <View style={[styles.messageRow, styles.assistantMessageRow]}>
-            <View style={styles.avatarContainer}>
+            {/* AI 頭像（LINE 風格，與對話訊息一致） */}
+            <View style={[styles.avatarContainer, { alignSelf: 'flex-start' }]}>
               <Image
                 source={getCityAvatar(currentItinerary?.city)}
                 style={styles.avatarIcon}
                 resizeMode="contain"
               />
             </View>
-            <View style={[styles.messageBubble, styles.assistantBubble]}>
-              <ActivityIndicator size="small" color={MibuBrand.brown} />
+            <View style={{ flex: 1, flexDirection: 'column' }}>
+              <Text style={{ fontSize: 10, fontWeight: '600', color: MibuBrand.brownLight, marginBottom: 2, marginLeft: 2 }}>Mini</Text>
+              <View style={[styles.messageBubble, styles.assistantBubble]}>
+                <ActivityIndicator size="small" color={MibuBrand.brown} />
+              </View>
             </View>
           </View>
         )}
@@ -2637,7 +2624,7 @@ const styles = StyleSheet.create({
   messageRow: {
     flexDirection: 'row',
     marginBottom: Spacing.md,
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
   },
   userMessageRow: {
     justifyContent: 'flex-end',
