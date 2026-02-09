@@ -9,11 +9,10 @@
  *
  * ============ 串接端點 ============
  * - GET    /api/collections                  - 取得收藏列表
- * - POST   /api/collections/:id/read         - 標記單一項目已讀
  * - POST   /api/collections/add              - 新增收藏 (#011)
  * - DELETE /api/collections/:id              - 刪除收藏
  * - GET    /api/collections/unread-count     - 取得未讀數量
- * - POST   /api/collections/mark-read        - 標記全部已讀
+ * - POST   /api/collections/read-all         - 標記全部已讀（清除所有未讀紅點）
  * - GET    /api/collections/place/promo      - 取得景點優惠
  * - GET    /api/collections/stats            - 取得收藏統計
  * - GET    /api/collections/favorites        - 取得我的最愛列表
@@ -163,11 +162,13 @@ class CollectionApiService extends ApiBase {
   /**
    * 標記全部已讀
    *
+   * 後端會將所有 is_read = false 的圖鑑更新為已讀，並清除通知徽章
+   *
    * @param token - JWT Token
-   * @returns 操作結果
+   * @returns 操作結果（含被標記的數量）
    */
-  async markCollectionRead(token: string): Promise<{ success: boolean }> {
-    return this.request<{ success: boolean }>('/api/collections/mark-read', {
+  async markCollectionRead(token: string): Promise<{ success: boolean; markedCount: number }> {
+    return this.request<{ success: boolean; markedCount: number }>('/api/collections/read-all', {
       method: 'POST',
       headers: this.authHeaders(token),
     });
