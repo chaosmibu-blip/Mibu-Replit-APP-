@@ -17,7 +17,7 @@
  *
  * @see 後端合約: contracts/APP.md
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../../../context/AppContext';
@@ -344,6 +344,14 @@ export function ItemBoxScreen() {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [redeemModalVisible, setRedeemModalVisible] = useState(false);
+  const redeemTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** 卸載時清理 Modal 延遲 timer */
+  useEffect(() => {
+    return () => {
+      if (redeemTimerRef.current) clearTimeout(redeemTimerRef.current);
+    };
+  }, []);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   // 核銷相關狀態
@@ -471,7 +479,8 @@ export function ItemBoxScreen() {
     setRedemptionCode('');
     setRedeemSuccess(false);
     setCountdown(null);
-    setTimeout(() => setRedeemModalVisible(true), 300);
+    if (redeemTimerRef.current) clearTimeout(redeemTimerRef.current);
+    redeemTimerRef.current = setTimeout(() => { setRedeemModalVisible(true); redeemTimerRef.current = null; }, 300);
   };
 
   /**

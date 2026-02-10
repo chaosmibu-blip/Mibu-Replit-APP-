@@ -27,6 +27,8 @@ import { STORAGE_KEYS } from '../constants/storageKeys';
 import { apiService } from '../services/api';
 import { pushNotificationService } from '../services/pushNotificationService';
 import { preloadService } from '../services/preloadService';
+import { disconnectSocket } from '../services/socket';
+import { setOnUnauthorized, resetUnauthorizedFlag } from '../services/base';
 
 // ============ Token 安全儲存工具 ============
 // iOS/Android 使用 SecureStore（加密儲存）
@@ -297,6 +299,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (user) {
       // === 登入流程 ===
+      resetUnauthorizedFlag(); // 重置 401 旗標，讓新 session 的 401 可以再次觸發
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       if (token) {
         await saveToken(token);
@@ -328,6 +331,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       await removeToken();
       preloadService.clearCache();
+      disconnectSocket(); // 斷開 WebSocket 連線，避免殭屍連線
     }
   }, []);
 
@@ -496,6 +500,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setUnreadCount = useCallback((count: number) => {
     setState(prev => ({ ...prev, unreadItemCount: count }));
   }, []);
+
+  // ============ 401 攔截器註冊 ============
+  // 在 base.ts 的 request() 偵測到 401 時，自動執行登出清理
+  // service 層不直接依賴 router/context，透過回調解耦
+
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      // 觸發完整登出流程（清 Token、快取、推播、Socket）
+      setUser(null);
+    });
+    return () => setOnUnauthorized(null);
+  }, [setUser]);
 
   // ============ 翻譯字典 ============
 

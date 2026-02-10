@@ -13,12 +13,39 @@
  * ============ 主要功能 ============
  * - ApiBase: 所有 API 服務的基底類別
  * - ApiError: 統一的 API 錯誤類別
- * - request(): 通用 HTTP 請求方法（含超時機制）
+ * - request(): 通用 HTTP 請求方法（含超時機制 + 401 攔截）
  * - authHeaders(): 生成 Bearer Token 認證標頭
+ * - setOnUnauthorized(): 註冊 401 回調（由 AppContext 掛載）
+ * - resetUnauthorizedFlag(): 登入後重置防重入旗標
  *
- * 更新日期：2026-02-08（加入 AbortController 超時機制）
+ * 更新日期：2026-02-10（加入統一 401 攔截器）
  */
 import { API_BASE_URL } from '../constants/translations';
+
+// ============ 401 攔截器 ============
+// 統一處理所有 API 的 401 未授權回應
+// 由 AppContext 註冊回調，service 層不直接依賴 router 或 context
+
+/** 401 未授權回調函數（由 AppContext 註冊） */
+let _onUnauthorized: (() => void) | null = null;
+/** 防重入旗標：多個併發請求同時 401 時只觸發一次 */
+let _unauthorizedHandled = false;
+
+/**
+ * 註冊 401 未授權回調
+ * @param callback - 收到 401 時要執行的函數（通常是登出 + 清理）
+ */
+export function setOnUnauthorized(callback: (() => void) | null): void {
+  _onUnauthorized = callback;
+}
+
+/**
+ * 重置 401 防重入旗標
+ * @description 用戶重新登入後呼叫，讓下次 401 可以再次觸發登出
+ */
+export function resetUnauthorizedFlag(): void {
+  _unauthorizedHandled = false;
+}
 
 // ============ 類型定義 ============
 
@@ -171,6 +198,11 @@ export class ApiBase {
       } catch {
         // 無法解析 JSON（可能是 HTML 錯誤頁面或空回應）
         if (!response.ok) {
+          // 401 未授權：觸發統一登出
+          if (response.status === 401 && _onUnauthorized && !_unauthorizedHandled) {
+            _unauthorizedHandled = true;
+            _onUnauthorized();
+          }
           throw new ApiError(response.status, `API Error: ${response.status}`);
         }
         throw new Error('Invalid JSON response');
@@ -182,6 +214,13 @@ export class ApiBase {
         // 嘗試從多個可能的欄位提取錯誤訊息
         // 不同端點可能使用不同的欄位名稱
         const serverMessage = errorData.message || errorData.error || errorData.detail || errorData.reason;
+
+        // 401 未授權：觸發統一登出（防重入，多個併發 401 只處理一次）
+        if (response.status === 401 && _onUnauthorized && !_unauthorizedHandled) {
+          _unauthorizedHandled = true;
+          _onUnauthorized();
+        }
+
         throw new ApiError(
           response.status,
           `API Error: ${response.status}`,

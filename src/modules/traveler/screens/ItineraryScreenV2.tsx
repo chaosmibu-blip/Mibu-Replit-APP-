@@ -200,7 +200,7 @@ const getPlaceCategory = (place: ItineraryPlaceItem) => {
  * @returns 對應的頭像 source
  */
 /** Mini AI 助手頭像 URL（Cloudinary 託管） */
-const MINI_AVATAR_URL = 'https://res.cloudinary.com/dgts6a89y/image/upload/v1770652592/mibu/ai-chat/mini-avatar.png';
+const MINI_AVATAR_URL = 'https://res.cloudinary.com/dgts6a89y/image/upload/f_auto,q_auto,w_128/v1770652592/mibu/ai-chat/mini-avatar.png';
 
 export function ItineraryScreenV2() {
   const insets = useSafeAreaInsets();

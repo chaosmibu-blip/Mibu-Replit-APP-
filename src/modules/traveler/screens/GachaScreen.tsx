@@ -167,11 +167,21 @@ export function GachaScreen() {
 
   const [showInfoTooltip, setShowInfoTooltip] = useState(false);
   const infoTooltipOpacity = useRef(new Animated.Value(0)).current;
+  const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** 卸載時清理 tooltip timer */
+  useEffect(() => {
+    return () => {
+      if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current);
+    };
+  }, []);
 
   /**
    * 顯示扭蛋說明 tooltip，3 秒後自動淡出
    */
   const showGachaInfoTooltip = useCallback(() => {
+    // 清理前一個 timer（防止重複觸發累積）
+    if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current);
     setShowInfoTooltip(true);
     // 淡入
     Animated.timing(infoTooltipOpacity, {
@@ -180,7 +190,7 @@ export function GachaScreen() {
       useNativeDriver: true,
     }).start(() => {
       // 3 秒後淡出
-      setTimeout(() => {
+      tooltipTimerRef.current = setTimeout(() => {
         Animated.timing(infoTooltipOpacity, {
           toValue: 0,
           duration: 300,
@@ -188,6 +198,7 @@ export function GachaScreen() {
         }).start(() => {
           setShowInfoTooltip(false);
         });
+        tooltipTimerRef.current = null;
       }, 3000);
     });
   }, [infoTooltipOpacity]);

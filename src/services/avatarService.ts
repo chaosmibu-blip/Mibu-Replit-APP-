@@ -20,6 +20,7 @@ import { Image as ExpoImage } from 'expo-image';
 import { assetApi } from './assetApi';
 import { AvatarPreset, AssetItem } from '../types/asset';
 import { STORAGE_KEYS } from '../constants/storageKeys';
+import { cloudinaryUrl } from '../utils/cloudinary';
 
 // ========== 工具函數 ==========
 
@@ -95,7 +96,7 @@ class AvatarService {
       id: codeToShortId(a.code),
       code: a.code,
       name: a.name,
-      imageUrl: a.url,
+      imageUrl: cloudinaryUrl(a.url, 512),
       color: DEFAULT_COLOR,
     }));
   }

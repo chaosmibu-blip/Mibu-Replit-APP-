@@ -14,7 +14,7 @@
  *
  * @see 後端合約: contracts/APP.md（待定）
  */
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -148,6 +148,7 @@ export function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]); // 訊息列表
   const [inputText, setInputText] = useState(''); // 輸入框文字
   const [isTyping, setIsTyping] = useState(false); // AI 是否正在輸入
+  const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 取得當前語系的翻譯文字
   const texts = translations[state.language] || translations['zh-TW'];
@@ -163,6 +164,13 @@ export function ChatScreen() {
       timestamp: new Date(),
     }]);
   }, [state.language]);
+
+  /** 卸載時清理 AI 回應 timer */
+  useEffect(() => {
+    return () => {
+      if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+    };
+  }, []);
 
   // ============ 輔助函數 ============
 
@@ -180,10 +188,12 @@ export function ChatScreen() {
    * 模擬 AI 回應
    * 延遲 1-2 秒後顯示回應，模擬真實 AI 處理時間
    */
-  const simulateAIResponse = (userMessage: string) => {
+  const simulateAIResponse = useCallback((userMessage: string) => {
     setIsTyping(true);
+    // 清理前一個 timer（防止快速連發時累積）
+    if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
 
-    setTimeout(() => {
+    aiTimerRef.current = setTimeout(() => {
       const response = getResponse(userMessage);
 
       const newMessage: Message = {
@@ -195,8 +205,9 @@ export function ChatScreen() {
 
       setMessages(prev => [...prev, newMessage]);
       setIsTyping(false);
+      aiTimerRef.current = null;
     }, 1000 + Math.random() * 1000); // 1-2 秒隨機延遲
-  };
+  }, []);
 
   // ============ 事件處理 ============
 

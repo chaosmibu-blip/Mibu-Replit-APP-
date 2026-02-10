@@ -165,6 +165,14 @@ export default function CouponWinAnimation({
 
   // 分享狀態
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
+  const shareTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** 卸載時清理分享狀態 timer */
+  useEffect(() => {
+    return () => {
+      if (shareTimerRef.current) clearTimeout(shareTimerRef.current);
+    };
+  }, []);
 
   // ============================================================
   // 事件處理
@@ -189,7 +197,8 @@ export default function CouponWinAnimation({
         } else {
           await Clipboard.setStringAsync(shareText);
           setShareStatus('copied');
-          setTimeout(() => setShareStatus('idle'), 2000);
+          if (shareTimerRef.current) clearTimeout(shareTimerRef.current);
+          shareTimerRef.current = setTimeout(() => { setShareStatus('idle'); shareTimerRef.current = null; }, 2000);
         }
       } else {
         // Native: Use React Native Share
