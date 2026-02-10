@@ -1,20 +1,25 @@
 /**
- * EconomyScreen - 成就與任務畫面
+ * ============================================================
+ * EconomyScreen - 成就與任務畫面（#043 規則引擎整合）
+ * ============================================================
+ * 使用統一規則引擎 API 取代舊的分散成就/任務系統
  *
- * 功能：
- * - 顯示用戶金幣餘額和權益（#039 重構：等級 → 金幣）
- * - 每日任務列表（簽到、扭蛋、瀏覽圖鑑等）
- * - 新手任務列表（一次性任務）
- * - 成就徽章列表（累計任務進度）
- * - 統計數據卡片（金幣、已解鎖成就、連續登入）
+ * 主要功能:
+ * - 每日任務（quests with resetType daily/weekly）
+ * - 一次性任務（quests with resetType none）
+ * - 成就徽章（achievements）
+ * - 用戶權益（perks）
+ * - 領取獎勵（claim completed rules）
+ * - 前往導航（navigateTo）
  *
- * 串接 API：
- * - economyApi.getCoins() - 取得金幣資訊（#039 新增）
- * - economyApi.getPerks() - 取得權益資訊（#039 新增）
- * - economyApi.getAchievements() - 取得成就列表
+ * 串接 API:
+ * - rulesApi.getRules() - 取得規則列表（#043 統一）
+ * - rulesApi.claimReward() - 領取獎勵
+ * - economyApi.getCoins() - 金幣資訊
+ * - economyApi.getPerks() - 權益資訊
  *
- * @see 後端合約: contracts/APP.md Phase 5
- * @updated 2026-02-05 #039 經濟系統重構
+ * @see 後端契約: contracts/APP.md #043
+ * @updated 2026-02-10 #043 規則引擎整合
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -31,65 +36,57 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
+import { rulesApi } from '../../../services/rulesApi';
 import { economyApi } from '../../../services/economyApi';
 import { CoinReward } from '../../shared/components/ui/CoinReward';
 import { SectionHeader } from '../../shared/components/ui/SectionHeader';
 import { MibuBrand } from '../../../../constants/Colors';
-import { UserCoinsResponse, UserPerksResponse, Achievement } from '../../../types/economy';
+import { UserPerksResponse } from '../../../types/economy';
+import { RuleItem, RulesListResponse, NavigateTo, RuleStatus } from '../../../types/rules';
 
 // ============================================================
 // 常數定義
 // ============================================================
 
-/**
- * 任務類型
- * - daily: 每日任務
- * - onetime: 新手任務（一次性）
- * - cumulative: 累計成就
- * - level: 等級獎勵
- */
-type TaskCategory = 'daily' | 'onetime' | 'cumulative' | 'level';
+/** Tab 類型 */
+type TabType = 'daily' | 'onetime' | 'cumulative' | 'level';
 
 /**
- * 任務項目介面
+ * navigateTo 欄位對應 App 路由
+ * 規則卡片上的「前往」按鈕目的地
  */
-interface Task {
-  id: string;                              // 任務 ID
-  icon: keyof typeof Ionicons.glyphMap;    // 任務圖示
-  title: string;                           // 任務標題
-  description: string;                     // 任務描述
-  coins: number;                            // 獎勵金幣
-  isCompleted: boolean;                    // 是否已完成
-  category: TaskCategory;                  // 任務類型
+const NAVIGATE_ROUTE_MAP: Record<string, string> = {
+  gacha: '/(tabs)/gacha',
+  collection: '/(tabs)/collection',
+  vote: '/contribution',
+  shop: '/shop',
+  referral: '/referral',
+  crowdfund: '/crowdfund',
+};
+
+/**
+ * 從 RuleItem 的 rewards 中提取金幣獎勵總數
+ */
+function getCoinsReward(rule: RuleItem): number {
+  return rule.rewards
+    .filter(r => r.type === 'coins')
+    .reduce((sum, r) => sum + (r.amount ?? 0), 0);
 }
 
 /**
- * 每日任務靜態定義
- * 注意：實際應從後端 API 取得
+ * 取得規則狀態對應的圖示名稱
  */
-const DAILY_TASKS: Task[] = [
-  { id: 'd1', icon: 'calendar-outline', title: '每日簽到', description: '登入 APP', coins: 5, isCompleted: false, category: 'daily' },
-  { id: 'd2', icon: 'gift-outline', title: '每日扭蛋', description: '完成 1 次扭蛋', coins: 10, isCompleted: false, category: 'daily' },
-  { id: 'd3', icon: 'book-outline', title: '瀏覽圖鑑', description: '查看圖鑑頁', coins: 5, isCompleted: false, category: 'daily' },
-  { id: 'd4', icon: 'map-outline', title: '查看行程', description: '查看旅程策劃', coins: 5, isCompleted: false, category: 'daily' },
-  { id: 'd5', icon: 'globe-outline', title: '探索地圖', description: '查看世界地圖', coins: 5, isCompleted: false, category: 'daily' },
-  { id: 'd6', icon: 'grid-outline', title: '每日全勤', description: '完成全部每日任務', coins: 30, isCompleted: false, category: 'daily' },
-];
-
-/**
- * 新手任務靜態定義
- * 一次性任務，完成後不會重置
- */
-const ONETIME_TASKS: Task[] = [
-  { id: 'o1', icon: 'compass-outline', title: '初次探索', description: '完成第一次扭蛋', coins: 50, isCompleted: false, category: 'onetime' },
-  { id: 'o2', icon: 'person-outline', title: '建立檔案', description: '設定個人暱稱', coins: 30, isCompleted: false, category: 'onetime' },
-  { id: 'o3', icon: 'image-outline', title: '頭像達人', description: '更換個人頭像', coins: 15, isCompleted: false, category: 'onetime' },
-  { id: 'o4', icon: 'options-outline', title: '選擇偏好', description: '設定旅遊偏好標籤', coins: 20, isCompleted: false, category: 'onetime' },
-  { id: 'o5', icon: 'cart-outline', title: '首購達成', description: '購買第一個行程', coins: 150, isCompleted: false, category: 'onetime' },
-  { id: 'o6', icon: 'people-outline', title: '推薦先鋒', description: '成功邀請第一位好友', coins: 100, isCompleted: false, category: 'onetime' },
-  { id: 'o7', icon: 'cube-outline', title: '道具新手', description: '使用第一個道具', coins: 20, isCompleted: false, category: 'onetime' },
-  { id: 'o8', icon: 'document-text-outline', title: '規劃達人', description: '建立第一個行程項目', coins: 30, isCompleted: false, category: 'onetime' },
-];
+function getStatusIcon(status: RuleStatus): keyof typeof Ionicons.glyphMap {
+  switch (status) {
+    case 'locked': return 'lock-closed-outline';
+    case 'available': return 'radio-button-off-outline';
+    case 'completed': return 'gift-outline';
+    case 'claimed': return 'checkmark-circle';
+    case 'triggered': return 'flash-outline';
+    case 'expired': return 'time-outline';
+    default: return 'help-outline';
+  }
+}
 
 // ============================================================
 // 主元件
@@ -103,34 +100,54 @@ export function EconomyScreen() {
   // 狀態管理
   // ============================================================
 
-  // 載入狀態
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [claiming, setClaiming] = useState<number | null>(null); // 正在領取中的 rule ID
 
-  // 用戶金幣資訊（#039 新增）
-  const [coinsInfo, setCoinsInfo] = useState<UserCoinsResponse | null>(null);
+  // 規則引擎資料（#043 統一）
+  const [rulesData, setRulesData] = useState<RulesListResponse | null>(null);
 
-  // 用戶權益資訊（#039 新增）
+  // 用戶權益（沿用舊 API）
   const [perksInfo, setPerksInfo] = useState<UserPerksResponse | null>(null);
 
-  // 成就列表
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-
   // 當前選中的 Tab
-  const [selectedTab, setSelectedTab] = useState<TaskCategory>('daily');
+  const [selectedTab, setSelectedTab] = useState<TabType>('daily');
 
-  // 任務列表（靜態資料）
-  const [dailyTasks] = useState<Task[]>(DAILY_TASKS);
-  const [onetimeTasks] = useState<Task[]>(ONETIME_TASKS);
+  // ============================================================
+  // 衍生資料
+  // ============================================================
+
+  // 每日/每週任務（resetType = daily | weekly）
+  const dailyQuests = rulesData?.quests.items.filter(
+    q => q.resetType === 'daily' || q.resetType === 'weekly'
+  ) ?? [];
+
+  // 一次性任務（resetType = none）
+  const onetimeQuests = rulesData?.quests.items.filter(
+    q => q.resetType === 'none'
+  ) ?? [];
+
+  // 成就列表
+  const achievements = rulesData?.achievements.items ?? [];
+
+  // 統計
+  const unlockedCount = rulesData?.achievements.unlocked ?? 0;
+  const pendingClaims = rulesData?.pendingClaims ?? 0;
+  const completedDailyCount = dailyQuests.filter(q => q.status === 'completed' || q.status === 'claimed').length;
+  const completedOnetimeCount = onetimeQuests.filter(q => q.status === 'completed' || q.status === 'claimed').length;
+
+  // 權益顯示
+  const rawDailyPullLimit = perksInfo?.dailyPullLimit ?? 36;
+  const rawInventorySlots = perksInfo?.inventorySlots ?? 30;
+  const isUnlimitedPulls = rawDailyPullLimit === -1;
+  const isUnlimitedSlots = rawInventorySlots >= 999;
+  const dailyPullLimitDisplay = isUnlimitedPulls ? '∞' : String(rawDailyPullLimit);
+  const inventorySlotsDisplay = isUnlimitedSlots ? '∞' : String(rawInventorySlots);
 
   // ============================================================
   // API 呼叫
   // ============================================================
 
-  /**
-   * 載入金幣、權益和成就資料
-   * #039: 改用 getCoins() 和 getPerks() 取代 getLevelInfo()
-   */
   const loadData = useCallback(async () => {
     try {
       const token = await getToken();
@@ -139,98 +156,213 @@ export function EconomyScreen() {
         return;
       }
 
-      // 並行呼叫三個 API
-      const [coinsResponse, perksResponse, achievementsData] = await Promise.all([
-        economyApi.getCoins(token),
+      // 並行呼叫：規則引擎 + 權益
+      const [rulesResponse, perksResponse] = await Promise.all([
+        rulesApi.getRules(token),
         economyApi.getPerks(token),
-        economyApi.getAchievements(token),
       ]);
 
-      setCoinsInfo(coinsResponse);
+      setRulesData(rulesResponse);
       setPerksInfo(perksResponse);
-      setAchievements(achievementsData.achievements);
     } catch (error) {
       console.error('Failed to load economy data:', error);
-      // 用戶可見的錯誤提示
       Alert.alert(t.economy_loadFailed, t.economy_loadFailedDesc);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [getToken, router]);
+  }, [getToken, router, t]);
 
-  // 初始載入
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  /**
-   * 下拉重新整理
-   */
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     loadData();
   }, [loadData]);
 
   // ============================================================
-  // 計算衍生數據
+  // 事件處理
   // ============================================================
 
-  // 權益資訊（#039 新增，#041 支援超管無限額度）
-  // 用 ?? 而非 ||，避免 dailyPullLimit=0（被封禁）時錯誤 fallback 為預設值
-  const rawDailyPullLimit = perksInfo?.dailyPullLimit ?? 36;
-  const rawInventorySlots = perksInfo?.inventorySlots ?? 30;
-  // dailyPullLimit === -1 代表無限（超管）；inventorySlots === 999 代表無限
-  const isUnlimitedPulls = rawDailyPullLimit === -1;
-  const isUnlimitedSlots = rawInventorySlots >= 999;
-  const dailyPullLimitDisplay = isUnlimitedPulls ? '∞' : String(rawDailyPullLimit);
-  const inventorySlotsDisplay = isUnlimitedSlots ? '∞' : String(rawInventorySlots);
+  /**
+   * 領取已完成規則的獎勵
+   */
+  const handleClaim = useCallback(async (ruleId: number) => {
+    if (claiming) return; // 防重複點擊
 
-  // 已解鎖成就數量
-  const unlockedCount = achievements.filter(a => a.isUnlocked).length;
+    setClaiming(ruleId);
+    try {
+      const token = await getToken();
+      if (!token) return;
 
-  // 每日任務完成統計
-  const completedDailyCount = dailyTasks.filter(t => t.isCompleted).length;
-  const totalDailyCount = dailyTasks.length;
+      const result = await rulesApi.claimReward(token, ruleId);
 
-  // 新手任務完成統計
-  const completedOnetimeCount = onetimeTasks.filter(t => t.isCompleted).length;
-  const totalOnetimeCount = onetimeTasks.length;
+      // 顯示領取結果
+      const rewardText = result.rewards.map(r => {
+        if (r.type === 'coins') return `+${r.amount} 金幣`;
+        if (r.type === 'perk') return r.itemName || '權益加成';
+        return r.itemName || '獎勵';
+      }).join('、');
+
+      Alert.alert(t.economy_claimSuccess, rewardText);
+
+      // 重新載入資料以更新狀態
+      loadData();
+    } catch (error) {
+      console.error('Claim failed:', error);
+      Alert.alert(t.economy_claimFailed);
+    } finally {
+      setClaiming(null);
+    }
+  }, [claiming, getToken, loadData, t]);
+
+  /**
+   * 導航到規則指定的頁面
+   */
+  const handleNavigate = useCallback((navigateTo: NavigateTo) => {
+    if (!navigateTo) return;
+    const route = NAVIGATE_ROUTE_MAP[navigateTo];
+    if (route) {
+      router.push(route as any);
+    }
+  }, [router]);
 
   // ============================================================
   // 子元件渲染
   // ============================================================
 
   /**
-   * 渲染單一任務項目
+   * 渲染規則項目（任務/成就通用）
    */
-  const renderTaskItem = (task: Task) => (
-    <TouchableOpacity
-      style={styles.taskItem}
-      activeOpacity={0.7}
-    >
-      <View style={[styles.taskIconContainer, task.isCompleted && styles.taskIconCompleted]}>
-        <Ionicons
-          name={task.icon}
-          size={20}
-          color={task.isCompleted ? MibuBrand.tan : MibuBrand.copper}
-        />
-      </View>
-      <View style={styles.taskContent}>
-        <Text style={[styles.taskTitle, task.isCompleted && styles.taskTitleCompleted]}>{task.title}</Text>
-        <Text style={styles.taskDesc}>{task.description}</Text>
-      </View>
-      {task.isCompleted ? (
-        <View style={styles.taskCheckmark}>
-          <Ionicons name="checkmark" size={16} color={MibuBrand.warmWhite} />
+  const renderRuleItem = (rule: RuleItem, showProgress: boolean = false) => {
+    const coins = getCoinsReward(rule);
+    const isLocked = rule.status === 'locked';
+    const isCompleted = rule.status === 'completed';
+    const isClaimed = rule.status === 'claimed';
+    const isAvailable = rule.status === 'available';
+
+    // 從 conditionResults 取得整體進度
+    const overallProgress = rule.conditionResults.length > 0
+      ? rule.conditionResults.reduce((sum, c) => sum + c.progressPercent, 0) / rule.conditionResults.length
+      : 0;
+
+    return (
+      <View style={[styles.taskItem, isLocked && styles.taskItemLocked]}>
+        {/* 圖示 */}
+        <View style={[
+          styles.taskIconContainer,
+          isClaimed && styles.taskIconCompleted,
+          isCompleted && styles.taskIconReady,
+        ]}>
+          <Ionicons
+            name={rule.icon as any || getStatusIcon(rule.status)}
+            size={20}
+            color={isClaimed ? MibuBrand.tan : isCompleted ? MibuBrand.success : MibuBrand.copper}
+          />
         </View>
-      ) : (
-        <View style={styles.taskRewardBadge}>
-          <CoinReward amount={task.coins} />
+
+        {/* 內容 */}
+        <View style={styles.taskContent}>
+          <Text style={[styles.taskTitle, isLocked && styles.taskTitleLocked, isClaimed && styles.taskTitleCompleted]}>
+            {rule.nameZh}
+          </Text>
+          <Text style={styles.taskDesc} numberOfLines={1}>{rule.description}</Text>
+
+          {/* 進度條（成就用） */}
+          {showProgress && rule.conditionResults.length > 0 && (
+            <View style={styles.achievementProgressRow}>
+              <View style={styles.achievementProgressBar}>
+                <View
+                  style={[
+                    styles.achievementProgressFill,
+                    { width: `${Math.min(overallProgress, 100)}%` },
+                    isClaimed && styles.achievementProgressComplete,
+                  ]}
+                />
+              </View>
+              <Text style={styles.achievementProgressText}>
+                {Math.round(overallProgress)}%
+              </Text>
+            </View>
+          )}
         </View>
-      )}
-    </TouchableOpacity>
-  );
+
+        {/* 右側動作區域 */}
+        {isClaimed ? (
+          // 已領取：打勾
+          <View style={styles.taskCheckmark}>
+            <Ionicons name="checkmark" size={16} color={MibuBrand.warmWhite} />
+          </View>
+        ) : isCompleted ? (
+          // 可領取：領取按鈕
+          <TouchableOpacity
+            style={styles.claimButton}
+            onPress={() => handleClaim(rule.id)}
+            disabled={claiming === rule.id}
+          >
+            {claiming === rule.id ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.claimButtonText}>{t.economy_collect}</Text>
+            )}
+          </TouchableOpacity>
+        ) : isLocked ? (
+          // 未解鎖：鎖頭
+          <Ionicons name="lock-closed" size={18} color={MibuBrand.tan} />
+        ) : isAvailable && rule.navigateTo ? (
+          // 可用 + 有導航：前往按鈕 + 金幣
+          <View style={styles.actionGroup}>
+            {coins > 0 && (
+              <View style={styles.taskRewardBadge}>
+                <CoinReward amount={coins} size="sm" />
+              </View>
+            )}
+            <TouchableOpacity
+              style={styles.goButton}
+              onPress={() => handleNavigate(rule.navigateTo)}
+            >
+              <Text style={styles.goButtonText}>{t.economy_goDoIt}</Text>
+              <Ionicons name="chevron-forward" size={14} color={MibuBrand.brown} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          // 可用但沒導航：顯示金幣
+          coins > 0 ? (
+            <View style={styles.taskRewardBadge}>
+              <CoinReward amount={coins} />
+            </View>
+          ) : null
+        )}
+      </View>
+    );
+  };
+
+  /**
+   * 渲染規則列表（帶空狀態處理）
+   */
+  const renderRuleList = (rules: RuleItem[], emptyText: string, showProgress: boolean = false) => {
+    if (rules.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <Ionicons name="document-text-outline" size={48} color={MibuBrand.tan} />
+          <Text style={styles.emptyText}>{emptyText}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.taskGroup}>
+        {rules.map((rule, index) => (
+          <React.Fragment key={rule.id}>
+            {renderRuleItem(rule, showProgress)}
+            {index < rules.length - 1 && <View style={styles.taskDivider} />}
+          </React.Fragment>
+        ))}
+      </View>
+    );
+  };
 
   /**
    * 根據選中的 Tab 渲染對應內容
@@ -238,125 +370,49 @@ export function EconomyScreen() {
   const renderTabContent = () => {
     switch (selectedTab) {
       case 'daily':
-        // ===== 每日任務 Tab =====
         return (
           <>
-            {/* 每日任務列表 */}
-            <View style={styles.taskGroup}>
-              {dailyTasks.map((task, index) => (
-                <React.Fragment key={task.id}>
-                  {renderTaskItem(task)}
-                  {index < dailyTasks.length - 1 && <View style={styles.taskDivider} />}
-                </React.Fragment>
-              ))}
-            </View>
-
-            {/* 新手任務區塊 */}
+            {/* 每日/每週任務 */}
             <SectionHeader
-              title={t.economy_beginnerTasks}
-              subtitle={`${completedOnetimeCount}/${totalOnetimeCount} ${t.economy_done}`}
+              title={t.economy_tabDaily}
+              subtitle={`${completedDailyCount}/${dailyQuests.length} ${t.economy_done}`}
             />
-            <View style={styles.taskGroup}>
-              {onetimeTasks.map((task, index) => (
-                <React.Fragment key={task.id}>
-                  {renderTaskItem(task)}
-                  {index < onetimeTasks.length - 1 && <View style={styles.taskDivider} />}
-                </React.Fragment>
-              ))}
-            </View>
+            {renderRuleList(dailyQuests, t.economy_noQuests)}
+
+            {/* 一次性任務 */}
+            {onetimeQuests.length > 0 && (
+              <>
+                <SectionHeader
+                  title={t.economy_beginnerTasks}
+                  subtitle={`${completedOnetimeCount}/${onetimeQuests.length} ${t.economy_done}`}
+                />
+                {renderRuleList(onetimeQuests, t.economy_noQuests)}
+              </>
+            )}
           </>
         );
       case 'onetime':
-        // ===== 一次性任務 Tab =====
         return (
           <>
             <SectionHeader
               title={t.economy_beginnerTasks}
-              subtitle={`${completedOnetimeCount}/${totalOnetimeCount} ${t.economy_done}`}
+              subtitle={`${completedOnetimeCount}/${onetimeQuests.length} ${t.economy_done}`}
             />
-            <View style={styles.taskGroup}>
-              {onetimeTasks.map((task, index) => (
-                <React.Fragment key={task.id}>
-                  {renderTaskItem(task)}
-                  {index < onetimeTasks.length - 1 && <View style={styles.taskDivider} />}
-                </React.Fragment>
-              ))}
-            </View>
+            {renderRuleList(onetimeQuests, t.economy_noQuests)}
           </>
         );
       case 'cumulative':
-        // ===== 累計成就 Tab（顯示進度條） =====
         return (
           <>
             <SectionHeader
               title={t.economy_achievementProgress}
-              subtitle={`${unlockedCount}/${achievements.length} ${t.economy_unlocked}`}
+              subtitle={`${unlockedCount}/${rulesData?.achievements.total ?? 0} ${t.economy_unlocked}`}
             />
-            {achievements.length > 0 ? (
-              <View style={styles.taskGroup}>
-                {achievements.map((achievement, index) => {
-                  const progressPercent = achievement.requirement > 0
-                    ? Math.min((achievement.progress / achievement.requirement) * 100, 100)
-                    : 0;
-                  return (
-                    <View key={achievement.id}>
-                      <View style={styles.achievementItem}>
-                        <View style={[
-                          styles.achievementIconContainer,
-                          achievement.isUnlocked && styles.achievementIconUnlocked,
-                        ]}>
-                          <Ionicons
-                            name={achievement.isUnlocked ? 'trophy' : 'trophy-outline'}
-                            size={20}
-                            color={achievement.isUnlocked ? MibuBrand.warning : MibuBrand.copper}
-                          />
-                        </View>
-                        <View style={styles.achievementContent}>
-                          <View style={styles.achievementHeader}>
-                            <Text style={styles.achievementTitle}>{achievement.title}</Text>
-                            {achievement.isUnlocked && (
-                              <View style={styles.unlockedBadge}>
-                                <Ionicons name="checkmark" size={10} color="#fff" />
-                              </View>
-                            )}
-                          </View>
-                          <Text style={styles.achievementDesc}>{achievement.description}</Text>
-                          <View style={styles.achievementProgressRow}>
-                            <View style={styles.achievementProgressBar}>
-                              <View
-                                style={[
-                                  styles.achievementProgressFill,
-                                  { width: `${progressPercent}%` },
-                                  achievement.isUnlocked && styles.achievementProgressComplete,
-                                ]}
-                              />
-                            </View>
-                            <Text style={styles.achievementProgressText}>
-                              {achievement.progress}/{achievement.requirement}
-                            </Text>
-                          </View>
-                        </View>
-                        <View style={styles.achievementReward}>
-                          <CoinReward amount={achievement.reward.coinReward || 0} />
-                        </View>
-                      </View>
-                      {index < achievements.length - 1 && <View style={styles.taskDivider} />}
-                    </View>
-                  );
-                })}
-              </View>
-            ) : (
-              <View style={styles.emptyState}>
-                <Ionicons name="trophy-outline" size={48} color={MibuBrand.tan} />
-                <Text style={styles.emptyText}>
-                  {t.economy_noAchievements}
-                </Text>
-              </View>
-            )}
+            {renderRuleList(achievements, t.economy_noAchievements, true)}
           </>
         );
       case 'level':
-        // ===== 權益 Tab（#039 重構） =====
+        // 權益 Tab（沿用舊 API 資料）
         return (
           <>
             <SectionHeader title={t.economy_myPerks} />
@@ -367,12 +423,8 @@ export function EconomyScreen() {
                   <Ionicons name="dice" size={20} color={MibuBrand.copper} />
                 </View>
                 <View style={styles.perkDetailContent}>
-                  <Text style={styles.perkDetailTitle}>
-                    {t.economy_dailyPullLimit}
-                  </Text>
-                  <Text style={styles.perkDetailDesc}>
-                    {t.economy_pullsPerDay}
-                  </Text>
+                  <Text style={styles.perkDetailTitle}>{t.economy_dailyPullLimit}</Text>
+                  <Text style={styles.perkDetailDesc}>{t.economy_pullsPerDay}</Text>
                 </View>
                 <Text style={styles.perkDetailValue}>{dailyPullLimitDisplay}</Text>
               </View>
@@ -384,12 +436,8 @@ export function EconomyScreen() {
                   <Ionicons name="cube" size={20} color={MibuBrand.copper} />
                 </View>
                 <View style={styles.perkDetailContent}>
-                  <Text style={styles.perkDetailTitle}>
-                    {t.economy_inventorySlots}
-                  </Text>
-                  <Text style={styles.perkDetailDesc}>
-                    {t.economy_itemsCanHold}
-                  </Text>
+                  <Text style={styles.perkDetailTitle}>{t.economy_inventorySlots}</Text>
+                  <Text style={styles.perkDetailDesc}>{t.economy_itemsCanHold}</Text>
                 </View>
                 <Text style={styles.perkDetailValue}>{inventorySlotsDisplay}</Text>
               </View>
@@ -399,19 +447,15 @@ export function EconomyScreen() {
               <View style={styles.perkDetailItem}>
                 <View style={styles.perkDetailIcon}>
                   <Ionicons
-                    name={perksInfo?.canApplySpecialist ? "ribbon" : "ribbon-outline"}
+                    name={perksInfo?.canApplySpecialist ? 'ribbon' : 'ribbon-outline'}
                     size={20}
                     color={perksInfo?.canApplySpecialist ? MibuBrand.success : MibuBrand.copper}
                   />
                 </View>
                 <View style={styles.perkDetailContent}>
-                  <Text style={styles.perkDetailTitle}>
-                    {t.economy_specialistEligibility}
-                  </Text>
+                  <Text style={styles.perkDetailTitle}>{t.economy_specialistEligibility}</Text>
                   <Text style={styles.perkDetailDesc}>
-                    {perksInfo?.canApplySpecialist
-                      ? t.economy_canApplyNow
-                      : t.economy_unlockRequirement}
+                    {perksInfo?.canApplySpecialist ? t.economy_canApplyNow : t.economy_unlockRequirement}
                   </Text>
                 </View>
                 {perksInfo?.canApplySpecialist && (
@@ -427,9 +471,7 @@ export function EconomyScreen() {
             <View style={styles.taskGroup}>
               <View style={styles.coinInfoItem}>
                 <Ionicons name="information-circle-outline" size={20} color={MibuBrand.copper} />
-                <Text style={styles.coinInfoText}>
-                  {t.economy_coinsInfo}
-                </Text>
+                <Text style={styles.coinInfoText}>{t.economy_coinsInfo}</Text>
               </View>
             </View>
           </>
@@ -458,63 +500,69 @@ export function EconomyScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
       <View style={styles.container}>
+        {/* Header */}
         <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {t.economy_achievementsTitle}
-        </Text>
-        <View style={styles.headerPlaceholder} />
-      </View>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t.economy_achievementsTitle}</Text>
+          <View style={styles.headerPlaceholder} />
+        </View>
 
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={MibuBrand.brown}
-            colors={[MibuBrand.brown]}
-          />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Stats Card：僅顯示成就 */}
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Ionicons name="trophy" size={20} color={MibuBrand.copper} />
-            <Text style={styles.statNumber}>{unlockedCount}</Text>
-            <Text style={styles.statLabel}>{t.economy_statAchievements}</Text>
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={MibuBrand.brown}
+              colors={[MibuBrand.brown]}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Stats 卡片 */}
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Ionicons name="trophy" size={20} color={MibuBrand.copper} />
+              <Text style={styles.statNumber}>{unlockedCount}</Text>
+              <Text style={styles.statLabel}>{t.economy_statAchievements}</Text>
+            </View>
+            {pendingClaims > 0 && (
+              <View style={[styles.statCard, styles.statCardHighlight]}>
+                <Ionicons name="gift" size={20} color={MibuBrand.success} />
+                <Text style={styles.statNumber}>{pendingClaims}</Text>
+                <Text style={styles.statLabel}>{t.economy_pendingClaims}</Text>
+              </View>
+            )}
           </View>
-        </View>
 
-        {/* Tab Switcher（#039：等級 → 權益） */}
-        <View style={styles.tabContainer}>
-          {(['daily', 'onetime', 'cumulative', 'level'] as TaskCategory[]).map(tab => (
-            <TouchableOpacity
-              key={tab}
-              style={[styles.tab, selectedTab === tab && styles.tabActive]}
-              onPress={() => setSelectedTab(tab)}
-            >
-              <Text style={[styles.tabText, selectedTab === tab && styles.tabTextActive]}>
-                {tab === 'daily' && t.economy_tabDaily}
-                {tab === 'onetime' && t.economy_tabOnce}
-                {tab === 'cumulative' && t.economy_tabTotal}
-                {tab === 'level' && t.economy_tabPerks}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+          {/* Tab 切換器 */}
+          <View style={styles.tabContainer}>
+            {(['daily', 'onetime', 'cumulative', 'level'] as TabType[]).map(tab => (
+              <TouchableOpacity
+                key={tab}
+                style={[styles.tab, selectedTab === tab && styles.tabActive]}
+                onPress={() => setSelectedTab(tab)}
+              >
+                <Text style={[styles.tabText, selectedTab === tab && styles.tabTextActive]}>
+                  {tab === 'daily' && t.economy_tabDaily}
+                  {tab === 'onetime' && t.economy_tabOnce}
+                  {tab === 'cumulative' && t.economy_tabTotal}
+                  {tab === 'level' && t.economy_tabPerks}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-        {/* Tab Content */}
-        <View style={styles.tabContent}>
-          {renderTabContent()}
-        </View>
+          {/* Tab 內容 */}
+          <View style={styles.tabContent}>
+            {renderTabContent()}
+          </View>
 
-        <View style={styles.bottomSpacer} />
-      </ScrollView>
+          <View style={styles.bottomSpacer} />
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -525,7 +573,6 @@ export function EconomyScreen() {
 // ============================================================
 
 const styles = StyleSheet.create({
-  // 容器樣式
   container: {
     flex: 1,
     backgroundColor: MibuBrand.warmWhite,
@@ -583,6 +630,10 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
+  statCardHighlight: {
+    borderWidth: 1.5,
+    borderColor: MibuBrand.success,
+  },
   statNumber: {
     fontSize: 24,
     fontWeight: '800',
@@ -625,11 +676,9 @@ const styles = StyleSheet.create({
   tabTextActive: {
     color: '#ffffff',
   },
-
-  // Tab Content
   tabContent: {},
 
-  // Task Group (grouped card container)
+  // Task Items
   taskGroup: {
     backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
@@ -643,6 +692,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
+  },
+  taskItemLocked: {
+    opacity: 0.5,
   },
   taskDivider: {
     height: 1,
@@ -660,6 +712,9 @@ const styles = StyleSheet.create({
   taskIconCompleted: {
     backgroundColor: MibuBrand.tanLight,
   },
+  taskIconReady: {
+    backgroundColor: `${MibuBrand.success}15`,
+  },
   taskContent: {
     flex: 1,
     marginLeft: 12,
@@ -670,6 +725,9 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
   },
   taskTitleCompleted: {
+    color: MibuBrand.tan,
+  },
+  taskTitleLocked: {
     color: MibuBrand.tan,
   },
   taskDesc: {
@@ -695,57 +753,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-
-  // Empty State
-  // Achievement Styles
-  achievementItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: 14,
-    gap: 12,
-  },
-  achievementIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: MibuBrand.cream,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  achievementIconUnlocked: {
-    backgroundColor: `${MibuBrand.warning}20`,
-  },
-  achievementContent: {
-    flex: 1,
-  },
-  achievementHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
-  achievementTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
-  unlockedBadge: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+  // 領取按鈕
+  claimButton: {
     backgroundColor: MibuBrand.success,
-    justifyContent: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    minWidth: 60,
     alignItems: 'center',
   },
-  achievementDesc: {
-    fontSize: 12,
-    color: MibuBrand.brownLight,
-    marginBottom: 8,
+  claimButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
   },
+
+  // 前往按鈕
+  goButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: `${MibuBrand.brown}12`,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  goButtonText: {
+    color: MibuBrand.brown,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // 動作群組（金幣 + 前往）
+  actionGroup: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+
+  // Achievement Progress
   achievementProgressRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginTop: 6,
   },
   achievementProgressBar: {
     flex: 1,
@@ -766,18 +816,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     color: MibuBrand.copper,
-    minWidth: 40,
+    minWidth: 32,
     textAlign: 'right',
   },
-  achievementReward: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: `${MibuBrand.warning}15`,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    gap: 3,
-  },
+
+  // Empty State
   emptyState: {
     alignItems: 'center',
     paddingVertical: 48,
@@ -788,7 +831,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 
-  // ===== 權益詳情樣式 =====
+  // Perk Details
   perkDetailItem: {
     flexDirection: 'row',
     alignItems: 'center',

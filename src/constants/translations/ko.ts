@@ -842,6 +842,14 @@ const ko: Record<string, string> = {
     economy_shareCopied: 'Copied', /* TODO: ko */
     economy_share: 'Share', /* TODO: ko */
     economy_collect: 'Collect', /* TODO: ko */
+    economy_claimed: 'Claimed', /* TODO: ko */
+    economy_goDoIt: 'Go', /* TODO: ko */
+    economy_locked: 'Locked', /* TODO: ko */
+    economy_pendingClaims: 'Pending', /* TODO: ko */
+    economy_claimSuccess: 'Reward claimed!', /* TODO: ko */
+    economy_claimFailed: 'Claim failed', /* TODO: ko */
+    economy_noQuests: 'No quests', /* TODO: ko */
+    economy_questProgress: 'Quest Progress', /* TODO: ko */
     economy_couponExpiry: 'Exp: {month}/{day}', /* TODO: ko */
     economy_shareTextTemplate: '🎰 I got a【{tier}】coupon from Mibu Gacha!\n🎁 {couponName}\n📍 {placeName}\n\nCome play ➜ https://mibu.app', /* TODO: ko */
     favorites_title: 'My Favorites', /* TODO: ko */
