@@ -405,14 +405,7 @@ class ApiService {
   /** 投票建議 */
   voteSuggestion = contributionApi.voteSuggestion.bind(contributionApi);
 
-  // ============ Auth 帳號綁定 (Phase 6) ============
-
-  /** 綁定新身份 */
-  bindIdentity = authApi.bindIdentity.bind(authApi);
-  /** 取得綁定身份列表 */
-  getIdentities = authApi.getIdentities.bind(authApi);
-  /** 解除綁定 */
-  unlinkIdentity = authApi.unlinkIdentity.bind(authApi);
+  // #044: 帳號綁定 API 已移除（bindIdentity / getIdentities / unlinkIdentity）
 
   // ============ Event 活動系統 (Phase 7 - sync-app #006) ============
 

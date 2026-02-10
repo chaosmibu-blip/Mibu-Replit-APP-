@@ -1074,36 +1074,7 @@ const ja: Record<string, string> = {
     profile_relationFriend: '友人',
     profile_relationOther: 'その他',
 
-    // ========== AccountScreen ==========
-    auth_linkedAccounts: 'Linked Accounts', /* TODO: ja */
-    auth_linkMultipleDesc: 'Link multiple accounts', /* TODO: ja */
-    auth_linkedAccountsSection: 'Linked Accounts', /* TODO: ja */
-    auth_noAccountsLinked: 'No accounts linked', /* TODO: ja */
-    auth_addAccount: 'Add Account', /* TODO: ja */
-    auth_linkApple: 'Link Apple', /* TODO: ja */
-    auth_signInApple: 'Sign in with Apple ID', /* TODO: ja */
-    auth_linkGoogle: 'Link Google', /* TODO: ja */
-    auth_signInGoogle: 'Sign in with Google', /* TODO: ja */
-    auth_allLinked: 'All accounts linked', /* TODO: ja */
-    auth_linkSuccess: 'Linked!', /* TODO: ja */
-    auth_appleLinkSuccess: 'Apple account linked', /* TODO: ja */
-    auth_linkFailed: 'Link Failed', /* TODO: ja */
-    auth_appleLinkFailed: 'Failed to link Apple', /* TODO: ja */
-    auth_comingSoon: 'Coming Soon', /* TODO: ja */
-    auth_googleComingSoon: 'Google linking coming soon', /* TODO: ja */
-    auth_cannotUnlink: 'Cannot Unlink', /* TODO: ja */
-    auth_keepOneMethod: 'Keep at least one login method', /* TODO: ja */
-    auth_cannotUnlinkPrimary: 'Cannot unlink primary method', /* TODO: ja */
-    auth_confirmUnlink: 'Confirm Unlink', /* TODO: ja */
-    auth_confirmUnlinkDesc: 'Unlink {provider} account?', /* TODO: ja */
-    auth_unlink: 'Unlink', /* TODO: ja */
-    auth_unlinkSuccess: 'Unlinked!', /* TODO: ja */
-    auth_unlinkSuccessDesc: 'Account unlinked', /* TODO: ja */
-    auth_unlinkFailed: 'Unlink Failed', /* TODO: ja */
-    auth_unlinkFailedRetry: 'Failed to unlink', /* TODO: ja */
-    auth_primary: 'Primary', /* TODO: ja */
-    auth_noEmailProvided: '(No email)', /* TODO: ja */
-    auth_linkedAt: 'Linked ', /* TODO: ja */
+    // AccountScreen 帳號綁定翻譯已移除
 
     // ========== HomeScreen ==========
     home_greeting: 'こんにちは、旅行者！',

@@ -370,14 +370,6 @@ export function SettingsScreen() {
       title: t.settings_moreFeatures,
       items: [
         {
-          icon: 'link-outline',
-          label: t.auth_linkedAccounts,
-          action: () => router.push('/account' as any),
-          hasArrow: true,
-          iconBg: '#EEF2FF',
-          iconColor: '#6366f1',
-        },
-        {
           icon: 'hand-left-outline',
           label: t.settings_contributions,
           action: () => router.push('/contribution' as any),

@@ -122,7 +122,6 @@ workspace/
 | `/login` | `login.tsx` | 登入頁 |
 | `/register` | `register.tsx` | 註冊頁 |
 | `/profile` | `profile.tsx` | 個人資料 |
-| `/account` | `account.tsx` | 帳號綁定 |
 | `/economy` | `economy.tsx` | 等級與成就 |
 | `/referral` | `referral.tsx` | 推薦好友 |
 | `/contribution` | `contribution.tsx` | 社群貢獻 |
@@ -180,7 +179,6 @@ workspace/
 | `HomeScreen.tsx` | 首頁畫面 |
 | `app/login.tsx` | 登入畫面（OAuth，#044 移除密碼認證） |
 | `ProfileScreen.tsx` | 個人資料畫面 |
-| `AccountScreen.tsx` | 帳號綁定畫面 |
 | `SettingsScreen.tsx` | 設定畫面 |
 | `ChatScreen.tsx` | 聊天畫面 |
 | `SOSScreen.tsx` | SOS 緊急求助 |

@@ -17,7 +17,7 @@
 | 3 | 等級與成就 | 設定頁 > 探索 | 同上（與 #2 同群組） | SettingsScreen.tsx | 隱藏中 |
 | 4 | 我的最愛/黑名單 | 設定頁 > 偏好設定 | 註解該項目 | SettingsScreen.tsx | 隱藏中 |
 | 5 | 推播通知開關 | 設定頁 > 偏好設定 | 註解該項目（功能不完整） | SettingsScreen.tsx | 隱藏中 |
-| 6 | 帳號綁定 | 設定頁 > 更多功能 | 移除整個「更多功能」群組 | SettingsScreen.tsx | 隱藏中 |
+| 6 | 帳號綁定 | 設定頁 > 更多功能 | 功能已移除 | — | 已移除 |
 | 7 | 社群貢獻 | 設定頁 > 更多功能 | 同上（與 #6 同群組） | SettingsScreen.tsx | 隱藏中 |
 | 8 | 合併帳號 | 設定頁 > 帳號管理 | 註解合併帳號按鈕 | SettingsScreen.tsx | 隱藏中 |
 | 9 | 用戶卡片（稱號+連續登入） | 首頁 | 註解整個 levelCard 區塊 | HomeScreen.tsx | 隱藏中 |

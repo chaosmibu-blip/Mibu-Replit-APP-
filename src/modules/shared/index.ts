@@ -11,7 +11,7 @@ export { ChatScreen } from './screens/ChatScreen';
 export { SOSScreen } from './screens/SOSScreen';
 export { LocationScreen } from './screens/LocationScreen';
 export { PendingApprovalScreen } from './screens/PendingApprovalScreen';
-export { AccountScreen } from './screens/AccountScreen';
+// #044: AccountScreen（帳號綁定）已移除
 export { SOSContactsScreen } from './screens/SOSContactsScreen';
 
 // Components - 元件

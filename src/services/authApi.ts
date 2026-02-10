@@ -15,9 +15,7 @@
  * - PATCH /api/profile         - 更新用戶檔案
  * - DELETE /api/auth/account   - 刪除帳號 (#011)
  * - POST /api/auth/mobile      - Mobile OAuth 登入
- * - POST /api/auth/bind        - 綁定新身份 (Phase 6)
- * - GET  /api/auth/identities  - 取得綁定身份列表 (Phase 6)
- * - DELETE /api/auth/identities/:id - 解除綁定 (Phase 6)
+ * （帳號綁定 API 已移除：bindIdentity / getIdentities / unlinkIdentity）
  *
  * #044 已移除：密碼登入/註冊、帳號合併（2026-02-10）
  */
@@ -182,70 +180,8 @@ class AuthApiService extends ApiBase {
 
   // ============ 帳號綁定 (Phase 6) ============
 
-  /**
-   * 綁定新身份（Apple/Google）
-   *
-   * 讓用戶可以同時使用多種登入方式
-   *
-   * @param token - JWT Token（當前登入的帳號）
-   * @param params - 綁定參數
-   * @param params.provider - 要綁定的提供者
-   * @param params.identityToken - 第三方 identity token
-   * @returns 綁定結果和新的身份資料
-   */
-  async bindIdentity(
-    token: string,
-    params: {
-      provider: 'apple' | 'google';
-      identityToken: string;
-    }
-  ): Promise<{ success: boolean; message: string; identity: LinkedIdentity }> {
-    return this.request<{ success: boolean; message: string; identity: LinkedIdentity }>(
-      '/api/auth/bind',
-      {
-        method: 'POST',
-        headers: this.authHeaders(token),
-        body: JSON.stringify(params),
-      }
-    );
-  }
-
-  /**
-   * 取得綁定身份列表
-   *
-   * @param token - JWT Token
-   * @returns 已綁定的身份列表和主要身份 ID
-   */
-  async getIdentities(token: string): Promise<{ identities: LinkedIdentity[]; primary: string }> {
-    return this.request<{ identities: LinkedIdentity[]; primary: string }>('/api/auth/identities', {
-      headers: this.authHeaders(token),
-    });
-  }
-
-  /**
-   * 解除綁定
-   *
-   * 移除一個已綁定的登入方式
-   * 注意：必須保留至少一個登入方式
-   *
-   * @param token - JWT Token
-   * @param identityId - 要解除的身份 ID
-   * @returns 解除結果
-   */
-  async unlinkIdentity(
-    token: string,
-    identityId: string
-  ): Promise<{ success: boolean; message: string }> {
-    return this.request<{ success: boolean; message: string }>(
-      `/api/auth/identities/${identityId}`,
-      {
-        method: 'DELETE',
-        headers: this.authHeaders(token),
-      }
-    );
-  }
-
   // #044: 帳號合併功能已移除
+  // #044: 帳號綁定功能已移除（bindIdentity / getIdentities / unlinkIdentity）
 
   // ============ #038 頭像上傳 ============
 
@@ -315,25 +251,7 @@ export interface UploadAvatarResponse {
   code?: string;
 }
 
-/**
- * 綁定身份資料
- *
- * 記錄用戶已綁定的登入方式
- */
-export interface LinkedIdentity {
-  /** 身份 ID */
-  id: string;
-  /** 登入提供者 */
-  provider: 'apple' | 'google';
-  /** 第三方提供者的用戶 ID */
-  providerId: string;
-  /** 關聯的 Email */
-  email: string | null;
-  /** 是否為主要身份 */
-  isPrimary: boolean;
-  /** 綁定時間（ISO 8601） */
-  linkedAt: string;
-}
+// LinkedIdentity 型別已移除（帳號綁定功能已移除）
 
 // ============ 匯出 ============
 

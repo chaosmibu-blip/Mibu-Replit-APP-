@@ -52,7 +52,6 @@ npx expo start --web --port 5000 --tunnel --go
 | `/register-success` | `app/register-success.tsx` | 註冊成功 |
 | `/profile` | `app/profile.tsx` | 個人資料 |
 | `/economy` | `app/economy.tsx` | 等級與成就 |
-| `/account` | `app/account.tsx` | 帳號綁定 |
 | `/crowdfunding` | `app/crowdfunding.tsx` | 募資活動列表 |
 | `/crowdfunding/:id` | `app/crowdfunding/[id].tsx` | 募資活動詳情 |
 | `/referral` | `app/referral.tsx` | 推薦好友 |
@@ -130,7 +129,6 @@ app/
 | `app/login.tsx` | `/login` | 登入（OAuth） |
 | `ProfileScreen.tsx` | `/profile` | 個人資料 |
 | `SettingsScreen.tsx` | `/settings` | 設定 |
-| `AccountScreen.tsx` | `/account` | 帳號綁定（Apple/Google） |
 | `PendingApprovalScreen.tsx` | `/pending-approval` | 等待審核 |
 
 ### 扭蛋模組 (Gacha) / 經濟系統
