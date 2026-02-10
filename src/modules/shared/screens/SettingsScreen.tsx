@@ -339,14 +339,6 @@ export function SettingsScreen() {
           iconBg: '#EEF2FF',
           iconColor: '#6366f1',
         },
-        {
-          icon: 'ticket-outline',
-          label: t.mailbox_promoCode,
-          action: () => router.push('/mailbox' as any),
-          hasArrow: true,
-          iconBg: '#FFF7ED',
-          iconColor: '#EA580C',
-        },
       ],
     },
     // 偏好設定群組（我的最愛/黑名單 + 推播通知）
