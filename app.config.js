@@ -21,7 +21,7 @@ const IS_PRODUCTION = IS_EAS_BUILD || IS_EAS_UPDATE || process.env.APP_ENV === '
 const baseConfig = {
   name: 'Mibu',                          // App 名稱（顯示在手機桌面）
   slug: 'mibu-travel',                   // Expo 專案識別碼（URL 用）
-  version: '1.0.0',                      // App 版本號
+  version: '1.1.0',                      // App 版本號
   orientation: 'portrait',               // 螢幕方向：僅支援直向
   icon: './assets/images/icon.png',      // App 圖示（1024x1024）
   scheme: 'mibu',                        // Deep Link scheme（mibu://）
@@ -45,6 +45,13 @@ const baseConfig = {
         imageWidth: 200,
         resizeMode: 'contain',
         backgroundColor: '#F5E6D3',      // Mibu 品牌奶油色
+      },
+    ],
+    [
+      'expo-media-library',              // 相簿存取（儲存 Mini 頭像）
+      {
+        photosPermission: '允許 Mibu 儲存圖片到您的相簿',
+        savePhotosPermission: '允許 Mibu 儲存圖片到您的相簿',
       },
     ],
   ],
