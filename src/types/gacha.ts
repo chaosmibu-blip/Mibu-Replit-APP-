@@ -13,7 +13,6 @@
 
 import { LocalizedContent, CouponTier, Category } from './common';
 import { MerchantInfo, CouponData } from './merchant';
-import { Achievement } from './economy';
 
 // ============ 扭蛋池 ============
 
@@ -225,7 +224,7 @@ export interface ItineraryGenerateResponse {
   message?: string;                  // 訊息
   code?: string;                     // 狀態碼
   remainingQuota?: number;           // 剩餘額度
-  unlockedAchievements?: Achievement[]; // 扭蛋後新解鎖的成就（#020）
+  // unlockedAchievements 已遷移至規則引擎（#043），獎勵改由信箱發放
 }
 
 /**

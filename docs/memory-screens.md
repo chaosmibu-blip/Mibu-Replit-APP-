@@ -127,7 +127,7 @@ app/
 | Screen 元件 | 對應路由 | 說明 |
 |-------------|----------|------|
 | `HomeScreen.tsx` | `/` | 首頁 |
-| `AuthScreen.tsx` | `/login` | 登入 |
+| `app/login.tsx` | `/login` | 登入（OAuth） |
 | `ProfileScreen.tsx` | `/profile` | 個人資料 |
 | `SettingsScreen.tsx` | `/settings` | 設定 |
 | `AccountScreen.tsx` | `/account` | 帳號綁定（Apple/Google） |

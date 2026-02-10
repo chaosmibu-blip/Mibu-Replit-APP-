@@ -78,97 +78,7 @@ export interface SpecialistEligibilityResponse {
 }
 
 // ============ 等級系統已廢除，改用金幣系統 ============
-
-// ============ 成就系統 ============
-
-/**
- * 成就分類
- * - collector: 收藏家（收集景點相關）
- * - sponsor: 贊助者（募資相關，#029 統一用詞）
- * - promoter: 推廣者（推薦相關）
- * - business: 商業（消費相關）
- * - specialist: 策劃師（行程相關）
- */
-export type AchievementCategory =
-  | 'collector'
-  | 'sponsor'
-  | 'promoter'
-  | 'business'
-  | 'specialist';
-
-/**
- * 成就等級
- */
-export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum';
-
-/**
- * 成就
- *
- * 單一成就的完整資訊
- */
-export interface Achievement {
-  id: string;                     // 成就 ID
-  code: string;                   // 成就代碼
-  category: AchievementCategory;  // 成就分類
-  tier: AchievementTier;          // 成就等級
-  title: string;                  // 成就標題
-  description: string;            // 成就描述
-  iconUrl: string | null;         // 圖示 URL
-  requirement: number;            // 達成條件數量
-  progress: number;               // 當前進度
-  isUnlocked: boolean;            // 是否已解鎖
-  isClaimed: boolean;             // 是否已領取獎勵
-  reward: AchievementReward;      // 獎勵內容
-  unlockedAt: string | null;      // 解鎖時間（ISO 8601）
-  claimedAt: string | null;       // 領取時間（ISO 8601）
-}
-
-/**
- * 成就獎勵
- * #039: expReward → coinReward，新增 perksReward
- */
-export interface AchievementReward {
-  coinReward: number;              // 金幣獎勵（#039 新增）
-  perksReward?: PerksReward;       // 權益獎勵（#039 新增）
-  badge?: string;                  // 徽章獎勵
-}
-
-/**
- * 權益獎勵內容
- * #039 新增
- */
-export interface PerksReward {
-  dailyPullBonus?: number;         // 每日扭蛋加成
-  inventoryBonus?: number;         // 背包格數加成
-  specialistInvitation?: boolean;  // 策劃師邀請資格
-}
-
-/**
- * 成就列表回應
- * GET /api/economy/achievements
- */
-export interface AchievementsResponse {
-  achievements: Achievement[];  // 成就列表
-  stats: {
-    total: number;              // 總成就數
-    unlocked: number;           // 已解鎖數
-    claimed: number;            // 已領取數
-    byCategory: Record<AchievementCategory, { total: number; unlocked: number }>; // 按分類統計
-  };
-}
-
-/**
- * 領取成就獎勵回應
- * POST /api/user/achievements/:id/claim
- * #039: 移除 newExp/newLevel，改為 coins/perks
- */
-export interface ClaimAchievementResponse {
-  success: boolean;            // 是否成功
-  message: string;             // 回應訊息
-  reward: AchievementReward;   // 獲得的獎勵
-  coins: UserCoinsResponse;    // 領取後的金幣狀態（#039 新增）
-  perks: UserPerksResponse;    // 領取後的權益狀態（#039 新增）
-}
+// ============ 成就系統已遷移至 rules.ts（#043 規則引擎） ============
 
 // ============ 每日任務系統 ============
 
@@ -210,14 +120,4 @@ export interface DailyTasksResponse {
   };
 }
 
-/**
- * 完成每日任務回應
- * POST /api/economy/daily-tasks/:id/claim
- */
-export interface CompleteDailyTaskResponse {
-  success: boolean;           // 是否成功
-  message: string;            // 回應訊息
-  rewards: {
-    coins: number;            // 獲得的金幣
-  };
-}
+// CompleteDailyTaskResponse 已遷移至 rules.ts（#043 規則引擎 claimReward）

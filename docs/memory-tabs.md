@@ -105,7 +105,7 @@
 ### 使用的元件
 | 元件 | 路徑 | 用途 |
 |------|------|------|
-| `AuthScreen` | `modules/shared/screens/AuthScreen.tsx` | 登入/註冊 Modal |
+| `app/login.tsx` | `app/login.tsx` | 登入頁（OAuth，#044 移除密碼認證） |
 | `Switch` | React Native 內建 | 推播通知開關 |
 | `Modal` | React Native 內建 | 語言選擇、帳號合併流程 |
 
@@ -167,7 +167,7 @@
 設定 (SettingsScreen)
 ├── API: apiService, authApi
 ├── Context: AppContext (state, t, setLanguage, setUser, getToken)
-├── 元件: AuthScreen
+├── 元件: app/login.tsx（OAuth 登入）
 └── 跳轉: /profile, /referral, /map, /economy, /favorites-management,
           /account, /contribution, /admin-exclusions, /login
 ```

@@ -24,8 +24,8 @@
  * - /admin-exclusions - 管理員：全域排除管理
  * - /login - 登出後
  */
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch, SafeAreaView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -34,9 +34,7 @@ import { Language } from '../../../types';
 import { apiService } from '../../../services/api';
 import { pushNotificationService } from '../../../services/pushNotificationService';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
-
-/** AsyncStorage key: 推播通知開關 */
-const PUSH_NOTIFICATION_KEY = 'push_notifications_enabled';
+import { STORAGE_KEYS } from '../../../constants/storageKeys';
 
 // ============================================================
 // 常數定義
@@ -70,6 +68,7 @@ type SettingItem = {
   toggle?: boolean;                       // 是否為開關
   checked?: boolean;                      // 開關狀態
   onChange?: (value: boolean) => void;    // 開關變更回調
+  toggleDisabled?: boolean;              // 開關是否禁用
   iconBg?: string;                        // 圖示背景色
   iconColor?: string;                     // 圖示顏色
 };
@@ -102,38 +101,84 @@ export function SettingsScreen() {
 
   // 推播通知開關狀態（從 AsyncStorage 讀取）
   const [notifications, setNotifications] = useState(true);
+  // 切換中鎖（防重複觸發）
+  const [isTogglingPush, setIsTogglingPush] = useState(false);
 
-  // 讀取通知偏好設定
+  // 讀取通知偏好設定（同步檢查系統權限）
   useEffect(() => {
-    AsyncStorage.getItem(PUSH_NOTIFICATION_KEY).then(value => {
-      // 預設開啟（null 或 'true'）
-      if (value === 'false') setNotifications(false);
-    });
+    const checkStatus = async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEYS.PUSH_NOTIFICATION);
+      if (stored === 'false') {
+        setNotifications(false);
+        return;
+      }
+      // 檢查系統層級通知權限
+      if (pushNotificationService.isAvailable()) {
+        try {
+          const Notif = require('expo-notifications');
+          const { status } = await Notif.getPermissionsAsync();
+          if (status !== 'granted') setNotifications(false);
+        } catch {
+          // 不支援的環境靜默處理
+        }
+      }
+    };
+    checkStatus();
   }, []);
 
   /**
    * 切換推播通知
    * 連動 pushNotificationService 註冊/取消註冊 Token
+   * 失敗時回滾 UI + AsyncStorage 並提示用戶
    */
   const handleToggleNotifications = useCallback(async (enabled: boolean) => {
+    if (isTogglingPush) return;
+    setIsTogglingPush(true);
     setNotifications(enabled);
-    await AsyncStorage.setItem(PUSH_NOTIFICATION_KEY, String(enabled));
 
     try {
       const token = await getToken();
-      if (!token) return;
+      if (!token) {
+        // 無 token，回滾
+        setNotifications(!enabled);
+        return;
+      }
 
       if (enabled) {
-        // 開啟：重新註冊推播 Token
-        await pushNotificationService.registerTokenWithBackend(token);
+        // 開啟：註冊推播 Token（含系統權限請求）
+        const success = await pushNotificationService.registerTokenWithBackend(token);
+        if (!success) {
+          // 註冊失敗（可能是權限被拒）
+          setNotifications(false);
+          await AsyncStorage.setItem(STORAGE_KEYS.PUSH_NOTIFICATION, 'false');
+          Alert.alert(
+            t.settings_pushNotifications,
+            t.mailbox_loadFailedDesc,  // 通用「請稍後再試」提示
+            [
+              { text: t.cancel, style: 'cancel' },
+              {
+                text: t.settings_language,  // 借用「設定」文字
+                onPress: () => Linking.openSettings(),
+              },
+            ],
+          );
+          return;
+        }
       } else {
         // 關閉：取消註冊推播 Token
         await pushNotificationService.unregisterToken(token);
       }
+      await AsyncStorage.setItem(STORAGE_KEYS.PUSH_NOTIFICATION, String(enabled));
     } catch (error) {
+      // 失敗：回滾 UI 和本地儲存
       console.error('Toggle push notification failed:', error);
+      setNotifications(!enabled);
+      await AsyncStorage.setItem(STORAGE_KEYS.PUSH_NOTIFICATION, String(!enabled));
+      Alert.alert(t.settings_pushNotifications, t.mailbox_loadFailedDesc);
+    } finally {
+      setIsTogglingPush(false);
     }
-  }, [getToken]);
+  }, [getToken, isTogglingPush, t]);
 
   // 當前選中的語言
   const currentLang = LANGUAGE_OPTIONS.find(l => l.code === state.language) || LANGUAGE_OPTIONS[0];
@@ -273,7 +318,7 @@ export function SettingsScreen() {
       items: [
         {
           icon: 'trophy-outline',
-          label: t.levelAchievements,
+          label: t.settings_achievements,
           action: () => router.push('/economy' as any),
           hasArrow: true,
           iconBg: '#FFF3D4',
@@ -322,6 +367,7 @@ export function SettingsScreen() {
           toggle: true,
           checked: notifications,
           onChange: handleToggleNotifications,
+          toggleDisabled: isTogglingPush,
           iconBg: '#FFF7ED',
           iconColor: '#EA580C',
         },
@@ -470,6 +516,7 @@ export function SettingsScreen() {
         <Switch
           value={item.checked}
           onValueChange={item.onChange}
+          disabled={item.toggleDisabled}
           trackColor={{ false: MibuBrand.tanLight, true: MibuBrand.brown }}
           thumbColor={UIColors.white}
         />

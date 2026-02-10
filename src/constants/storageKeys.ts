@@ -49,6 +49,10 @@ export const STORAGE_KEYS = {
   /** 頭像清單快取（API 成功後存，斷網時 fallback） */
   AVATAR_PRESETS_CACHE: '@mibu_avatar_presets_cache',
 
+  // --- 偏好設定（推播） ---
+  /** 推播通知開關 */
+  PUSH_NOTIFICATION: '@mibu_push_notifications',
+
   // --- 登入流程 ---
   /** 登入後目標入口（暫存用，登入完成後刪除） */
   POST_LOGIN_PORTAL: '@mibu_post_login_portal',

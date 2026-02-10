@@ -178,7 +178,7 @@ workspace/
 | 檔案 | 用途 |
 |------|------|
 | `HomeScreen.tsx` | 首頁畫面 |
-| `AuthScreen.tsx` | 登入/註冊畫面 |
+| `app/login.tsx` | 登入畫面（OAuth，#044 移除密碼認證） |
 | `ProfileScreen.tsx` | 個人資料畫面 |
 | `AccountScreen.tsx` | 帳號綁定畫面 |
 | `SettingsScreen.tsx` | 設定畫面 |

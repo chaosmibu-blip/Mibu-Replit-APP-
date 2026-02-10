@@ -233,9 +233,8 @@ class PushNotificationService {
 
     try {
       // 呼叫後端取消註冊，讓後端移除該裝置的推播 Token
-      const { commonApi } = require('./commonApi');
-      if (typeof commonApi?.unregisterPushToken === 'function') {
-        await commonApi.unregisterPushToken(authToken, {
+      if (typeof apiService.unregisterPushToken === 'function') {
+        await apiService.unregisterPushToken(authToken, {
           token: this.expoPushToken,
         });
       }

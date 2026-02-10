@@ -23,13 +23,13 @@ export {
   GACHA_CONFIG,                            // 扭蛋配置
   PAGINATION_DEFAULTS,                     // 分頁預設值
   COUPON_RARITIES,                         // 優惠券稀有度
-  ACHIEVEMENT_CATEGORIES,                  // 成就分類
+  // ACHIEVEMENT_CATEGORIES — 已遷移至規則引擎（#043）
   USER_ROLES,                              // 用戶角色
   ORDER_STATUSES,                          // 訂單狀態
   SOS_STATUSES,                            // SOS 狀態
   type MibuCategory,                       // Mibu 分類型別
   type CouponRarity as SharedCouponRarity, // 優惠券稀有度型別
-  // AchievementCategory 由 economy.ts 定義，避免重複匯出
+  // AchievementCategory 已遷移至規則引擎（#043）
   type UserRole as SharedUserRole,         // 用戶角色型別
   type OrderStatus,                        // 訂單狀態型別
   type SosStatus,                          // SOS 狀態型別

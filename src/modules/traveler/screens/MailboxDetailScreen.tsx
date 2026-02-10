@@ -54,7 +54,7 @@ const REWARD_ICON_MAP: Record<string, string> = {
 // ========== 元件 ==========
 
 export function MailboxDetailScreen() {
-  const { t, getToken } = useApp();
+  const { t, getToken, refreshUnreadCount } = useApp();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -63,14 +63,37 @@ export function MailboxDetailScreen() {
   const [claiming, setClaiming] = useState(false);
   const claimingRef = useRef(false);
 
+  // ========== 安全導航（deep link 可能無歷史堆疊） ==========
+
+  const handleBack = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/profile' as any);
+    }
+  }, [router]);
+
   // ========== 載入詳情 ==========
 
   const loadDetail = useCallback(async () => {
+    // 驗證 id 參數（deep link 可能傳入非數字）
+    const numericId = Number(id);
+    if (!id || isNaN(numericId)) {
+      Alert.alert(t.mailbox_loadFailed, t.mailbox_loadFailedDesc);
+      setLoading(false);
+      return;
+    }
+
     try {
       const token = await getToken();
-      if (!token || !id) return;
+      if (!token) return;
 
-      const response = await mailboxApi.getDetail(token, Number(id));
+      const response = await mailboxApi.getDetail(token, numericId);
+      // 防護後端回傳格式不符（教訓 #010）
+      if (!response.item) {
+        Alert.alert(t.mailbox_loadFailed, t.mailbox_loadFailedDesc);
+        return;
+      }
       setItem(response.item);
     } catch {
       Alert.alert(t.mailbox_loadFailed, t.mailbox_loadFailedDesc);
@@ -100,15 +123,16 @@ export function MailboxDetailScreen() {
       } else {
         Alert.alert(t.mailbox_claimSuccess);
       }
-      // 重新載入以更新狀態
+      // 重新載入以更新狀態 + 刷新全域未讀計數
       loadDetail();
+      refreshUnreadCount();
     } catch {
       Alert.alert(t.mailbox_claimFailed);
     } finally {
       setClaiming(false);
       claimingRef.current = false;
     }
-  }, [item, getToken, t, loadDetail]);
+  }, [item, getToken, t, loadDetail, refreshUnreadCount]);
 
   // ========== 獎勵渲染 ==========
 
@@ -164,7 +188,7 @@ export function MailboxDetailScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={MibuBrand.brown} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t.mailbox_title}</Text>
@@ -181,7 +205,7 @@ export function MailboxDetailScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={MibuBrand.brown} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t.mailbox_title}</Text>
@@ -206,7 +230,7 @@ export function MailboxDetailScreen() {
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brown} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t.mailbox_title}</Text>
