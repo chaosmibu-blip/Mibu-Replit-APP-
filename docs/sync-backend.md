@@ -6,6 +6,115 @@
 
 ## 最新回報
 
+### 2026-02-10 #045：信箱系統（統一收件箱 + 優惠碼）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #045 |
+| 狀態 | ✅ 完成 |
+
+**API 層**
+- [x] `src/types/mailbox.ts` — 完整型別定義（列表/詳情/領取/優惠碼）
+- [x] `src/services/mailboxApi.ts` — 7 個端點全部串接
+  - `GET /api/mailbox` — 信箱列表（分頁 + 狀態篩選）
+  - `GET /api/mailbox/unread-count` — 未讀數量
+  - `GET /api/mailbox/:id` — 項目詳情（自動標記已讀）
+  - `POST /api/mailbox/:id/claim` — 領取單一項目
+  - `POST /api/mailbox/claim-all` — 一鍵全部領取
+  - `POST /api/promo-code/redeem` — 兌換優惠碼
+  - `GET /api/promo-code/validate` — 驗證優惠碼
+- [x] 註冊到 `types/index.ts` + `api.ts`（import、re-export、proxy bindings）
+
+**UI 頁面**
+- [x] `MailboxScreen.tsx` — 信箱列表頁
+  - 三 tab 篩選：未領取 / 已領取 / 已過期
+  - 下拉重新整理 + 分頁載入（FlatList）
+  - 一鍵全部領取按鈕
+  - 優惠碼兌換輸入框
+  - 未讀紅點 + 左側高亮條
+- [x] `MailboxDetailScreen.tsx` — 信箱詳情頁
+  - 完整獎勵清單（coins / shop_item / coupon / place_pack / perk）
+  - 底部固定領取按鈕（unclaimed 狀態）
+  - 狀態顯示（已領取 / 已過期 / 到期倒數）
+- [x] 路由 `/mailbox` + `/mailbox/[id]` 註冊到 `_layout.tsx`
+
+**全域整合**
+- [x] `AppState` 新增 `unreadMailboxCount`
+- [x] `refreshUnreadCount()` 同時拉取物品箱 + 信箱未讀
+- [x] `SettingsScreen` 新增信箱群組（含未讀 badge + 優惠碼入口）
+
+**翻譯**
+- [x] 4 語系共 36 組 keys（zh-TW 完整、en 完整、ja/ko TODO 標記）
+
+---
+
+### 2026-02-10 #043：規則引擎（統一成就/任務/獎勵）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #043 |
+| 狀態 | ✅ 完成 |
+
+**API 層**
+- [x] `src/types/rules.ts` — 完整型別（RuleItem、RewardPayload、ConditionResult 等）
+- [x] `src/services/rulesApi.ts` — 4 個端點
+  - `GET /api/rules` — 規則列表（成就 + 任務 + 獎勵觸發）
+  - `GET /api/rules/chains/:chainId` — 任務鏈詳情
+  - `GET /api/rules/:id` — 規則詳情
+  - `POST /api/rules/:id/claim` — 領取獎勵
+- [x] 註冊到 `types/index.ts` + `api.ts`
+
+**UI 整合**
+- [x] `EconomyScreen.tsx` 全面重寫
+  - 移除靜態 mock（DAILY_TASKS、ONETIME_TASKS）
+  - 改用 `rulesApi.getRules()` 動態載入
+  - 領取功能（`claimReward`）+ 成功提示
+  - 導航按鈕（`navigateTo` → gacha/collection/vote/shop/referral/crowdfund）
+  - Tab 映射：daily/weekly → 每日、none → 一次性、achievement → 累計
+  - 待領取數量卡片（綠色高亮）
+- [x] 8 組翻譯 keys（4 語系）
+
+---
+
+### 2026-02-10 #044：移除廢棄密碼認證 API
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #044 |
+| 狀態 | ✅ 完成 |
+
+**移除項目**
+- [x] 刪除 `AuthScreen.tsx`（559 行密碼登入/註冊畫面）
+- [x] `authApi.ts` 移除 `register()`、`login()`、`mergeAccount()`、`getMergeHistory()`
+- [x] `api.ts` 移除 register/login proxy bindings
+- [x] `shared/index.ts` 移除 AuthScreen export
+- [x] 相關型別（MergeSummary、MergeAccountResponse 等）一併移除
+
+**保留項目**
+- OAuth 登入（`authApi.mobileAuth()`）不受影響
+- `app/login.tsx` Google/Apple 登入流程正常
+
+---
+
+### 2026-02-10 #042：推播通知偏好設定開通
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #042 |
+| 狀態 | ✅ 完成 |
+
+**實作內容**
+- [x] `SettingsScreen.tsx` 取消隱藏 3 個設定群組
+  - 探索：成就與任務
+  - 偏好設定：我的最愛/黑名單 + 推播通知
+  - 更多功能：帳號綁定 + 社群貢獻
+- [x] 推播通知開關連接 `pushNotificationService`
+  - 開啟 → `registerTokenWithBackend()`
+  - 關閉 → `unregisterToken()`
+- [x] 通知偏好持久化到 AsyncStorage
+
+---
+
 ### 2026-02-10 📋 請求：Token Refresh API
 
 | 項目 | 內容 |
@@ -746,6 +855,10 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 045 | 02-10 | 信箱系統（統一收件箱 + 優惠碼）API + UI + 路由 | ✅ |
+| 043 | 02-10 | 規則引擎 API + EconomyScreen 動態整合 | ✅ |
+| 044 | 02-10 | 移除廢棄密碼認證 API（register/login/merge） | ✅ |
+| 042 | 02-10 | 推播通知偏好設定開通 + 取消隱藏設定群組 | ✅ |
 | 技術債 | 02-08 | 多語系 isZh→t 字典遷移（963處/43檔案） | 🟡 待執行 |
 | BUG | 02-07 | Apple 登入超管帳號 isSuperAdmin 未被識別 | ✅ |
 | 041 | 02-07 | 超管無限額度支援（dailyPullLimit=-1、inventorySlots=999） | ✅ |
