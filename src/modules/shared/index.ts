@@ -3,7 +3,7 @@
  */
 
 // Screens - 畫面元件
-export { AuthScreen } from './screens/AuthScreen';
+// #044: AuthScreen（密碼登入/註冊）已移除，僅保留 OAuth（app/login.tsx）
 export { HomeScreen } from './screens/HomeScreen';
 export { ProfileScreen } from './screens/ProfileScreen';
 export { SettingsScreen } from './screens/SettingsScreen';

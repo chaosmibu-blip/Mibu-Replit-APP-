@@ -7,12 +7,11 @@
  * - 偏好設定：我的最愛/黑名單、推播通知
  * - 更多功能：帳號綁定、社群貢獻
  * - 關於：隱私政策、服務條款、幫助中心
- * - 帳號管理：合併帳號、登出、刪除帳號
+ * - 帳號管理：登出、刪除帳號
  *
  * 串接 API：
  * - apiService.logout() - 登出
  * - apiService.deleteAccount() - 刪除帳號
- * - authApi.mergeAccount() - 合併帳號 (#036)
  *
  * 跳轉頁面：
  * - /profile - 個人資料
@@ -26,14 +25,12 @@
  * - /login - 登出後
  */
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useApp } from '../../../context/AppContext';
 import { Language } from '../../../types';
-import { AuthScreen } from './AuthScreen';
 import { apiService } from '../../../services/api';
-import { authApi, MergeSummary } from '../../../services/authApi';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============================================================
@@ -95,23 +92,11 @@ export function SettingsScreen() {
   // 狀態管理
   // ============================================================
 
-  // 登入/註冊 Modal
-  const [showAuthModal, setShowAuthModal] = useState(false);
-
   // 語言選擇 Modal
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
   // 推播通知開關狀態
   const [notifications, setNotifications] = useState(true);
-
-  // ============================================================
-  // #036 帳號合併功能狀態
-  // ============================================================
-
-  const [showMergeModal, setShowMergeModal] = useState(false);
-  const [mergeStep, setMergeStep] = useState<'warning' | 'login' | 'processing' | 'result'>('warning');
-  const [mergeResult, setMergeResult] = useState<{ success: boolean; summary?: MergeSummary; message?: string } | null>(null);
-  const [secondaryToken, setSecondaryToken] = useState<string | null>(null);
 
   // 當前選中的語言
   const currentLang = LANGUAGE_OPTIONS.find(l => l.code === state.language) || LANGUAGE_OPTIONS[0];
@@ -201,79 +186,7 @@ export function SettingsScreen() {
     );
   };
 
-  // ============================================================
-  // #036 帳號合併功能
-  // ============================================================
-
-  /**
-   * 開啟帳號合併 Modal
-   * 重置所有合併相關狀態
-   */
-  const handleOpenMergeModal = () => {
-    setMergeStep('warning');
-    setMergeResult(null);
-    setSecondaryToken(null);
-    setShowMergeModal(true);
-  };
-
-  /**
-   * 確認警告後進入登入副帳號步驟
-   */
-  const handleMergeConfirmWarning = () => {
-    setMergeStep('login');
-  };
-
-  /**
-   * 副帳號登入成功後執行合併
-   */
-  const handleSecondaryLoginSuccess = (token: string) => {
-    setSecondaryToken(token);
-    executeMerge(token);
-  };
-
-  /**
-   * 執行帳號合併
-   * 呼叫 authApi.mergeAccount() 將副帳號資料合併到主帳號
-   */
-  const executeMerge = async (secToken: string) => {
-    setMergeStep('processing');
-
-    try {
-      const token = await getToken();
-      if (!token) {
-        setMergeResult({ success: false, message: t.settings_pleaseLoginFirst });
-        setMergeStep('result');
-        return;
-      }
-
-      // 呼叫合併 API
-      const result = await authApi.mergeAccount(token, secToken);
-
-      setMergeResult({
-        success: result.success,
-        summary: result.summary,
-        message: result.message,
-      });
-      setMergeStep('result');
-    } catch (error) {
-      setMergeResult({
-        success: false,
-        message: t.settings_mergeFailedRetry,
-      });
-      setMergeStep('result');
-    }
-  };
-
-  /**
-   * 關閉帳號合併 Modal
-   * 重置所有狀態
-   */
-  const handleCloseMergeModal = () => {
-    setShowMergeModal(false);
-    setMergeStep('warning');
-    setMergeResult(null);
-    setSecondaryToken(null);
-  };
+  // #044: 帳號合併功能已移除
 
   // ============================================================
   // 設定項目配置
@@ -569,18 +482,6 @@ export function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.settings_accountManagement}</Text>
           <View style={styles.card}>
-            {/* [HIDDEN] 送審隱藏 #8 合併帳號 */}
-            {/* <TouchableOpacity
-              style={[styles.settingItem, styles.settingItemBorder]}
-              onPress={handleOpenMergeModal}
-            >
-              <View style={[styles.iconContainer, { backgroundColor: '#EEF2FF' }]}>
-                <Ionicons name="git-merge-outline" size={20} color="#6366f1" />
-              </View>
-              <Text style={styles.itemLabel}>{t.settings_mergeAccounts}</Text>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-            </TouchableOpacity> */}
-
             {/* 登出 */}
             <TouchableOpacity
               style={[styles.settingItem, styles.settingItemBorder]}
@@ -612,7 +513,7 @@ export function SettingsScreen() {
       {!state.isAuthenticated && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.settings_account}</Text>
-          <TouchableOpacity style={styles.loginButton} onPress={() => setShowAuthModal(true)}>
+          <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/login')}>
             <Ionicons name="log-in-outline" size={20} color={UIColors.white} />
             <Text style={styles.loginButtonText}>{t.login}</Text>
           </TouchableOpacity>
@@ -627,12 +528,6 @@ export function SettingsScreen() {
           <Text style={styles.copyright}>© 2025 查爾斯有限公司</Text>
         </View>
       </View>
-
-      {/* ========== 登入/註冊 Modal ========== */}
-      <AuthScreen
-        visible={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
 
       {/* ========== 語言選擇 Modal ========== */}
       <Modal
@@ -681,165 +576,7 @@ export function SettingsScreen() {
         </TouchableOpacity>
       </Modal>
 
-      {/* ========== #036 帳號合併 Modal ========== */}
-      <Modal
-        visible={showMergeModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleCloseMergeModal}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.mergeModalContent}>
-            {/* ===== 步驟一：警告確認 ===== */}
-            {mergeStep === 'warning' && (
-              <>
-                <View style={styles.mergeIconContainer}>
-                  <Ionicons name="warning-outline" size={48} color={SemanticColors.warningDark} />
-                </View>
-                <Text style={styles.mergeTitle}>
-                  {t.settings_mergeAccounts}
-                </Text>
-                <Text style={styles.mergeDescription}>
-                  {t.settings_mergeAccountsDesc}
-                </Text>
-                <View style={styles.mergeButtonRow}>
-                  <TouchableOpacity
-                    style={[styles.mergeButton, styles.mergeButtonCancel]}
-                    onPress={handleCloseMergeModal}
-                  >
-                    <Text style={styles.mergeButtonCancelText}>
-                      {t.cancel}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.mergeButton, styles.mergeButtonConfirm]}
-                    onPress={handleMergeConfirmWarning}
-                  >
-                    <Text style={styles.mergeButtonConfirmText}>
-                      {t.settings_continue}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
-
-            {/* ===== 步驟二：登入副帳號 ===== */}
-            {mergeStep === 'login' && (
-              <>
-                {/* 返回按鈕 */}
-                <TouchableOpacity
-                  style={styles.mergeBackButton}
-                  onPress={() => setMergeStep('warning')}
-                >
-                  <Ionicons name="arrow-back" size={24} color={MibuBrand.copper} />
-                </TouchableOpacity>
-
-                <View style={styles.mergeIconContainer}>
-                  <Ionicons name="person-add-outline" size={48} color={MibuBrand.brown} />
-                </View>
-                <Text style={styles.mergeTitle}>
-                  {t.settings_loginSecondary}
-                </Text>
-                <Text style={styles.mergeDescription}>
-                  {t.settings_loginSecondaryDesc}
-                </Text>
-
-                {/* 內嵌登入表單 */}
-                <AuthScreen
-                  visible={true}
-                  onClose={handleCloseMergeModal}
-                  embedded={true}
-                  onLoginSuccess={handleSecondaryLoginSuccess}
-                  title={t.settings_loginToMerge}
-                />
-              </>
-            )}
-
-            {/* ===== 步驟三：處理中 ===== */}
-            {mergeStep === 'processing' && (
-              <>
-                <ActivityIndicator size="large" color={MibuBrand.brown} />
-                <Text style={[styles.mergeTitle, { marginTop: 20 }]}>
-                  {t.settings_merging}
-                </Text>
-                <Text style={styles.mergeDescription}>
-                  {t.settings_mergingDesc}
-                </Text>
-              </>
-            )}
-
-            {/* ===== 步驟四：結果 ===== */}
-            {mergeStep === 'result' && mergeResult && (
-              <>
-                <View style={styles.mergeIconContainer}>
-                  <Ionicons
-                    name={mergeResult.success ? 'checkmark-circle-outline' : 'close-circle-outline'}
-                    size={48}
-                    color={mergeResult.success ? '#059669' : SemanticColors.errorDark}
-                  />
-                </View>
-                <Text style={styles.mergeTitle}>
-                  {mergeResult.success ? t.settings_mergeSuccess : t.settings_mergeFailed}
-                </Text>
-
-                {/* 成功：顯示合併摘要 */}
-                {mergeResult.success && mergeResult.summary ? (
-                  <View style={styles.mergeSummary}>
-                    <Text style={styles.mergeSummaryTitle}>
-                      {t.settings_mergedData}
-                    </Text>
-                    {mergeResult.summary.collections > 0 && (
-                      <Text style={styles.mergeSummaryItem}>
-                        • {t.settings_collections}: {mergeResult.summary.collections}
-                      </Text>
-                    )}
-                    {mergeResult.summary.itineraries > 0 && (
-                      <Text style={styles.mergeSummaryItem}>
-                        • {t.settings_itineraries}: {mergeResult.summary.itineraries}
-                      </Text>
-                    )}
-                    {mergeResult.summary.favorites > 0 && (
-                      <Text style={styles.mergeSummaryItem}>
-                        • {t.settings_favorites}: {mergeResult.summary.favorites}
-                      </Text>
-                    )}
-                    {mergeResult.summary.achievements > 0 && (
-                      <Text style={styles.mergeSummaryItem}>
-                        • {t.settings_achievements}: {mergeResult.summary.achievements}
-                      </Text>
-                    )}
-                    {mergeResult.summary.expMerged > 0 && (
-                      <Text style={styles.mergeSummaryItem}>
-                        • {t.settings_coins}: +{mergeResult.summary.expMerged}
-                      </Text>
-                    )}
-                    {mergeResult.summary.balanceMerged > 0 && (
-                      <Text style={styles.mergeSummaryItem}>
-                        • {t.settings_balance}: +{mergeResult.summary.balanceMerged}
-                      </Text>
-                    )}
-                  </View>
-                ) : (
-                  // 失敗：顯示錯誤訊息
-                  <Text style={styles.mergeDescription}>
-                    {mergeResult.message || t.settings_unknownError}
-                  </Text>
-                )}
-
-                {/* 完成按鈕 */}
-                <TouchableOpacity
-                  style={[styles.mergeButton, styles.mergeButtonConfirm, { marginTop: 20 }]}
-                  onPress={handleCloseMergeModal}
-                >
-                  <Text style={styles.mergeButtonConfirmText}>
-                    {t.done}
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
+      {/* #044: 帳號合併 Modal 已移除 */}
     </ScrollView>
     </SafeAreaView>
   );
@@ -1047,87 +784,5 @@ const styles = StyleSheet.create({
     color: MibuBrand.brown,
   },
 
-  // #036 帳號合併 Modal 樣式
-  mergeModalContent: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 24,
-    padding: 24,
-    width: '90%',
-    maxWidth: 400,
-    alignItems: 'center',
-  },
-  mergeIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: MibuBrand.highlight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  mergeTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  mergeDescription: {
-    fontSize: 14,
-    color: MibuBrand.copper,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 20,
-  },
-  mergeButtonRow: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
-  mergeButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  mergeButtonCancel: {
-    backgroundColor: MibuBrand.creamLight,
-  },
-  mergeButtonCancelText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: MibuBrand.copper,
-  },
-  mergeButtonConfirm: {
-    backgroundColor: MibuBrand.brown,
-  },
-  mergeButtonConfirmText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: UIColors.white,
-  },
-  mergeBackButton: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-    padding: 8,
-  },
-  mergeSummary: {
-    width: '100%',
-    backgroundColor: MibuBrand.highlight,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
-  },
-  mergeSummaryTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: MibuBrand.brownDark,
-    marginBottom: 8,
-  },
-  mergeSummaryItem: {
-    fontSize: 14,
-    color: MibuBrand.copper,
-    marginBottom: 4,
-  },
+  // #044: 帳號合併樣式已移除
 });

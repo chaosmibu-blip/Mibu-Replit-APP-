@@ -5,11 +5,11 @@
  *
  * 1. 向後兼容方式（舊）：
  *    import { apiService } from '@/services/api';
- *    await apiService.login(username, password);
+ *    await apiService.getUserWithToken(token);
  *
  * 2. 模組化方式（新，推薦）：
  *    import { authApi } from '@/services/authApi';
- *    await authApi.login(username, password);
+ *    await authApi.mobileAuth({ provider: 'google', identityToken });
  *
  * @module services/api
  * @see 後端契約: contracts/APP.md v1.4.0
@@ -101,27 +101,24 @@ export { assetApi } from './assetApi';
  * 聚合所有模組的方法，讓舊的 apiService.xxx() 調用仍然有效
  * 內部將方法代理到對應的模組化 API
  *
- * @deprecated 建議新代碼直接使用模組化 API，如 authApi.login()
+ * @deprecated 建議新代碼直接使用模組化 API，如 authApi.mobileAuth()
  *
  * @example
  * // 舊寫法（向後兼容）
  * import { apiService } from '@/services/api';
- * await apiService.login(username, password);
+ * await apiService.mobileAuth({ provider: 'google', identityToken: '...' });
  *
  * // 新寫法（推薦）
  * import { authApi } from '@/services/authApi';
- * await authApi.login(username, password);
+ * await authApi.mobileAuth({ provider: 'google', identityToken: '...' });
  */
 class ApiService {
   /** API 基礎網址 */
   private baseUrl = API_BASE_URL;
 
   // ============ Auth 認證相關 ============
+  // #044: register/login 已移除，只保留 OAuth
 
-  /** 用戶註冊 */
-  register = authApi.register.bind(authApi);
-  /** 用戶登入 */
-  login = authApi.login.bind(authApi);
   /** 取得當前用戶 */
   getCurrentUser = authApi.getCurrentUser.bind(authApi);
   /** 使用 Token 取得用戶資料 */

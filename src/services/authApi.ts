@@ -1,14 +1,13 @@
 /**
  * 認證相關 API 服務
  *
- * 處理用戶認證、註冊、登入、Token 管理、帳號綁定等功能
+ * 處理用戶認證、Token 管理、帳號綁定等功能
+ * 只支援 Google / Apple OAuth 登入
  *
  * @module services/authApi
  * @see 後端契約: contracts/APP.md
  *
  * ============ 串接端點 ============
- * - POST /api/auth/register    - 用戶註冊
- * - POST /api/auth/login       - 用戶登入
  * - GET  /api/auth/user        - 取得當前用戶
  * - POST /api/auth/switch-role - 切換角色
  * - POST /api/auth/logout      - 用戶登出
@@ -19,8 +18,8 @@
  * - POST /api/auth/bind        - 綁定新身份 (Phase 6)
  * - GET  /api/auth/identities  - 取得綁定身份列表 (Phase 6)
  * - DELETE /api/auth/identities/:id - 解除綁定 (Phase 6)
- * - POST /api/auth/merge       - 帳號合併 (#036)
- * - GET  /api/auth/merge-history - 查詢合併歷史 (#036)
+ *
+ * #044 已移除：密碼登入/註冊、帳號合併（2026-02-10）
  */
 import { ApiBase } from './base';
 import {
@@ -33,72 +32,6 @@ import {
   DeleteAccountResponse
 } from '../types';
 
-// ============ #036 帳號合併型別 ============
-
-/**
- * 帳號合併結果摘要
- *
- * 記錄合併過程中移轉的資料數量
- */
-export interface MergeSummary {
-  /** 移轉的收藏數量 */
-  collections: number;
-  /** 移轉的行程數量 */
-  itineraries: number;
-  /** 移轉的我的最愛數量 */
-  favorites: number;
-  /** 移轉的成就數量 */
-  achievements: number;
-  /** 移轉的通知數量 */
-  notifications: number;
-  /** 合併的經驗值 */
-  expMerged: number;
-  /** 合併的餘額 */
-  balanceMerged: number;
-}
-
-/**
- * 帳號合併回應
- */
-export interface MergeAccountResponse {
-  /** 操作是否成功 */
-  success: boolean;
-  /** 合併記錄 ID */
-  mergeId?: number;
-  /** 合併摘要 */
-  summary?: MergeSummary;
-  /** 回應訊息 */
-  message?: string;
-  /** 錯誤碼 */
-  code?: string;
-}
-
-/**
- * 合併歷史記錄項目
- */
-export interface MergeHistoryItem {
-  /** 記錄 ID */
-  id: number;
-  /** 被合併的副帳號 ID */
-  secondaryUserId: string;
-  /** 合併狀態 */
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  /** 已合併的資料表統計 */
-  mergedTables: Record<string, number> | null;
-  /** 發起時間（ISO 8601） */
-  initiatedAt: string;
-  /** 完成時間（ISO 8601），若未完成為 null */
-  completedAt: string | null;
-}
-
-/**
- * 合併歷史回應
- */
-export interface MergeHistoryResponse {
-  /** 合併歷史記錄列表 */
-  merges: MergeHistoryItem[];
-}
-
 // ============ API 服務類別 ============
 
 /**
@@ -109,55 +42,7 @@ export interface MergeHistoryResponse {
 class AuthApiService extends ApiBase {
 
   // ============ 基本認證 ============
-
-  /**
-   * 用戶註冊
-   *
-   * @param params - 註冊參數
-   * @param params.username - 用戶名稱
-   * @param params.password - 密碼
-   * @param params.name - 顯示名稱
-   * @param params.role - 用戶角色
-   * @returns 認證回應，包含 token 和用戶資料
-   *
-   * @example
-   * const result = await authApi.register({
-   *   username: 'user@example.com',
-   *   password: 'secret123',
-   *   name: '王小明',
-   *   role: 'traveler',
-   * });
-   */
-  async register(params: {
-    username: string;
-    password: string;
-    name: string;
-    role: UserRole;
-  }): Promise<AuthResponse> {
-    return this.request<AuthResponse>('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(params),
-    });
-  }
-
-  /**
-   * 用戶登入
-   *
-   * @param username - 用戶名稱（通常是 email）
-   * @param password - 密碼
-   * @returns 認證回應，包含 token 和用戶資料
-   *
-   * @example
-   * const result = await authApi.login('user@example.com', 'secret123');
-   * // 儲存 token
-   * await SecureStore.setItemAsync('token', result.token);
-   */
-  async login(username: string, password: string): Promise<AuthResponse> {
-    return this.request<AuthResponse>('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    });
-  }
+  // #044: 密碼登入/註冊已移除，只保留 OAuth（mobileAuth）
 
   /**
    * 取得當前用戶資料
@@ -360,69 +245,7 @@ class AuthApiService extends ApiBase {
     );
   }
 
-  // ============ #036 帳號合併 ============
-
-  /**
-   * 執行帳號合併
-   *
-   * 將副帳號的資料合併到主帳號（當前登入的帳號）
-   * 合併後副帳號將無法登入
-   *
-   * @param token - 主帳號的 JWT Token
-   * @param secondaryToken - 副帳號的 JWT Token
-   * @returns 合併結果和資料移轉摘要
-   *
-   * @example
-   * // 用戶先登入副帳號取得 secondaryToken
-   * // 然後用主帳號的 token 呼叫合併
-   * const result = await authApi.mergeAccount(mainToken, secondaryToken);
-   * if (result.success) {
-   *   console.log(`已合併 ${result.summary?.collections} 個收藏`);
-   * }
-   */
-  async mergeAccount(
-    token: string,
-    secondaryToken: string
-  ): Promise<MergeAccountResponse> {
-    try {
-      const result = await this.request<{
-        success: boolean;
-        mergeId: number;
-        summary: MergeSummary;
-        message: string;
-      }>('/api/auth/merge', {
-        method: 'POST',
-        headers: this.authHeaders(token),
-        body: JSON.stringify({ secondaryToken }),
-      });
-      return result;
-    } catch (error) {
-      // 處理錯誤回應，提取伺服器訊息
-      if (error instanceof Error) {
-        const apiError = error as any;
-        return {
-          success: false,
-          message: apiError.serverMessage || apiError.message || '合併失敗',
-          code: apiError.code,
-        };
-      }
-      return { success: false, message: '合併失敗，請稍後再試' };
-    }
-  }
-
-  /**
-   * 查詢合併歷史
-   *
-   * 取得該用戶過去的帳號合併記錄
-   *
-   * @param token - JWT Token
-   * @returns 合併歷史記錄列表
-   */
-  async getMergeHistory(token: string): Promise<MergeHistoryResponse> {
-    return this.request<MergeHistoryResponse>('/api/auth/merge-history', {
-      headers: this.authHeaders(token),
-    });
-  }
+  // #044: 帳號合併功能已移除
 
   // ============ #038 頭像上傳 ============
 
