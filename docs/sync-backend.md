@@ -151,7 +151,7 @@ Response:
 | 項目 | 內容 |
 |------|------|
 | 來源 | APP 端截圖審查發現 |
-| 狀態 | 🟡 待獨立執行 |
+| 狀態 | ✅ 已完成（剩餘 TutorialOverlay 特殊案例保留） |
 | 嚴重度 | 中（日/韓語系完全無效，中/英切換部分有效） |
 
 **問題描述**
@@ -859,7 +859,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 | 043 | 02-10 | 規則引擎 API + EconomyScreen 動態整合 | ✅ |
 | 044 | 02-10 | 移除廢棄密碼認證 API（register/login/merge） | ✅ |
 | 042 | 02-10 | 推播通知偏好設定開通 + 取消隱藏設定群組 | ✅ |
-| 技術債 | 02-08 | 多語系 isZh→t 字典遷移（963處/43檔案） | 🟡 待執行 |
+| 技術債 | 02-08 | 多語系 isZh→t 字典遷移（963處→4處，僅剩 TutorialOverlay 特殊案例） | ✅ |
 | BUG | 02-07 | Apple 登入超管帳號 isSuperAdmin 未被識別 | ✅ |
 | 041 | 02-07 | 超管無限額度支援（dailyPullLimit=-1、inventorySlots=999） | ✅ |
 | 040-B | 02-07 | PATCH profile 回應欄位補齊（isSuperAdmin、roles、createdAt、token） | ✅ |
