@@ -35,6 +35,7 @@ import { referralApi } from './referralApi';
 import { contributionApi } from './contributionApi';
 import { eventApi } from './eventApi';
 import { itineraryApi } from './itineraryApi';
+import { rulesApi } from './rulesApi';
 
 // ============ Re-export 模組化 API ============
 
@@ -92,6 +93,9 @@ export { itineraryApi } from './itineraryApi';
 
 // 素材資源（Cloudinary 託管：頭像、成就圖片等）
 export { assetApi } from './assetApi';
+
+// 規則引擎（#043 統一成就/任務/獎勵）
+export { rulesApi } from './rulesApi';
 
 // ============ 統一 API Service（向後兼容） ============
 
@@ -440,6 +444,17 @@ class ApiService {
   itineraryAiChat = itineraryApi.aiChat.bind(itineraryApi);
   /** 加入 AI 建議的景點 */
   itineraryAiAddPlaces = itineraryApi.aiAddPlaces.bind(itineraryApi);
+
+  // ============ Rules 規則引擎 (#043) ============
+
+  /** 取得規則列表（成就+任務+獎勵） */
+  getRules = rulesApi.getRules.bind(rulesApi);
+  /** 取得任務鏈詳情 */
+  getRuleChain = rulesApi.getChain.bind(rulesApi);
+  /** 取得規則詳情 */
+  getRuleDetail = rulesApi.getRuleDetail.bind(rulesApi);
+  /** 領取規則獎勵 */
+  claimRuleReward = rulesApi.claimReward.bind(rulesApi);
 }
 
 // ============ 匯出 ============

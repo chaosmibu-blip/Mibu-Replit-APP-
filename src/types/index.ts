@@ -79,3 +79,6 @@ export * from './itinerary';
 // ============ 素材資源系統 ============
 // 對應後端 GET /api/assets（Cloudinary 託管）
 export * from './asset';
+
+// ============ 規則引擎（#043 統一成就/任務/獎勵） ============
+export * from './rules';
