@@ -228,15 +228,22 @@ class PushNotificationService {
    * // 登出時呼叫
    * await pushNotificationService.unregisterToken(authToken);
    */
-  async unregisterToken(_authToken: string): Promise<void> {
+  async unregisterToken(authToken: string): Promise<void> {
     if (!this.expoPushToken) return;
 
     try {
-      // 呼叫後端取消註冊 API（如果有的話）
-      // 目前後端可能沒有 unregister 端點，這裡預留
+      // 呼叫後端取消註冊，讓後端移除該裝置的推播 Token
+      const { commonApi } = require('./commonApi');
+      if (typeof commonApi?.unregisterPushToken === 'function') {
+        await commonApi.unregisterPushToken(authToken, {
+          token: this.expoPushToken,
+        });
+      }
       this.expoPushToken = null;
     } catch (error) {
       console.error('Failed to unregister push token:', error);
+      // 即使後端呼叫失敗，仍清除本地 Token
+      this.expoPushToken = null;
     }
   }
 

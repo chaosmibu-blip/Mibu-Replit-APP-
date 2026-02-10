@@ -21,7 +21,7 @@
  * @see 後端契約: contracts/APP.md #043
  * @updated 2026-02-10 #043 規則引擎整合
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -102,7 +102,8 @@ export function EconomyScreen() {
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [claiming, setClaiming] = useState<number | null>(null); // 正在領取中的 rule ID
+  const [claiming, setClaiming] = useState<number | null>(null); // UI 用（顯示 loading）
+  const claimingRef = useRef(false); // 同步鎖（防重複點擊，教訓 #006）
 
   // 規則引擎資料（#043 統一）
   const [rulesData, setRulesData] = useState<RulesListResponse | null>(null);
@@ -190,7 +191,8 @@ export function EconomyScreen() {
    * 領取已完成規則的獎勵
    */
   const handleClaim = useCallback(async (ruleId: number) => {
-    if (claiming) return; // 防重複點擊
+    if (claimingRef.current) return; // 同步鎖防重複
+    claimingRef.current = true;
 
     setClaiming(ruleId);
     try {
@@ -215,8 +217,9 @@ export function EconomyScreen() {
       Alert.alert(t.economy_claimFailed);
     } finally {
       setClaiming(null);
+      claimingRef.current = false;
     }
-  }, [claiming, getToken, loadData, t]);
+  }, [getToken, loadData, t]);
 
   /**
    * 導航到規則指定的頁面

@@ -103,6 +103,7 @@ export default function RootLayout() {
             <Stack.Screen name="pending-approval" options={{ headerShown: false }} />
             <Stack.Screen name="admin-exclusions" options={{ headerShown: false }} />
             <Stack.Screen name="sos" options={{ headerShown: false }} />
+            <Stack.Screen name="favorites-management" options={{ headerShown: false }} />
             <Stack.Screen name="mailbox" options={{ headerShown: false }} />
             <Stack.Screen name="mailbox/[id]" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />

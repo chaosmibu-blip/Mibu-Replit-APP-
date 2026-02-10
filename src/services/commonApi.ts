@@ -483,6 +483,25 @@ class CommonApiService extends ApiBase {
   }
 
   /**
+   * 取消註冊推播 Token
+   *
+   * 登出或關閉推播時呼叫，後端移除該裝置的推播 Token
+   *
+   * @param authToken - 用戶認證 Token
+   * @param params - 推播 Token
+   */
+  async unregisterPushToken(
+    authToken: string,
+    params: { token: string }
+  ): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/api/notifications/unregister-token', {
+      method: 'POST',
+      headers: this.authHeaders(authToken),
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
    * 全部標記已讀
    *
    * 將所有通知標記為已讀

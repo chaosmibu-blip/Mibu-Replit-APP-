@@ -339,6 +339,8 @@ class ApiService {
   getSosLink = commonApi.getSosLink.bind(commonApi);
   /** 註冊推播 Token */
   registerPushToken = commonApi.registerPushToken.bind(commonApi);
+  /** 取消註冊推播 Token */
+  unregisterPushToken = commonApi.unregisterPushToken.bind(commonApi);
 
   // ============ Economy 經濟系統 (Phase 5) ============
 
