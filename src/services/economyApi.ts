@@ -15,20 +15,17 @@
  * - GET  /api/user/perks                    - 取得用戶權益資訊
  * - GET  /api/user/specialist/eligibility   - 取得策劃師申請資格
  *
- * 成就與任務:
- * - GET  /api/user/achievements             - 取得成就列表
- * - POST /api/user/achievements/:id/claim   - 領取成就獎勵
+ * 每日任務（HomeScreen 用，尚未遷移到 rulesApi）:
  * - GET  /api/user/daily-tasks              - 取得每日任務列表
- * - POST /api/user/daily-tasks/:id/complete - 領取每日任務獎勵
+ *
+ * 已遷移到 rulesApi（#043 統一規則引擎）:
+ * - 成就列表 → GET /api/rules?type=achievement
+ * - 領取獎勵 → POST /api/rules/:id/claim
  *
  */
 import { ApiBase } from './base';
 import {
-  AchievementsResponse,
-  AchievementCategory,
-  ClaimAchievementResponse,
   DailyTasksResponse,
-  CompleteDailyTaskResponse,
   UserCoinsResponse,
   UserPerksResponse,
   CoinHistoryResponse,
@@ -107,49 +104,7 @@ class EconomyApiService extends ApiBase {
     });
   }
 
-  /**
-   * 取得成就列表
-   *
-   * 支援依類別篩選和只顯示已解鎖的成就
-   *
-   * @param token - JWT Token
-   * @param params - 篩選參數
-   * @param params.category - 成就類別
-   * @param params.unlockedOnly - 是否只顯示已解鎖
-   * @returns 成就列表
-   */
-  async getAchievements(
-    token: string,
-    params?: { category?: AchievementCategory; unlockedOnly?: boolean }
-  ): Promise<AchievementsResponse> {
-    // 組裝查詢參數
-    const query = new URLSearchParams();
-    if (params?.category) query.append('category', params.category);
-    if (params?.unlockedOnly) query.append('unlockedOnly', 'true');
-
-    const queryString = query.toString();
-    const endpoint = `/api/user/achievements${queryString ? `?${queryString}` : ''}`;
-
-    return this.request<AchievementsResponse>(endpoint, {
-      headers: this.authHeaders(token),
-    });
-  }
-
-  /**
-   * 領取成就獎勵
-   *
-   * 成就解鎖後，用戶需手動領取獎勵
-   *
-   * @param token - JWT Token
-   * @param achievementId - 成就 ID
-   * @returns 領取結果和獎勵內容
-   */
-  async claimAchievement(token: string, achievementId: string): Promise<ClaimAchievementResponse> {
-    return this.request<ClaimAchievementResponse>(`/api/user/achievements/${achievementId}/claim`, {
-      method: 'POST',
-      headers: this.authHeaders(token),
-    });
-  }
+  // #043: getAchievements / claimAchievement 已遷移到 rulesApi，舊端點已由後端移除
 
   /**
    * 申請成為策劃師
@@ -197,24 +152,7 @@ class EconomyApiService extends ApiBase {
     });
   }
 
-  /**
-   * 領取每日任務獎勵
-   *
-   * 完成任務後，領取對應的經驗值獎勵
-   *
-   * @param token - JWT Token
-   * @param taskId - 任務 ID
-   * @returns 領取結果和獲得的經驗值
-   */
-  async completeDailyTask(token: string, taskId: number): Promise<CompleteDailyTaskResponse> {
-    return this.request<CompleteDailyTaskResponse>(
-      `/api/user/daily-tasks/${taskId}/complete`,
-      {
-        method: 'POST',
-        headers: this.authHeaders(token),
-      }
-    );
-  }
+  // #043: completeDailyTask 已遷移到 rulesApi.claimReward()，舊端點已由後端移除
 }
 
 // ============ 匯出 ============

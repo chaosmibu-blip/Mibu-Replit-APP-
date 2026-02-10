@@ -342,10 +342,7 @@ class ApiService {
 
   // ============ Economy 經濟系統 (Phase 5) ============
 
-  /** 取得成就列表 */
-  getAchievements = economyApi.getAchievements.bind(economyApi);
-  /** 領取成就獎勵 */
-  claimAchievement = economyApi.claimAchievement.bind(economyApi);
+  // #043: getAchievements / claimAchievement 已遷移到 rulesApi
   /** 申請成為策劃師 */
   applySpecialist = economyApi.applySpecialist.bind(economyApi);
 
