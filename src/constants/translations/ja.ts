@@ -1123,6 +1123,44 @@ const ja: Record<string, string> = {
     home_titleTraveler: 'トラベラー',
     home_titleExplorer: 'エクスプローラー',
     home_titleNewbie: 'ビギナー',
+
+    // ========== Mailbox (#045) ==========
+    mailbox_title: 'Inbox', /* TODO: ja */
+    mailbox_empty: 'No mail yet', /* TODO: ja */
+    mailbox_emptyDesc: 'System rewards and promo code prizes will appear here', /* TODO: ja */
+    mailbox_tabUnclaimed: 'Unclaimed', /* TODO: ja */
+    mailbox_tabClaimed: 'Claimed', /* TODO: ja */
+    mailbox_tabExpired: 'Expired', /* TODO: ja */
+    mailbox_claim: 'Claim', /* TODO: ja */
+    mailbox_claimAll: 'Claim All', /* TODO: ja */
+    mailbox_claimSuccess: 'Claimed!', /* TODO: ja */
+    mailbox_claimFailed: 'Claim failed', /* TODO: ja */
+    mailbox_claimPartial: 'Some rewards failed to claim', /* TODO: ja */
+    mailbox_claimAllSuccess: 'Claimed {count} items', /* TODO: ja */
+    mailbox_claimAllFailed: 'Partial failure ({success} claimed, {failed} failed)', /* TODO: ja */
+    mailbox_loadFailed: 'Load failed', /* TODO: ja */
+    mailbox_loadFailedDesc: 'Unable to load inbox. Please try again later', /* TODO: ja */
+    mailbox_rewards: 'Rewards', /* TODO: ja */
+    mailbox_source: 'Source', /* TODO: ja */
+    mailbox_sourcePromo: 'Promo Code', /* TODO: ja */
+    mailbox_sourceAdmin: 'System Notice', /* TODO: ja */
+    mailbox_sourceSystem: 'System Reward', /* TODO: ja */
+    mailbox_sourceEvent: 'Event Reward', /* TODO: ja */
+    mailbox_expiresAt: 'Expires {date}', /* TODO: ja */
+    mailbox_expired: 'Expired', /* TODO: ja */
+    mailbox_claimed: 'Claimed', /* TODO: ja */
+    mailbox_promoCode: 'Promo Code', /* TODO: ja */
+    mailbox_promoPlaceholder: 'Enter promo code', /* TODO: ja */
+    mailbox_promoRedeem: 'Redeem', /* TODO: ja */
+    mailbox_promoSuccess: 'Redeemed! Rewards added to inbox', /* TODO: ja */
+    mailbox_promoFailed: 'Redeem failed', /* TODO: ja */
+    mailbox_promoEmpty: 'Please enter a promo code', /* TODO: ja */
+    mailbox_rewardCoins: '{amount} coins', /* TODO: ja */
+    mailbox_rewardItem: 'Shop item', /* TODO: ja */
+    mailbox_rewardCoupon: 'Coupon', /* TODO: ja */
+    mailbox_rewardPlacePack: 'Place pack', /* TODO: ja */
+    mailbox_rewardPerk: 'Perk', /* TODO: ja */
+    mailbox_unreadCount: '{count} unread', /* TODO: ja */
 };
 
 export default ja;

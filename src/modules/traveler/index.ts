@@ -16,6 +16,8 @@ export { CrowdfundingDetailScreen } from './screens/CrowdfundingDetailScreen';
 export { ReferralScreen } from './screens/ReferralScreen';
 export { ContributionScreen } from './screens/ContributionScreen';
 export { FavoritesScreen } from './screens/FavoritesScreen';
+export { MailboxScreen } from './screens/MailboxScreen';
+export { MailboxDetailScreen } from './screens/MailboxDetailScreen';
 
 // Components - 元件
 export { CouponWinAnimation, CouponPreviewCard } from './components';

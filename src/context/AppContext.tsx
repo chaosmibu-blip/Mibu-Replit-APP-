@@ -29,6 +29,7 @@ import { pushNotificationService } from '../services/pushNotificationService';
 import { preloadService } from '../services/preloadService';
 import { disconnectSocket } from '../services/socket';
 import { setOnUnauthorized, resetUnauthorizedFlag } from '../services/base';
+import { mailboxApi } from '../services/mailboxApi';
 
 // ============ Token 安全儲存工具 ============
 // iOS/Android 使用 SecureStore（加密儲存）
@@ -138,6 +139,7 @@ const defaultState: AppState = {
   view: 'home',
   isAuthenticated: false,
   unreadItemCount: 0,
+  unreadMailboxCount: 0,
 };
 
 /** Context 實例 */
@@ -484,9 +486,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const token = await loadToken();
       if (!token) return;
 
-      const data = await apiService.getUnreadCounts(token);
-      const unreadCount = data.unread?.itembox || 0;
-      setState(prev => ({ ...prev, unreadItemCount: unreadCount }));
+      // 同時拉取物品箱和信箱未讀數量
+      const [unreadData, mailboxData] = await Promise.allSettled([
+        apiService.getUnreadCounts(token),
+        mailboxApi.getUnreadCount(token),
+      ]);
+
+      const unreadCount = unreadData.status === 'fulfilled'
+        ? (unreadData.value.unread?.itembox || 0)
+        : 0;
+      const mailboxCount = mailboxData.status === 'fulfilled'
+        ? (mailboxData.value.unreadCount || 0)
+        : 0;
+
+      setState(prev => ({
+        ...prev,
+        unreadItemCount: unreadCount,
+        unreadMailboxCount: mailboxCount,
+      }));
     } catch (error) {
       // 靜默處理錯誤，此功能非核心功能
     }

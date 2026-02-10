@@ -66,4 +66,5 @@ export interface AppState {
   view: AppView;                   // 當前主視圖
   isAuthenticated: boolean;        // 是否已認證
   unreadItemCount: number;         // 未讀物品數量（用於小紅點）
+  unreadMailboxCount: number;      // 信箱未讀數量（#045）
 }

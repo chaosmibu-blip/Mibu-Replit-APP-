@@ -1123,6 +1123,44 @@ const ko: Record<string, string> = {
     home_titleTraveler: 'Traveler', /* TODO: ko */
     home_titleExplorer: 'Explorer', /* TODO: ko */
     home_titleNewbie: 'Newbie', /* TODO: ko */
+
+    // ========== Mailbox (#045) ==========
+    mailbox_title: 'Inbox', /* TODO: ko */
+    mailbox_empty: 'No mail yet', /* TODO: ko */
+    mailbox_emptyDesc: 'System rewards and promo code prizes will appear here', /* TODO: ko */
+    mailbox_tabUnclaimed: 'Unclaimed', /* TODO: ko */
+    mailbox_tabClaimed: 'Claimed', /* TODO: ko */
+    mailbox_tabExpired: 'Expired', /* TODO: ko */
+    mailbox_claim: 'Claim', /* TODO: ko */
+    mailbox_claimAll: 'Claim All', /* TODO: ko */
+    mailbox_claimSuccess: 'Claimed!', /* TODO: ko */
+    mailbox_claimFailed: 'Claim failed', /* TODO: ko */
+    mailbox_claimPartial: 'Some rewards failed to claim', /* TODO: ko */
+    mailbox_claimAllSuccess: 'Claimed {count} items', /* TODO: ko */
+    mailbox_claimAllFailed: 'Partial failure ({success} claimed, {failed} failed)', /* TODO: ko */
+    mailbox_loadFailed: 'Load failed', /* TODO: ko */
+    mailbox_loadFailedDesc: 'Unable to load inbox. Please try again later', /* TODO: ko */
+    mailbox_rewards: 'Rewards', /* TODO: ko */
+    mailbox_source: 'Source', /* TODO: ko */
+    mailbox_sourcePromo: 'Promo Code', /* TODO: ko */
+    mailbox_sourceAdmin: 'System Notice', /* TODO: ko */
+    mailbox_sourceSystem: 'System Reward', /* TODO: ko */
+    mailbox_sourceEvent: 'Event Reward', /* TODO: ko */
+    mailbox_expiresAt: 'Expires {date}', /* TODO: ko */
+    mailbox_expired: 'Expired', /* TODO: ko */
+    mailbox_claimed: 'Claimed', /* TODO: ko */
+    mailbox_promoCode: 'Promo Code', /* TODO: ko */
+    mailbox_promoPlaceholder: 'Enter promo code', /* TODO: ko */
+    mailbox_promoRedeem: 'Redeem', /* TODO: ko */
+    mailbox_promoSuccess: 'Redeemed! Rewards added to inbox', /* TODO: ko */
+    mailbox_promoFailed: 'Redeem failed', /* TODO: ko */
+    mailbox_promoEmpty: 'Please enter a promo code', /* TODO: ko */
+    mailbox_rewardCoins: '{amount} coins', /* TODO: ko */
+    mailbox_rewardItem: 'Shop item', /* TODO: ko */
+    mailbox_rewardCoupon: 'Coupon', /* TODO: ko */
+    mailbox_rewardPlacePack: 'Place pack', /* TODO: ko */
+    mailbox_rewardPerk: 'Perk', /* TODO: ko */
+    mailbox_unreadCount: '{count} unread', /* TODO: ko */
 };
 
 export default ko;

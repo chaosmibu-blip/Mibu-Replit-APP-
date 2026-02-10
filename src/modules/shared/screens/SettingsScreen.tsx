@@ -281,6 +281,29 @@ export function SettingsScreen() {
         },
       ],
     },
+    // 信箱群組（#045 統一收件箱）
+    {
+      title: t.mailbox_title,
+      items: [
+        {
+          icon: 'mail-outline',
+          label: t.mailbox_title,
+          action: () => router.push('/mailbox' as any),
+          hasArrow: true,
+          badge: state.unreadMailboxCount > 0 ? String(state.unreadMailboxCount) : undefined,
+          iconBg: '#EEF2FF',
+          iconColor: '#6366f1',
+        },
+        {
+          icon: 'ticket-outline',
+          label: t.mailbox_promoCode,
+          action: () => router.push('/mailbox' as any),
+          hasArrow: true,
+          iconBg: '#FFF7ED',
+          iconColor: '#EA580C',
+        },
+      ],
+    },
     // 偏好設定群組（我的最愛/黑名單 + 推播通知）
     {
       title: t.preferences,
