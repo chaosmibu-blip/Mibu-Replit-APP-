@@ -80,44 +80,6 @@ export interface SpecialistEligibilityResponse {
 // ============ 等級系統已廢除，改用金幣系統 ============
 // ============ 成就系統已遷移至 rules.ts（#043 規則引擎） ============
 
-// ============ 每日任務系統 ============
-
-/**
- * 每日任務
- *
- * 符合後端 #009 規格的每日任務資料結構
- */
-export interface DailyTask {
-  id: number;                 // 任務 ID
-  code: string;               // 任務代碼
-  nameZh: string;             // 任務名稱（中文）
-  nameEn?: string;            // 任務名稱（英文）
-  description: string;        // 任務描述
-  icon?: string;              // 圖示
-  coinReward: number;         // 金幣獎勵
-  targetCount: number;        // 目標次數
-  triggerEvent: string;       // 觸發事件
-  progress: {                 // 任務進度
-    currentCount: number;     // 當前完成次數
-    isCompleted: boolean;     // 是否已完成
-    rewardClaimed: boolean;   // 是否已領取獎勵
-    claimedAt?: string;       // 領取時間（ISO 8601）
-  };
-}
-
-/**
- * 每日任務列表回應
- * GET /api/economy/daily-tasks
- */
-export interface DailyTasksResponse {
-  tasks: DailyTask[];         // 任務列表
-  summary: {
-    totalTasks: number;       // 總任務數
-    completedTasks: number;   // 已完成任務數
-    claimedRewards: number;   // 已領取獎勵數
-    pendingRewards: number;   // 待領取獎勵數
-    totalCoinsAvailable: number; // 可獲得的總金幣
-  };
-}
-
-// CompleteDailyTaskResponse 已遷移至 rules.ts（#043 規則引擎 claimReward）
+// ============ 每日任務系統已遷移至 rules.ts（#043 規則引擎） ============
+// DailyTask / DailyTasksResponse / CompleteDailyTaskResponse 全部由 RuleItem 取代
+// HomeScreen 改用 rulesApi.getRules({ type: 'quest', resetType: 'daily' })

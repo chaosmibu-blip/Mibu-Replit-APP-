@@ -15,17 +15,14 @@
  * - GET  /api/user/perks                    - 取得用戶權益資訊
  * - GET  /api/user/specialist/eligibility   - 取得策劃師申請資格
  *
- * 每日任務（HomeScreen 用，尚未遷移到 rulesApi）:
- * - GET  /api/user/daily-tasks              - 取得每日任務列表
- *
  * 已遷移到 rulesApi（#043 統一規則引擎）:
  * - 成就列表 → GET /api/rules?type=achievement
+ * - 每日任務 → GET /api/rules?type=quest&resetType=daily
  * - 領取獎勵 → POST /api/rules/:id/claim
  *
  */
 import { ApiBase } from './base';
 import {
-  DailyTasksResponse,
   UserCoinsResponse,
   UserPerksResponse,
   CoinHistoryResponse,
@@ -138,21 +135,7 @@ class EconomyApiService extends ApiBase {
     );
   }
 
-  /**
-   * 取得每日任務列表
-   *
-   * 每日任務會在每天重置
-   *
-   * @param token - JWT Token
-   * @returns 每日任務列表和完成狀態
-   */
-  async getDailyTasks(token: string): Promise<DailyTasksResponse> {
-    return this.request<DailyTasksResponse>('/api/user/daily-tasks', {
-      headers: this.authHeaders(token),
-    });
-  }
-
-  // #043: completeDailyTask 已遷移到 rulesApi.claimReward()，舊端點已由後端移除
+  // #043: getDailyTasks / completeDailyTask 已遷移到 rulesApi，舊端點已由後端移除
 }
 
 // ============ 匯出 ============

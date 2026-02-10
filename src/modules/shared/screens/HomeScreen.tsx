@@ -11,7 +11,7 @@
  * - eventApi.getHomeEvents() - 取得首頁活動
  * - economyApi.getCoins() - 取得金幣資訊（#039 重構）
  * - economyApi.getPerks() - 取得權益資訊（#039 重構）
- * - economyApi.getDailyTasks() - 取得每日任務進度
+ * - rulesApi.getRules({ type: 'quest', resetType: 'daily' }) - 取得每日任務進度（#043）
  *
  * @updated 2026-02-05 #039 經濟系統重構（等級 → 金幣）
  */
@@ -40,6 +40,7 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
 import { economyApi } from '../../../services/economyApi';
+import { rulesApi } from '../../../services/rulesApi';
 import { avatarService } from '../../../services/avatarService';
 import { AvatarPreset } from '../../../types/asset';
 
@@ -207,14 +208,26 @@ export function HomeScreen() {
           // 忽略錯誤，使用預設值
         }
 
-        // 載入每日任務進度
+        // 載入每日任務進度（#043 改用規則引擎）
         try {
-          const dailyTasksRes = await economyApi.getDailyTasks(token);
-          if (dailyTasksRes.summary) {
+          const rulesRes = await rulesApi.getRules(token, { type: 'quest', resetType: 'daily' });
+          if (rulesRes.quests) {
+            // 從規則引擎的 quests 統計每日任務摘要
+            const questItems = rulesRes.quests.items || [];
+            const completedCount = questItems.filter(
+              q => q.status === 'completed' || q.status === 'claimed'
+            ).length;
+            // 已領取的任務中，累計金幣獎勵
+            const earnedCoins = questItems
+              .filter(q => q.status === 'claimed')
+              .reduce((sum, q) => {
+                const coinReward = q.rewards?.find(r => r.type === 'coins');
+                return sum + (coinReward?.amount ?? 0);
+              }, 0);
             setDailyTask({
-              completed: dailyTasksRes.summary.completedTasks || 0,
-              total: dailyTasksRes.summary.totalTasks || 5,
-              earnedCoins: dailyTasksRes.summary.claimedRewards || 0,
+              completed: completedCount,
+              total: rulesRes.quests.total || questItems.length || 5,
+              earnedCoins,
             });
           }
         } catch {

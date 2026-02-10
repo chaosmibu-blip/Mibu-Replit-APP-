@@ -47,11 +47,12 @@ class RulesApiService extends ApiBase {
    */
   async getRules(
     token: string,
-    params?: { type?: RuleType; status?: RuleStatus }
+    params?: { type?: RuleType; status?: RuleStatus; resetType?: 'none' | 'daily' | 'weekly' }
   ): Promise<RulesListResponse> {
     const query = new URLSearchParams();
     if (params?.type) query.append('type', params.type);
     if (params?.status) query.append('status', params.status);
+    if (params?.resetType) query.append('resetType', params.resetType);
 
     const queryString = query.toString();
     const endpoint = `/api/rules${queryString ? `?${queryString}` : ''}`;
