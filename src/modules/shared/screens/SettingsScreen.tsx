@@ -157,7 +157,7 @@ export function SettingsScreen() {
             [
               { text: t.cancel, style: 'cancel' },
               {
-                text: t.settings_language,  // 借用「設定」文字
+                text: t.settings_openSystemSettings,
                 onPress: () => Linking.openSettings(),
               },
             ],
@@ -351,11 +351,11 @@ export function SettingsScreen() {
     },
     // 偏好設定群組（我的最愛/黑名單 + 推播通知）
     {
-      title: t.preferences,
+      title: t.settings_preferences,
       items: [
         {
           icon: 'heart-outline',
-          label: t.favoritesBlacklist,
+          label: t.settings_favoritesBlacklist,
           action: () => router.push('/favorites-management' as any),
           hasArrow: true,
           iconBg: '#FEE2E2',
@@ -363,7 +363,7 @@ export function SettingsScreen() {
         },
         {
           icon: 'notifications-outline',
-          label: t.pushNotifications,
+          label: t.settings_pushNotifications,
           toggle: true,
           checked: notifications,
           onChange: handleToggleNotifications,
@@ -375,7 +375,7 @@ export function SettingsScreen() {
     },
     // 更多功能群組（帳號綁定 + 社群貢獻）
     {
-      title: t.moreFeatures,
+      title: t.settings_moreFeatures,
       items: [
         {
           icon: 'link-outline',
@@ -387,7 +387,7 @@ export function SettingsScreen() {
         },
         {
           icon: 'hand-left-outline',
-          label: t.contributions,
+          label: t.settings_contributions,
           action: () => router.push('/contribution' as any),
           hasArrow: true,
           iconBg: '#F0FDF4',
@@ -543,7 +543,7 @@ export function SettingsScreen() {
 
       {/* ========== 設定群組列表 ========== */}
       {settingGroups.map((group, groupIndex) => (
-        <View key={group.title} style={styles.section}>
+        <View key={`settings-group-${groupIndex}`} style={styles.section}>
           <Text style={styles.sectionTitle}>{group.title}</Text>
           <View style={styles.card}>
             {group.items.map((item, index) =>

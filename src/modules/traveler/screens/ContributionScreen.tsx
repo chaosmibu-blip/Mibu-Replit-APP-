@@ -117,17 +117,17 @@ export function ContributionScreen() {
 
       if (activeTab === 'report') {
         const data = await contributionApi.getMyReports(token);
-        setMyReports(data.reports);
+        setMyReports(data.reports ?? []);
       } else if (activeTab === 'suggest') {
         const data = await contributionApi.getMySuggestions(token);
-        setMySuggestions(data.suggestions);
+        setMySuggestions(data.suggestions ?? []);
       } else if (activeTab === 'vote') {
         const [votesData, suggestionsData] = await Promise.all([
           contributionApi.getPendingVotes(token),
           contributionApi.getPendingSuggestions(token),
         ]);
-        setPendingVotes(votesData.places);
-        setPendingSuggestions(suggestionsData.suggestions);
+        setPendingVotes(votesData.places ?? []);
+        setPendingSuggestions(suggestionsData.suggestions ?? []);
       }
     } catch (error) {
       console.error('Failed to load contribution data:', error);

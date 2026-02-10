@@ -1015,6 +1015,12 @@ const ja: Record<string, string> = {
     settings_itineraries: '旅程',
     settings_favorites: 'お気に入り',
     settings_achievements: '実績',
+    settings_preferences: '環境設定',
+    settings_favoritesBlacklist: 'お気に入り / ブラックリスト',
+    settings_pushNotifications: 'プッシュ通知',
+    settings_moreFeatures: 'その他の機能',
+    settings_contributions: 'コミュニティ貢献',
+    settings_openSystemSettings: '設定を開く',
     settings_coins: 'コイン',
     settings_balance: '残高',
     settings_unknownError: 'An unknown error occurred', /* TODO: ja */

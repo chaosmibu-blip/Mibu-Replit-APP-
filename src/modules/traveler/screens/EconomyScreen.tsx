@@ -157,14 +157,22 @@ export function EconomyScreen() {
         return;
       }
 
-      // 並行呼叫：規則引擎 + 權益
-      const [rulesResponse, perksResponse] = await Promise.all([
+      // 並行呼叫：規則引擎 + 權益（各自獨立，一個失敗不影響另一個）
+      const [rulesResult, perksResult] = await Promise.allSettled([
         rulesApi.getRules(token),
         economyApi.getPerks(token),
       ]);
 
-      setRulesData(rulesResponse);
-      setPerksInfo(perksResponse);
+      if (rulesResult.status === 'fulfilled') {
+        setRulesData(rulesResult.value);
+      } else {
+        console.warn('Failed to load rules:', rulesResult.reason);
+      }
+      if (perksResult.status === 'fulfilled') {
+        setPerksInfo(perksResult.value);
+      } else {
+        console.warn('Failed to load perks:', perksResult.reason);
+      }
     } catch (error) {
       console.error('Failed to load economy data:', error);
       Alert.alert(t.economy_loadFailed, t.economy_loadFailedDesc);

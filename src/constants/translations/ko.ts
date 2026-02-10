@@ -1015,6 +1015,12 @@ const ko: Record<string, string> = {
     settings_itineraries: '일정',
     settings_favorites: '즐겨찾기',
     settings_achievements: '업적',
+    settings_preferences: '환경설정',
+    settings_favoritesBlacklist: '즐겨찾기 / 차단목록',
+    settings_pushNotifications: '푸시 알림',
+    settings_moreFeatures: '추가 기능',
+    settings_contributions: '커뮤니티 기여',
+    settings_openSystemSettings: '설정 열기',
     settings_coins: '코인',
     settings_balance: '잔액',
     settings_unknownError: 'An unknown error occurred', /* TODO: ko */
