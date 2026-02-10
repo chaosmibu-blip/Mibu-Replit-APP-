@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mibu",
     "slug": "mibu-travel",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mibu",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.chaos.mibu",
-      "buildNumber": "8",
+      "buildNumber": "1",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Mibu 需要您的位置，以便在扭蛋時自動鎖定您所在的縣市，並為您導航至景點。",
         "ITSAppUsesNonExemptEncryption": false,
