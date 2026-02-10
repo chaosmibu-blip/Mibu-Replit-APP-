@@ -24,14 +24,19 @@
  * - /admin-exclusions - 管理員：全域排除管理
  * - /login - 登出後
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Linking, Switch, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useApp } from '../../../context/AppContext';
 import { Language } from '../../../types';
 import { apiService } from '../../../services/api';
+import { pushNotificationService } from '../../../services/pushNotificationService';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+
+/** AsyncStorage key: 推播通知開關 */
+const PUSH_NOTIFICATION_KEY = 'push_notifications_enabled';
 
 // ============================================================
 // 常數定義
@@ -95,8 +100,40 @@ export function SettingsScreen() {
   // 語言選擇 Modal
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
-  // 推播通知開關狀態
+  // 推播通知開關狀態（從 AsyncStorage 讀取）
   const [notifications, setNotifications] = useState(true);
+
+  // 讀取通知偏好設定
+  useEffect(() => {
+    AsyncStorage.getItem(PUSH_NOTIFICATION_KEY).then(value => {
+      // 預設開啟（null 或 'true'）
+      if (value === 'false') setNotifications(false);
+    });
+  }, []);
+
+  /**
+   * 切換推播通知
+   * 連動 pushNotificationService 註冊/取消註冊 Token
+   */
+  const handleToggleNotifications = useCallback(async (enabled: boolean) => {
+    setNotifications(enabled);
+    await AsyncStorage.setItem(PUSH_NOTIFICATION_KEY, String(enabled));
+
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      if (enabled) {
+        // 開啟：重新註冊推播 Token
+        await pushNotificationService.registerTokenWithBackend(token);
+      } else {
+        // 關閉：取消註冊推播 Token
+        await pushNotificationService.unregisterToken(token);
+      }
+    } catch (error) {
+      console.error('Toggle push notification failed:', error);
+    }
+  }, [getToken]);
 
   // 當前選中的語言
   const currentLang = LANGUAGE_OPTIONS.find(l => l.code === state.language) || LANGUAGE_OPTIONS[0];
@@ -230,75 +267,65 @@ export function SettingsScreen() {
         },
       ],
     },
-    // [HIDDEN] 送審隱藏 #2 #3 探索群組（解鎖全球地圖 + 等級與成就）
-    // {
-    //   title: t.explore,
-    //   items: [
-    //     {
-    //       icon: 'map-outline',
-    //       label: t.unlockWorldMap,
-    //       action: () => router.push('/map' as any),
-    //       hasArrow: true,
-    //       badge: t.unlocked1,
-    //       iconBg: '#FEF3C7',
-    //       iconColor: '#D97706',
-    //     },
-    //     {
-    //       icon: 'trophy-outline',
-    //       label: t.levelAchievements,
-    //       action: () => router.push('/economy' as any),
-    //       hasArrow: true,
-    //       badge: '2/10',
-    //       iconBg: '#FFF3D4',
-    //       iconColor: '#D4A24C',
-    //     },
-    //   ],
-    // },
-    // [HIDDEN] 送審隱藏 #4 #5 偏好設定群組（我的最愛/黑名單 + 推播通知）
-    // {
-    //   title: t.preferences,
-    //   items: [
-    //     {
-    //       icon: 'heart-outline',
-    //       label: t.favoritesBlacklist,
-    //       action: () => router.push('/favorites-management' as any),
-    //       hasArrow: true,
-    //       iconBg: '#FEE2E2',
-    //       iconColor: MibuBrand.tierSP,
-    //     },
-    //     {
-    //       icon: 'notifications-outline',
-    //       label: t.pushNotifications,
-    //       toggle: true,
-    //       checked: notifications,
-    //       onChange: setNotifications,
-    //       iconBg: '#FFF7ED',
-    //       iconColor: '#EA580C',
-    //     },
-    //   ],
-    // },
-    // [HIDDEN] 送審隱藏 #6 #7 更多功能群組（帳號綁定 + 社群貢獻）
-    // {
-    //   title: t.moreFeatures,
-    //   items: [
-    //     {
-    //       icon: 'link-outline',
-    //       label: t.auth_linkedAccounts,
-    //       action: () => router.push('/account' as any),
-    //       hasArrow: true,
-    //       iconBg: '#EEF2FF',
-    //       iconColor: '#6366f1',
-    //     },
-    //     {
-    //       icon: 'hand-left-outline',
-    //       label: t.contributions,
-    //       action: () => router.push('/contribution' as any),
-    //       hasArrow: true,
-    //       iconBg: '#F0FDF4',
-    //       iconColor: '#16a34a',
-    //     },
-    //   ],
-    // },
+    // 探索群組（成就與任務 — #043 規則引擎）
+    {
+      title: t.explore,
+      items: [
+        {
+          icon: 'trophy-outline',
+          label: t.levelAchievements,
+          action: () => router.push('/economy' as any),
+          hasArrow: true,
+          iconBg: '#FFF3D4',
+          iconColor: '#D4A24C',
+        },
+      ],
+    },
+    // 偏好設定群組（我的最愛/黑名單 + 推播通知）
+    {
+      title: t.preferences,
+      items: [
+        {
+          icon: 'heart-outline',
+          label: t.favoritesBlacklist,
+          action: () => router.push('/favorites-management' as any),
+          hasArrow: true,
+          iconBg: '#FEE2E2',
+          iconColor: MibuBrand.tierSP,
+        },
+        {
+          icon: 'notifications-outline',
+          label: t.pushNotifications,
+          toggle: true,
+          checked: notifications,
+          onChange: handleToggleNotifications,
+          iconBg: '#FFF7ED',
+          iconColor: '#EA580C',
+        },
+      ],
+    },
+    // 更多功能群組（帳號綁定 + 社群貢獻）
+    {
+      title: t.moreFeatures,
+      items: [
+        {
+          icon: 'link-outline',
+          label: t.auth_linkedAccounts,
+          action: () => router.push('/account' as any),
+          hasArrow: true,
+          iconBg: '#EEF2FF',
+          iconColor: '#6366f1',
+        },
+        {
+          icon: 'hand-left-outline',
+          label: t.contributions,
+          action: () => router.push('/contribution' as any),
+          hasArrow: true,
+          iconBg: '#F0FDF4',
+          iconColor: '#16a34a',
+        },
+      ],
+    },
     {
       title: t.settings_about,
       items: [
