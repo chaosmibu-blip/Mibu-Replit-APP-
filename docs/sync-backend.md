@@ -6,6 +6,37 @@
 
 ## 最新回報
 
+### 2026-02-10 📋 請求：Token Refresh API
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | APP 端 1000 DAU 架構審查 |
+| 狀態 | 🟡 等後端提供 |
+| 優先級 | 中（有 401 攔截器兜底，但用戶體驗不夠無縫） |
+
+**需求說明**
+- 目前 Token 過期後，401 攔截器會自動登出用戶，需重新登入
+- 理想做法：Token 快過期時自動 refresh，用戶無感
+- 需要後端提供 `POST /api/auth/refresh` endpoint
+
+**建議 API 規格**
+```
+POST /api/auth/refresh
+Authorization: Bearer {expiring-token}
+
+Response:
+{
+  "token": "new-jwt-token",
+  "expiresIn": 86400
+}
+```
+
+**前端已準備**
+- `base.ts` 已有 401 攔截器（`setOnUnauthorized`），可擴展為先嘗試 refresh 再登出
+- 收到 refresh endpoint 後，前端預估 1-2 小時可完成串接
+
+---
+
 ### 2026-02-08 🔧 技術債：多語系 isZh 全面遷移到 t 字典
 
 | 項目 | 內容 |

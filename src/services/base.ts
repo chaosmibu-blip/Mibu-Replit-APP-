@@ -13,12 +13,12 @@
  * ============ 主要功能 ============
  * - ApiBase: 所有 API 服務的基底類別
  * - ApiError: 統一的 API 錯誤類別
- * - request(): 通用 HTTP 請求方法（含超時機制 + 401 攔截）
+ * - request(): 通用 HTTP 請求方法（含超時 + 401 攔截 + 智慧重試）
  * - authHeaders(): 生成 Bearer Token 認證標頭
  * - setOnUnauthorized(): 註冊 401 回調（由 AppContext 掛載）
  * - resetUnauthorizedFlag(): 登入後重置防重入旗標
  *
- * 更新日期：2026-02-10（加入統一 401 攔截器）
+ * 更新日期：2026-02-10（401 攔截器 + 智慧重試機制）
  */
 import { API_BASE_URL } from '../constants/translations';
 
@@ -150,9 +150,10 @@ export class ApiBase {
    * 統一處理所有 API 請求，包含：
    * - 自動設定 Content-Type 和 Accept 標頭
    * - JSON 回應解析
-   * - HTTP 錯誤狀態碼處理
+   * - HTTP 錯誤狀態碼處理 + 401 統一攔截
    * - 錯誤訊息提取
    * - AbortController 超時機制（預設 30 秒）
+   * - 智慧重試（網路錯誤全方法重試、5xx 只重試 GET、最多 1 次）
    *
    * @template T - 回應資料的型別
    * @param endpoint - API 端點路徑（如 /api/auth/login）
@@ -171,75 +172,116 @@ export class ApiBase {
    * const result = await this.request<AiResult>('/api/ai/generate', opts, 120_000);
    */
   protected async request<T>(endpoint: string, options: RequestInit = {}, timeout?: number): Promise<T> {
-    // 組合完整 URL
     const url = `${this.baseUrl}${endpoint}`;
-
-    // 建立超時控制器
     const timeoutMs = timeout ?? this.defaultTimeout;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const method = (options.method || 'GET').toUpperCase();
+    const isGet = method === 'GET';
 
-    try {
-      // 發送請求，自動加入 JSON 標頭 + 超時信號
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          ...options.headers,
-        },
-      });
+    // 重試策略：網路錯誤全部重試、5xx 只重試 GET、其餘不重試
+    const maxAttempts = 2; // 最多 2 次（1 次原始 + 1 次重試）
 
-      // 嘗試解析 JSON 回應
-      let data: T | ApiErrorResponse;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      // 每次嘗試建立獨立的超時控制器
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
       try {
-        data = await response.json();
-      } catch {
-        // 無法解析 JSON（可能是 HTML 錯誤頁面或空回應）
+        // 發送請求，自動加入 JSON 標頭 + 超時信號
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...options.headers,
+          },
+        });
+
+        // 嘗試解析 JSON 回應
+        let data: T | ApiErrorResponse;
+        try {
+          data = await response.json();
+        } catch {
+          // 無法解析 JSON（可能是 HTML 錯誤頁面或空回應）
+          if (!response.ok) {
+            // 401 未授權：觸發統一登出
+            if (response.status === 401 && _onUnauthorized && !_unauthorizedHandled) {
+              _unauthorizedHandled = true;
+              _onUnauthorized();
+            }
+            // 5xx + GET → 重試
+            if (response.status >= 500 && isGet && attempt < maxAttempts) {
+              await this.retryDelay();
+              continue;
+            }
+            throw new ApiError(response.status, `API Error: ${response.status}`);
+          }
+          throw new Error('Invalid JSON response');
+        }
+
+        // 檢查 HTTP 狀態碼
         if (!response.ok) {
-          // 401 未授權：觸發統一登出
+          const errorData = data as ApiErrorResponse;
+          // 嘗試從多個可能的欄位提取錯誤訊息
+          // 不同端點可能使用不同的欄位名稱
+          const serverMessage = errorData.message || errorData.error || errorData.detail || errorData.reason;
+
+          // 401 未授權：觸發統一登出（防重入，多個併發 401 只處理一次）
           if (response.status === 401 && _onUnauthorized && !_unauthorizedHandled) {
             _unauthorizedHandled = true;
             _onUnauthorized();
           }
-          throw new ApiError(response.status, `API Error: ${response.status}`);
-        }
-        throw new Error('Invalid JSON response');
-      }
 
-      // 檢查 HTTP 狀態碼
-      if (!response.ok) {
-        const errorData = data as ApiErrorResponse;
-        // 嘗試從多個可能的欄位提取錯誤訊息
-        // 不同端點可能使用不同的欄位名稱
-        const serverMessage = errorData.message || errorData.error || errorData.detail || errorData.reason;
+          // 5xx + GET → 重試
+          if (response.status >= 500 && isGet && attempt < maxAttempts) {
+            await this.retryDelay();
+            continue;
+          }
 
-        // 401 未授權：觸發統一登出（防重入，多個併發 401 只處理一次）
-        if (response.status === 401 && _onUnauthorized && !_unauthorizedHandled) {
-          _unauthorizedHandled = true;
-          _onUnauthorized();
+          throw new ApiError(
+            response.status,
+            `API Error: ${response.status}`,
+            serverMessage,
+            errorData.code
+          );
         }
 
-        throw new ApiError(
-          response.status,
-          `API Error: ${response.status}`,
-          serverMessage,
-          errorData.code
-        );
-      }
+        return data as T;
+      } catch (error) {
+        // 超時錯誤（AbortError）：不重試，可能已到達 server
+        // 注意：RN 原生環境沒有 DOMException，改用 error.name 判斷（Web + RN 通用）
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new ApiError(0, `請求超時（${timeoutMs / 1000} 秒）`, '網路連線逾時，請稍後再試');
+        }
 
-      return data as T;
-    } catch (error) {
-      // 超時錯誤轉換為 ApiError
-      // 注意：RN 原生環境沒有 DOMException，改用 error.name 判斷（Web + RN 通用）
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new ApiError(0, `請求超時（${timeoutMs / 1000} 秒）`, '網路連線逾時，請稍後再試');
+        // 已處理的 ApiError（4xx 等）：直接拋出不重試
+        if (error instanceof ApiError) {
+          throw error;
+        }
+
+        // 網路錯誤（TypeError: Network request failed）：重試所有方法
+        // 因為請求沒到達 server，重試是安全的
+        if (attempt < maxAttempts) {
+          await this.retryDelay();
+          continue;
+        }
+
+        throw error;
+      } finally {
+        clearTimeout(timeoutId);
       }
-      throw error;
-    } finally {
-      clearTimeout(timeoutId);
     }
+
+    // TypeScript 需要，邏輯上不會執行到這裡
+    throw new Error('Unexpected: retry loop exited without return or throw');
+  }
+
+  /**
+   * 重試等待（1 秒）
+   * @description 網路錯誤或 5xx 重試前的延遲，讓網路或 server 有時間恢復
+   */
+  private retryDelay(): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, 1000));
   }
 
   /**
