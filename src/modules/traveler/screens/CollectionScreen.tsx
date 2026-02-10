@@ -987,10 +987,14 @@ export function CollectionScreen() {
           data={filteredPlaces}
           numColumns={2}
           renderItem={({ item, index }) => renderPlaceCard(item, index, 'grid')}
-          keyExtractor={(item, index) => String(item.id || item.placeId || index)}
+          keyExtractor={(item) => String(item.id || item.placeId)}
           columnWrapperStyle={{ gap: Spacing.md }}
           ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
           refreshControl={refreshControl}
+          removeClippedSubviews={true}
+          windowSize={8}
+          maxToRenderPerBatch={6}
+          initialNumToRender={6}
         />
       </View>
     ) : (

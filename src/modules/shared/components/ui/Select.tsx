@@ -159,6 +159,12 @@ export function Select({ options, value, onChange, placeholder, label, loading, 
                       : footerContent}
                   </View>
                 ) : null}
+                {...(options.length > 50 && {
+                  removeClippedSubviews: true,
+                  windowSize: 10,
+                  maxToRenderPerBatch: 10,
+                  initialNumToRender: 10,
+                })}
               />
             )}
           </View>

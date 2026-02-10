@@ -25,7 +25,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Image,
   Alert,
   Platform,
 } from 'react-native';
@@ -37,6 +36,7 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 import { crowdfundingApi } from '../../../services/crowdfundingApi';
 import { revenueCatService } from '../../../services/revenueCatService';
 import { MibuBrand } from '../../../../constants/Colors';
+import { Image as ExpoImage } from 'expo-image';
 import { CampaignDetail, CampaignReward, CampaignUpdate } from '../../../types/crowdfunding';
 
 // ============================================================
@@ -357,7 +357,7 @@ export function CrowdfundingDetailScreen() {
       >
         {/* Cover Image */}
         {campaign.imageUrl ? (
-          <Image source={{ uri: campaign.imageUrl }} style={styles.coverImage} />
+          <ExpoImage source={{ uri: campaign.imageUrl }} style={styles.coverImage} contentFit="cover" />
         ) : (
           <View style={[styles.coverImage, styles.coverPlaceholder]}>
             <Ionicons name="rocket" size={48} color={MibuBrand.tan} />

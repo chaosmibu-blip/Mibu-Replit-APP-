@@ -33,12 +33,11 @@ import {
   Alert,
   Modal,
   TouchableOpacity,
-  Image,
   Dimensions,
-  FlatList,
   ActivityIndicator,
   Animated,
 } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -708,10 +707,10 @@ export function GachaScreen() {
       >
         {/* 圖片區 */}
         {item.imageUrl ? (
-          <Image
+          <ExpoImage
             source={{ uri: item.imageUrl }}
             style={{ width: '100%', height: 100 }}
-            resizeMode="cover"
+            contentFit="cover"
           />
         ) : (
           <View
