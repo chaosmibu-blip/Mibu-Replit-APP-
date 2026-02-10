@@ -36,6 +36,7 @@ import { contributionApi } from './contributionApi';
 import { eventApi } from './eventApi';
 import { itineraryApi } from './itineraryApi';
 import { rulesApi } from './rulesApi';
+import { mailboxApi } from './mailboxApi';
 
 // ============ Re-export 模組化 API ============
 
@@ -96,6 +97,9 @@ export { assetApi } from './assetApi';
 
 // 規則引擎（#043 統一成就/任務/獎勵）
 export { rulesApi } from './rulesApi';
+
+// 信箱系統（#045 統一收件箱 + 優惠碼）
+export { mailboxApi } from './mailboxApi';
 
 // ============ 統一 API Service（向後兼容） ============
 
@@ -455,6 +459,23 @@ class ApiService {
   getRuleDetail = rulesApi.getRuleDetail.bind(rulesApi);
   /** 領取規則獎勵 */
   claimRuleReward = rulesApi.claimReward.bind(rulesApi);
+
+  // ============ Mailbox 信箱系統 (#045) ============
+
+  /** 取得信箱列表 */
+  getMailboxList = mailboxApi.getList.bind(mailboxApi);
+  /** 取得未讀數量 */
+  getMailboxUnreadCount = mailboxApi.getUnreadCount.bind(mailboxApi);
+  /** 取得信箱項目詳情 */
+  getMailboxDetail = mailboxApi.getDetail.bind(mailboxApi);
+  /** 領取單一信箱項目 */
+  claimMailboxItem = mailboxApi.claimItem.bind(mailboxApi);
+  /** 一鍵全部領取 */
+  claimAllMailbox = mailboxApi.claimAll.bind(mailboxApi);
+  /** 兌換優惠碼 */
+  redeemPromoCode = mailboxApi.redeemPromoCode.bind(mailboxApi);
+  /** 驗證優惠碼 */
+  validatePromoCode = mailboxApi.validatePromoCode.bind(mailboxApi);
 }
 
 // ============ 匯出 ============
