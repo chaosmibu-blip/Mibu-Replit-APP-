@@ -30,6 +30,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
 import { mailboxApi } from '../../../services/mailboxApi';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
@@ -85,6 +86,8 @@ export function MailboxScreen() {
 
   // 防重複觸發
   const claimingRef = useRef(false);
+  // 跳過首次 focus（useEffect 已處理）
+  const hasInitialLoaded = useRef(false);
 
   // ========== 資料載入 ==========
 
@@ -117,13 +120,23 @@ export function MailboxScreen() {
     }
   }, [activeTab, getToken, t]);
 
-  // 首次載入
+  // tab 切換時重新載入
   useEffect(() => {
     setLoading(true);
     setItems([]);
     setPage(1);
     loadData(1, activeTab);
-  }, [activeTab]);
+    hasInitialLoaded.current = true;
+  }, [activeTab, loadData]);
+
+  // 從詳情頁返回時自動刷新（例如領取獎勵後）
+  useFocusEffect(
+    useCallback(() => {
+      // 跳過首次（useEffect 已處理），避免重複呼叫
+      if (!hasInitialLoaded.current) return;
+      loadData(1, activeTab);
+    }, [loadData, activeTab])
+  );
 
   // 下拉重新整理
   const handleRefresh = useCallback(() => {
