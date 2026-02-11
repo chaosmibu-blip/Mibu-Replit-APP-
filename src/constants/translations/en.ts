@@ -1033,6 +1033,37 @@ const en: Record<string, string> = {
     settings_balance: 'Balance',
     settings_unknownError: 'An unknown error occurred',
     settings_pleaseLoginFirst: 'Please login first',
+    settings_notificationPreferences: 'Notification Preferences',
+
+    // ========== NotificationPreferencesScreen ==========
+    notifPref_title: 'Notification Preferences',
+    notifPref_categoryTitle: 'Notification Types',
+    notifPref_achievement: 'Achievement Unlocked',
+    notifPref_achievementDesc: 'Notify when new achievements are unlocked',
+    notifPref_dailyTask: 'Daily Tasks',
+    notifPref_dailyTaskDesc: 'Remind when tasks are completed or reset',
+    notifPref_coupon: 'Coupons',
+    notifPref_couponDesc: 'Notify when new coupons are received',
+    notifPref_announcement: 'System Announcements',
+    notifPref_announcementDesc: 'Official announcements and important notices',
+    notifPref_quietHoursTitle: 'Quiet Hours',
+    notifPref_quietHoursDesc: 'No push notifications during quiet hours, but notifications will still be recorded',
+    notifPref_quietHoursStart: 'Start Time',
+    notifPref_quietHoursEnd: 'End Time',
+    notifPref_loadFailed: 'Failed to load preferences',
+    notifPref_saveFailed: 'Save failed, please try again later',
+    notifPref_saveSuccess: 'Notification preferences updated',
+
+    // ========== NotificationListScreen ==========
+    notifList_title: 'Notifications',
+    notifList_empty: 'No notifications yet',
+    notifList_emptyDesc: 'New notifications will appear here',
+    notifList_markAllRead: 'Mark All Read',
+    notifList_loadFailed: 'Failed to load notifications',
+    notifList_achievementUnlocked: 'Achievement Unlocked',
+    notifList_dailyTaskCompleted: 'Task Completed',
+    notifList_newCoupon: 'New Coupon',
+    notifList_announcementLabel: 'System Announcement',
 
     // ========== ProfileScreen ==========
     profile_title: 'Profile',

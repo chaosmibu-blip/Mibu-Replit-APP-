@@ -1025,6 +1025,37 @@ const ja: Record<string, string> = {
     settings_balance: '残高',
     settings_unknownError: 'An unknown error occurred', /* TODO: ja */
     settings_pleaseLoginFirst: 'Please login first', /* TODO: ja */
+    settings_notificationPreferences: '通知設定',
+
+    // ========== NotificationPreferencesScreen ==========
+    notifPref_title: '通知設定',
+    notifPref_categoryTitle: '通知タイプ',
+    notifPref_achievement: '実績解除',
+    notifPref_achievementDesc: '新しい実績が解除された時に通知',
+    notifPref_dailyTask: 'デイリータスク',
+    notifPref_dailyTaskDesc: 'タスク完了やリセット時にリマインド',
+    notifPref_coupon: 'クーポン',
+    notifPref_couponDesc: '新しいクーポン受取時に通知',
+    notifPref_announcement: 'お知らせ',
+    notifPref_announcementDesc: '公式アナウンスと重要なお知らせ',
+    notifPref_quietHoursTitle: 'おやすみモード',
+    notifPref_quietHoursDesc: 'おやすみ時間中はプッシュ通知が届きません（記録は残ります）',
+    notifPref_quietHoursStart: '開始時刻',
+    notifPref_quietHoursEnd: '終了時刻',
+    notifPref_loadFailed: '設定の読み込みに失敗しました',
+    notifPref_saveFailed: '保存に失敗しました。後でもう一度お試しください',
+    notifPref_saveSuccess: '通知設定を更新しました',
+
+    // ========== NotificationListScreen ==========
+    notifList_title: '通知',
+    notifList_empty: '通知はありません',
+    notifList_emptyDesc: '新しい通知がここに表示されます',
+    notifList_markAllRead: 'すべて既読',
+    notifList_loadFailed: '通知の読み込みに失敗しました',
+    notifList_achievementUnlocked: '実績解除',
+    notifList_dailyTaskCompleted: 'タスク完了',
+    notifList_newCoupon: '新しいクーポン',
+    notifList_announcementLabel: 'お知らせ',
 
     // ========== ProfileScreen ==========
     profile_title: 'プロフィール',

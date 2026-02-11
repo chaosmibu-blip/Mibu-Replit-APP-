@@ -363,6 +363,22 @@ export function SettingsScreen() {
           iconBg: '#FFF7ED',
           iconColor: '#EA580C',
         },
+        {
+          icon: 'options-outline',
+          label: t.settings_notificationPreferences,
+          action: () => router.push('/notification-preferences' as any),
+          hasArrow: true,
+          iconBg: '#F5F3FF',
+          iconColor: '#7C3AED',
+        },
+        {
+          icon: 'list-outline',
+          label: t.notifList_title,
+          action: () => router.push('/notifications' as any),
+          hasArrow: true,
+          iconBg: '#FEF3C7',
+          iconColor: '#D97706',
+        },
       ],
     },
     // 更多功能群組（帳號綁定 + 社群貢獻）

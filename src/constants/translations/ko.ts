@@ -1025,6 +1025,37 @@ const ko: Record<string, string> = {
     settings_balance: '잔액',
     settings_unknownError: 'An unknown error occurred', /* TODO: ko */
     settings_pleaseLoginFirst: 'Please login first', /* TODO: ko */
+    settings_notificationPreferences: '알림 설정',
+
+    // ========== NotificationPreferencesScreen ==========
+    notifPref_title: '알림 설정',
+    notifPref_categoryTitle: '알림 유형',
+    notifPref_achievement: '업적 달성',
+    notifPref_achievementDesc: '새로운 업적 달성 시 알림',
+    notifPref_dailyTask: '일일 퀘스트',
+    notifPref_dailyTaskDesc: '퀘스트 완료 또는 리셋 시 알림',
+    notifPref_coupon: '쿠폰',
+    notifPref_couponDesc: '새 쿠폰 수신 시 알림',
+    notifPref_announcement: '시스템 공지',
+    notifPref_announcementDesc: '공식 공지 및 중요 알림',
+    notifPref_quietHoursTitle: '방해 금지',
+    notifPref_quietHoursDesc: '방해 금지 시간에는 푸시 알림이 오지 않습니다 (기록은 남습니다)',
+    notifPref_quietHoursStart: '시작 시간',
+    notifPref_quietHoursEnd: '종료 시간',
+    notifPref_loadFailed: '설정 로드 실패',
+    notifPref_saveFailed: '저장 실패, 나중에 다시 시도해 주세요',
+    notifPref_saveSuccess: '알림 설정이 업데이트되었습니다',
+
+    // ========== NotificationListScreen ==========
+    notifList_title: '알림',
+    notifList_empty: '알림이 없습니다',
+    notifList_emptyDesc: '새로운 알림이 여기에 표시됩니다',
+    notifList_markAllRead: '모두 읽음',
+    notifList_loadFailed: '알림 로드 실패',
+    notifList_achievementUnlocked: '업적 달성',
+    notifList_dailyTaskCompleted: '퀘스트 완료',
+    notifList_newCoupon: '새 쿠폰',
+    notifList_announcementLabel: '시스템 공지',
 
     // ========== ProfileScreen ==========
     profile_title: '프로필',

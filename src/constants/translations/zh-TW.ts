@@ -1082,6 +1082,37 @@ const zhTW: Record<string, string> = {
     settings_balance: '餘額',
     settings_unknownError: '發生未知錯誤',
     settings_pleaseLoginFirst: '請先登入',
+    settings_notificationPreferences: '通知偏好設定',
+
+    // ========== NotificationPreferencesScreen ==========
+    notifPref_title: '通知偏好設定',
+    notifPref_categoryTitle: '通知類型',
+    notifPref_achievement: '成就解鎖',
+    notifPref_achievementDesc: '解鎖新成就時通知你',
+    notifPref_dailyTask: '每日任務',
+    notifPref_dailyTaskDesc: '任務完成或重置時提醒',
+    notifPref_coupon: '優惠券',
+    notifPref_couponDesc: '收到新優惠券時通知',
+    notifPref_announcement: '系統公告',
+    notifPref_announcementDesc: '官方公告與重要通知',
+    notifPref_quietHoursTitle: '勿擾時段',
+    notifPref_quietHoursDesc: '勿擾時段內不會收到推播通知，但通知仍會記錄',
+    notifPref_quietHoursStart: '開始時間',
+    notifPref_quietHoursEnd: '結束時間',
+    notifPref_loadFailed: '載入偏好設定失敗',
+    notifPref_saveFailed: '儲存失敗，請稍後再試',
+    notifPref_saveSuccess: '已更新通知偏好',
+
+    // ========== NotificationListScreen ==========
+    notifList_title: '通知紀錄',
+    notifList_empty: '目前沒有通知',
+    notifList_emptyDesc: '當有新通知時會顯示在這裡',
+    notifList_markAllRead: '全部已讀',
+    notifList_loadFailed: '載入通知失敗',
+    notifList_achievementUnlocked: '成就解鎖',
+    notifList_dailyTaskCompleted: '任務完成',
+    notifList_newCoupon: '新優惠券',
+    notifList_announcementLabel: '系統公告',
 
     // ========== ProfileScreen ==========
     profile_title: '個人資料',
