@@ -211,6 +211,45 @@ const { itemId } = useLocalSearchParams();
 
 ---
 
+## 推播通知系統頁面 (2026-02-11)
+
+### #042 通知系統全面翻新
+
+**新增頁面**：
+
+| 路由 | 頁面元件 | 模組 | 功能 |
+|------|---------|------|------|
+| `/notifications` | `NotificationListScreen` | shared | 通知歷史列表（分頁、已讀、Deep Link 導航） |
+| `/notification-preferences` | `NotificationPreferencesScreen` | shared | 通知偏好設定（各類開關 + 勿擾時段） |
+
+**設定頁入口**：
+- 設定 → 偏好設定群組 → 通知偏好設定（`/notification-preferences`）
+- 設定 → 偏好設定群組 → 通知紀錄（`/notifications`）
+
+**全域推播監聯器**：
+- 掛載位置：`app/_layout.tsx` → `NotificationListener` 元件
+- Hook：`hooks/useNotificationHandler.ts`
+- 前景通知 → 自動刷新紅點
+- 點擊通知 → Deep Link 導航
+
+**Deep Link screen 對照**：
+| screen 值 | 導航目標 |
+|-----------|---------|
+| Achievements | `/economy` |
+| DailyTasks | `/economy` |
+| CouponDetail | `/economy` |
+| Announcements | `/(tabs)` |
+
+**串接 API**：
+- `GET /api/notifications` — 紅點狀態（boolean）
+- `GET /api/notifications/list` — 通知歷史列表
+- `POST /api/notifications/read/:id` — 標記單一已讀
+- `POST /api/notifications/read-all` — 全部已讀
+- `GET /api/notifications/preferences` — 偏好設定
+- `PUT /api/notifications/preferences` — 更新偏好設定
+
+---
+
 ## 首頁公告串接 (2025-12-27)
 
 ### 功能說明
