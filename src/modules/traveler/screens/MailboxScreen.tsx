@@ -33,6 +33,7 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useApp } from '../../../context/AppContext';
 import { mailboxApi } from '../../../services/mailboxApi';
+import { ApiError } from '../../../services/base';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import type { MailboxListItem, MailboxStatus } from '../../../types/mailbox';
@@ -84,8 +85,9 @@ export function MailboxScreen() {
   const [promoCode, setPromoCode] = useState('');
   const [redeeming, setRedeeming] = useState(false);
 
-  // 防重複觸發
+  // 防重複觸發（教訓 #006：useState 是異步的，ref 才能即時鎖定）
   const claimingRef = useRef(false);
+  const redeemingRef = useRef(false);
   // 跳過首次 focus（useEffect 已處理）
   const hasInitialLoaded = useRef(false);
 
@@ -189,12 +191,16 @@ export function MailboxScreen() {
   // ========== 優惠碼兌換 ==========
 
   const handleRedeemPromo = useCallback(async () => {
+    // ref lock 防止快速雙擊重複送出（教訓 #006）
+    if (redeemingRef.current) return;
+
     const code = promoCode.trim();
     if (!code) {
       Alert.alert(t.mailbox_promoEmpty);
       return;
     }
 
+    redeemingRef.current = true;
     setRedeeming(true);
     try {
       const token = await getToken();
@@ -207,10 +213,16 @@ export function MailboxScreen() {
       if (activeTab === 'unclaimed') {
         loadData(1, 'unclaimed');
       }
-    } catch {
-      Alert.alert(t.mailbox_promoFailed);
+    } catch (error: unknown) {
+      // 優先用 ApiError.serverMessage 顯示後端具體錯誤（如「已兌換過」、「已過期」）
+      if (error instanceof ApiError && error.serverMessage) {
+        Alert.alert(t.mailbox_promoFailed, error.serverMessage);
+      } else {
+        Alert.alert(t.mailbox_promoFailed);
+      }
     } finally {
       setRedeeming(false);
+      redeemingRef.current = false;
     }
   }, [promoCode, getToken, t, activeTab, loadData]);
 

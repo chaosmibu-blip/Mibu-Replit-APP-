@@ -1168,7 +1168,44 @@ const ja: Record<string, string> = {
     mailbox_rewardCoupon: 'Coupon', /* TODO: ja */
     mailbox_rewardPlacePack: 'Place pack', /* TODO: ja */
     mailbox_rewardPerk: 'Perk', /* TODO: ja */
-    mailbox_unreadCount: '{count} unread', /* TODO: ja */
+    mailbox_unreadCount: '{count} 件未読', /* TODO: ja */
+
+    // ========== ItemBox アイテムボックス ==========
+    itemBox_title: 'アイテムボックス',
+    itemBox_loading: '読み込み中...',
+    itemBox_loadFailed: '読み込み失敗',
+    itemBox_loadFailedDesc: 'アイテムの読み込みに失敗しました。後でもう一度お試しください。',
+    itemBox_full: 'アイテムボックスが一杯です！クーポンを削除または使用してからガチャを引いてください。',
+    itemBox_almostFull: 'アイテムボックスがほぼ一杯です、残り{remaining}スロット',
+    itemBox_slotExpired: '期限切れ',
+    itemBox_slotUsed: '使用済',
+    itemBox_expired: '期限切れ',
+    itemBox_validUntil: '{date}まで有効',
+    itemBox_close: '閉じる',
+    itemBox_redeem: '使用する',
+    itemBox_redeemTitle: 'クーポンを使用',
+    itemBox_redeemInputLabel: '店舗の引換コードを入力',
+    itemBox_redeemPlaceholder: '8桁のコード',
+    itemBox_redeemConfirm: '使用を確認',
+    itemBox_redeemSuccess: '使用完了！',
+    itemBox_redeemShowMerchant: 'この画面を店舗スタッフに見せてください',
+    itemBox_redeemCountdown: 'カウントダウン',
+    itemBox_redeemDone: '完了',
+    itemBox_redeemNotice: 'お知らせ',
+    itemBox_redeemEnterCode: '店舗の引換コードを入力してください',
+    itemBox_redeemFailed: '使用失敗',
+    itemBox_redeemInvalidCode: 'コードが無効です',
+    itemBox_redeemInvalidCodeDesc: '店舗から提供されたコードを確認してください',
+    itemBox_redeemExpired: 'このクーポンは期限切れです',
+    itemBox_redeemAlreadyUsed: '使用済み',
+    itemBox_redeemAlreadyUsedDesc: 'このクーポンは既に使用されています',
+    itemBox_redeemError: '使用に失敗しました。後でもう一度お試しください。',
+    itemBox_deleteTitle: '削除しますか？',
+    itemBox_deleteDesc: 'この操作は取り消せません',
+    itemBox_deleteCancel: 'キャンセル',
+    itemBox_deleteConfirm: '削除',
+    itemBox_deleteFailed: '削除失敗',
+    itemBox_error: 'エラー',
 };
 
 export default ja;

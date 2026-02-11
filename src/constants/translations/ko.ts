@@ -1168,7 +1168,44 @@ const ko: Record<string, string> = {
     mailbox_rewardCoupon: 'Coupon', /* TODO: ko */
     mailbox_rewardPlacePack: 'Place pack', /* TODO: ko */
     mailbox_rewardPerk: 'Perk', /* TODO: ko */
-    mailbox_unreadCount: '{count} unread', /* TODO: ko */
+    mailbox_unreadCount: '{count}개 읽지 않음', /* TODO: ko */
+
+    // ========== ItemBox 아이템 상자 ==========
+    itemBox_title: '아이템 상자',
+    itemBox_loading: '로딩 중...',
+    itemBox_loadFailed: '로드 실패',
+    itemBox_loadFailedDesc: '아이템을 불러오지 못했습니다. 나중에 다시 시도해주세요.',
+    itemBox_full: '아이템 상자가 가득 찼습니다! 쿠폰을 삭제하거나 사용한 후 뽑기를 해주세요.',
+    itemBox_almostFull: '아이템 상자가 거의 가득 찼습니다, {remaining}칸 남음',
+    itemBox_slotExpired: '만료',
+    itemBox_slotUsed: '사용됨',
+    itemBox_expired: '만료됨',
+    itemBox_validUntil: '{date}까지 유효',
+    itemBox_close: '닫기',
+    itemBox_redeem: '사용하기',
+    itemBox_redeemTitle: '쿠폰 사용',
+    itemBox_redeemInputLabel: '매장 인증 코드 입력',
+    itemBox_redeemPlaceholder: '8자리 코드',
+    itemBox_redeemConfirm: '사용 확인',
+    itemBox_redeemSuccess: '사용 완료!',
+    itemBox_redeemShowMerchant: '이 화면을 매장 직원에게 보여주세요',
+    itemBox_redeemCountdown: '카운트다운',
+    itemBox_redeemDone: '완료',
+    itemBox_redeemNotice: '알림',
+    itemBox_redeemEnterCode: '매장 인증 코드를 입력해주세요',
+    itemBox_redeemFailed: '사용 실패',
+    itemBox_redeemInvalidCode: '잘못된 코드',
+    itemBox_redeemInvalidCodeDesc: '매장에서 제공한 코드를 확인해주세요',
+    itemBox_redeemExpired: '이 쿠폰은 만료되었습니다',
+    itemBox_redeemAlreadyUsed: '이미 사용됨',
+    itemBox_redeemAlreadyUsedDesc: '이 쿠폰은 이미 사용되었습니다',
+    itemBox_redeemError: '사용에 실패했습니다. 나중에 다시 시도해주세요.',
+    itemBox_deleteTitle: '삭제하시겠습니까?',
+    itemBox_deleteDesc: '이 작업은 되돌릴 수 없습니다',
+    itemBox_deleteCancel: '취소',
+    itemBox_deleteConfirm: '삭제',
+    itemBox_deleteFailed: '삭제 실패',
+    itemBox_error: '오류',
 };
 
 export default ko;
