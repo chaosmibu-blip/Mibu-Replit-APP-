@@ -6,6 +6,7 @@
  * - 字體載入
  * - Stack 導航結構定義
  * - StatusBar 設定
+ * - 推播通知全域監聽（#042）
  *
  * 導航結構：
  * - login: 登入頁
@@ -29,6 +30,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AppProvider } from '../src/context/AppContext';
 import { NetworkBanner } from '../src/modules/shared/components/ui/NetworkBanner';
+import { useNotificationHandler } from '../hooks/useNotificationHandler';
 import { MibuBrand } from '../constants/Colors';
 
 // 覆蓋 React Navigation 預設背景色，統一使用 Mibu warmWhite
@@ -65,6 +67,15 @@ function preloadImageAssets(): Promise<void> {
   return Promise.all(promises).then(() => {});
 }
 
+/**
+ * 全域推播通知監聽器
+ * 必須在 AppProvider 內部，才能使用 useApp context
+ */
+function NotificationListener() {
+  useNotificationHandler();
+  return null;
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [assetsReady, setAssetsReady] = useState(false);
@@ -86,6 +97,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppProvider>
+        <NotificationListener />
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : MibuLightTheme}>
           <Stack>
             <Stack.Screen name="login" options={{ headerShown: false }} />
