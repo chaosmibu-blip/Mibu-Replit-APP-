@@ -486,14 +486,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const token = await loadToken();
       if (!token) return;
 
-      // 同時拉取物品箱和信箱未讀數量
-      const [unreadData, mailboxData] = await Promise.allSettled([
-        apiService.getUnreadCounts(token),
+      // 同時拉取紅點狀態和信箱未讀數量
+      const [statusData, mailboxData] = await Promise.allSettled([
+        apiService.getNotificationStatus(token),
         mailboxApi.getUnreadCount(token),
       ]);
 
-      const unreadCount = unreadData.status === 'fulfilled'
-        ? (unreadData.value.unread?.itembox || 0)
+      // 紅點狀態是 boolean（有/沒有），轉成 0/1 給 badge 顯示
+      const hasUnreadItem = statusData.status === 'fulfilled'
+        ? (statusData.value.itembox ? 1 : 0)
         : 0;
       const mailboxCount = mailboxData.status === 'fulfilled'
         ? (mailboxData.value.unreadCount || 0)
@@ -501,7 +502,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       setState(prev => ({
         ...prev,
-        unreadItemCount: unreadCount,
+        unreadItemCount: hasUnreadItem,
         unreadMailboxCount: mailboxCount,
       }));
     } catch (error) {

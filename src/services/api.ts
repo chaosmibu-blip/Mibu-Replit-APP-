@@ -315,12 +315,20 @@ class ApiService {
   getAnnouncements = commonApi.getAnnouncements.bind(commonApi);
   /** 依類型取得公告 */
   getAnnouncementsByType = commonApi.getAnnouncementsByType.bind(commonApi);
-  /** 取得通知 */
-  getNotifications = commonApi.getNotifications.bind(commonApi);
-  /** 標記通知已讀 */
+  /** 取得紅點狀態（boolean） */
+  getNotificationStatus = commonApi.getNotificationStatus.bind(commonApi);
+  /** 取得通知歷史列表（分頁） */
+  getNotificationList = commonApi.getNotificationList.bind(commonApi);
+  /** 標記紅點已讀（依類型） */
   markNotificationSeen = commonApi.markNotificationSeen.bind(commonApi);
-  /** 取得未讀數量 */
-  getUnreadCounts = commonApi.getUnreadCounts.bind(commonApi);
+  /** 標記單一通知已讀 */
+  markNotificationRead = commonApi.markNotificationRead.bind(commonApi);
+  /** 全部標記已讀 */
+  markAllNotificationsRead = commonApi.markAllNotificationsRead.bind(commonApi);
+  /** 取得通知偏好設定 */
+  getNotificationPreferences = commonApi.getNotificationPreferences.bind(commonApi);
+  /** 更新通知偏好設定 */
+  updateNotificationPreferences = commonApi.updateNotificationPreferences.bind(commonApi);
   /** 取得廣告設定 */
   getAdPlacement = commonApi.getAdPlacement.bind(commonApi);
   /** 取得聊天 Token */

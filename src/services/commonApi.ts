@@ -16,8 +16,13 @@
  *
  * API 端點清單：
  * - GET /api/announcements - 取得公告列表
- * - GET /api/notifications - 取得通知
- * - POST /api/notifications/:type/seen - 標記通知已讀
+ * - GET /api/notifications - 取得紅點狀態
+ * - GET /api/notifications/list - 取得通知歷史列表
+ * - POST /api/notifications/:type/seen - 標記紅點已讀
+ * - POST /api/notifications/read/:id - 標記單一通知已讀
+ * - POST /api/notifications/read-all - 全部標記已讀
+ * - GET /api/notifications/preferences - 取得通知偏好設定
+ * - PUT /api/notifications/preferences - 更新通知偏好設定
  * - GET /api/ads/placements - 取得廣告配置
  * - GET /api/chat/token - 取得聊天 Token
  * - GET /api/coupons/region/:id/pool - 取得地區優惠券池
@@ -30,8 +35,7 @@
  * - PUT /api/sos/contacts/:id - 更新緊急聯絡人
  * - DELETE /api/sos/contacts/:id - 刪除緊急聯絡人
  * - POST /api/notifications/register-token - 註冊推播 Token
- * - POST /api/notifications/read-all - 全部標記已讀
- * - PATCH /api/notifications/:id/read - 標記單一通知已讀
+ * - POST /api/notifications/unregister-token - 取消推播 Token
  * - GET /api/config/app - 取得 App 設定
  * - GET /api/config/mapbox - 取得 Mapbox Token
  * - GET /api/sos/status - 查詢 SOS 狀態
@@ -41,7 +45,13 @@ import { ApiBase } from './base';
 import {
   AnnouncementsResponse,
   AnnouncementType,
-  UnreadCounts,
+  NotificationStatusResponse,
+  NotificationListResponse,
+  NotificationSeenType,
+  NotificationPreferences,
+  UpdateNotificationPreferencesRequest,
+  RegisterPushTokenRequest,
+  RegisterPushTokenResponse,
   AdConfig,
   AdPlacement,
   RegionPoolCoupon,
@@ -101,58 +111,61 @@ class CommonApiService extends ApiBase {
     return this.request<AnnouncementsResponse>(url);
   }
 
-  // ========== 通知 ==========
+  // ========== 通知（#042 翻新） ==========
 
   /**
-   * 取得通知
+   * 取得紅點狀態
    *
-   * 取得用戶的未讀通知數量
+   * 回傳各類型是否有未讀（boolean），不是數量
    *
    * @param token - 用戶認證 Token
-   * @returns 未讀通知數量
+   * @returns 各類型紅點狀態
    *
    * @example
-   * const counts = await commonApi.getNotifications(token);
+   * const status = await commonApi.getNotificationStatus(token);
+   * if (status.itembox) { // 顯示紅點 }
    */
-  async getNotifications(token: string): Promise<UnreadCounts> {
-    return this.request<UnreadCounts>('/api/notifications', {
+  async getNotificationStatus(token: string): Promise<NotificationStatusResponse> {
+    return this.request<NotificationStatusResponse>('/api/notifications', {
       headers: this.authHeaders(token),
     });
   }
 
   /**
-   * 標記通知已讀（依類型）
-   *
-   * 將特定類型的通知標記為已讀
+   * 取得通知歷史列表（分頁）
    *
    * @param token - 用戶認證 Token
-   * @param type - 通知類型（itembox/collection/announcement）
+   * @param page - 頁碼（預設 1）
+   * @param pageSize - 每頁筆數（預設 20，最大 50）
+   * @returns 通知列表（含分頁資訊）
+   *
+   * @example
+   * const { notifications, total } = await commonApi.getNotificationList(token, 1, 20);
+   */
+  async getNotificationList(
+    token: string,
+    page: number = 1,
+    pageSize: number = 20
+  ): Promise<NotificationListResponse> {
+    return this.request<NotificationListResponse>(
+      `/api/notifications/list?page=${page}&pageSize=${pageSize}`,
+      { headers: this.authHeaders(token) }
+    );
+  }
+
+  /**
+   * 標記紅點已讀（依類型）
+   *
+   * @param token - 用戶認證 Token
+   * @param type - 紅點類型
    * @returns 操作結果
    *
    * @example
    * await commonApi.markNotificationSeen(token, 'itembox');
    */
-  async markNotificationSeen(token: string, type: 'itembox' | 'collection' | 'announcement'): Promise<{ success: boolean }> {
+  async markNotificationSeen(token: string, type: NotificationSeenType): Promise<{ success: boolean }> {
     return this.request<{ success: boolean }>(`/api/notifications/${type}/seen`, {
       method: 'POST',
-      headers: this.authHeaders(token),
-    });
-  }
-
-  /**
-   * 取得未讀數量
-   *
-   * 取得各類型通知的未讀數量
-   * 與 getNotifications 功能相同，提供語意化命名
-   *
-   * @param token - 用戶認證 Token
-   * @returns 各類型未讀數量
-   *
-   * @example
-   * const { itembox, collection, announcement } = await commonApi.getUnreadCounts(token);
-   */
-  async getUnreadCounts(token: string): Promise<UnreadCounts> {
-    return this.request<UnreadCounts>('/api/notifications', {
       headers: this.authHeaders(token),
     });
   }
@@ -451,31 +464,22 @@ class CommonApiService extends ApiBase {
     });
   }
 
-  // ========== #010 推播通知 ==========
+  // ========== #042 推播通知 ==========
 
   /**
    * 註冊推播 Token
    *
-   * 向後端註冊裝置的推播 Token
-   * 用於接收推播通知
+   * 向後端註冊裝置的推播 Token，用於接收推播通知
    *
-   * @see #010 推播通知
    * @param authToken - 用戶認證 Token
    * @param params - 推播 Token 資訊
    * @returns 註冊結果
-   *
-   * @example
-   * await commonApi.registerPushToken(authToken, {
-   *   token: 'ExponentPushToken[xxx]',
-   *   platform: 'ios',
-   *   deviceId: 'device-uuid'
-   * });
    */
   async registerPushToken(
     authToken: string,
-    params: { token: string; platform: 'ios' | 'android'; deviceId?: string }
-  ): Promise<{ success: boolean; tokenId?: number }> {
-    return this.request<{ success: boolean; tokenId?: number }>('/api/notifications/register-token', {
+    params: RegisterPushTokenRequest
+  ): Promise<RegisterPushTokenResponse> {
+    return this.request<RegisterPushTokenResponse>('/api/notifications/register-token', {
       method: 'POST',
       headers: this.authHeaders(authToken),
       body: JSON.stringify(params),
@@ -502,15 +506,28 @@ class CommonApiService extends ApiBase {
   }
 
   /**
-   * 全部標記已讀
+   * 標記單一通知已讀
    *
-   * 將所有通知標記為已讀
+   * @param token - 用戶認證 Token
+   * @param notificationId - 通知 ID
+   * @returns 操作結果
+   */
+  async markNotificationRead(
+    token: string,
+    notificationId: number
+  ): Promise<{ success: boolean }> {
+    // 契約端點：POST /api/notifications/read/:id
+    return this.request<{ success: boolean }>(`/api/notifications/read/${notificationId}`, {
+      method: 'POST',
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 全部標記已讀
    *
    * @param token - 用戶認證 Token
    * @returns 操作結果
-   *
-   * @example
-   * await commonApi.markAllNotificationsRead(token);
    */
   async markAllNotificationsRead(token: string): Promise<{ success: boolean }> {
     return this.request<{ success: boolean }>('/api/notifications/read-all', {
@@ -520,24 +537,34 @@ class CommonApiService extends ApiBase {
   }
 
   /**
-   * 標記單一通知已讀
-   *
-   * 將特定通知標記為已讀
+   * 取得通知偏好設定
    *
    * @param token - 用戶認證 Token
-   * @param notificationId - 通知 ID
-   * @returns 操作結果
-   *
-   * @example
-   * await commonApi.markNotificationRead(token, 123);
+   * @returns 偏好設定（各類開關 + 勿擾時段）
    */
-  async markNotificationRead(
-    token: string,
-    notificationId: number
-  ): Promise<{ success: boolean }> {
-    return this.request<{ success: boolean }>(`/api/notifications/${notificationId}/read`, {
-      method: 'PATCH',
+  async getNotificationPreferences(token: string): Promise<NotificationPreferences> {
+    return this.request<NotificationPreferences>('/api/notifications/preferences', {
       headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 更新通知偏好設定
+   *
+   * 所有欄位 optional，只傳要改的
+   *
+   * @param token - 用戶認證 Token
+   * @param params - 要更新的偏好欄位
+   * @returns 操作結果
+   */
+  async updateNotificationPreferences(
+    token: string,
+    params: UpdateNotificationPreferencesRequest
+  ): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/api/notifications/preferences', {
+      method: 'PUT',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
     });
   }
 
