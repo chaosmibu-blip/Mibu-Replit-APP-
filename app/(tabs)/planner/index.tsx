@@ -11,7 +11,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SegmentedControl } from '../../../src/components/ui/SegmentedControl';
+import { SegmentedControl } from '../../../src/modules/shared/components/ui/SegmentedControl';
 import { LocationScreen } from '../../../src/modules/shared/screens/LocationScreen';
 import { ItineraryScreenV2 } from '../../../src/modules/traveler/screens/ItineraryScreenV2';
 import { ChatScreen } from '../../../src/modules/shared/screens/ChatScreen';

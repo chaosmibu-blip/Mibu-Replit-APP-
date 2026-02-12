@@ -5,9 +5,12 @@
  * - 用戶認證狀態（登入/登出、Token 管理）
  * - 語言設定（多語系切換）
  * - 扭蛋收藏（本地快取 + 同步）
- * - 全域 UI 狀態（loading、error）
  * - 角色切換（一般用戶 / 商家）
  * - 未讀通知數量
+ *
+ * 變更說明（2026-02-12）
+ * - 移除：全域 loading/error/view/level（0 處外部讀取，各 Screen 用本地 useState）
+ * - 移除：updateState/setLoading/setError action（0 處外部消費）
  *
  * @example
  * // 在元件中使用
@@ -22,7 +25,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import { AppState, Language, User, GachaItem, GachaResponse, UserRole } from '../types';
-import { TRANSLATIONS, DEFAULT_LEVEL } from '../constants/translations';
+import { TRANSLATIONS } from '../constants/translations';
 import { STORAGE_KEYS } from '../constants/storageKeys';
 import { apiService } from '../services/api';
 import { pushNotificationService } from '../services/pushNotificationService';
@@ -77,14 +80,11 @@ const removeToken = async (): Promise<void> => {
  *
  * @property state - 全域狀態物件
  * @property t - 當前語言的翻譯字典（如 t.login、t.logout）
- * @property updateState - 部分更新狀態（適合一次改多個欄位）
  * @property setLanguage - 切換語言（zh-TW / en）
  * @property setUser - 設定/清除用戶（登入/登出）
  * @property getToken - 取得當前 Token
  * @property addToCollection - 新增扭蛋到收藏
  * @property setResult - 設定扭蛋結果（抽完顯示用）
- * @property setLoading - 設定全域 loading 狀態
- * @property setError - 設定全域錯誤訊息
  * @property switchRole - 切換用戶角色（一般/商家）
  * @property refreshUnreadCount - 刷新未讀通知數量
  * @property setUnreadCount - 手動設定未讀數量
@@ -92,14 +92,11 @@ const removeToken = async (): Promise<void> => {
 interface AppContextType {
   state: AppState;
   t: Record<string, string>;
-  updateState: (updates: Partial<AppState>) => void;
   setLanguage: (lang: Language) => void;
   setUser: (user: User | null, token?: string | null) => void;
   getToken: () => Promise<string | null>;
   addToCollection: (items: GachaItem[]) => void;
   setResult: (result: GachaResponse | null) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
   switchRole: (role: UserRole) => Promise<boolean>;
   refreshUnreadCount: () => Promise<void>;
   setUnreadCount: (count: number) => void;
@@ -113,30 +110,17 @@ interface AppContextType {
  * State 結構說明：
  * - language: 當前語言（'zh-TW' | 'en'）
  * - user: 當前用戶資料（null = 未登入）
- * - country/city: 當前選擇的地點（扭蛋用）
- * - countryId/regionId: 地點 ID（API 用）
- * - level: 當前扭蛋等級（common/rare/epic/legendary）
- * - loading: 全域 loading 狀態
- * - error: 全域錯誤訊息
  * - result: 最近一次扭蛋結果
  * - collection: 本地扭蛋收藏
- * - view: 當前檢視（legacy，可忽略）
  * - isAuthenticated: 是否已登入
  * - unreadItemCount: 物品箱未讀數量
+ * - unreadMailboxCount: 信箱未讀數量
  */
 const defaultState: AppState = {
   language: 'zh-TW',
   user: null,
-  country: '',
-  city: '',
-  countryId: null,
-  regionId: null,
-  level: DEFAULT_LEVEL,
-  loading: false,
-  error: null,
   result: null,
   collection: [],
-  view: 'home',
   isAuthenticated: false,
   unreadItemCount: 0,
   unreadMailboxCount: 0,
@@ -256,15 +240,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ============ State Actions ============
 
   /**
-   * 部分更新狀態
-   * @param updates - 要更新的欄位
-   * @example updateState({ loading: true, error: null })
-   */
-  const updateState = useCallback((updates: Partial<AppState>) => {
-    setState(prev => ({ ...prev, ...updates }));
-  }, []);
-
-  /**
    * 切換語言並持久化
    * @param lang - 目標語言 ('zh-TW' | 'en')
    */
@@ -379,22 +354,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
    */
   const setResult = useCallback((result: GachaResponse | null) => {
     setState(prev => ({ ...prev, result }));
-  }, []);
-
-  /**
-   * 設定全域 loading 狀態
-   * @param loading - 是否顯示 loading
-   */
-  const setLoading = useCallback((loading: boolean) => {
-    setState(prev => ({ ...prev, loading }));
-  }, []);
-
-  /**
-   * 設定全域錯誤訊息
-   * @param error - 錯誤訊息（null = 清除錯誤）
-   */
-  const setError = useCallback((error: string | null) => {
-    setState(prev => ({ ...prev, error }));
   }, []);
 
   // ============ 角色切換 ============
@@ -543,14 +502,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         state,
         t,
-        updateState,
         setLanguage,
         setUser,
         getToken,
         addToCollection,
         setResult,
-        setLoading,
-        setError,
         switchRole,
         refreshUnreadCount,
         setUnreadCount,
