@@ -38,7 +38,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 import { referralApi } from '../../../services/referralApi';
 import { MibuBrand } from '../../../../constants/Colors';
@@ -81,7 +81,8 @@ const REWARD_TIERS: RewardTier[] = [
 // ============================================================
 
 export function ReferralScreen() {
-  const { state, getToken, t } = useApp();
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
 
@@ -678,7 +679,7 @@ export function ReferralScreen() {
                   <View style={styles.referralInfo}>
                     <Text style={styles.referralName}>{referral.userName}</Text>
                     <Text style={styles.referralDate}>
-                      {new Date(referral.joinedAt).toLocaleDateString(LOCALE_MAP[state.language])}
+                      {new Date(referral.joinedAt).toLocaleDateString(LOCALE_MAP[language])}
                     </Text>
                   </View>
                   <View style={styles.referralReward}>

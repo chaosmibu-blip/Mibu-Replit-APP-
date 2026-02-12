@@ -31,7 +31,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { mailboxApi } from '../../../services/mailboxApi';
 import { ApiError } from '../../../services/base';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
@@ -68,7 +68,8 @@ const SOURCE_ICON_MAP: Record<string, string> = {
 // ========== 元件 ==========
 
 export function MailboxScreen() {
-  const { t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   // 狀態

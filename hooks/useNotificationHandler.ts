@@ -24,7 +24,7 @@
 import { useEffect, useRef } from 'react';
 import { router } from 'expo-router';
 import { pushNotificationService } from '../src/services/pushNotificationService';
-import { useApp } from '../src/context/AppContext';
+import { useAuth, useGacha } from '../src/context/AppContext';
 import type { NotificationScreen, NotificationData } from '../src/types/notifications';
 
 // ============ Deep Link 路由對照 ============
@@ -60,12 +60,13 @@ const SCREEN_ROUTE_MAP: Record<NotificationScreen, string> = {
  * }
  */
 export function useNotificationHandler() {
-  const { state, refreshUnreadCount } = useApp();
+  const { isAuthenticated } = useAuth();
+  const { refreshUnreadCount } = useGacha();
   const isNavigatingRef = useRef(false);
 
   useEffect(() => {
     // 未登入不監聽
-    if (!state.isAuthenticated) return;
+    if (!isAuthenticated) return;
 
     // 1. 監聽前景通知（App 開啟時收到推播）
     const receivedSubscription = pushNotificationService.addNotificationReceivedListener(
@@ -106,7 +107,7 @@ export function useNotificationHandler() {
       receivedSubscription?.remove();
       responseSubscription?.remove();
     };
-  }, [state.isAuthenticated, refreshUnreadCount]);
+  }, [isAuthenticated, refreshUnreadCount]);
 }
 
 // ============ 導航處理 ============

@@ -36,7 +36,7 @@ import {
 } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { collectionApi } from '../../../services/collectionApi';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { FavoriteItem } from '../../../types/collection';
@@ -47,7 +47,8 @@ import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 // ============================================================
 
 export function FavoritesScreen() {
-  const { state, t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
   const theme = useTheme();
 
@@ -215,7 +216,7 @@ export function FavoritesScreen() {
           {/* 加入時間 */}
           <Text variant="labelSmall" style={styles.addedAt}>
             {t.favorites_addedAt}
-            {new Date(item.addedAt).toLocaleDateString(LOCALE_MAP[state.language])}
+            {new Date(item.addedAt).toLocaleDateString(LOCALE_MAP[language])}
           </Text>
         </View>
 

@@ -29,7 +29,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, Lin
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
 import { Language } from '../../../types';
 import { apiService } from '../../../services/api';
 import { pushNotificationService } from '../../../services/pushNotificationService';
@@ -89,7 +89,9 @@ export function SettingsScreen() {
   // ============================================================
   // Hooks & Context
   // ============================================================
-  const { state, t, setLanguage, setUser, getToken } = useApp();
+  const { user, isAuthenticated, setUser, getToken } = useAuth();
+  const { t, language, setLanguage } = useI18n();
+  const { gachaState } = useGacha();
   const router = useRouter();
 
   // ============================================================
@@ -181,7 +183,7 @@ export function SettingsScreen() {
   }, [getToken, isTogglingPush, t]);
 
   // 當前選中的語言
-  const currentLang = LANGUAGE_OPTIONS.find(l => l.code === state.language) || LANGUAGE_OPTIONS[0];
+  const currentLang = LANGUAGE_OPTIONS.find(l => l.code === language) || LANGUAGE_OPTIONS[0];
 
   // ============================================================
   // 帳號操作
@@ -278,7 +280,7 @@ export function SettingsScreen() {
    * 設定群組配置
    * 根據登入狀態顯示不同項目
    */
-  const settingGroups: SettingGroup[] = state.isAuthenticated ? [
+  const settingGroups: SettingGroup[] = isAuthenticated ? [
     // ===== 已登入狀態 =====
     {
       title: t.settings_account,
@@ -335,7 +337,7 @@ export function SettingsScreen() {
           label: t.mailbox_title,
           action: () => router.push('/mailbox' as any),
           hasArrow: true,
-          badge: state.unreadMailboxCount > 0 ? String(state.unreadMailboxCount) : undefined,
+          badge: gachaState.unreadMailboxCount > 0 ? String(gachaState.unreadMailboxCount) : undefined,
           iconBg: '#EEF2FF',
           iconColor: '#6366f1',
         },
@@ -554,7 +556,7 @@ export function SettingsScreen() {
       ))}
 
       {/* ========== 管理員專區（非超級管理員）========== */}
-      {state.user?.role === 'admin' && !state.user?.isSuperAdmin && (
+      {user?.role === 'admin' && !user?.isSuperAdmin && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.settings_admin}</Text>
           <View style={styles.card}>
@@ -575,7 +577,7 @@ export function SettingsScreen() {
       )}
 
       {/* ========== 帳號管理（已登入）========== */}
-      {state.isAuthenticated && (
+      {isAuthenticated && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.settings_accountManagement}</Text>
           <View style={styles.card}>
@@ -607,7 +609,7 @@ export function SettingsScreen() {
       )}
 
       {/* ========== 登入按鈕（未登入）========== */}
-      {!state.isAuthenticated && (
+      {!isAuthenticated && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.settings_account}</Text>
           <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/login')}>
@@ -649,7 +651,7 @@ export function SettingsScreen() {
                 key={lang.code}
                 style={[
                   styles.languageOption,
-                  state.language === lang.code && styles.languageOptionActive,
+                  language === lang.code && styles.languageOptionActive,
                 ]}
                 onPress={() => {
                   setLanguage(lang.code);
@@ -659,12 +661,12 @@ export function SettingsScreen() {
                 <Text style={styles.languageOptionFlag}>{lang.flag}</Text>
                 <Text style={[
                   styles.languageOptionLabel,
-                  state.language === lang.code && styles.languageOptionLabelActive,
+                  language === lang.code && styles.languageOptionLabelActive,
                 ]}>
                   {lang.label}
                 </Text>
                 {/* 選中標記 */}
-                {state.language === lang.code && (
+                {language === lang.code && (
                   <Ionicons name="checkmark" size={20} color={MibuBrand.brown} />
                 )}
               </TouchableOpacity>

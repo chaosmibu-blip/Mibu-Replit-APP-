@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { ServiceRelation } from '../../../types';
 import { UIColors } from '../../../../constants/Colors';
@@ -44,7 +44,8 @@ interface TravelerData {
 
 // ============ 元件主體 ============
 export function SpecialistTravelersScreen() {
-  const { state, getToken, t } = useApp();
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -105,7 +106,7 @@ export function SpecialistTravelersScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString(LOCALE_MAP[state.language], {
+    return date.toLocaleString(LOCALE_MAP[language], {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',

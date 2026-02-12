@@ -47,7 +47,7 @@ LocaleConfig.locales['ko'] = {
   today: '오늘',
 };
 // en 是預設，不需要額外設定
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { authApi } from '../../../services/authApi';
 import { avatarService } from '../../../services/avatarService';
@@ -91,10 +91,11 @@ const displayUserId = (userId: string | undefined): string => {
 // ============ 元件本體 ============
 
 export function ProfileScreen() {
-  const { state, t, getToken, setUser } = useApp();
+  const { user, getToken, setUser } = useAuth();
+  const { t, language } = useI18n();
 
   // 根據語系切換月曆顯示語言（LocaleConfig 是全域的，行程頁月曆也會跟著變）
-  LocaleConfig.defaultLocale = state.language === 'en' ? '' : state.language;
+  LocaleConfig.defaultLocale = language === 'en' ? '' : language;
   const router = useRouter();
 
   // ============ 狀態管理 ============
@@ -390,18 +391,18 @@ export function ProfileScreen() {
         setEmergencyContactRelation(data.emergencyContactRelation || '');
 
         // 同步更新全域用戶狀態（#017 修復用戶名消失、#040 merge 完整欄位）
-        if (state.user) {
+        if (user) {
           const updatedUser = {
-            ...state.user,
-            firstName: data.firstName || state.user.firstName,
-            lastName: data.lastName || state.user.lastName,
+            ...user,
+            firstName: data.firstName || user.firstName,
+            lastName: data.lastName || user.lastName,
             name: data.firstName && data.lastName
               ? `${data.firstName} ${data.lastName}`
-              : data.firstName || data.lastName || state.user.name,
-            email: data.email || state.user.email,
+              : data.firstName || data.lastName || user.name,
+            email: data.email || user.email,
             // 直接使用後端回傳值（UserProfile 必含此欄位，null 代表用戶刪除頭像）
             profileImageUrl: data.profileImageUrl,
-            role: data.role || state.user.role,
+            role: data.role || user.role,
             // #040: merge 後端補齊的欄位，防止不完整回應覆蓋本地狀態
             ...(data.isSuperAdmin !== undefined && { isSuperAdmin: data.isSuperAdmin }),
             ...(data.roles && { accessibleRoles: data.roles }),
@@ -491,7 +492,7 @@ export function ProfileScreen() {
               return (
                 <View style={[styles.avatar, { backgroundColor: preset?.color || MibuBrand.brown }]}>
                   <Text style={styles.avatarText}>
-                    {firstName?.charAt(0) || profile?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
+                    {firstName?.charAt(0) || profile?.firstName?.charAt(0) || user?.name?.charAt(0) || '?'}
                   </Text>
                 </View>
               );
@@ -513,7 +514,7 @@ export function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.profile_userId}</Text>
           <View style={styles.readOnlyField}>
-            <Text style={styles.readOnlyText}>{displayUserId(profile?.id || state.user?.id)}</Text>
+            <Text style={styles.readOnlyText}>{displayUserId(profile?.id || user?.id)}</Text>
           </View>
         </View>
 

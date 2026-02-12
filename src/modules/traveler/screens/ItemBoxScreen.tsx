@@ -20,7 +20,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { ApiError } from '../../../services/base';
 import { InventoryItem, CouponTier } from '../../../types';
@@ -327,7 +327,9 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
 // ============================================================
 
 export function ItemBoxScreen() {
-  const { state, t, setUnreadCount, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
+  const { setUnreadCount } = useGacha();
 
   // ============================================================
   // 狀態管理

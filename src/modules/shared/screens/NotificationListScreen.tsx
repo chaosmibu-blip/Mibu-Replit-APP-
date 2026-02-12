@@ -32,7 +32,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
@@ -84,7 +84,9 @@ const SCREEN_ROUTE_MAP: Record<NotificationScreen, string> = {
 
 export function NotificationListScreen() {
   const router = useRouter();
-  const { t, getToken, refreshUnreadCount } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
+  const { refreshUnreadCount } = useGacha();
 
   // 狀態
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);

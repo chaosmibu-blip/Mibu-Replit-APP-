@@ -27,7 +27,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../../../context/AppContext';
+import { useI18n } from '../../../context/AppContext';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
 // ============ 介面定義 ============
@@ -140,7 +140,7 @@ const translations = {
 // ============ 元件本體 ============
 
 export function ChatScreen() {
-  const { state } = useApp();
+  const { language } = useI18n();
   const scrollViewRef = useRef<ScrollView>(null);
 
   // ============ 狀態管理 ============
@@ -151,7 +151,7 @@ export function ChatScreen() {
   const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 取得當前語系的翻譯文字
-  const texts = translations[state.language] || translations['zh-TW'];
+  const texts = translations[language] || translations['zh-TW'];
 
   // ============ 生命週期 ============
 
@@ -163,7 +163,7 @@ export function ChatScreen() {
       sender: 'assistant',
       timestamp: new Date(),
     }]);
-  }, [state.language]);
+  }, [language]);
 
   /** 卸載時清理 AI 回應 timer */
   useEffect(() => {

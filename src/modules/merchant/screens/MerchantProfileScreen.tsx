@@ -21,7 +21,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 import { apiService } from '../../../services/api';
 import { authApi } from '../../../services/authApi';
 import { MerchantMe } from '../../../types';
@@ -31,7 +32,8 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 // ============ 主元件 ============
 export function MerchantProfileScreen() {
   // ============ Hooks ============
-  const { state, t, getToken, setUser } = useApp();
+  const { getToken, setUser } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -100,7 +102,7 @@ export function MerchantProfileScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(LOCALE_MAP[state.language], {
+    return date.toLocaleDateString(LOCALE_MAP[language], {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

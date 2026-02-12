@@ -28,7 +28,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { crowdfundingApi } from '../../../services/crowdfundingApi';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
@@ -120,7 +120,8 @@ const STATUS_CONFIG: Record<RegionStatus, {
 // ============================================================
 
 export function CrowdfundingScreen() {
-  const { state, t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============================================================
@@ -214,7 +215,7 @@ export function CrowdfundingScreen() {
           <Text style={styles.regionFlag}>{region.flag}</Text>
           <View style={styles.regionInfo}>
             <Text style={styles.regionName}>
-              {region.name[state.language === 'zh-TW' ? 'zh' : 'en']}
+              {region.name[language === 'zh-TW' ? 'zh' : 'en']}
             </Text>
             {isFundraising && region.progress !== undefined && (
               <View style={styles.progressContainer}>

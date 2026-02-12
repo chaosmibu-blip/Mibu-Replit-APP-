@@ -23,7 +23,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { CouponTier } from '../../../types';
 import { UIColors } from '../../../../constants/Colors';
-import { useApp } from '../../../context/AppContext';
+import { useI18n } from '../../../context/AppContext';
 import { tFormat } from '../../../utils/i18n';
 
 // ============================================================
@@ -119,7 +119,7 @@ const CouponPreviewCard = React.memo(function CouponPreviewCard({
   const styles = useMemo(() => createStyles(TIER_STYLES[tier], isCompact), [tier, isCompact]);
 
   // 多語系翻譯
-  const { t } = useApp();
+  const { t } = useI18n();
 
   /**
    * 格式化有效期限

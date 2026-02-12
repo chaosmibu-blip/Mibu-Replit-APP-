@@ -24,7 +24,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { SpecialistInfo, ServiceRelation } from '../../../types';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
@@ -33,7 +33,8 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 元件主體 ============
 export function SpecialistDashboardScreen() {
-  const { state, getToken, setUser, t } = useApp();
+  const { user, getToken, setUser } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -113,7 +114,7 @@ export function SpecialistDashboardScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString(LOCALE_MAP[state.language], {
+    return date.toLocaleString(LOCALE_MAP[language], {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -139,7 +140,7 @@ export function SpecialistDashboardScreen() {
         <View style={styles.headerLeft}>
           <Text style={styles.title}>{t.specialist_dashboard}</Text>
           {/* 超級管理員才顯示角色切換器 */}
-          {state.user?.isSuperAdmin && <RoleSwitcher compact />}
+          {user?.isSuperAdmin && <RoleSwitcher compact />}
         </View>
         {/* 登出按鈕 */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>

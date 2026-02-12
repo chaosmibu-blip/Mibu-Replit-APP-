@@ -65,7 +65,7 @@ import { Calendar } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { tFormat } from '../../../utils/i18n';
 import { itineraryApi } from '../../../services/itineraryApi';
 import { locationApi } from '../../../services/locationApi';
@@ -102,7 +102,8 @@ import {
 export function ItineraryScreenV2() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { state, getToken, t } = useApp();
+  const { isAuthenticated, getToken } = useAuth();
+  const { t, language } = useI18n();
 
   // ===== 狀態管理 =====
   const [loading, setLoading] = useState(true);
@@ -696,9 +697,9 @@ export function ItineraryScreenV2() {
 
   // 取得本地化名稱
   const getLocalizedName = useCallback((item: Country | Region): string => {
-    if (state.language === 'zh-TW') return item.nameZh || item.nameEn || '';
+    if (language === 'zh-TW') return item.nameZh || item.nameEn || '';
     return item.nameEn || item.nameZh || '';
-  }, [state.language]);
+  }, [language]);
 
   // 開啟建立行程 Modal
   const openCreateModal = useCallback(() => {
@@ -1011,10 +1012,10 @@ export function ItineraryScreenV2() {
       setLoading(false);
     };
 
-    if (state.isAuthenticated) {
+    if (isAuthenticated) {
       init();
     }
-  }, [state.isAuthenticated, fetchItineraries]);
+  }, [isAuthenticated, fetchItineraries]);
 
   // 載入選中的行程詳情
   useEffect(() => {
@@ -1265,7 +1266,7 @@ export function ItineraryScreenV2() {
   }, [rightDrawerAnim, overlayAnim]);
 
   // ===== 未登入狀態 =====
-  if (!state.isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <View style={styles.emptyContainer}>
         <Ionicons name="airplane-outline" size={64} color={MibuBrand.tanLight} />

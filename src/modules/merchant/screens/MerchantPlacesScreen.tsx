@@ -26,7 +26,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 import { apiService } from '../../../services/api';
 import { MerchantPlace, PlaceSearchResult } from '../../../types';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
@@ -36,7 +37,8 @@ import { ErrorState } from '../../shared/components/ui/ErrorState';
 // ============ 主元件 ============
 export function MerchantPlacesScreen() {
   // ============ Hooks ============
-  const { state, t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   // ============ 狀態變數 ============

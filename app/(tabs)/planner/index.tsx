@@ -15,13 +15,13 @@ import { SegmentedControl } from '../../../src/modules/shared/components/ui/Segm
 import { LocationScreen } from '../../../src/modules/shared/screens/LocationScreen';
 import { ItineraryScreenV2 } from '../../../src/modules/traveler/screens/ItineraryScreenV2';
 import { ChatScreen } from '../../../src/modules/shared/screens/ChatScreen';
-import { useApp } from '../../../src/context/AppContext';
+import { useI18n } from '../../../src/context/AppContext';
 
 type SubView = 'location' | 'itinerary' | 'chat';
 
 export default function PlannerScreen() {
   const [activeView, setActiveView] = useState<SubView>('location');
-  const { t } = useApp();
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
 
   const segments = [

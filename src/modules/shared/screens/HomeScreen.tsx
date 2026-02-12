@@ -35,7 +35,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { Event } from '../../../types';
 import { eventApi } from '../../../services/api';
@@ -91,7 +91,8 @@ export function HomeScreen() {
   // ============================================================
   // Hooks & Context
   // ============================================================
-  const { state, t, getToken } = useApp();
+  const { user, getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============================================================
@@ -294,8 +295,8 @@ export function HomeScreen() {
    * 根據當前語言返回對應的標題
    */
   const getLocalizedTitle = (event: Event): string => {
-    if (state.language === 'zh-TW') return event.title;
-    if (state.language === 'en' && event.titleEn) return event.titleEn;
+    if (language === 'zh-TW') return event.title;
+    if (language === 'en' && event.titleEn) return event.titleEn;
     return event.title;
   };
 
@@ -304,8 +305,8 @@ export function HomeScreen() {
    * 根據當前語言返回對應的描述
    */
   const getLocalizedDesc = (event: Event): string => {
-    if (state.language === 'zh-TW') return event.description;
-    if (state.language === 'en' && event.descriptionEn) return event.descriptionEn;
+    if (language === 'zh-TW') return event.description;
+    if (language === 'en' && event.descriptionEn) return event.descriptionEn;
     return event.description;
   };
 
@@ -397,7 +398,7 @@ export function HomeScreen() {
               return (
                 <View style={[styles.levelAvatar, { backgroundColor: avatarColor }]}>
                   <Text style={styles.avatarInitial}>
-                    {state.user?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
+                    {user?.firstName?.charAt(0) || user?.name?.charAt(0) || '?'}
                   </Text>
                 </View>
               );

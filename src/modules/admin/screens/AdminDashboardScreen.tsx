@@ -33,7 +33,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { AdminUser, PlaceDraft, GlobalExclusion } from '../../../types';
@@ -53,7 +53,8 @@ type Tab = 'pending' | 'users' | 'drafts' | 'exclusions' | 'announcements';
  */
 export function AdminDashboardScreen() {
   // ============ Hooks & Context ============
-  const { state, getToken, setUser, t } = useApp();
+  const { user, getToken, setUser } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============ 狀態管理 ============
@@ -299,7 +300,7 @@ export function AdminDashboardScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(LOCALE_MAP[state.language], {
+    return date.toLocaleDateString(LOCALE_MAP[language], {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

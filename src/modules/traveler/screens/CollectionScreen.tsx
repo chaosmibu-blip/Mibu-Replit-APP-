@@ -42,7 +42,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
 import { collectionApi } from '../../../services/collectionApi';
 import { contributionApi } from '../../../services/contributionApi';
 import { GachaItem, Language, CollectionItem } from '../../../types';
@@ -121,7 +121,7 @@ interface PlaceDetailModalProps {
  */
 function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: PlaceDetailModalProps) {
   const [showActionMenu, setShowActionMenu] = useState(false);
-  const { t } = useApp();
+  const { t } = useI18n();
   const placeName = getPlaceName(item);
   const description = getDescription(item);
   const category = typeof item.category === 'string' ? item.category.toLowerCase() : '';
@@ -240,8 +240,10 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
 }
 
 export function CollectionScreen() {
-  const { state, t, getToken } = useApp();
-  const { collection: localCollection, language } = state;
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
+  const { gachaState } = useGacha();
+  const localCollection = gachaState.collection;
   // 【圖鑑導航】麵包屑導航狀態
   const [navLevel, setNavLevel] = useState<0 | 1 | 2>(0);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);

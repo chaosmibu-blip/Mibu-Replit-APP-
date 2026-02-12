@@ -24,7 +24,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
 import { mailboxApi } from '../../../services/mailboxApi';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
@@ -54,7 +54,9 @@ const REWARD_ICON_MAP: Record<string, string> = {
 // ========== 元件 ==========
 
 export function MailboxDetailScreen() {
-  const { t, getToken, refreshUnreadCount } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
+  const { refreshUnreadCount } = useGacha();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 

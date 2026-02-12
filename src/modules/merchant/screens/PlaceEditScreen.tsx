@@ -26,7 +26,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 import { merchantApi } from '../../../services/merchantApi';
 import { MerchantPlace, UpdateMerchantPlaceParams, MerchantPlaceOpeningHours } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
@@ -34,7 +35,8 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 // ============ 主元件 ============
 export function PlaceEditScreen() {
   // ============ Hooks ============
-  const { state, t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   // 將路由參數轉為數字 ID

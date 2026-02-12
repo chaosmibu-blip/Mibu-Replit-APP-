@@ -41,7 +41,7 @@ import { Image as ExpoImage } from 'expo-image';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
 import { Button } from '../../shared/components/ui/Button';
 import { Select } from '../../shared/components/ui/Select';
 import { LoadingAdScreen } from '../../shared/components/LoadingAdScreen';
@@ -106,7 +106,9 @@ export function GachaScreen() {
   // Hooks & Context
   // ============================================================
   const router = useRouter();
-  const { state, t, addToCollection, setResult, getToken, setUser } = useApp();
+  const { user, getToken, setUser } = useAuth();
+  const { t, language } = useI18n();
+  const { addToCollection, setResult } = useGacha();
 
   // ============================================================
   // 狀態管理 - 選擇區域
@@ -318,7 +320,7 @@ export function GachaScreen() {
    * 根據當前語言返回對應名稱
    */
   const getLocalizedName = (item: Country | Region): string => {
-    const lang = state.language;
+    const lang = language;
     if (lang === 'zh-TW') return item.nameZh || item.nameEn || '';
     if (lang === 'ja') return item.nameJa || item.nameEn || '';
     if (lang === 'ko') return item.nameKo || item.nameEn || '';
@@ -332,7 +334,7 @@ export function GachaScreen() {
   const getLocalizedPoolItemName = (name: LocalizedContent | string): string => {
     if (typeof name === 'string') return name;
     if (typeof name === 'object' && name !== null) {
-      return name[state.language] || name['zh-TW'] || name['en'] || '';
+      return name[language] || name['zh-TW'] || name['en'] || '';
     }
     return '';
   };
@@ -353,7 +355,7 @@ export function GachaScreen() {
    */
   const checkDailyLimit = async (): Promise<boolean> => {
     // 超級管理員不限次數（後端 isSuperAdmin 判斷，不用 email）
-    if (state.user?.isSuperAdmin) {
+    if (user?.isSuperAdmin) {
       return true;
     }
 
@@ -878,7 +880,7 @@ export function GachaScreen() {
           // footerContent={(closeModal) => (
           //   <View style={{ alignItems: 'center', paddingTop: 24, paddingBottom: 8 }}>
           //     <Text style={{ fontSize: 15, color: MibuBrand.copper, lineHeight: 24, textAlign: 'center' }}>
-          //       {state.language === 'zh-TW'
+          //       {language === 'zh-TW'
           //         ? '我們正在努力增加更多國家\n現在你也可以一起幫助我們！'
           //         : 'We\'re working on adding more countries.\nNow you can help us too!'}
           //     </Text>
@@ -899,7 +901,7 @@ export function GachaScreen() {
           //     >
           //       <Ionicons name="globe-outline" size={16} color={MibuBrand.warmWhite} />
           //       <Text style={{ fontSize: 13, fontWeight: '700', color: MibuBrand.warmWhite, marginLeft: 6 }}>
-          //         {state.language === 'zh-TW' ? '解鎖全球地圖' : 'Unlock Global Map'}
+          //         {language === 'zh-TW' ? '解鎖全球地圖' : 'Unlock Global Map'}
           //       </Text>
           //     </TouchableOpacity>
           //   </View>
@@ -1368,7 +1370,7 @@ export function GachaScreen() {
           setIsApiComplete(false);
         }}
         isApiComplete={isApiComplete}
-        language={state.language}
+        language={language}
         translations={{
           generatingItinerary: t.generatingItinerary || '正在生成行程...',
           sponsorAd: t.sponsorAd || '贊助商廣告 (模擬)',
@@ -1381,7 +1383,7 @@ export function GachaScreen() {
       <TutorialOverlay
         storageKey="gacha_tutorial"
         steps={GACHA_TUTORIAL_STEPS}
-        language={state.language as 'zh-TW' | 'en'}
+        language={language as 'zh-TW' | 'en'}
       />
     </ScrollView>
   );

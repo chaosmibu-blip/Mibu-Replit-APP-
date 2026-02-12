@@ -20,13 +20,14 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 元件本體 ============
 
 export function PendingApprovalScreen() {
-  const { state, setUser, t } = useApp();
+  const { user, setUser } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   // ============ 輔助函數 ============
@@ -50,7 +51,7 @@ export function PendingApprovalScreen() {
   };
 
   // 取得角色顯示文字
-  const roleLabel = ROLE_LABEL_MAP[state.user?.role || ''] || state.user?.role;
+  const roleLabel = ROLE_LABEL_MAP[user?.role || ''] || user?.role;
 
   // ============ 主要渲染 ============
 

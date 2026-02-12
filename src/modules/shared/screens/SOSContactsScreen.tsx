@@ -33,7 +33,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { commonApi } from '../../../services/commonApi';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { SOSContact, CreateSOSContactParams } from '../../../types/sos';
@@ -55,7 +55,8 @@ const RELATIONSHIP_OPTIONS = [
 // ============ 元件本體 ============
 
 export function SOSContactsScreen() {
-  const { state, getToken, t } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   // ============ 狀態管理 ============

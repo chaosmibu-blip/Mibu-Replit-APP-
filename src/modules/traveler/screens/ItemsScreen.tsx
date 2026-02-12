@@ -24,7 +24,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { useApp } from '../../../context/AppContext';
+import { useI18n, useGacha } from '../../../context/AppContext';
 import { GachaItem, Language, LocalizedContent, GachaMeta } from '../../../types';
 import { getCategoryLabel, getCategoryColor } from '../../../constants/translations';
 import { MibuBrand, SemanticColors, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
@@ -305,11 +305,12 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
 
 export function ItemsScreen() {
   const router = useRouter();
-  const { state, t } = useApp();
+  const { t, language } = useI18n();
+  const { gachaState } = useGacha();
 
-  // 從 state 取得扭蛋結果
-  const items = state.result?.inventory || [];
-  const meta = state.result?.meta;
+  // 從 gachaState 取得扭蛋結果
+  const items = gachaState.result?.inventory || [];
+  const meta = gachaState.result?.meta;
 
   // ============================================================
   // 狀態管理 - 數量不足提示
@@ -401,7 +402,7 @@ export function ItemsScreen() {
   const getLocalizedString = (content: LocalizedContent | string | null | undefined): string => {
     if (typeof content === 'string') return content;
     if (typeof content === 'object' && content !== null) {
-      return content[state.language] || content['zh-TW'] || content['en'] || '';
+      return content[language] || content['zh-TW'] || content['en'] || '';
     }
     return '';
   };
@@ -474,7 +475,7 @@ export function ItemsScreen() {
             key={`${item.id}-${index}`}
             item={item}
             translations={t}
-            language={state.language}
+            language={language}
           />
         ))}
       </ScrollView>

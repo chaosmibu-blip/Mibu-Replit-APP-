@@ -35,7 +35,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { rulesApi } from '../../../services/rulesApi';
 import { economyApi } from '../../../services/economyApi';
 import { CoinReward } from '../../shared/components/ui/CoinReward';
@@ -93,7 +93,8 @@ function getStatusIcon(status: RuleStatus): keyof typeof Ionicons.glyphMap {
 // ============================================================
 
 export function EconomyScreen() {
-  const { state, t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   // ============================================================

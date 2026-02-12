@@ -30,7 +30,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
@@ -86,7 +86,8 @@ const NOTIF_ITEMS: NotifToggleItem[] = [
 
 export function NotificationPreferencesScreen() {
   const router = useRouter();
-  const { t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
 
   // 狀態
   const [loading, setLoading] = useState(true);

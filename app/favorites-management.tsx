@@ -21,7 +21,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../src/context/AppContext';
+import { useI18n } from '../src/context/AppContext';
 import { MibuBrand } from '../constants/Colors';
 
 type TabType = 'favorites' | 'blacklist';
@@ -38,7 +38,7 @@ const MOCK_BLACKLIST = [
 
 export default function FavoritesManagementScreen() {
   const router = useRouter();
-  const { t } = useApp();
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<TabType>('favorites');
   const [favorites, setFavorites] = useState(MOCK_FAVORITES);
   const [blacklist, setBlacklist] = useState(MOCK_BLACKLIST);

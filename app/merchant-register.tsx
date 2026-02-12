@@ -29,7 +29,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useApp } from '../src/context/AppContext';
+import { useI18n } from '../src/context/AppContext';
 import { apiService } from '../src/services/api';
 import { MibuBrand, UIColors } from '../constants/Colors';
 import { MerchantApplyParams } from '../src/types';
@@ -47,7 +47,7 @@ const BUSINESS_CATEGORIES = [
 ];
 
 export default function MerchantRegisterScreen() {
-  const { state, t } = useApp();
+  const { t } = useI18n();
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);

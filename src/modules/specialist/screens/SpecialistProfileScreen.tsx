@@ -22,14 +22,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { SpecialistInfo } from '../../../types';
 import { UIColors } from '../../../../constants/Colors';
 
 // ============ 元件主體 ============
 export function SpecialistProfileScreen() {
-  const { state, getToken, t } = useApp();
+  const { user, getToken } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -115,7 +116,7 @@ export function SpecialistProfileScreen() {
           <Ionicons name="person" size={48} color="#6366f1" />
         </View>
         {/* 專員名稱 */}
-        <Text style={styles.name}>{specialist?.name || state.user?.name || '-'}</Text>
+        <Text style={styles.name}>{specialist?.name || user?.name || '-'}</Text>
         {/* 上線狀態標籤 */}
         <View style={[
           styles.onlineBadge,

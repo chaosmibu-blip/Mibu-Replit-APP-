@@ -12,7 +12,8 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 import { apiService } from '../../../services/api';
 import { MerchantApplyParams } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
@@ -33,7 +34,8 @@ const BUSINESS_CATEGORY_KEYS = [
 ] as const;
 
 export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegistrationFormProps) {
-  const { state, t, getToken } = useApp();
+  const { user, getToken } = useAuth();
+  const { t } = useI18n();
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<MerchantApplyParams>({
@@ -44,7 +46,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
     address: '',
     phone: '',
     mobile: '',
-    email: state.user?.email || '',
+    email: user?.email || '',
   });
 
   const handleSubmit = async () => {

@@ -10,12 +10,12 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../src/context/AppContext';
+import { useI18n } from '../src/context/AppContext';
 import { MibuBrand } from '../constants/Colors';
 
 export default function RegisterSuccessScreen() {
   const router = useRouter();
-  const { t } = useApp();
+  const { t } = useI18n();
 
   const texts = {
     title: t.auth_applicationSubmitted,

@@ -27,7 +27,7 @@ import {
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../src/context/AppContext';
+import { useAuth, useI18n } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
 import { MibuBrand } from '../constants/Colors';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
@@ -116,7 +116,8 @@ const TRANSLATIONS = {
 };
 
 export default function RegisterScreen() {
-  const { setUser, state } = useApp();
+  const { setUser } = useAuth();
+  const { language } = useI18n();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -125,7 +126,7 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const t = TRANSLATIONS[state.language] || TRANSLATIONS['zh-TW'];
+  const t = TRANSLATIONS[language] || TRANSLATIONS['zh-TW'];
 
   const handleRegister = async () => {
     if (!email.trim()) {
@@ -246,8 +247,8 @@ export default function RegisterScreen() {
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               accessibilityLabel={showPassword
-                ? (state.language === 'zh-TW' ? '隱藏密碼' : 'Hide password')
-                : (state.language === 'zh-TW' ? '顯示密碼' : 'Show password')}
+                ? (language === 'zh-TW' ? '隱藏密碼' : 'Hide password')
+                : (language === 'zh-TW' ? '顯示密碼' : 'Show password')}
               accessibilityRole="button"
             >
               <Ionicons
@@ -272,8 +273,8 @@ export default function RegisterScreen() {
             <TouchableOpacity
               onPress={() => setShowConfirmPassword(!showConfirmPassword)}
               accessibilityLabel={showConfirmPassword
-                ? (state.language === 'zh-TW' ? '隱藏確認密碼' : 'Hide confirm password')
-                : (state.language === 'zh-TW' ? '顯示確認密碼' : 'Show confirm password')}
+                ? (language === 'zh-TW' ? '隱藏確認密碼' : 'Hide confirm password')
+                : (language === 'zh-TW' ? '顯示確認密碼' : 'Show confirm password')}
               accessibilityRole="button"
             >
               <Ionicons

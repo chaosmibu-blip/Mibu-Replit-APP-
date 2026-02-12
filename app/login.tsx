@@ -36,7 +36,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useGoogleAuth } from '../hooks/useGoogleAuth';
-import { useApp } from '../src/context/AppContext';
+import { useAuth, useI18n } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
 import { UserRole } from '../src/types';
 import { MibuBrand, RoleColors, UIColors } from '../constants/Colors';
@@ -92,7 +92,8 @@ const LANGUAGE_OPTIONS: { code: 'zh-TW' | 'en' | 'ja' | 'ko'; label: string; fla
 ];
 
 export default function LoginScreen() {
-  const { setUser, state, setLanguage, t } = useApp();
+  const { setUser } = useAuth();
+  const { t, language, setLanguage } = useI18n();
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(false);
   const [selectedPortal, setSelectedPortal] = useState<PortalType>('traveler');
@@ -103,7 +104,7 @@ export default function LoginScreen() {
   const { signInWithGoogle, isReady: isGoogleReady } = useGoogleAuth();
 
   const redirectUri = Linking.createURL('auth/callback');
-  const portals = PORTAL_CONFIGS[state.language] || PORTAL_CONFIGS['zh-TW'];
+  const portals = PORTAL_CONFIGS[language] || PORTAL_CONFIGS['zh-TW'];
   const currentPortal = portals.find(p => p.type === selectedPortal) || portals[0];
 
   const handleDeepLink = useCallback(async (event: { url: string }) => {
@@ -163,7 +164,7 @@ export default function LoginScreen() {
         await fetchUserWithTokenDirect(parsed.queryParams.token);
       }
     }
-  }, [state.language]);
+  }, [language]);
 
   const fetchUserWithTokenDirect = async (token: string) => {
     try {
@@ -671,7 +672,7 @@ export default function LoginScreen() {
     );
   }
 
-  // 使用全域 t 翻譯字典（來自 useApp）
+  // 使用全域 t 翻譯字典（來自 useI18n）
 
   return (
     <View style={styles.container}>
@@ -748,7 +749,7 @@ export default function LoginScreen() {
                 key={lang.code}
                 style={[
                   styles.languageMenuItem,
-                  state.language === lang.code && styles.languageMenuItemActive,
+                  language === lang.code && styles.languageMenuItemActive,
                 ]}
                 onPress={() => {
                   setLanguage(lang.code);
@@ -760,7 +761,7 @@ export default function LoginScreen() {
                 <Text style={styles.languageFlag}>{lang.flag}</Text>
                 <Text style={[
                   styles.languageMenuText,
-                  state.language === lang.code && styles.languageMenuTextActive,
+                  language === lang.code && styles.languageMenuTextActive,
                 ]}>
                   {lang.label}
                 </Text>
