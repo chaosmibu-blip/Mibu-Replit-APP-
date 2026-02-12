@@ -9,9 +9,9 @@
  * - 領取按鈕（未領取狀態）
  * - 自動標記已讀（進入頁面即觸發）
  *
- * 更新日期：2026-02-10（初版建立）
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -24,8 +24,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
-import { mailboxApi } from '../../../services/mailboxApi';
+import { useI18n, useGacha } from '../../../context/AppContext';
+import { useMailboxDetail, useClaimItem } from '../../../hooks/useMailboxQueries';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import type { MailboxDetailItem } from '../../../types/mailbox';
@@ -54,16 +54,22 @@ const REWARD_ICON_MAP: Record<string, string> = {
 // ========== 元件 ==========
 
 export function MailboxDetailScreen() {
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const { refreshUnreadCount } = useGacha();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [item, setItem] = useState<MailboxDetailItem | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [claiming, setClaiming] = useState(false);
-  const claimingRef = useRef(false);
+  // ========== React Query 資料查詢 ==========
+
+  const numericId = id ? Number(id) : null;
+  const detailQuery = useMailboxDetail(numericId);
+  const claimMutation = useClaimItem();
+
+  // 衍生狀態
+  // 防護後端回傳格式不符（教訓 #010）
+  const item = detailQuery.data?.item ?? null;
+  const loading = detailQuery.isLoading;
+  const claiming = claimMutation.isPending;
 
   // ========== 安全導航（deep link 可能無歷史堆疊） ==========
 
@@ -75,66 +81,26 @@ export function MailboxDetailScreen() {
     }
   }, [router]);
 
-  // ========== 載入詳情 ==========
-
-  const loadDetail = useCallback(async () => {
-    // 驗證 id 參數（deep link 可能傳入非數字）
-    const numericId = Number(id);
-    if (!id || isNaN(numericId)) {
-      Alert.alert(t.mailbox_loadFailed, t.mailbox_loadFailedDesc);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await mailboxApi.getDetail(token, numericId);
-      // 防護後端回傳格式不符（教訓 #010）
-      if (!response.item) {
-        Alert.alert(t.mailbox_loadFailed, t.mailbox_loadFailedDesc);
-        return;
-      }
-      setItem(response.item);
-    } catch {
-      Alert.alert(t.mailbox_loadFailed, t.mailbox_loadFailedDesc);
-    } finally {
-      setLoading(false);
-    }
-  }, [getToken, id, t]);
-
-  useEffect(() => {
-    loadDetail();
-  }, [loadDetail]);
-
   // ========== 領取 ==========
 
-  const handleClaim = useCallback(async () => {
-    if (claimingRef.current || !item) return;
-    claimingRef.current = true;
-    setClaiming(true);
+  const handleClaim = useCallback(() => {
+    if (claiming || !item) return;
 
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const result = await mailboxApi.claimItem(token, item.id);
-      if (result.partial) {
-        Alert.alert(t.mailbox_claimPartial);
-      } else {
-        Alert.alert(t.mailbox_claimSuccess);
-      }
-      // 重新載入以更新狀態 + 刷新全域未讀計數
-      loadDetail();
-      refreshUnreadCount();
-    } catch {
-      Alert.alert(t.mailbox_claimFailed);
-    } finally {
-      setClaiming(false);
-      claimingRef.current = false;
-    }
-  }, [item, getToken, t, loadDetail, refreshUnreadCount]);
+    claimMutation.mutate(item.id, {
+      onSuccess: (result) => {
+        if (result.partial) {
+          Alert.alert(t.mailbox_claimPartial);
+        } else {
+          Alert.alert(t.mailbox_claimSuccess);
+        }
+        // 刷新全域未讀計數
+        refreshUnreadCount();
+      },
+      onError: () => {
+        Alert.alert(t.mailbox_claimFailed);
+      },
+    });
+  }, [item, claiming, claimMutation, t, refreshUnreadCount]);
 
   // ========== 獎勵渲染 ==========
 

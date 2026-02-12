@@ -11,9 +11,9 @@
  * - 下拉重新整理 + 分頁載入
  * - 未讀紅點整合
  *
- * 更新日期：2026-02-10（初版建立）
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query + useInfiniteQuery）
  */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -31,8 +31,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { useAuth, useI18n } from '../../../context/AppContext';
-import { mailboxApi } from '../../../services/mailboxApi';
+import { useI18n } from '../../../context/AppContext';
+import { useMailboxList, useClaimAll, useRedeemPromoCode } from '../../../hooks/useMailboxQueries';
 import { ApiError } from '../../../services/base';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
@@ -68,130 +68,77 @@ const SOURCE_ICON_MAP: Record<string, string> = {
 // ========== 元件 ==========
 
 export function MailboxScreen() {
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
-  // 狀態
-  const [activeTab, setActiveTab] = useState<MailboxStatus>('unclaimed');
-  const [items, setItems] = useState<MailboxListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [claimingAll, setClaimingAll] = useState(false);
+  // ========== 本地狀態 ==========
 
-  // 優惠碼
+  const [activeTab, setActiveTab] = useState<MailboxStatus>('unclaimed');
   const [promoCode, setPromoCode] = useState('');
-  const [redeeming, setRedeeming] = useState(false);
 
   // 防重複觸發（教訓 #006：useState 是異步的，ref 才能即時鎖定）
-  const claimingRef = useRef(false);
   const redeemingRef = useRef(false);
-  // 跳過首次 focus（useEffect 已處理）
-  const hasInitialLoaded = useRef(false);
 
-  // ========== 資料載入 ==========
+  // ========== React Query 資料查詢 ==========
 
-  const loadData = useCallback(async (pageNum = 1, status = activeTab) => {
-    try {
-      const token = await getToken();
-      if (!token) return;
+  const listQuery = useMailboxList(activeTab);
+  const claimAllMutation = useClaimAll();
+  const redeemMutation = useRedeemPromoCode();
 
-      const response = await mailboxApi.getList(token, {
-        page: pageNum,
-        limit: PAGE_SIZE,
-        status,
-      });
-
-      if (pageNum === 1) {
-        setItems(response.items);
-      } else {
-        setItems(prev => [...prev, ...response.items]);
-      }
-      setPage(pageNum);
-      setTotalPages(response.pagination.totalPages);
-    } catch {
-      if (pageNum === 1) {
-        Alert.alert(t.mailbox_loadFailed, t.mailbox_loadFailedDesc);
-      }
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-      setLoadingMore(false);
-    }
-  }, [activeTab, getToken, t]);
-
-  // tab 切換時重新載入
-  useEffect(() => {
-    setLoading(true);
-    setItems([]);
-    setPage(1);
-    loadData(1, activeTab);
-    hasInitialLoaded.current = true;
-  }, [activeTab, loadData]);
+  // 衍生狀態（從 infinite query 展平所有頁面的項目）
+  const items: MailboxListItem[] = listQuery.data?.pages.flatMap((page: any) => page.items) ?? [];
+  const loading = listQuery.isLoading;
+  const refreshing = listQuery.isFetching && !listQuery.isLoading && !listQuery.isFetchingNextPage;
+  const loadingMore = listQuery.isFetchingNextPage;
+  const claimingAll = claimAllMutation.isPending;
+  const redeeming = redeemMutation.isPending;
 
   // 從詳情頁返回時自動刷新（例如領取獎勵後）
   useFocusEffect(
     useCallback(() => {
-      // 跳過首次（useEffect 已處理），避免重複呼叫
-      if (!hasInitialLoaded.current) return;
-      loadData(1, activeTab);
-    }, [loadData, activeTab])
+      listQuery.refetch();
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   // 下拉重新整理
   const handleRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadData(1, activeTab);
-  }, [activeTab, loadData]);
+    listQuery.refetch();
+  }, [listQuery]);
 
   // 加載更多
   const handleLoadMore = useCallback(() => {
-    if (loadingMore || page >= totalPages) return;
-    setLoadingMore(true);
-    loadData(page + 1, activeTab);
-  }, [loadingMore, page, totalPages, activeTab, loadData]);
+    if (loadingMore || !listQuery.hasNextPage) return;
+    listQuery.fetchNextPage();
+  }, [loadingMore, listQuery]);
 
   // ========== 一鍵全部領取 ==========
 
-  const handleClaimAll = useCallback(async () => {
-    if (claimingRef.current) return;
-    claimingRef.current = true;
-    setClaimingAll(true);
-
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const result = await mailboxApi.claimAll(token);
-      if (result.failed === 0) {
-        Alert.alert(
-          t.mailbox_claimSuccess,
-          t.mailbox_claimAllSuccess.replace('{count}', String(result.claimed)),
-        );
-      } else {
-        Alert.alert(
-          t.mailbox_claimPartial,
-          t.mailbox_claimAllFailed
-            .replace('{success}', String(result.claimed))
-            .replace('{failed}', String(result.failed)),
-        );
-      }
-      // 重新載入
-      loadData(1, activeTab);
-    } catch {
-      Alert.alert(t.mailbox_claimFailed);
-    } finally {
-      setClaimingAll(false);
-      claimingRef.current = false;
-    }
-  }, [getToken, t, activeTab, loadData]);
+  const handleClaimAll = useCallback(() => {
+    claimAllMutation.mutate(undefined, {
+      onSuccess: (result) => {
+        if (result.failed === 0) {
+          Alert.alert(
+            t.mailbox_claimSuccess,
+            t.mailbox_claimAllSuccess.replace('{count}', String(result.claimed)),
+          );
+        } else {
+          Alert.alert(
+            t.mailbox_claimPartial,
+            t.mailbox_claimAllFailed
+              .replace('{success}', String(result.claimed))
+              .replace('{failed}', String(result.failed)),
+          );
+        }
+      },
+      onError: () => {
+        Alert.alert(t.mailbox_claimFailed);
+      },
+    });
+  }, [claimAllMutation, t]);
 
   // ========== 優惠碼兌換 ==========
 
-  const handleRedeemPromo = useCallback(async () => {
+  const handleRedeemPromo = useCallback(() => {
     // ref lock 防止快速雙擊重複送出（教訓 #006）
     if (redeemingRef.current) return;
 
@@ -202,30 +149,24 @@ export function MailboxScreen() {
     }
 
     redeemingRef.current = true;
-    setRedeeming(true);
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      await mailboxApi.redeemPromoCode(token, code);
-      Alert.alert(t.mailbox_claimSuccess, t.mailbox_promoSuccess);
-      setPromoCode('');
-      // 重新載入未領取列表
-      if (activeTab === 'unclaimed') {
-        loadData(1, 'unclaimed');
-      }
-    } catch (error: unknown) {
-      // 優先用 ApiError.serverMessage 顯示後端具體錯誤（如「已兌換過」、「已過期」）
-      if (error instanceof ApiError && error.serverMessage) {
-        Alert.alert(t.mailbox_promoFailed, error.serverMessage);
-      } else {
-        Alert.alert(t.mailbox_promoFailed);
-      }
-    } finally {
-      setRedeeming(false);
-      redeemingRef.current = false;
-    }
-  }, [promoCode, getToken, t, activeTab, loadData]);
+    redeemMutation.mutate(code, {
+      onSuccess: () => {
+        Alert.alert(t.mailbox_claimSuccess, t.mailbox_promoSuccess);
+        setPromoCode('');
+      },
+      onError: (error: unknown) => {
+        // 優先用 ApiError.serverMessage 顯示後端具體錯誤（如「已兌換過」、「已過期」）
+        if (error instanceof ApiError && error.serverMessage) {
+          Alert.alert(t.mailbox_promoFailed, error.serverMessage);
+        } else {
+          Alert.alert(t.mailbox_promoFailed);
+        }
+      },
+      onSettled: () => {
+        redeemingRef.current = false;
+      },
+    });
+  }, [promoCode, redeemMutation, t]);
 
   // ========== 渲染輔助 ==========
 
@@ -442,7 +383,7 @@ export function MailboxScreen() {
           <FlatList
             data={items}
             renderItem={renderItem}
-            keyExtractor={item => String(item.id)}
+            keyExtractor={(item: MailboxListItem) => String(item.id)}
             contentContainerStyle={styles.listContent}
             refreshControl={
               <RefreshControl

@@ -34,7 +34,7 @@
  * 更新日期：2026-02-12（Phase 3 統一快取策略）
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import type { UseQueryOptions, UseMutationOptions, QueryKey } from '@tanstack/react-query';
 import { useAuth } from '../context/AppContext';
 
@@ -68,6 +68,40 @@ export function useAuthQuery<TData>(
     },
     // 未登入時停用查詢（由外部 enabled 控制或預設啟用）
     ...options,
+  });
+}
+
+// ============ useAuthInfiniteQuery ============
+
+/**
+ * 帶認證的分頁查詢 Hook
+ *
+ * 用於分頁列表（信箱、通知等），自動注入 token。
+ * 支援 fetchNextPage、isFetchingNextPage 等分頁狀態。
+ *
+ * @param queryKey - 查詢 key
+ * @param queryFn - 查詢函數，接收 token 和 pageParam
+ * @param options - React Query infinite query 選項
+ */
+export function useAuthInfiniteQuery<TData>(
+  queryKey: QueryKey,
+  queryFn: (token: string, pageParam: number) => Promise<TData>,
+  options: {
+    initialPageParam: number;
+    getNextPageParam: (lastPage: TData) => number | undefined;
+  },
+) {
+  const { getToken } = useAuth();
+
+  return useInfiniteQuery({
+    queryKey,
+    queryFn: async ({ pageParam }: { pageParam: number }) => {
+      const token = await getToken();
+      if (!token) throw new Error('未登入');
+      return queryFn(token, pageParam);
+    },
+    initialPageParam: options.initialPageParam,
+    getNextPageParam: options.getNextPageParam,
   });
 }
 
