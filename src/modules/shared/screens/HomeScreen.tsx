@@ -7,15 +7,14 @@
  * - 每日任務卡片（點擊跳轉 /economy）
  * - 活動 Tab 切換（公告 / 在地活動 / 限時活動）
  *
- * 串接 API：
- * - eventApi.getHomeEvents() - 取得首頁活動
- * - economyApi.getCoins() - 取得金幣資訊（#039 重構）
- * - economyApi.getPerks() - 取得權益資訊（#039 重構）
- * - rulesApi.getRules({ type: 'quest', resetType: 'daily' }) - 取得每日任務進度（#043）
+ * 資料來源（React Query hooks）：
+ * - useHomeEvents() - 首頁活動（不需認證）
+ * - useCoins() / usePerks() - 金幣與權益（共用 economy hooks）
+ * - useDailyTasks() - 每日任務摘要（衍生自 useRules）
  *
- * @updated 2026-02-05 #039 經濟系統重構（等級 → 金幣）
+ * @updated 2026-02-12 Phase 3 遷移至 React Query
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -35,12 +34,12 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth, useI18n } from '../../../context/AppContext';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { Event } from '../../../types';
-import { eventApi } from '../../../services/api';
-import { economyApi } from '../../../services/economyApi';
-import { rulesApi } from '../../../services/rulesApi';
+import { useHomeEvents, useDailyTasks } from '../../../hooks/useHomeQueries';
+import { useCoins, usePerks } from '../../../hooks/useEconomyQueries';
 import { avatarService } from '../../../services/avatarService';
 import { AvatarPreset } from '../../../types/asset';
 
@@ -91,17 +90,60 @@ export function HomeScreen() {
   // ============================================================
   // Hooks & Context
   // ============================================================
-  const { user, getToken } = useAuth();
+  const { user } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   // ============================================================
-  // 狀態管理
+  // React Query 資料查詢
   // ============================================================
 
-  // 載入狀態
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const eventsQuery = useHomeEvents();
+  const coinsQuery = useCoins();
+  const perksQuery = usePerks();
+  const dailyTasksQuery = useDailyTasks();
+
+  // 衍生狀態
+  const loading = eventsQuery.isLoading;
+  const refreshing = eventsQuery.isFetching && !eventsQuery.isLoading;
+
+  const events = eventsQuery.data ?? { announcements: [], festivals: [], limitedEvents: [] };
+  const coinsData = coinsQuery.data;
+  const perksData = perksQuery.data;
+  const dailyTask = dailyTasksQuery.dailyTask;
+
+  /**
+   * 根據累計金幣決定稱號
+   * 5000+ = 傳奇旅者 / 2000+ = 資深冒險家 / 500+ = 旅行達人
+   * 100+ = 探索者 / 0+ = 旅行新手
+   */
+  const getCoinTitle = (totalEarned: number): string => {
+    if (totalEarned >= 5000) return t.home_titleLegendary;
+    if (totalEarned >= 2000) return t.home_titleExpert;
+    if (totalEarned >= 500) return t.home_titleTraveler;
+    if (totalEarned >= 100) return t.home_titleExplorer;
+    return t.home_titleNewbie;
+  };
+
+  // 金幣衍生資料
+  const userCoins: UserCoinsData = {
+    balance: coinsData?.balance ?? 0,
+    totalEarned: coinsData?.totalEarned ?? 0,
+    title: getCoinTitle(coinsData?.totalEarned ?? 0),
+    loginStreak: coinsData?.loginStreak ?? perksData?.loginStreak ?? 1,
+  };
+
+  // 權益衍生資料
+  const userPerks: UserPerksData = {
+    dailyPullLimit: perksData?.dailyPullLimit ?? 36,
+    inventorySlots: perksData?.inventorySlots ?? 30,
+    canApplySpecialist: perksData?.canApplySpecialist ?? false,
+  };
+
+  // ============================================================
+  // 本地狀態（非 API 資料）
+  // ============================================================
 
   // 活動 Tab 當前選中項（公告/在地/限時）
   const [activeEventTab, setActiveEventTab] = useState<'announcements' | 'local' | 'flash'>('announcements');
@@ -112,142 +154,6 @@ export function HomeScreen() {
   const [customAvatarUrl, setCustomAvatarUrl] = useState<string | null>(null);
   // 頭像預設列表（從 avatarService 動態載入）
   const [avatarPresets, setAvatarPresets] = useState<AvatarPreset[]>([]);
-
-  // 用戶金幣資料（#039 重構）
-  const [userCoins, setUserCoins] = useState<UserCoinsData>({
-    balance: 0,
-    totalEarned: 0,
-    title: '',
-    loginStreak: 1,
-  });
-
-  // 用戶權益資料（#039 重構）
-  const [userPerks, setUserPerks] = useState<UserPerksData>({
-    dailyPullLimit: 36,
-    inventorySlots: 30,
-    canApplySpecialist: false,
-  });
-
-  // 每日任務資料（預設值）
-  const [dailyTask, setDailyTask] = useState<DailyTaskSummary>({
-    completed: 0,
-    total: 5,
-    earnedCoins: 0,
-  });
-
-  // 活動資料（公告、節日、限時活動）
-  const [events, setEvents] = useState<{
-    announcements: Event[];
-    festivals: Event[];
-    limitedEvents: Event[];
-  }>({ announcements: [], festivals: [], limitedEvents: [] });
-
-  // ============================================================
-  // 資料載入
-  // ============================================================
-
-  /**
-   * 載入首頁所有資料
-   * 包含：活動列表、用戶等級、每日任務
-   */
-  const loadData = useCallback(async () => {
-    try {
-      const token = await getToken();
-
-      // 載入活動列表（公告、節日、限時活動）
-      const eventsRes = await eventApi.getHomeEvents().catch(() => ({
-        announcements: [],
-        festivals: [],
-        limitedEvents: [],
-      }));
-      setEvents(eventsRes);
-
-      // 載入用戶金幣和權益資料（#039 重構）
-      if (token) {
-        try {
-          // 並行呼叫金幣和權益 API
-          const [coinsResponse, perksResponse] = await Promise.all([
-            economyApi.getCoins(token),
-            economyApi.getPerks(token),
-          ]);
-
-          /**
-           * 根據累計金幣決定稱號
-           * 5000+ = 傳奇旅者
-           * 2000+ = 資深冒險家
-           * 500+  = 旅行達人
-           * 100+  = 探索者
-           * 0+    = 旅行新手
-           */
-          const getCoinTitle = (totalEarned: number): string => {
-            if (totalEarned >= 5000) return t.home_titleLegendary;
-            if (totalEarned >= 2000) return t.home_titleExpert;
-            if (totalEarned >= 500) return t.home_titleTraveler;
-            if (totalEarned >= 100) return t.home_titleExplorer;
-            return t.home_titleNewbie;
-          };
-
-          if (coinsResponse) {
-            // loginStreak 可能在 perksResponse 或 coinsResponse 中
-            const streak = coinsResponse.loginStreak ?? perksResponse.loginStreak ?? 1;
-            setUserCoins({
-              balance: coinsResponse.balance ?? 0,
-              totalEarned: coinsResponse.totalEarned ?? 0,
-              title: getCoinTitle(coinsResponse.totalEarned ?? 0),
-              loginStreak: streak,
-            });
-          }
-
-          if (perksResponse) {
-            setUserPerks({
-              dailyPullLimit: perksResponse.dailyPullLimit ?? 36,
-              inventorySlots: perksResponse.inventorySlots ?? 30,
-              canApplySpecialist: perksResponse.canApplySpecialist ?? false,
-            });
-          }
-        } catch {
-          // 忽略錯誤，使用預設值
-        }
-
-        // 載入每日任務進度（#043 改用規則引擎）
-        try {
-          const rulesRes = await rulesApi.getRules(token, { type: 'quest', resetType: 'daily' });
-          if (rulesRes.quests) {
-            // 從規則引擎的 quests 統計每日任務摘要
-            const questItems = rulesRes.quests.items || [];
-            const completedCount = questItems.filter(
-              q => q.status === 'completed' || q.status === 'claimed'
-            ).length;
-            // 已領取的任務中，累計金幣獎勵
-            const earnedCoins = questItems
-              .filter(q => q.status === 'claimed')
-              .reduce((sum, q) => {
-                const coinReward = q.rewards?.find(r => r.type === 'coins');
-                return sum + (coinReward?.amount ?? 0);
-              }, 0);
-            setDailyTask({
-              completed: completedCount,
-              total: rulesRes.quests.total || questItems.length || 5,
-              earnedCoins,
-            });
-          }
-        } catch {
-          // 使用預設值
-          setDailyTask({ completed: 0, total: 5, earnedCoins: 0 });
-        }
-      }
-    } catch (error) {
-      // 載入失敗，使用預設值（靜默處理）
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [getToken]);
-
-  // 初始載入
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   /**
    * 載入用戶頭像設定
@@ -279,12 +185,12 @@ export function HomeScreen() {
   );
 
   /**
-   * 下拉刷新處理
+   * 下拉刷新：失效所有首頁相關查詢
    */
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadData();
-  }, [loadData]);
+    queryClient.invalidateQueries({ queryKey: ['home'] });
+    queryClient.invalidateQueries({ queryKey: ['economy'] });
+  }, [queryClient]);
 
   // ============================================================
   // 輔助函數

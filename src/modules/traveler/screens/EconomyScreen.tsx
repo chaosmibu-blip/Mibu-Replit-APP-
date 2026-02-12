@@ -12,16 +12,14 @@
  * - 領取獎勵（claim completed rules）
  * - 前往導航（navigateTo）
  *
- * 串接 API:
- * - rulesApi.getRules() - 取得規則列表（#043 統一）
- * - rulesApi.claimReward() - 領取獎勵
- * - economyApi.getCoins() - 金幣資訊
- * - economyApi.getPerks() - 權益資訊
+ * 資料層：React Query hooks（useEconomyQueries.ts）
+ * - useRules + usePerks 並行查詢、獨立快取
+ * - useClaimReward mutation 自動 invalidate
  *
  * @see 後端契約: contracts/APP.md #043
- * @updated 2026-02-10 #043 規則引擎整合
+ * @updated 2026-02-12 Phase 3 遷移至 React Query
  */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -35,14 +33,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n } from '../../../context/AppContext';
-import { rulesApi } from '../../../services/rulesApi';
-import { economyApi } from '../../../services/economyApi';
+import { useI18n } from '../../../context/AppContext';
 import { CoinReward } from '../../shared/components/ui/CoinReward';
 import { SectionHeader } from '../../shared/components/ui/SectionHeader';
 import { MibuBrand } from '../../../../constants/Colors';
-import { UserPerksResponse } from '../../../types/economy';
-import { RuleItem, RulesListResponse, NavigateTo, RuleStatus } from '../../../types/rules';
+import { RuleItem, NavigateTo, RuleStatus } from '../../../types/rules';
+import { useRules, usePerks, useClaimReward, useRefreshEconomyData } from '../../../hooks/useEconomyQueries';
 
 // ============================================================
 // 常數定義
@@ -93,27 +89,27 @@ function getStatusIcon(status: RuleStatus): keyof typeof Ionicons.glyphMap {
 // ============================================================
 
 export function EconomyScreen() {
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
   // ============================================================
-  // 狀態管理
+  // React Query 資料查詢（取代手動 useState + loadData）
   // ============================================================
 
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [claiming, setClaiming] = useState<number | null>(null); // UI 用（顯示 loading）
+  const [selectedTab, setSelectedTab] = useState<TabType>('daily');
+  const [claiming, setClaiming] = useState<number | null>(null); // UI 用（顯示哪個在 loading）
   const claimingRef = useRef(false); // 同步鎖（防重複點擊，教訓 #006）
 
-  // 規則引擎資料（#043 統一）
-  const [rulesData, setRulesData] = useState<RulesListResponse | null>(null);
+  // 2 個查詢並行執行
+  const rulesQuery = useRules();
+  const perksQuery = usePerks();
+  const claimMutation = useClaimReward();
+  const refreshAll = useRefreshEconomyData();
 
-  // 用戶權益（沿用舊 API）
-  const [perksInfo, setPerksInfo] = useState<UserPerksResponse | null>(null);
-
-  // 當前選中的 Tab
-  const [selectedTab, setSelectedTab] = useState<TabType>('daily');
+  const loading = rulesQuery.isLoading;
+  const refreshing = rulesQuery.isFetching && !rulesQuery.isLoading;
+  const rulesData = rulesQuery.data ?? null;
+  const perksInfo = perksQuery.data ?? null;
 
   // ============================================================
   // 衍生資料
@@ -146,51 +142,9 @@ export function EconomyScreen() {
   const dailyPullLimitDisplay = isUnlimitedPulls ? '∞' : String(rawDailyPullLimit);
   const inventorySlotsDisplay = isUnlimitedSlots ? '∞' : String(rawInventorySlots);
 
-  // ============================================================
-  // API 呼叫
-  // ============================================================
-
-  const loadData = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) {
-        router.back();
-        return;
-      }
-
-      // 並行呼叫：規則引擎 + 權益（各自獨立，一個失敗不影響另一個）
-      const [rulesResult, perksResult] = await Promise.allSettled([
-        rulesApi.getRules(token),
-        economyApi.getPerks(token),
-      ]);
-
-      if (rulesResult.status === 'fulfilled') {
-        setRulesData(rulesResult.value);
-      } else {
-        console.warn('Failed to load rules:', rulesResult.reason);
-      }
-      if (perksResult.status === 'fulfilled') {
-        setPerksInfo(perksResult.value);
-      } else {
-        console.warn('Failed to load perks:', perksResult.reason);
-      }
-    } catch (error) {
-      console.error('Failed to load economy data:', error);
-      Alert.alert(t.economy_loadFailed, t.economy_loadFailedDesc);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [getToken, router, t]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadData();
-  }, [loadData]);
+    refreshAll();
+  }, [refreshAll]);
 
   // ============================================================
   // 事件處理
@@ -200,35 +154,28 @@ export function EconomyScreen() {
    * 領取已完成規則的獎勵
    */
   const handleClaim = useCallback(async (ruleId: number) => {
-    if (claimingRef.current) return; // 同步鎖防重複
+    if (claimingRef.current) return; // 同步鎖防重複（教訓 #006）
     claimingRef.current = true;
-
     setClaiming(ruleId);
-    try {
-      const token = await getToken();
-      if (!token) return;
 
-      const result = await rulesApi.claimReward(token, ruleId);
-
-      // 顯示領取結果
-      const rewardText = result.rewards.map(r => {
-        if (r.type === 'coins') return `+${r.amount} 金幣`;
-        if (r.type === 'perk') return r.itemName || '權益加成';
-        return r.itemName || '獎勵';
-      }).join('、');
-
-      Alert.alert(t.economy_claimSuccess, rewardText);
-
-      // 重新載入資料以更新狀態
-      loadData();
-    } catch (error) {
-      console.error('Claim failed:', error);
-      Alert.alert(t.economy_claimFailed);
-    } finally {
-      setClaiming(null);
-      claimingRef.current = false;
-    }
-  }, [getToken, loadData, t]);
+    claimMutation.mutate(ruleId, {
+      onSuccess: (result) => {
+        const rewardText = result.rewards.map((r: any) => {
+          if (r.type === 'coins') return `+${r.amount} 金幣`;
+          if (r.type === 'perk') return r.itemName || '權益加成';
+          return r.itemName || '獎勵';
+        }).join('、');
+        Alert.alert(t.economy_claimSuccess, rewardText);
+      },
+      onError: () => {
+        Alert.alert(t.economy_claimFailed);
+      },
+      onSettled: () => {
+        setClaiming(null);
+        claimingRef.current = false;
+      },
+    });
+  }, [claimMutation, t]);
 
   /**
    * 導航到規則指定的頁面
