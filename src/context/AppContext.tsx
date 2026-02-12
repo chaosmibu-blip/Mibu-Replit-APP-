@@ -6,14 +6,13 @@
  * - 扭蛋收藏（collection, result, addToCollection, setResult）
  * - 未讀通知（unreadItemCount, unreadMailboxCount）
  * - 組合 Provider（I18nProvider + AuthProvider + GachaProvider）
- * - 向後兼容 useApp() hook
  *
  * 認證狀態 → AuthContext.tsx
  * 語言翻譯 → I18nContext.tsx
  *
  * 變更說明（2026-02-12）
  * - Phase 1：拆分為 AuthContext + I18nContext + AppContext（slim）
- * - 保留 useApp() 向後兼容，逐步遷移至 useAuth() / useI18n()
+ * - Phase 3：移除 useApp()（所有消費者已遷移完畢）
  *
  * @see docs/memory-state.md 詳細狀態管理說明
  */
@@ -26,7 +25,8 @@ import { apiService } from '../services/api';
 import { mailboxApi } from '../services/mailboxApi';
 import { loadToken } from './tokenUtils';
 import { AuthProvider, useAuth } from './AuthContext';
-import { I18nProvider, useI18n } from './I18nContext';
+import { I18nProvider } from './I18nContext';
+import { MibuQueryProvider } from './QueryProvider';
 
 // ============ 型別定義 ============
 
@@ -162,21 +162,23 @@ function GachaProvider({ children }: { children: ReactNode }) {
 /**
  * App 全域狀態 Provider（組合 I18n + Auth + Gacha）
  *
- * 巢狀順序：I18n（最外層） > Auth > Gacha（可使用 useAuth）
+ * 巢狀順序：QueryProvider（最外層） > I18n > Auth > Gacha（可使用 useAuth）
  */
 export function AppProvider({ children }: { children: ReactNode }) {
   return (
-    <I18nProvider>
-      <AuthProvider>
-        <GachaProvider>
-          {children}
-        </GachaProvider>
-      </AuthProvider>
-    </I18nProvider>
+    <MibuQueryProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <GachaProvider>
+            {children}
+          </GachaProvider>
+        </AuthProvider>
+      </I18nProvider>
+    </MibuQueryProvider>
   );
 }
 
-// ============ 新 Hooks（推薦使用） ============
+// ============ Hooks ============
 
 // re-export 方便統一引入
 export { useAuth } from './AuthContext';
@@ -193,48 +195,3 @@ export function useGacha() {
   return context;
 }
 
-// ============ 向後兼容 Hook ============
-
-/**
- * 向後兼容的 useApp() Hook
- *
- * @deprecated 請逐步遷移至 useAuth() / useI18n() / useGacha()
- *
- * 此 Hook 訂閱所有三個 Context，任何狀態變更都會觸發 re-render。
- * 遷移後可減少不必要的 re-render。
- *
- * 遷移指南：
- * - state.user, state.isAuthenticated, getToken, setUser, switchRole → useAuth()
- * - t, state.language, setLanguage → useI18n()
- * - state.result, state.collection, addToCollection, setResult → useGacha()
- * - state.unreadItemCount, state.unreadMailboxCount, refreshUnreadCount, setUnreadCount → useGacha()
- */
-export function useApp() {
-  const { user, isAuthenticated, getToken, setUser, switchRole } = useAuth();
-  const { language, setLanguage, t } = useI18n();
-  const { gachaState, addToCollection, setResult, refreshUnreadCount, setUnreadCount } = useGacha();
-
-  // 組合成舊的 state 形狀，保持向後兼容
-  const state = useMemo(() => ({
-    language,
-    user,
-    result: gachaState.result,
-    collection: gachaState.collection,
-    isAuthenticated,
-    unreadItemCount: gachaState.unreadItemCount,
-    unreadMailboxCount: gachaState.unreadMailboxCount,
-  }), [language, user, gachaState, isAuthenticated]);
-
-  return {
-    state,
-    t,
-    setLanguage,
-    setUser,
-    getToken,
-    addToCollection,
-    setResult,
-    switchRole,
-    refreshUnreadCount,
-    setUnreadCount,
-  };
-}

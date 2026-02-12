@@ -24,6 +24,7 @@ import { preloadService } from '../services/preloadService';
 import { disconnectSocket } from '../services/socket';
 import { setOnUnauthorized, resetUnauthorizedFlag } from '../services/base';
 import { saveToken, loadToken, removeToken } from './tokenUtils';
+import { queryClient } from './QueryProvider';
 
 // ============ 型別定義 ============
 
@@ -139,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       await removeToken();
       preloadService.clearCache();
+      queryClient.clear(); // 清除 React Query 快取（Phase 3）
       disconnectSocket();
     }
   }, []);

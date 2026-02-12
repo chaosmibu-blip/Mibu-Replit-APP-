@@ -10,15 +10,11 @@
  * - 推薦排行榜（週/月/全部）
  * - 獎勵餘額查詢
  *
- * 串接 API：
- * - referralApi.getMyCode() - 取得推薦碼
- * - referralApi.generateCode() - 生成推薦碼
- * - referralApi.applyCode() - 套用推薦碼
- * - referralApi.getMyReferrals() - 取得邀請列表
- * - referralApi.getBalance() - 取得獎勵餘額
- * - referralApi.getLeaderboard() - 取得排行榜
- * - referralApi.getMyRank() - 取得我的排名
+ * 資料層：React Query hooks（useReferralQueries.ts）
+ * - 5 個查詢並行、獨立快取、stale-while-revalidate
+ * - Mutation 自動 invalidate 相關快取
  *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  * @see 後端合約: contracts/APP.md Phase 5
  */
 import React, { useState, useEffect, useCallback } from 'react';
@@ -41,12 +37,17 @@ import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 import { referralApi } from '../../../services/referralApi';
 import { MibuBrand } from '../../../../constants/Colors';
 import {
-  ReferralCode,
-  Referral,
-  ReferralBalance,
-  LeaderboardEntry,
   LeaderboardPeriod,
 } from '../../../types/referral';
+import {
+  useReferralCode,
+  useReferralList,
+  useReferralBalance,
+  useReferralLeaderboard,
+  useReferralRank,
+  useGenerateCode,
+  useRefreshReferralData,
+} from '../../../hooks/useReferralQueries';
 import styles from './ReferralScreen.styles';
 
 // ============================================================
@@ -84,148 +85,63 @@ export function ReferralScreen() {
   const { t, language } = useI18n();
   const router = useRouter();
 
-
   // ============================================================
-  // 狀態管理
+  // React Query 資料查詢（取代手動 useState + loadData）
   // ============================================================
 
-  // 載入狀態
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  // 我的推薦碼
-  const [myCode, setMyCode] = useState<ReferralCode | null>(null);
-
-  // 輸入的推薦碼
-  const [inputCode, setInputCode] = useState('');
-
-  // 操作中狀態
-  const [applyingCode, setApplyingCode] = useState(false);
-  const [generatingCode, setGeneratingCode] = useState(false);
-
-  // 邀請列表
-  const [referrals, setReferrals] = useState<Referral[]>([]);
-
-  // 邀請統計
-  const [referralStats, setReferralStats] = useState({
-    totalReferrals: 0,      // 總邀請數
-    activeReferrals: 0,     // 有效邀請數
-    totalRewardEarned: 0    // 總獎勵
-  });
-
-  // 獎勵餘額
-  const [balance, setBalance] = useState<ReferralBalance | null>(null);
-
-  // 排行榜
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [myRank, setMyRank] = useState<{ rank: number; isOnLeaderboard: boolean } | null>(null);
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<LeaderboardPeriod>('weekly');
+  const [inputCode, setInputCode] = useState('');
+  const [applyingCode, setApplyingCode] = useState(false);
 
-  // ============================================================
-  // API 呼叫
-  // ============================================================
+  // 5 個查詢並行執行，各自獨立快取
+  const codeQuery = useReferralCode();
+  const listQuery = useReferralList();
+  const balanceQuery = useReferralBalance();
+  const leaderboardQuery = useReferralLeaderboard(leaderboardPeriod);
+  const rankQuery = useReferralRank();
+  const generateCodeMutation = useGenerateCode();
+  const refreshAll = useRefreshReferralData();
 
-  /**
-   * 載入所有資料
-   * 包含：推薦碼、邀請列表、餘額、排行榜
-   */
-  const loadData = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) {
-        router.back();
-        return;
-      }
+  // 統一 loading 狀態（任一查詢首次載入中）
+  const loading = codeQuery.isLoading || listQuery.isLoading;
+  const refreshing = codeQuery.isFetching && !codeQuery.isLoading;
 
-      // 載入所有資料
-      const [codeData, referralsData, balanceData, leaderboardData, myRankData] = await Promise.all([
-        referralApi.getMyCode(token).catch(() => null),
-        referralApi.getMyReferrals(token).catch(() => ({ referrals: [], stats: { totalReferrals: 0, activeReferrals: 0, totalRewardEarned: 0 } })),
-        referralApi.getBalance(token).catch(() => null),
-        referralApi.getLeaderboard(token, { period: leaderboardPeriod }).catch(() => ({ success: false, leaderboard: [], period: 'weekly' as LeaderboardPeriod })),
-        referralApi.getMyRank(token).catch(() => null),
-      ]);
+  // 從查詢結果取得資料（搭配預設值）
+  const myCode = codeQuery.data ?? null;
+  const referrals = listQuery.data?.referrals ?? [];
+  const referralStats = listQuery.data?.stats ?? { totalReferrals: 0, activeReferrals: 0, totalRewardEarned: 0 };
+  const balance = balanceQuery.data ?? null;
+  const leaderboard = leaderboardQuery.data?.leaderboard ?? [];
+  const myRank = rankQuery.data ?? null;
 
-      // 如果還沒有推薦碼，自動生成一個
-      if (codeData) {
-        setMyCode(codeData);
-      } else {
-        // 自動生成推薦碼
-        try {
-          const result = await referralApi.generateCode(token);
-          if (result.success) {
-            setMyCode({
-              code: result.code,
-              createdAt: new Date().toISOString(),
-              usageCount: 0,
-              maxUsage: null,
-              isActive: true,
-            });
-          }
-        } catch {
-          // 靜默處理錯誤
-        }
-      }
-
-      setReferrals(referralsData.referrals);
-      setReferralStats(referralsData.stats);
-      if (balanceData) setBalance(balanceData);
-      if (leaderboardData.success) setLeaderboard(leaderboardData.leaderboard);
-      if (myRankData) setMyRank({ rank: myRankData.rank, isOnLeaderboard: myRankData.isOnLeaderboard });
-
-    } catch (error) {
-      console.error('Failed to load referral data:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [getToken, router, leaderboardPeriod]);
-
+  // 自動生成推薦碼（首次載入時如果沒有碼）
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (codeQuery.isSuccess && !codeQuery.data && !generateCodeMutation.isPending) {
+      generateCodeMutation.mutate(undefined as never);
+    }
+  }, [codeQuery.isSuccess, codeQuery.data]);
+
+  // ============================================================
+  // 事件處理
+  // ============================================================
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadData();
-  }, [loadData]);
+    refreshAll();
+  }, [refreshAll]);
 
-  const handleGenerateCode = async () => {
-    if (generatingCode) return;
-    setGeneratingCode(true);
-
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const result = await referralApi.generateCode(token);
-      if (result.success) {
-        setMyCode({
-          code: result.code,
-          createdAt: new Date().toISOString(),
-          usageCount: 0,
-          maxUsage: null,
-          isActive: true,
-        });
-      }
-    } catch (error) {
-      console.error('Failed to generate code:', error);
-      Alert.alert(
-        t.common_error,
-        t.referral_generateError
-      );
-    } finally {
-      setGeneratingCode(false);
-    }
+  const handleGenerateCode = () => {
+    if (generateCodeMutation.isPending) return;
+    generateCodeMutation.mutate(undefined as never, {
+      onError: () => {
+        Alert.alert(t.common_error, t.referral_generateError);
+      },
+    });
   };
 
   const handleCopyCode = async () => {
     if (!myCode) return;
     await Clipboard.setStringAsync(myCode.code);
-    Alert.alert(
-      t.referral_copied,
-      t.referral_copiedDesc
-    );
+    Alert.alert(t.referral_copied, t.referral_copiedDesc);
   };
 
   const handleShareCode = async () => {
@@ -251,7 +167,7 @@ export function ReferralScreen() {
       if (!validation.valid) {
         Alert.alert(
           t.referral_invalidCode,
-          validation.message || t.referral_invalidCodeDesc
+          validation.message || t.referral_invalidCodeDesc,
         );
         return;
       }
@@ -261,16 +177,13 @@ export function ReferralScreen() {
         setInputCode('');
         Alert.alert(
           t.referral_applySuccess,
-          tFormat(t.referral_applySuccessDesc, { amount: result.expEarned })
+          tFormat(t.referral_applySuccessDesc, { amount: result.expEarned }),
         );
-        loadData();
+        refreshAll(); // 刷新所有查詢
       }
     } catch (error: any) {
       console.error('Apply code failed:', error);
-      Alert.alert(
-        t.common_error,
-        error.message || t.referral_applyError
-      );
+      Alert.alert(t.common_error, error.message || t.referral_applyError);
     } finally {
       setApplyingCode(false);
     }
@@ -369,9 +282,9 @@ export function ReferralScreen() {
               <TouchableOpacity
                 style={styles.generateBtn}
                 onPress={handleGenerateCode}
-                disabled={generatingCode}
+                disabled={generateCodeMutation.isPending}
               >
-                {generatingCode ? (
+                {generateCodeMutation.isPending ? (
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                   <>
