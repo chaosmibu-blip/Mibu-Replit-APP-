@@ -69,7 +69,7 @@ function preloadImageAssets(): Promise<void> {
 
 /**
  * 全域推播通知監聽器
- * 必須在 AppProvider 內部，才能使用 useApp context
+ * 必須在 AppProvider 內部，才能使用 useAuth / useI18n / useGacha context
  */
 function NotificationListener() {
   useNotificationHandler();

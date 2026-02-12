@@ -62,7 +62,7 @@ export default function MerchantRegisterScreen() {
   const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
 
-  // 使用全域 t 翻譯字典（來自 useApp）
+  // 使用全域 t 翻譯字典（來自 useI18n）
   const translations = {
     title: t.merchant_registration,
     subtitle: t.merchant_registrationSubtitle,

@@ -117,7 +117,7 @@ interface InventorySlotProps {
   index: number;
   onPress: (item: InventoryItem) => void;
   onLongPress: (item: InventoryItem) => void;
-  /** 翻譯物件（從 useApp().t 傳入） */
+  /** 翻譯物件（從 useI18n().t 傳入） */
   t: Record<string, string>;
 }
 
