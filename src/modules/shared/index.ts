@@ -13,6 +13,8 @@ export { LocationScreen } from './screens/LocationScreen';
 export { PendingApprovalScreen } from './screens/PendingApprovalScreen';
 // #044: AccountScreen（帳號綁定）已移除
 export { SOSContactsScreen } from './screens/SOSContactsScreen';
+export { NotificationPreferencesScreen } from './screens/NotificationPreferencesScreen';
+export { NotificationListScreen } from './screens/NotificationListScreen';
 
 // Components - 元件
 export * from './components';

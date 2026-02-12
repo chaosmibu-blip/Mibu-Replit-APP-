@@ -24,7 +24,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../../src/context/AppContext';
+import { useI18n } from '../../src/context/AppContext';
 import { eventApi } from '../../src/services/api';
 import { Event } from '../../src/types';
 import { MibuBrand } from '../../constants/Colors';
@@ -42,7 +42,7 @@ const EVENT_TYPE_CONFIG: Record<string, { icon: keyof typeof Ionicons.glyphMap; 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { state, t } = useApp();
+  const { t, language } = useI18n();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -68,25 +68,25 @@ export default function EventDetailScreen() {
 
   const getLocalizedTitle = (): string => {
     if (!event) return '';
-    if (state.language === 'zh-TW') return event.title;
-    if (state.language === 'en' && event.titleEn) return event.titleEn;
-    if (state.language === 'ja' && event.titleJa) return event.titleJa;
-    if (state.language === 'ko' && event.titleKo) return event.titleKo;
+    if (language === 'zh-TW') return event.title;
+    if (language === 'en' && event.titleEn) return event.titleEn;
+    if (language === 'ja' && event.titleJa) return event.titleJa;
+    if (language === 'ko' && event.titleKo) return event.titleKo;
     return event.title;
   };
 
   const getLocalizedDesc = (): string => {
     if (!event) return '';
-    if (state.language === 'zh-TW') return event.description;
-    if (state.language === 'en' && event.descriptionEn) return event.descriptionEn;
-    if (state.language === 'ja' && event.descriptionJa) return event.descriptionJa;
-    if (state.language === 'ko' && event.descriptionKo) return event.descriptionKo;
+    if (language === 'zh-TW') return event.description;
+    if (language === 'en' && event.descriptionEn) return event.descriptionEn;
+    if (language === 'ja' && event.descriptionJa) return event.descriptionJa;
+    if (language === 'ko' && event.descriptionKo) return event.descriptionKo;
     return event.description;
   };
 
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(LOCALE_MAP[state.language], {
+    return date.toLocaleDateString(LOCALE_MAP[language], {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

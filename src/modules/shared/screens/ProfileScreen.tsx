@@ -13,14 +13,14 @@
  * - PUT /api/user/profile - 更新個人資料
  * - POST /api/avatar/upload - 上傳自訂頭像 (#038)
  *
+ * 更新日期：2026-02-12（Phase 2C 拆分 styles + AvatarSelectorModal）
  * @see 後端合約: contracts/APP.md Phase 2
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Modal, Image as RNImage, Animated } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as ImagePicker from 'expo-image-picker';
 import { Image as ExpoImage } from 'expo-image';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 
@@ -47,15 +47,16 @@ LocaleConfig.locales['ko'] = {
   today: '오늘',
 };
 // en 是預設，不需要額外設定
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
-import { authApi } from '../../../services/authApi';
 import { avatarService } from '../../../services/avatarService';
 import { ApiError } from '../../../services/base';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender, AvatarPreset } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
+import styles from './ProfileScreen.styles';
+import { AvatarSelectorModal } from './AvatarSelectorModal';
 
 // ============ 常數定義 ============
 
@@ -91,10 +92,11 @@ const displayUserId = (userId: string | undefined): string => {
 // ============ 元件本體 ============
 
 export function ProfileScreen() {
-  const { state, t, getToken, setUser } = useApp();
+  const { user, getToken, setUser } = useAuth();
+  const { t, language } = useI18n();
 
   // 根據語系切換月曆顯示語言（LocaleConfig 是全域的，行程頁月曆也會跟著變）
-  LocaleConfig.defaultLocale = state.language === 'en' ? '' : state.language;
+  LocaleConfig.defaultLocale = language === 'en' ? '' : language;
   const router = useRouter();
 
   // ============ 狀態管理 ============
@@ -129,15 +131,12 @@ export function ProfileScreen() {
   const [showAvatarModal, setShowAvatarModal] = useState(false); // 顯示頭像選擇 Modal
   const [selectedAvatar, setSelectedAvatar] = useState<string>('default'); // 選中的頭像
 
-  // 頭像選項（從 avatarService 動態載入）
+  // 頭像選項（從 avatarService 動態載入，主畫面和 Modal 都需要）
   const [avatarPresets, setAvatarPresets] = useState<AvatarPreset[]>([]);
 
-  // #038 自訂頭像上傳
+  // #038 自訂頭像（URL 由父元件管理，因為主畫面需要顯示）
   const [customAvatarUrl, setCustomAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  // 圓形預覽：暫存用戶選好但尚未上傳的圖片
-  const [pendingAvatarAsset, setPendingAvatarAsset] = useState<ImagePicker.ImagePickerAsset | null>(null);
-  const [showAvatarPreview, setShowAvatarPreview] = useState(false);
 
   // 【截圖 19】Toast 訊息（取代彈窗）
   const [toastMessage, setToastMessage] = useState('');
@@ -198,110 +197,19 @@ export function ProfileScreen() {
     }
   };
 
-  /**
-   * 儲存頭像選擇到 AsyncStorage
-   * 讓其他頁面（如首頁）可以讀取
-   */
-  const saveAvatarChoice = async (avatarId: string) => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEYS.AVATAR_PRESET, avatarId);
-    } catch (error) {
-      console.error('Failed to save avatar choice:', error);
-    }
-  };
+  // ============ 頭像選擇回呼 ============
 
   /**
-   * #038 上傳自訂頭像
-   * 使用 expo-image-picker 選擇圖片並上傳到後端
+   * 頭像選擇完成回呼（從 AvatarSelectorModal 傳回）
+   * @param avatarId - 預設頭像 ID 或 'custom'
+   * @param customUrl - 自訂頭像 URL（僅 custom 時有值）
    */
-  // 步驟一：選圖 → 顯示圓形預覽
-  const handleUploadAvatar = async () => {
-    try {
-      // 請求相簿權限
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        showToastMessage(t.profile_photoPermissionRequired);
-        return;
-      }
-
-      // 開啟圖片選擇器（含 base64 輸出）
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],  // 正方形裁切
-        quality: 0.8,    // 壓縮品質
-        base64: true,    // 直接取得 base64
-      });
-
-      if (result.canceled || !result.assets?.[0]) {
-        return;
-      }
-
-      const asset = result.assets[0];
-
-      // 檢查是否有 base64 資料
-      if (!asset.base64) {
-        showToastMessage(t.profile_cannotReadImage);
-        return;
-      }
-
-      // 暫存圖片，顯示圓形預覽讓用戶確認
-      setPendingAvatarAsset(asset);
-      setShowAvatarModal(false);
-      setShowAvatarPreview(true);
-    } catch (error) {
-      console.error('Pick avatar error:', error);
-      showToastMessage(t.profile_uploadFailedRetry);
+  const handleAvatarSelected = useCallback((avatarId: string, customUrl?: string) => {
+    setSelectedAvatar(avatarId);
+    if (avatarId === 'custom' && customUrl) {
+      setCustomAvatarUrl(customUrl);
     }
-  };
-
-  // 步驟二：用戶確認 → 上傳
-  const handleConfirmUpload = async () => {
-    if (!pendingAvatarAsset?.base64) return;
-
-    setShowAvatarPreview(false);
-    setUploadingAvatar(true);
-
-    try {
-      const token = await getToken();
-      if (!token) {
-        showToastMessage(t.settings_pleaseLoginFirst);
-        setUploadingAvatar(false);
-        return;
-      }
-
-      // 判斷 mimeType（從副檔名判斷）
-      const mimeType = pendingAvatarAsset.uri?.match(/\.png$/i) ? 'image/png'
-        : pendingAvatarAsset.uri?.match(/\.webp$/i) ? 'image/webp'
-        : 'image/jpeg';
-
-      // 上傳圖片（Base64 JSON 格式）
-      const uploadResult = await authApi.uploadAvatar(token, pendingAvatarAsset.base64, mimeType);
-
-      if (uploadResult.success && uploadResult.avatarUrl) {
-        setCustomAvatarUrl(uploadResult.avatarUrl);
-        setSelectedAvatar('custom');
-        await saveAvatarChoice('custom');
-        await AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_AVATAR_URL, uploadResult.avatarUrl);
-        showToastMessage(t.profile_avatarUploaded);
-      } else {
-        showToastMessage(uploadResult.message || t.profile_uploadFailed);
-      }
-    } catch (error) {
-      console.error('Upload avatar error:', error);
-      showToastMessage(t.profile_uploadFailedRetry);
-    } finally {
-      setUploadingAvatar(false);
-      setPendingAvatarAsset(null);
-    }
-  };
-
-  // 取消預覽 → 回到頭像選擇器
-  const handleCancelPreview = () => {
-    setShowAvatarPreview(false);
-    setPendingAvatarAsset(null);
-    setShowAvatarModal(true);
-  };
+  }, []);
 
   // ============ 資料載入 ============
 
@@ -390,18 +298,18 @@ export function ProfileScreen() {
         setEmergencyContactRelation(data.emergencyContactRelation || '');
 
         // 同步更新全域用戶狀態（#017 修復用戶名消失、#040 merge 完整欄位）
-        if (state.user) {
+        if (user) {
           const updatedUser = {
-            ...state.user,
-            firstName: data.firstName || state.user.firstName,
-            lastName: data.lastName || state.user.lastName,
+            ...user,
+            firstName: data.firstName || user.firstName,
+            lastName: data.lastName || user.lastName,
             name: data.firstName && data.lastName
               ? `${data.firstName} ${data.lastName}`
-              : data.firstName || data.lastName || state.user.name,
-            email: data.email || state.user.email,
+              : data.firstName || data.lastName || user.name,
+            email: data.email || user.email,
             // 直接使用後端回傳值（UserProfile 必含此欄位，null 代表用戶刪除頭像）
             profileImageUrl: data.profileImageUrl,
-            role: data.role || state.user.role,
+            role: data.role || user.role,
             // #040: merge 後端補齊的欄位，防止不完整回應覆蓋本地狀態
             ...(data.isSuperAdmin !== undefined && { isSuperAdmin: data.isSuperAdmin }),
             ...(data.roles && { accessibleRoles: data.roles }),
@@ -491,7 +399,7 @@ export function ProfileScreen() {
               return (
                 <View style={[styles.avatar, { backgroundColor: preset?.color || MibuBrand.brown }]}>
                   <Text style={styles.avatarText}>
-                    {firstName?.charAt(0) || profile?.firstName?.charAt(0) || state.user?.name?.charAt(0) || '?'}
+                    {firstName?.charAt(0) || profile?.firstName?.charAt(0) || user?.name?.charAt(0) || '?'}
                   </Text>
                 </View>
               );
@@ -513,7 +421,7 @@ export function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.profile_userId}</Text>
           <View style={styles.readOnlyField}>
-            <Text style={styles.readOnlyText}>{displayUserId(profile?.id || state.user?.id)}</Text>
+            <Text style={styles.readOnlyText}>{displayUserId(profile?.id || user?.id)}</Text>
           </View>
         </View>
 
@@ -780,113 +688,17 @@ export function ProfileScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* ===== 頭像選擇 Modal ===== */}
-      <Modal
+      {/* ===== 頭像選擇 Modal（獨立元件） ===== */}
+      <AvatarSelectorModal
         visible={showAvatarModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowAvatarModal(false)}
-      >
-        <TouchableOpacity
-          style={styles.avatarModalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowAvatarModal(false)}
-        >
-          <View style={styles.avatarModalContent} onStartShouldSetResponder={() => true}>
-            <Text style={styles.avatarModalTitle}>
-              {t.profile_chooseAvatar}
-            </Text>
-
-            {/* 頭像選項網格 */}
-            <View style={styles.avatarGrid}>
-              {avatarPresets.map((preset) => (
-                <TouchableOpacity
-                  key={preset.id}
-                  style={[
-                    styles.avatarOption,
-                    selectedAvatar === preset.id && styles.avatarOptionSelected,
-                  ]}
-                  onPress={() => {
-                    setSelectedAvatar(preset.id);
-                    saveAvatarChoice(preset.id); // 儲存到 AsyncStorage
-                    setShowAvatarModal(false);
-                  }}
-                >
-                  <View style={[styles.avatarOptionCircle, { backgroundColor: preset.color }]}>
-                    {preset.imageUrl ? (
-                      <ExpoImage source={{ uri: preset.imageUrl }} style={styles.avatarOptionImage} contentFit="cover" />
-                    ) : (
-                      <Text style={styles.avatarOptionText}>
-                        {firstName?.charAt(0) || '?'}
-                      </Text>
-                    )}
-                  </View>
-                  {selectedAvatar === preset.id && (
-                    <View style={styles.avatarCheckmark}>
-                      <Ionicons name="checkmark" size={14} color={UIColors.white} />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* #038 上傳自訂頭像按鈕 */}
-            <TouchableOpacity
-              style={[styles.avatarUploadButton, uploadingAvatar && { opacity: 0.5 }]}
-              onPress={handleUploadAvatar}
-              disabled={uploadingAvatar}
-            >
-              {uploadingAvatar ? (
-                <ActivityIndicator size="small" color={MibuBrand.brown} />
-              ) : (
-                <Ionicons name="cloud-upload-outline" size={20} color={MibuBrand.brown} />
-              )}
-              <Text style={styles.avatarUploadText}>
-                {uploadingAvatar ? t.profile_uploading : t.profile_uploadAvatar}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-
-      {/* 自訂頭像圓形預覽 Modal */}
-      <Modal
-        visible={showAvatarPreview}
-        transparent
-        animationType="fade"
-        onRequestClose={handleCancelPreview}
-      >
-        <TouchableOpacity
-          style={styles.avatarModalOverlay}
-          activeOpacity={1}
-          onPress={handleCancelPreview}
-        >
-          <View style={styles.avatarPreviewContainer} onStartShouldSetResponder={() => true}>
-            <Text style={styles.avatarModalTitle}>{t.profile_previewAvatar}</Text>
-
-            {/* 圓形預覽 */}
-            <View style={styles.avatarPreviewCircle}>
-              {pendingAvatarAsset?.uri && (
-                <RNImage
-                  source={{ uri: pendingAvatarAsset.uri }}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="cover"
-                />
-              )}
-            </View>
-
-            {/* 確認 / 取消按鈕 */}
-            <View style={styles.avatarPreviewButtons}>
-              <TouchableOpacity style={styles.avatarPreviewCancelBtn} onPress={handleCancelPreview}>
-                <Text style={styles.avatarPreviewCancelText}>{t.profile_previewCancel}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.avatarPreviewConfirmBtn} onPress={handleConfirmUpload}>
-                <Text style={styles.avatarPreviewConfirmText}>{t.profile_previewConfirm}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+        onClose={() => setShowAvatarModal(false)}
+        onAvatarSelected={handleAvatarSelected}
+        currentAvatarUrl={selectedAvatar}
+        showToastMessage={showToastMessage}
+        firstNameInitial={firstName?.charAt(0) || '?'}
+        onUploadingChange={setUploadingAvatar}
+        avatarPresets={avatarPresets}
+      />
 
       {/* 【截圖 19】Toast 訊息 - 淡入淡出 3 秒 */}
       {showToast && (
@@ -903,363 +715,3 @@ export function ProfileScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-// ============ 樣式定義 ============
-
-const styles = StyleSheet.create({
-  // 主容器
-  container: {
-    flex: 1,
-    backgroundColor: MibuBrand.warmWhite,
-  },
-  // 載入狀態容器
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: MibuBrand.warmWhite,
-  },
-  // 頭像區塊
-  avatarSection: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  avatarContainer: {
-    position: 'relative',
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: MibuBrand.brown,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 4,
-    borderColor: MibuBrand.creamLight,
-    shadowColor: MibuBrand.brown,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  avatarText: {
-    fontSize: 40,
-    fontWeight: '700',
-    color: UIColors.white,
-  },
-  avatarEditBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: MibuBrand.copper,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: MibuBrand.warmWhite,
-  },
-  avatarHint: {
-    marginTop: 8,
-    fontSize: 13,
-    color: MibuBrand.copper,
-  },
-  // 頂部導航列
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: MibuBrand.creamLight,
-    borderBottomWidth: 1,
-    borderBottomColor: MibuBrand.cream,
-  },
-  backButton: {
-    minWidth: 44,
-    minHeight: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: MibuBrand.brown,
-  },
-  saveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: MibuBrand.brown,
-  },
-  // 內容區
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  // 欄位區塊
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: MibuBrand.brownLight,
-    marginBottom: 8,
-    textTransform: 'uppercase',
-  },
-  // 輸入框
-  input: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 14,
-    fontSize: 16,
-    color: MibuBrand.dark,
-    borderWidth: 1,
-    borderColor: MibuBrand.tanLight,
-  },
-  // 唯讀欄位
-  readOnlyField: {
-    backgroundColor: MibuBrand.cream,
-    borderRadius: 20,
-    padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  readOnlyText: {
-    fontSize: 16,
-    color: MibuBrand.brownLight,
-  },
-  // 橫向排列
-  row: {
-    flexDirection: 'row',
-  },
-  // 選擇器按鈕
-  pickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: MibuBrand.tanLight,
-  },
-  pickerText: {
-    fontSize: 16,
-    color: MibuBrand.dark,
-  },
-  pickerPlaceholder: {
-    fontSize: 16,
-    color: MibuBrand.tan,
-  },
-  // 選擇器選項
-  pickerOptions: {
-    marginTop: 8,
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  pickerOption: {
-    padding: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: MibuBrand.cream,
-  },
-  pickerOptionActive: {
-    backgroundColor: MibuBrand.highlight,
-  },
-  pickerOptionText: {
-    fontSize: 16,
-    color: MibuBrand.brownLight,
-  },
-  pickerOptionTextActive: {
-    color: MibuBrand.brown,
-    fontWeight: '600',
-  },
-  // 分隔線
-  divider: {
-    height: 1,
-    backgroundColor: MibuBrand.cream,
-    marginVertical: 24,
-  },
-  // 群組標題
-  groupTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: MibuBrand.brown,
-    marginBottom: 16,
-  },
-  // 頭像 Modal 樣式
-  avatarModalOverlay: {
-    flex: 1,
-    backgroundColor: UIColors.overlayMedium,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  avatarModalContent: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 24,
-    padding: 24,
-    width: '100%',
-    maxWidth: 340,
-  },
-  avatarModalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  avatarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 16,
-    marginBottom: 24,
-  },
-  avatarOption: {
-    position: 'relative',
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    padding: 3,
-    backgroundColor: 'transparent',
-    borderWidth: 3,
-    borderColor: 'transparent',
-  },
-  avatarOptionSelected: {
-    borderColor: MibuBrand.brown,
-  },
-  avatarOptionCircle: {
-    flex: 1,
-    borderRadius: 38,       // 內圈 76px 的一半（88 - 2*(3 padding + 3 border) = 76）
-    overflow: 'hidden',     // 裁切圖片超出圓形範圍
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarOptionImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  avatarOptionText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: UIColors.white,
-  },
-  avatarCheckmark: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: MibuBrand.brown,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: MibuBrand.warmWhite,
-  },
-  avatarUploadButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: MibuBrand.highlight,
-  },
-  avatarUploadText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: MibuBrand.brown,
-  },
-  // 【截圖 19】Toast 樣式
-  toast: {
-    position: 'absolute',
-    bottom: 100,
-    left: 20,
-    right: 20,
-    backgroundColor: MibuBrand.brownDark,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  toastText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: UIColors.white,
-    textAlign: 'center',
-  },
-  // 自訂頭像圓形預覽
-  avatarPreviewContainer: {
-    backgroundColor: UIColors.white,
-    borderRadius: 24,
-    padding: 28,
-    alignItems: 'center',
-    width: '80%',
-    maxWidth: 320,
-  },
-  avatarPreviewCircle: {
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    overflow: 'hidden',
-    backgroundColor: MibuBrand.creamLight,
-    marginVertical: 20,
-    borderWidth: 4,
-    borderColor: MibuBrand.creamLight,
-  },
-  avatarPreviewButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-  avatarPreviewCancelBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: MibuBrand.creamLight,
-    alignItems: 'center',
-  },
-  avatarPreviewCancelText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: MibuBrand.brown,
-  },
-  avatarPreviewConfirmBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: MibuBrand.brown,
-    alignItems: 'center',
-  },
-  avatarPreviewConfirmText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: UIColors.white,
-  },
-});

@@ -16,7 +16,7 @@
  */
 import React, { useState } from 'react';
 import { View, SafeAreaView } from 'react-native';
-import { useApp } from '../../../context/AppContext';
+import { useI18n } from '../../../context/AppContext';
 import { GachaTopNav, GachaSubView } from '../../shared/components/ModuleNav';
 import { GachaScreen } from './GachaScreen';
 import { CollectionScreen } from './CollectionScreen';
@@ -31,7 +31,7 @@ import { MibuBrand } from '../../../../constants/Colors';
  */
 export function GachaModuleScreen() {
   // 取得全域語言設定
-  const { state } = useApp();
+  const { language } = useI18n();
 
   // ============================================================
   // 狀態管理
@@ -81,7 +81,7 @@ export function GachaModuleScreen() {
       <GachaTopNav
         currentTab={currentTab}
         onChange={setCurrentTab}
-        language={state.language}
+        language={language}
         hasNewCollection={hasNewCollection}
         hasNewItems={hasNewItems}
       />

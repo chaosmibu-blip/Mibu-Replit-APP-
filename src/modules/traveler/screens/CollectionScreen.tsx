@@ -22,7 +22,7 @@
  * - 使用分類色彩區分不同類型景點
  * - PRO 商家顯示品牌色
  *
- * 更新日期：2026-02-07（手風琴改麵包屑導航 + 搜尋）
+ * 更新日期：2026-02-12（Phase 2E - 提取 StyleSheet）
  */
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
@@ -36,22 +36,21 @@ import {
   Alert,
   SafeAreaView,
   TextInput,
-  Dimensions,
   FlatList,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
 import { collectionApi } from '../../../services/collectionApi';
 import { contributionApi } from '../../../services/contributionApi';
 import { GachaItem, Language, CollectionItem } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme, UIColors } from '../../../../constants/Colors';
-import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { tFormat } from '../../../utils/i18n';
+import styles from './CollectionScreen.styles';
 
 // ============================================================
 // 型別定義
@@ -121,7 +120,7 @@ interface PlaceDetailModalProps {
  */
 function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: PlaceDetailModalProps) {
   const [showActionMenu, setShowActionMenu] = useState(false);
-  const { t } = useApp();
+  const { t } = useI18n();
   const placeName = getPlaceName(item);
   const description = getDescription(item);
   const category = typeof item.category === 'string' ? item.category.toLowerCase() : '';
@@ -158,42 +157,42 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
   return (
     <Modal visible transparent animationType="slide">
       <TouchableOpacity
-        style={{ flex: 1, backgroundColor: UIColors.overlayLight, justifyContent: 'flex-end' }}
+        style={styles.modalOverlay}
         activeOpacity={1}
         onPress={onClose}
       >
         <View
-          style={{ backgroundColor: MibuBrand.warmWhite, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%' }}
+          style={styles.modalContent}
           onStartShouldSetResponder={() => true}
         >
-          <View style={{ height: 120, position: 'relative', backgroundColor: categoryToken.badge, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}>
+          <View style={[styles.modalHeader, { backgroundColor: categoryToken.badge }]}>
             {/* X 按鈕 / 彈出按鈕組 */}
-            <View style={{ position: 'absolute', top: 16, right: 16 }}>
+            <View style={styles.modalTopRight}>
               {!showActionMenu ? (
                 <TouchableOpacity
-                  style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
+                  style={styles.modalCircleButton}
                   onPress={handleClosePress}
                 >
                   <Ionicons name="close" size={20} color={MibuBrand.dark} />
                 </TouchableOpacity>
               ) : (
-                <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={styles.modalActionRow}>
                   <TouchableOpacity
-                    style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
+                    style={styles.modalCircleButton}
                     onPress={handleFavorite}
                     accessibilityLabel={t.collection_addToFavorites}
                   >
                     <Ionicons name="heart-outline" size={20} color={MibuBrand.tierSP} />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
+                    style={styles.modalCircleButton}
                     onPress={onClose}
                     accessibilityLabel={t.collection_closeDetails}
                   >
                     <Ionicons name="close" size={20} color={MibuBrand.dark} />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}
+                    style={styles.modalCircleButton}
                     onPress={handleBlacklist}
                   >
                     <Ionicons name="ban-outline" size={20} color={MibuBrand.copper} />
@@ -201,36 +200,36 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
                 </View>
               )}
             </View>
-            <View style={{ position: 'absolute', bottom: 16, left: 20, backgroundColor: 'rgba(255,255,255,0.3)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 }}>
-              <Text style={{ fontSize: 12, fontWeight: '700', color: categoryToken.badgeText }}>
+            <View style={styles.modalCategoryBadge}>
+              <Text style={[styles.modalCategoryText, { color: categoryToken.badgeText }]}>
                 {getCategoryLabel(category, language)}
               </Text>
             </View>
           </View>
 
-          <ScrollView style={{ padding: 20 }}>
-            <Text style={{ fontSize: 24, fontWeight: '900', color: MibuBrand.dark, marginBottom: 8 }}>{placeName}</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-              <Text style={{ fontSize: 14, color: MibuBrand.brownLight }}>{date}</Text>
+          <ScrollView style={styles.modalScrollContent}>
+            <Text style={styles.modalPlaceName}>{placeName}</Text>
+            <View style={styles.modalMetaRow}>
+              <Text style={styles.modalMetaText}>{date}</Text>
               {locationText && (
                 <>
-                  <Text style={{ marginHorizontal: 8, color: MibuBrand.tanLight }}>•</Text>
-                  <Text style={{ fontSize: 14, color: MibuBrand.brownLight }}>{locationText}</Text>
+                  <Text style={styles.modalMetaDot}>&bull;</Text>
+                  <Text style={styles.modalMetaText}>{locationText}</Text>
                 </>
               )}
             </View>
 
             {description && (
-              <Text style={{ fontSize: 16, color: MibuBrand.brownLight, lineHeight: 24, marginBottom: 20 }}>{description}</Text>
+              <Text style={styles.modalDescription}>{description}</Text>
             )}
 
             <TouchableOpacity
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: MibuBrand.brown, paddingVertical: 16, borderRadius: 16 }}
+              style={styles.modalNavigateButton}
               onPress={handleNavigate}
               accessibilityLabel={t.collection_viewOnMap}
             >
               <Ionicons name="search" size={20} color={UIColors.white} />
-              <Text style={{ fontSize: 16, fontWeight: '700', color: UIColors.white }}>在 Google 中查看</Text>
+              <Text style={styles.modalNavigateText}>在 Google 中查看</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -240,8 +239,10 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
 }
 
 export function CollectionScreen() {
-  const { state, t, getToken } = useApp();
-  const { collection: localCollection, language } = state;
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
+  const { gachaState } = useGacha();
+  const localCollection = gachaState.collection;
   // 【圖鑑導航】麵包屑導航狀態
   const [navLevel, setNavLevel] = useState<0 | 1 | 2>(0);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -614,17 +615,11 @@ export function CollectionScreen() {
     }
   }, [getToken]);
 
-  // 網格卡片寬度（2 欄）
-  const cardWidth = useMemo(() => {
-    const screenWidth = Dimensions.get('window').width;
-    return (screenWidth - Spacing.lg * 2 - Spacing.md) / 2;
-  }, []);
-
   // 錯誤狀態：API 載入失敗且沒有本地資料時顯示
   if (loadError && collection.length === 0) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
-        <View style={{ flex: 1, justifyContent: 'center', backgroundColor: MibuBrand.warmWhite }}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centeredContainer}>
           <ErrorState
           icon="cloud-offline-outline"
           message={language === 'zh-TW' ? '圖鑑載入失敗' : 'Failed to load collection'}
@@ -639,8 +634,8 @@ export function CollectionScreen() {
   // API 尚未回傳時顯示 loading，避免閃現舊快取的錯誤數量
   if (!hasLoadedFromApi) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: MibuBrand.warmWhite }}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={MibuBrand.brown} />
         </View>
       </SafeAreaView>
@@ -649,8 +644,8 @@ export function CollectionScreen() {
 
   if (collection.length === 0) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
-        <View style={{ flex: 1, justifyContent: 'center', backgroundColor: MibuBrand.warmWhite }}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centeredContainer}>
           <EmptyState
             icon="albums-outline"
             title={t.noCollection}
@@ -677,43 +672,36 @@ export function CollectionScreen() {
       return (
         <TouchableOpacity
           key={`place-${item.id}-${idx}`}
-          style={{
-            width: cardWidth,
-            backgroundColor: MibuBrand.warmWhite,
-            borderRadius: Radius.xl,
-            overflow: 'hidden',
-            borderWidth: 1.5,
-            borderColor: isUnread ? accentColor : MibuBrand.tanLight,
-          }}
+          style={[styles.gridCard, { borderColor: isUnread ? accentColor : MibuBrand.tanLight }]}
           onPress={() => handleItemPress(item)}
           activeOpacity={0.7}
         >
           {/* 分類色條 */}
-          <View style={{ height: 4, backgroundColor: accentColor }} />
-          <View style={{ padding: Spacing.md }}>
+          <View style={[styles.gridCardStripe, { backgroundColor: accentColor }]} />
+          <View style={styles.gridCardBody}>
             {/* 未讀紅點 + 分類標籤 */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.xs }}>
+            <View style={styles.gridCardTopRow}>
               {isUnread && (
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: MibuBrand.tierSP }} />
+                <View style={styles.unreadDot} />
               )}
-              <View style={{ backgroundColor: catToken.badge, paddingHorizontal: 6, paddingVertical: 2, borderRadius: Radius.full, marginLeft: 'auto' }}>
-                <Text style={{ fontSize: 10, fontWeight: '600', color: catToken.badgeText }}>
+              <View style={[styles.categoryBadge, { backgroundColor: catToken.badge }]}>
+                <Text style={[styles.categoryBadgeText, { color: catToken.badgeText }]}>
                   {getCategoryLabel(category, language)}
                 </Text>
               </View>
             </View>
             {/* 景點名稱 */}
-            <Text style={{ fontSize: FontSize.md, fontWeight: '700', color: MibuBrand.brownDark, marginBottom: Spacing.xs }} numberOfLines={2}>
+            <Text style={styles.gridCardName} numberOfLines={2}>
               {placeName}
             </Text>
             {/* 描述 */}
             {description ? (
-              <Text style={{ fontSize: FontSize.xs, color: MibuBrand.brownLight, lineHeight: 16 }} numberOfLines={2}>
+              <Text style={styles.gridCardDescription} numberOfLines={2}>
                 {description}
               </Text>
             ) : null}
             {/* 地區 */}
-            <Text style={{ fontSize: FontSize.xs, color: MibuBrand.copper, marginTop: Spacing.xs }}>
+            <Text style={styles.gridCardDistrict}>
               {item.districtDisplay || item.district || ''}
             </Text>
           </View>
@@ -725,33 +713,27 @@ export function CollectionScreen() {
     return (
       <TouchableOpacity
         key={`search-${item.id}-${idx}`}
-        style={{
-          backgroundColor: MibuBrand.warmWhite,
-          borderRadius: Radius.xl,
-          padding: Spacing.lg,
-          borderWidth: 1,
-          borderColor: isUnread ? accentColor : MibuBrand.tanLight,
-        }}
+        style={[styles.listCard, { borderColor: isUnread ? accentColor : MibuBrand.tanLight }]}
         onPress={() => handleItemPress(item)}
         activeOpacity={0.7}
       >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
-          <Text style={{ fontSize: FontSize.xs, color: MibuBrand.brownLight }}>{date}</Text>
-          <View style={{ backgroundColor: catToken.badge, paddingHorizontal: Spacing.sm, paddingVertical: 2, borderRadius: Radius.full }}>
-            <Text style={{ fontSize: FontSize.xs, fontWeight: '600', color: catToken.badgeText }}>
+        <View style={styles.listCardTopRow}>
+          <Text style={styles.listCardDate}>{date}</Text>
+          <View style={[styles.listCardBadge, { backgroundColor: catToken.badge }]}>
+            <Text style={[styles.listCardBadgeText, { color: catToken.badgeText }]}>
               {getCategoryLabel(category, language)}
             </Text>
           </View>
         </View>
-        <Text style={{ fontSize: FontSize.lg, fontWeight: '700', color: accentColor, marginBottom: Spacing.xs }}>
+        <Text style={[styles.listCardName, { color: accentColor }]}>
           {placeName}
         </Text>
         {description ? (
-          <Text style={{ fontSize: FontSize.sm, color: MibuBrand.brownLight, lineHeight: 20 }} numberOfLines={2}>
+          <Text style={styles.listCardDescription} numberOfLines={2}>
             {description}
           </Text>
         ) : null}
-        <Text style={{ fontSize: FontSize.xs, color: MibuBrand.copper, marginTop: Spacing.xs }}>
+        <Text style={styles.listCardCity}>
           {item.cityDisplay || item.city || ''}
         </Text>
       </TouchableOpacity>
@@ -775,70 +757,42 @@ export function CollectionScreen() {
   // Header + 統計 + 搜尋框
   const headerBlock = (
     <>
-      <View style={{ marginBottom: Spacing.xl }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm }}>
-          <View style={{
-            width: 4,
-            height: 28,
-            backgroundColor: MibuBrand.brown,
-            borderRadius: 2,
-          }} />
-          <Text style={{ fontSize: 24, fontWeight: '800', color: MibuBrand.brownDark }}>
+      <View style={styles.headerTitleContainer}>
+        <View style={styles.headerTitleRow}>
+          <View style={styles.headerAccentBar} />
+          <Text style={styles.headerTitle}>
             {language === 'zh-TW' ? '我的圖鑑' : 'My Collection'}
           </Text>
         </View>
       </View>
 
-      <View style={{
-        backgroundColor: MibuBrand.warmWhite,
-        borderRadius: Radius.xl,
-        padding: Spacing.lg,
-        marginBottom: Spacing.xl,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        shadowColor: MibuBrand.brownDark,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
-      }}>
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ fontSize: 32, fontWeight: '800', color: MibuBrand.brown }}>{totalSpots}</Text>
-          <Text style={{ fontSize: FontSize.sm, color: MibuBrand.brownLight, marginTop: 2 }}>
+      <View style={styles.statsCard}>
+        <View style={styles.statsItem}>
+          <Text style={styles.statsNumberBrown}>{totalSpots}</Text>
+          <Text style={styles.statsLabel}>
             {language === 'zh-TW' ? '已收集' : 'Collected'}
           </Text>
         </View>
-        <View style={{ width: 1, backgroundColor: MibuBrand.tanLight, marginVertical: Spacing.xs }} />
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ fontSize: 32, fontWeight: '800', color: MibuBrand.copper }}>{uniqueCities}</Text>
-          <Text style={{ fontSize: FontSize.sm, color: MibuBrand.brownLight, marginTop: 2 }}>
+        <View style={styles.statsDivider} />
+        <View style={styles.statsItem}>
+          <Text style={styles.statsNumberCopper}>{uniqueCities}</Text>
+          <Text style={styles.statsLabel}>
             {language === 'zh-TW' ? '城市' : 'Cities'}
           </Text>
         </View>
-        <View style={{ width: 1, backgroundColor: MibuBrand.tanLight, marginVertical: Spacing.xs }} />
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ fontSize: 32, fontWeight: '800', color: MibuBrand.tan }}>{uniqueCategories}</Text>
-          <Text style={{ fontSize: FontSize.sm, color: MibuBrand.brownLight, marginTop: 2 }}>
+        <View style={styles.statsDivider} />
+        <View style={styles.statsItem}>
+          <Text style={styles.statsNumberTan}>{uniqueCategories}</Text>
+          <Text style={styles.statsLabel}>
             {language === 'zh-TW' ? '類別' : 'Categories'}
           </Text>
         </View>
       </View>
 
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: MibuBrand.warmWhite,
-        borderRadius: Radius.xl,
-        paddingHorizontal: Spacing.lg,
-        paddingVertical: Spacing.md,
-        marginBottom: Spacing.lg,
-        borderWidth: 1,
-        borderColor: MibuBrand.tanLight,
-        gap: Spacing.sm,
-      }}>
+      <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={18} color={MibuBrand.brownLight} />
         <TextInput
-          style={{ flex: 1, fontSize: FontSize.md, color: MibuBrand.brownDark, padding: 0 }}
+          style={styles.searchInput}
           placeholder={language === 'zh-TW' ? '搜尋景點名稱...' : 'Search places...'}
           placeholderTextColor={MibuBrand.brownLight}
           value={searchQuery}
@@ -855,19 +809,9 @@ export function CollectionScreen() {
 
   // 麵包屑導航
   const breadcrumbBlock = (
-    <View style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: Spacing.lg,
-      gap: Spacing.xs,
-      flexWrap: 'wrap',
-    }}>
+    <View style={styles.breadcrumb}>
       <TouchableOpacity onPress={() => navigateBack(0)}>
-        <Text style={{
-          fontSize: FontSize.md,
-          color: navLevel === 0 ? MibuBrand.brownDark : MibuBrand.brown,
-          fontWeight: navLevel === 0 ? '700' : '500',
-        }}>
+        <Text style={navLevel === 0 ? styles.breadcrumbActive : styles.breadcrumbLink}>
           {language === 'zh-TW' ? '全部' : 'All'}
         </Text>
       </TouchableOpacity>
@@ -875,11 +819,7 @@ export function CollectionScreen() {
         <>
           <Ionicons name="chevron-forward" size={14} color={MibuBrand.brownLight} />
           <TouchableOpacity onPress={() => navigateBack(1)}>
-            <Text style={{
-              fontSize: FontSize.md,
-              color: navLevel >= 2 ? MibuBrand.brown : MibuBrand.brownDark,
-              fontWeight: navLevel === 1 ? '700' : '500',
-            }}>
+            <Text style={navLevel === 1 ? styles.breadcrumbActive : styles.breadcrumbLink}>
               {groupedData[selectedCountry].displayName}
             </Text>
           </TouchableOpacity>
@@ -888,7 +828,7 @@ export function CollectionScreen() {
       {selectedCity && selectedCountry && groupedData[selectedCountry]?.cities[selectedCity] && (
         <>
           <Ionicons name="chevron-forward" size={14} color={MibuBrand.brownLight} />
-          <Text style={{ fontSize: FontSize.md, color: MibuBrand.brownDark, fontWeight: '700' }}>
+          <Text style={styles.breadcrumbCurrent}>
             {groupedData[selectedCountry].cities[selectedCity].displayName}
           </Text>
         </>
@@ -897,38 +837,36 @@ export function CollectionScreen() {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+    <SafeAreaView style={styles.safeArea}>
 
     {/* ========== Level 2 景點網格：固定 header + FlatList 獨立滾動 ========== */}
     {isGridMode ? (
-      <View style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+      <View style={styles.gridModeContainer}>
         {/* 固定區域：麵包屑 + 分類 Tab + 全部已讀 */}
-        <View style={{ paddingHorizontal: Spacing.lg, paddingTop: Spacing.lg }}>
+        <View style={styles.gridFixedHeader}>
           {breadcrumbBlock}
           {/* 分類 Tab */}
           {currentCityData && (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              style={{ marginBottom: Spacing.sm }}
-              contentContainerStyle={{ gap: Spacing.sm }}
+              style={styles.categoryTabScroll}
+              contentContainerStyle={styles.categoryTabContent}
             >
               <TouchableOpacity
-                style={{
-                  paddingHorizontal: Spacing.lg,
-                  paddingVertical: Spacing.sm,
-                  borderRadius: Radius.full,
-                  backgroundColor: !activeCategoryTab ? MibuBrand.brown : MibuBrand.warmWhite,
-                  borderWidth: 1,
-                  borderColor: !activeCategoryTab ? MibuBrand.brown : MibuBrand.tanLight,
-                }}
+                style={[
+                  styles.categoryTab,
+                  {
+                    backgroundColor: !activeCategoryTab ? MibuBrand.brown : MibuBrand.warmWhite,
+                    borderColor: !activeCategoryTab ? MibuBrand.brown : MibuBrand.tanLight,
+                  },
+                ]}
                 onPress={() => setActiveCategoryTab(null)}
               >
-                <Text style={{
-                  fontSize: FontSize.sm,
-                  fontWeight: '600',
-                  color: !activeCategoryTab ? UIColors.white : MibuBrand.brownDark,
-                }}>
+                <Text style={[
+                  styles.categoryTabText,
+                  { color: !activeCategoryTab ? UIColors.white : MibuBrand.brownDark },
+                ]}>
                   {language === 'zh-TW' ? '全部' : 'All'} ({currentCityData.items.length})
                 </Text>
               </TouchableOpacity>
@@ -938,21 +876,19 @@ export function CollectionScreen() {
                 return (
                   <TouchableOpacity
                     key={cat}
-                    style={{
-                      paddingHorizontal: Spacing.lg,
-                      paddingVertical: Spacing.sm,
-                      borderRadius: Radius.full,
-                      backgroundColor: isActive ? catToken.stripe : MibuBrand.warmWhite,
-                      borderWidth: 1,
-                      borderColor: isActive ? catToken.stripe : MibuBrand.tanLight,
-                    }}
+                    style={[
+                      styles.categoryTab,
+                      {
+                        backgroundColor: isActive ? catToken.stripe : MibuBrand.warmWhite,
+                        borderColor: isActive ? catToken.stripe : MibuBrand.tanLight,
+                      },
+                    ]}
                     onPress={() => setActiveCategoryTab(cat)}
                   >
-                    <Text style={{
-                      fontSize: FontSize.sm,
-                      fontWeight: '600',
-                      color: isActive ? UIColors.white : MibuBrand.brownDark,
-                    }}>
+                    <Text style={[
+                      styles.categoryTabText,
+                      { color: isActive ? UIColors.white : MibuBrand.brownDark },
+                    ]}>
                       {getCategoryLabel(cat, language)} ({currentCityData.byCategory[cat].length})
                     </Text>
                   </TouchableOpacity>
@@ -963,18 +899,12 @@ export function CollectionScreen() {
           {/* 全部已讀按鈕 */}
           {currentCityData && currentCityData.unreadCount > 0 && (
             <TouchableOpacity
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                alignSelf: 'flex-end',
-                gap: Spacing.xs,
-                paddingVertical: Spacing.xs,
-              }}
+              style={styles.markAllReadButton}
               onPress={handleMarkAllRead}
               activeOpacity={0.7}
             >
               <Ionicons name="checkmark-done" size={16} color={MibuBrand.copper} />
-              <Text style={{ fontSize: FontSize.sm, color: MibuBrand.copper, fontWeight: '500' }}>
+              <Text style={styles.markAllReadText}>
                 {language === 'zh-TW' ? '全部已讀' : 'Mark all read'}
               </Text>
             </TouchableOpacity>
@@ -982,14 +912,14 @@ export function CollectionScreen() {
         </View>
         {/* 景點網格：獨立滾動區域 */}
         <FlatList
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: Spacing.lg, paddingBottom: 100 }}
+          style={styles.gridList}
+          contentContainerStyle={styles.gridListContent}
           data={filteredPlaces}
           numColumns={2}
           renderItem={({ item, index }) => renderPlaceCard(item, index, 'grid')}
           keyExtractor={(item) => String(item.id || item.placeId)}
-          columnWrapperStyle={{ gap: Spacing.md }}
-          ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
+          columnWrapperStyle={styles.gridColumnWrapper}
+          ItemSeparatorComponent={() => <View style={styles.gridRowSeparator} />}
           refreshControl={refreshControl}
           removeClippedSubviews={true}
           windowSize={8}
@@ -1001,8 +931,8 @@ export function CollectionScreen() {
 
     /* ========== 非 Level 2：原本的 ScrollView ========== */
     <ScrollView
-      style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}
-      contentContainerStyle={{ paddingTop: Spacing.lg, paddingHorizontal: Spacing.lg, paddingBottom: 100 }}
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollViewContent}
       refreshControl={refreshControl}
     >
       {headerBlock}
@@ -1010,20 +940,20 @@ export function CollectionScreen() {
       {searchQuery.trim() ? (
         /* ========== 搜尋結果 ========== */
         <>
-          <Text style={{ fontSize: FontSize.sm, color: MibuBrand.brownLight, marginBottom: Spacing.md }}>
+          <Text style={styles.searchResultCount}>
             {language === 'zh-TW'
               ? `找到 ${searchResults.length} 個結果`
               : `${searchResults.length} results found`}
           </Text>
           {searchResults.length === 0 ? (
-            <View style={{ alignItems: 'center', paddingVertical: Spacing.xxl }}>
+            <View style={styles.searchEmpty}>
               <Ionicons name="search-outline" size={48} color={MibuBrand.tanLight} />
-              <Text style={{ fontSize: FontSize.md, color: MibuBrand.brownLight, marginTop: Spacing.md }}>
+              <Text style={styles.searchEmptyText}>
                 {language === 'zh-TW' ? '找不到符合的景點' : 'No matching places'}
               </Text>
             </View>
           ) : (
-            <View style={{ gap: Spacing.md }}>
+            <View style={styles.searchResultList}>
               {searchResults.map((item, idx) => renderPlaceCard(item, idx, 'list'))}
             </View>
           )}
@@ -1035,56 +965,30 @@ export function CollectionScreen() {
 
           {/* ===== Level 0：國家列表 ===== */}
           {navLevel === 0 && (
-            <View style={{ gap: Spacing.md }}>
+            <View style={styles.levelListContainer}>
               {Object.entries(groupedData)
                 .sort((a, b) => b[1].totalItems - a[1].totalItems)
                 .map(([countryKey, countryData]) => (
                   <TouchableOpacity
                     key={countryKey}
-                    style={{
-                      backgroundColor: MibuBrand.warmWhite,
-                      borderRadius: Radius.xl,
-                      padding: Spacing.lg,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      borderWidth: 1,
-                      borderColor: MibuBrand.tanLight,
-                    }}
+                    style={styles.levelCard}
                     onPress={() => navigateToCountry(countryKey)}
                     activeOpacity={0.7}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.md }}>
-                      <View style={{ position: 'relative' }}>
-                        <View style={{
-                          width: 44,
-                          height: 44,
-                          backgroundColor: MibuBrand.cream,
-                          borderRadius: Radius.md,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
+                    <View style={styles.levelCardLeft}>
+                      <View style={styles.levelIconWrapper}>
+                        <View style={styles.countryIcon}>
                           <Ionicons name="flag" size={20} color={MibuBrand.brown} />
                         </View>
                         {countryData.unreadCount > 0 && (
-                          <View style={{
-                            position: 'absolute',
-                            top: -3,
-                            right: -3,
-                            width: 10,
-                            height: 10,
-                            backgroundColor: MibuBrand.tierSP,
-                            borderRadius: 5,
-                            borderWidth: 1.5,
-                            borderColor: MibuBrand.warmWhite,
-                          }} />
+                          <View style={styles.countryUnreadDot} />
                         )}
                       </View>
                       <View>
-                        <Text style={{ fontSize: FontSize.lg, fontWeight: '700', color: MibuBrand.brownDark }}>
+                        <Text style={styles.countryName}>
                           {countryData.displayName}
                         </Text>
-                        <Text style={{ fontSize: FontSize.sm, color: MibuBrand.brownLight }}>
+                        <Text style={styles.countrySubtext}>
                           {countryData.totalItems} {t.spots} • {Object.keys(countryData.cities).length} {language === 'zh-TW' ? '城市' : 'cities'}
                         </Text>
                       </View>
@@ -1097,22 +1001,15 @@ export function CollectionScreen() {
 
           {/* ===== Level 1：城市列表 ===== */}
           {navLevel === 1 && selectedCountry && groupedData[selectedCountry] && (
-            <View style={{ gap: Spacing.md }}>
+            <View style={styles.levelListContainer}>
               {groupedData[selectedCountry].unreadCount > 0 && (
                 <TouchableOpacity
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    alignSelf: 'flex-end',
-                    gap: Spacing.xs,
-                    paddingVertical: Spacing.xs,
-                    paddingHorizontal: Spacing.sm,
-                  }}
+                  style={styles.markAllReadButtonLevel1}
                   onPress={handleMarkAllRead}
                   activeOpacity={0.7}
                 >
                   <Ionicons name="checkmark-done" size={16} color={MibuBrand.copper} />
-                  <Text style={{ fontSize: FontSize.sm, color: MibuBrand.copper, fontWeight: '500' }}>
+                  <Text style={styles.markAllReadText}>
                     {language === 'zh-TW' ? '全部已讀' : 'Mark all read'}
                   </Text>
                 </TouchableOpacity>
@@ -1122,52 +1019,26 @@ export function CollectionScreen() {
                 .map(([cityKey, cityData]) => (
                   <TouchableOpacity
                     key={cityKey}
-                    style={{
-                      backgroundColor: MibuBrand.warmWhite,
-                      borderRadius: Radius.xl,
-                      padding: Spacing.lg,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      borderWidth: 1,
-                      borderColor: MibuBrand.tanLight,
-                    }}
+                    style={styles.levelCard}
                     onPress={() => navigateToCity(cityKey)}
                     activeOpacity={0.7}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.md }}>
-                      <View style={{ position: 'relative' }}>
-                        <View style={{
-                          width: 40,
-                          height: 40,
-                          backgroundColor: MibuBrand.cream,
-                          borderRadius: Radius.sm,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
-                          <Text style={{ color: MibuBrand.copper, fontSize: FontSize.lg, fontWeight: '700' }}>
+                    <View style={styles.levelCardLeft}>
+                      <View style={styles.levelIconWrapper}>
+                        <View style={styles.cityIcon}>
+                          <Text style={styles.cityInitial}>
                             {cityData.displayName.charAt(0)}
                           </Text>
                         </View>
                         {cityData.unreadCount > 0 && (
-                          <View style={{
-                            position: 'absolute',
-                            top: -2,
-                            right: -2,
-                            width: 8,
-                            height: 8,
-                            backgroundColor: MibuBrand.tierSP,
-                            borderRadius: 4,
-                            borderWidth: 1.5,
-                            borderColor: MibuBrand.warmWhite,
-                          }} />
+                          <View style={styles.cityUnreadDot} />
                         )}
                       </View>
                       <View>
-                        <Text style={{ fontSize: FontSize.md, fontWeight: '600', color: MibuBrand.brownDark }}>
+                        <Text style={styles.cityName}>
                           {cityData.displayName}
                         </Text>
-                        <Text style={{ fontSize: FontSize.xs, color: MibuBrand.brownLight }}>
+                        <Text style={styles.citySubtext}>
                           {cityData.items.length} {t.spots} • {Object.keys(cityData.byCategory).length} {language === 'zh-TW' ? '類別' : 'categories'}
                         </Text>
                       </View>

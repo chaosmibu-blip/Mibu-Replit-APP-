@@ -30,7 +30,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { tFormat } from '../../../utils/i18n';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { crowdfundingApi } from '../../../services/crowdfundingApi';
@@ -44,7 +44,8 @@ import { CampaignDetail, CampaignReward, CampaignUpdate } from '../../../types/c
 // ============================================================
 
 export function CrowdfundingDetailScreen() {
-  const { state, getToken, t } = useApp();
+  const { user, getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // 從路由參數取得活動 ID
@@ -163,7 +164,7 @@ export function CrowdfundingDetailScreen() {
       setPurchasing(true);
 
       // 1. 初始化 RevenueCat（如果尚未初始化）
-      await revenueCatService.configure(state.user?.id);
+      await revenueCatService.configure(user?.id);
 
       // 2. 取得可購買的商品列表
       const offerings = await revenueCatService.getOfferings();
@@ -300,7 +301,7 @@ export function CrowdfundingDetailScreen() {
       <Text style={styles.updateTitle}>{update.title}</Text>
       <Text style={styles.updateContent}>{update.content}</Text>
       <Text style={styles.updateDate}>
-        {new Date(update.createdAt).toLocaleDateString(LOCALE_MAP[state.language])}
+        {new Date(update.createdAt).toLocaleDateString(LOCALE_MAP[language])}
       </Text>
     </View>
   );

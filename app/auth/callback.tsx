@@ -16,14 +16,14 @@
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useApp } from '../../src/context/AppContext';
+import { useAuth } from '../../src/context/AppContext';
 import { authApi } from '../../src/services/authApi';
 import { MibuBrand, UIColors } from '../../constants/Colors';
 import { Spacing, FontSize } from '../../src/theme/designTokens';
 import { isValidJWTFormat } from '../../src/utils/validation';
 
 export default function AuthCallback() {
-  const { setUser } = useApp();
+  const { setUser } = useAuth();
   const params = useLocalSearchParams();
 
   useEffect(() => {

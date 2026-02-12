@@ -10,7 +10,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../../../context/AppContext';
+import { useI18n } from '../../../context/AppContext';
 import { MibuBrand } from '../../../../constants/Colors';
 
 // ============================================================
@@ -18,7 +18,7 @@ import { MibuBrand } from '../../../../constants/Colors';
 // ============================================================
 
 export function PlannerScreen() {
-  const { t, state } = useApp();
+  const { t, language } = useI18n();
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -29,10 +29,10 @@ export function PlannerScreen() {
           <Ionicons name="construct" size={48} color="#6366f1" />
         </View>
         <Text style={styles.comingSoonTitle}>
-          {state.language === 'zh-TW' ? '即將推出' : 'Coming Soon'}
+          {language === 'zh-TW' ? '即將推出' : 'Coming Soon'}
         </Text>
         <Text style={styles.comingSoonDesc}>
-          {state.language === 'zh-TW'
+          {language === 'zh-TW'
             ? '旅程策劃功能正在開發中，敬請期待！'
             : 'Trip planner is under development. Stay tuned!'}
         </Text>
@@ -44,7 +44,7 @@ export function PlannerScreen() {
           <View style={styles.featureText}>
             <Text style={styles.featureTitle}>{t.navLocation}</Text>
             <Text style={styles.featureDesc}>
-              {state.language === 'zh-TW' ? '定位並探索附近景點' : 'Locate and explore nearby'}
+              {language === 'zh-TW' ? '定位並探索附近景點' : 'Locate and explore nearby'}
             </Text>
           </View>
         </View>
@@ -54,7 +54,7 @@ export function PlannerScreen() {
           <View style={styles.featureText}>
             <Text style={styles.featureTitle}>{t.navItinerary}</Text>
             <Text style={styles.featureDesc}>
-              {state.language === 'zh-TW' ? '規劃你的完美行程' : 'Plan your perfect trip'}
+              {language === 'zh-TW' ? '規劃你的完美行程' : 'Plan your perfect trip'}
             </Text>
           </View>
         </View>
@@ -64,7 +64,7 @@ export function PlannerScreen() {
           <View style={styles.featureText}>
             <Text style={styles.featureTitle}>{t.navChat}</Text>
             <Text style={styles.featureDesc}>
-              {state.language === 'zh-TW' ? '與策劃師即時聊天' : 'Chat with planners'}
+              {language === 'zh-TW' ? '與策劃師即時聊天' : 'Chat with planners'}
             </Text>
           </View>
         </View>

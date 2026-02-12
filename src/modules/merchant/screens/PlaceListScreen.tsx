@@ -23,7 +23,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { useApp } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 import { apiService } from '../../../services/api';
 import { tFormat } from '../../../utils/i18n';
 import { MerchantPlace } from '../../../types';
@@ -32,7 +33,8 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 // ============ 主元件 ============
 export function PlaceListScreen() {
   // ============ Hooks ============
-  const { state, t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   // ============ 狀態變數 ============

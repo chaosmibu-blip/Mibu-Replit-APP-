@@ -35,7 +35,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL } from '../../../constants/translations';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { SosAlert, SosAlertStatus } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
@@ -45,7 +45,7 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 // ============ 元件本體 ============
 
 export function SOSScreen() {
-  const { t, state } = useApp();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============ 狀態管理 ============
@@ -306,7 +306,7 @@ export function SOSScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString(LOCALE_MAP[state.language], {
+    return date.toLocaleString(LOCALE_MAP[language], {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

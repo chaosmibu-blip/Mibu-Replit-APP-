@@ -24,7 +24,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 import { apiService } from '../../../services/api';
 import { MerchantDailyCode, MerchantCredits } from '../../../types';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
@@ -34,7 +35,8 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 // ============ 主元件 ============
 export function MerchantDashboardScreen() {
   // ============ Hooks ============
-  const { state, t, getToken, setUser } = useApp();
+  const { user, getToken, setUser } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -143,7 +145,7 @@ export function MerchantDashboardScreen() {
    */
   const formatExpiry = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString(LOCALE_MAP[state.language], {
+    return date.toLocaleString(LOCALE_MAP[language], {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -171,7 +173,7 @@ export function MerchantDashboardScreen() {
           {/* 店家選擇器 */}
           <TouchableOpacity style={styles.storeSelector} accessibilityLabel="選擇店家">
             <Text style={styles.storeName} numberOfLines={1}>
-              {state.user?.firstName || t.merchant_demoCafe}
+              {user?.firstName || t.merchant_demoCafe}
             </Text>
             <Ionicons name="chevron-down" size={16} color={MibuBrand.copper} />
           </TouchableOpacity>

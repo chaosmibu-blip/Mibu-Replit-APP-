@@ -61,19 +61,16 @@ import DraggableFlatList, {
 import { Image as ExpoImage } from 'expo-image';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
-import { Calendar } from 'react-native-calendars';
+// Calendar 已移至 CreateItineraryModal
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { tFormat } from '../../../utils/i18n';
 import { itineraryApi } from '../../../services/itineraryApi';
-import { locationApi } from '../../../services/locationApi';
-import { preloadService } from '../../../services/preloadService';
+// locationApi, preloadService 已移至 CreateItineraryModal
 import { MibuBrand, getCategoryToken } from '../../../../constants/Colors';
-import type { Country, Region } from '../../../types';
-import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
-import { Select } from '../../shared/components/ui/Select';
+import { Spacing } from '../../../theme/designTokens';
 import {
   Itinerary,
   ItinerarySummary,
@@ -81,7 +78,6 @@ import {
   AiChatMessage,
   AiSuggestedPlace,
   AiChatContext,
-  AvailablePlaceItem,
   AvailablePlacesByCategory,
 } from '../../../types/itinerary';
 // 拆分模組
@@ -95,14 +91,19 @@ import {
   getPlaceCategory,
   MINI_AVATAR_URL,
 } from './itineraryHelpers';
+// Phase 2A 抽離的子元件
+import { CreateItineraryModal } from './CreateItineraryModal';
+import { AddPlacesModal } from './AddPlacesModal';
 
 // 常數、TypewriterText、輔助函數已拆至獨立檔案
 // → ItineraryScreenV2.styles.ts / TypewriterText.tsx / itineraryHelpers.ts
+// → CreateItineraryModal.tsx / AddPlacesModal.tsx
 
 export function ItineraryScreenV2() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { state, getToken, t } = useApp();
+  const { isAuthenticated, getToken } = useAuth();
+  const { t, language } = useI18n();
 
   // ===== 狀態管理 =====
   const [loading, setLoading] = useState(true);
@@ -150,38 +151,16 @@ export function ItineraryScreenV2() {
   const helpTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keyboardScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 從圖鑑加入景點 Modal 狀態
+  // 從圖鑑加入景點 Modal 狀態（UI 邏輯已抽至 AddPlacesModal）
   const [addPlacesModalVisible, setAddPlacesModalVisible] = useState(false);
-  const [availablePlaces, setAvailablePlaces] = useState<AvailablePlacesByCategory[]>([]);
-  const [selectedCollectionIds, setSelectedCollectionIds] = useState<number[]>([]);
-  const [loadingAvailable, setLoadingAvailable] = useState(false);
-  const [addingPlaces, setAddingPlaces] = useState(false);
 
-  // 【截圖 9-15 #6 #7】圖鑑手風琴 + 搜索狀態
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-  const [placeSearchQuery, setPlaceSearchQuery] = useState('');
-
-  // 建立行程 Modal 狀態
+  // 建立行程 Modal 狀態（表單邏輯已抽至 CreateItineraryModal）
   const [createModalVisible, setCreateModalVisible] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
 
   // 【截圖 9-15 #12】編輯標題狀態
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState('');
   const savingTitleRef = useRef(false); // 使用 ref 防止重複保存（同步更新）
-  const [newItinerary, setNewItinerary] = useState({
-    title: '',
-    date: new Date().toISOString().split('T')[0],
-    countryId: null as number | null,
-    countryName: '',
-    regionId: null as number | null,
-    regionName: '',
-  });
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [regions, setRegions] = useState<Region[]>([]);
-  const [loadingCountries, setLoadingCountries] = useState(false);
-  const [loadingRegions, setLoadingRegions] = useState(false);
 
   // 動畫值
   const leftDrawerAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
@@ -509,71 +488,18 @@ export function ItineraryScreenV2() {
     closeLeftDrawer();
   }, [fetchItineraryDetail, loadMessages, saveMessages, closeLeftDrawer]);
 
-  // 【截圖 9-15 #5】開啟「從圖鑑加入」Modal - 優先使用快取
-  const openAddPlacesModal = useCallback(async () => {
+  // 開啟「從圖鑑加入」Modal（UI 邏輯已抽至 AddPlacesModal）
+  const openAddPlacesModal = useCallback(() => {
     if (!currentItinerary) return;
-
     setAddPlacesModalVisible(true);
-    setSelectedCollectionIds([]);
+  }, [currentItinerary]);
 
-    // 優先使用快取
-    if (collectionCacheRef.current) {
-      setAvailablePlaces(collectionCacheRef.current);
-      setLoadingAvailable(false);
-      return;
+  /** AddPlacesModal 確認回調：重新載入行程詳情 */
+  const handleAddPlacesConfirmed = useCallback(async () => {
+    if (currentItinerary) {
+      await fetchItineraryDetail(currentItinerary.id);
     }
-
-    const token = await getToken();
-    if (!token) return;
-
-    setLoadingAvailable(true);
-    try {
-      const res = await itineraryApi.getAvailablePlaces(currentItinerary.id, token);
-      if (res.success) {
-        setAvailablePlaces(res.categories);
-        collectionCacheRef.current = res.categories;
-      }
-    } catch (error) {
-      console.error('Failed to fetch available places:', error);
-    } finally {
-      setLoadingAvailable(false);
-    }
-  }, [currentItinerary, getToken]);
-
-  // 切換景點選取
-  const togglePlaceSelection = useCallback((collectionId: number) => {
-    setSelectedCollectionIds(prev =>
-      prev.includes(collectionId)
-        ? prev.filter(id => id !== collectionId)
-        : [...prev, collectionId]
-    );
-  }, []);
-
-  // 【截圖 9-15 #8】確認加入選取的景點 - 使用 Toast 而不是 Alert
-  const confirmAddPlaces = useCallback(async () => {
-    if (!currentItinerary || selectedCollectionIds.length === 0) return;
-    const token = await getToken();
-    if (!token) return;
-
-    setAddingPlaces(true);
-    try {
-      const res = await itineraryApi.addPlaces(
-        currentItinerary.id,
-        { collectionIds: selectedCollectionIds },
-        token
-      );
-      if (res.success) {
-        await fetchItineraryDetail(currentItinerary.id);
-        setAddPlacesModalVisible(false);
-        // 用戶操作不跳通知，直接關閉 Modal 即可
-      }
-    } catch (error) {
-      console.error('Failed to add places:', error);
-      showToastMessage(t.itinerary_addPlacesFailed);
-    } finally {
-      setAddingPlaces(false);
-    }
-  }, [currentItinerary, selectedCollectionIds, getToken, fetchItineraryDetail, t, showToastMessage]);
+  }, [currentItinerary, fetchItineraryDetail]);
 
   // 移動景點（上/下）
   // 【預防卡住】失敗時直接還原本地狀態，不重新載入整個行程
@@ -664,129 +590,39 @@ export function ItineraryScreenV2() {
     }
   }, [currentItinerary, getToken, t, showToastMessage]);
 
-  // 載入國家列表
-  const loadCountries = useCallback(async () => {
-    setLoadingCountries(true);
-    try {
-      // 使用預載入快取，避免重複請求
-      const data = await preloadService.getCountries();
-      setCountries(data);
-    } catch (error) {
-      console.error('Failed to load countries:', error);
-    } finally {
-      setLoadingCountries(false);
-    }
-  }, []);
-
-  // 載入城市列表
-  const loadRegions = useCallback(async (countryId: number) => {
-    setLoadingRegions(true);
-    setRegions([]);
-    setNewItinerary(prev => ({ ...prev, regionId: null, regionName: '' }));
-    try {
-      // 使用預載入快取
-      const data = await preloadService.getRegions(countryId);
-      setRegions(data);
-    } catch (error) {
-      console.error('Failed to load regions:', error);
-    } finally {
-      setLoadingRegions(false);
-    }
-  }, []);
-
-  // 取得本地化名稱
-  const getLocalizedName = useCallback((item: Country | Region): string => {
-    if (state.language === 'zh-TW') return item.nameZh || item.nameEn || '';
-    return item.nameEn || item.nameZh || '';
-  }, [state.language]);
-
-  // 開啟建立行程 Modal
+  // 開啟建立行程 Modal（表單邏輯已抽至 CreateItineraryModal）
   const openCreateModal = useCallback(() => {
     setCreateModalVisible(true);
-    setShowCalendar(false);
-    setNewItinerary({
-      title: '',
-      date: new Date().toISOString().split('T')[0],
-      countryId: null,
-      countryName: '',
-      regionId: null,
-      regionName: '',
-    });
-    setRegions([]);
-    if (countries.length === 0) {
-      loadCountries();
-    }
-  }, [countries.length, loadCountries]);
+  }, []);
 
-  // 建立行程
-  const handleCreateItinerary = useCallback(async () => {
-    if (!newItinerary.countryName || !newItinerary.regionName) {
-      Alert.alert(t.itinerary_incomplete, t.itinerary_selectCountryCity);
-      return;
-    }
-    const token = await getToken();
-    if (!token) return;
-
-    setCreating(true);
-    try {
-      const trimmedTitle = newItinerary.title.trim();
-      const res = await itineraryApi.createItinerary({
-        ...(trimmedTitle ? { title: trimmedTitle } : {}),
-        date: newItinerary.date,
-        country: newItinerary.countryName,
-        city: newItinerary.regionName,
-      }, token);
-
-      if (res.success) {
-        // 如果用戶有填標題但後端沒套用，補一次 updateItinerary
-        let finalItinerary = res.itinerary;
-        if (trimmedTitle && res.itinerary.title !== trimmedTitle) {
-          const updateRes = await itineraryApi.updateItinerary(
-            res.itinerary.id,
-            { title: trimmedTitle },
-            token,
-          );
-          if (updateRes.success) {
-            finalItinerary = updateRes.itinerary;
-          }
-        }
-
-        setCreateModalVisible(false);
-        await fetchItineraries();
-        // 切換到新建立的行程
-        setActiveItineraryId(finalItinerary.id);
-        setCurrentItinerary(finalItinerary);
-        setMessages([]);
-        setAiContext(undefined);
-        setAiSuggestions([]);
-        // 延遲關閉抽屜，等 Modal 完全關閉後再執行
-        setTimeout(() => {
-          drawerAnimating.current = false;
-          Animated.parallel([
-            Animated.timing(leftDrawerAnim, {
-              toValue: -DRAWER_WIDTH,
-              duration: 200,
-              useNativeDriver: true,
-            }),
-            Animated.timing(overlayAnim, {
-              toValue: 0,
-              duration: 150,
-              useNativeDriver: true,
-            }),
-          ]).start(() => {
-            setLeftDrawerOpen(false);
-          });
-        }, 100);
-      } else {
-        Alert.alert(t.itinerary_createFailed, res.message || t.itinerary_tryAgainLater);
-      }
-    } catch (error) {
-      console.error('Create itinerary error:', error);
-      Alert.alert(t.itinerary_createFailed, t.itinerary_networkError);
-    } finally {
-      setCreating(false);
-    }
-  }, [newItinerary, getToken, fetchItineraries, t, leftDrawerAnim, overlayAnim]);
+  /** CreateItineraryModal 建立成功回調 */
+  const handleItineraryCreated = useCallback(async (newItin: Itinerary) => {
+    await fetchItineraries();
+    // 切換到新建立的行程
+    setActiveItineraryId(newItin.id);
+    setCurrentItinerary(newItin);
+    setMessages([]);
+    setAiContext(undefined);
+    setAiSuggestions([]);
+    // 延遲關閉抽屜，等 Modal 完全關閉後再執行
+    setTimeout(() => {
+      drawerAnimating.current = false;
+      Animated.parallel([
+        Animated.timing(leftDrawerAnim, {
+          toValue: -DRAWER_WIDTH,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(overlayAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setLeftDrawerOpen(false);
+      });
+    }, 100);
+  }, [fetchItineraries, leftDrawerAnim, overlayAnim]);
 
   /**
    * 【截圖 9-15 #12】保存行程標題
@@ -1011,10 +847,10 @@ export function ItineraryScreenV2() {
       setLoading(false);
     };
 
-    if (state.isAuthenticated) {
+    if (isAuthenticated) {
       init();
     }
-  }, [state.isAuthenticated, fetchItineraries]);
+  }, [isAuthenticated, fetchItineraries]);
 
   // 載入選中的行程詳情
   useEffect(() => {
@@ -1022,13 +858,6 @@ export function ItineraryScreenV2() {
       fetchItineraryDetail(activeItineraryId);
     }
   }, [activeItineraryId, fetchItineraryDetail]);
-
-  // 當選擇國家時載入城市
-  useEffect(() => {
-    if (newItinerary.countryId) {
-      loadRegions(newItinerary.countryId);
-    }
-  }, [newItinerary.countryId, loadRegions]);
 
   // 【預防卡住】組件卸載時清理所有 timers，避免記憶體洩漏
   useEffect(() => {
@@ -1265,7 +1094,7 @@ export function ItineraryScreenV2() {
   }, [rightDrawerAnim, overlayAnim]);
 
   // ===== 未登入狀態 =====
-  if (!state.isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <View style={styles.emptyContainer}>
         <Ionicons name="airplane-outline" size={64} color={MibuBrand.tanLight} />
@@ -1911,385 +1740,7 @@ export function ItineraryScreenV2() {
       </Animated.View>
     );
 
-  // ===== 【截圖 9-15 #6 #7】從圖鑑加入景點 Modal（手風琴 + 搜索） =====
-  const renderAddPlacesModal = () => {
-    // 搜索過濾
-    const filteredPlaces = availablePlaces.map(categoryGroup => ({
-      ...categoryGroup,
-      places: categoryGroup.places.filter(place =>
-        placeSearchQuery.trim() === '' ||
-        place.name.toLowerCase().includes(placeSearchQuery.toLowerCase()) ||
-        (place.nameEn && place.nameEn.toLowerCase().includes(placeSearchQuery.toLowerCase()))
-      ),
-    })).filter(group => group.places.length > 0);
-
-    return (
-      <Modal
-        visible={addPlacesModalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => {
-          setAddPlacesModalVisible(false);
-          setExpandedCategory(null);
-          setPlaceSearchQuery('');
-        }}
-      >
-        <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
-          {/* Modal Header */}
-          <View style={styles.modalHeader}>
-            <TouchableOpacity
-              onPress={() => {
-                setAddPlacesModalVisible(false);
-                setExpandedCategory(null);
-                setPlaceSearchQuery('');
-              }}
-              style={styles.modalCloseButton}
-            >
-              <Ionicons name="close" size={24} color={MibuBrand.copper} />
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>
-              {t.itinerary_addFromCollection}
-            </Text>
-            <TouchableOpacity
-              onPress={confirmAddPlaces}
-              style={[
-                styles.modalConfirmButton,
-                selectedCollectionIds.length === 0 && styles.modalConfirmButtonDisabled,
-              ]}
-              disabled={selectedCollectionIds.length === 0 || addingPlaces}
-            >
-              {addingPlaces ? (
-                <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
-              ) : (
-                <Text style={styles.modalConfirmText}>
-                  {tFormat(t.itinerary_addCount, { count: selectedCollectionIds.length })}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          {/* 【截圖 9-15 #7】搜索輸入框 */}
-          <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={20} color={MibuBrand.copper} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={t.itinerary_searchPlaces}
-              placeholderTextColor={MibuBrand.copper}
-              value={placeSearchQuery}
-              onChangeText={setPlaceSearchQuery}
-            />
-            {placeSearchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setPlaceSearchQuery('')}>
-                <Ionicons name="close-circle" size={20} color={MibuBrand.copper} />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Modal Content */}
-          {loadingAvailable ? (
-            <View style={styles.modalLoading}>
-              <ActivityIndicator size="large" color={MibuBrand.brown} />
-              <Text style={styles.modalLoadingText}>
-                {t.loading}
-              </Text>
-            </View>
-          ) : filteredPlaces.length === 0 ? (
-            <View style={styles.modalEmpty}>
-              <Ionicons name="albums-outline" size={48} color={MibuBrand.tanLight} />
-              <Text style={styles.modalEmptyText}>
-                {placeSearchQuery.trim()
-                  ? (t.itinerary_noMatchingPlaces)
-                  : (t.itinerary_noCollectionPlaces)}
-              </Text>
-            </View>
-          ) : (
-            <ScrollView
-              style={styles.modalScroll}
-              contentContainerStyle={styles.modalScrollContent}
-              showsVerticalScrollIndicator={false}
-            >
-              {filteredPlaces.map(categoryGroup => {
-                const categoryToken = getCategoryToken(categoryGroup.category);
-                const isExpanded = expandedCategory === categoryGroup.category;
-                const displayPlaces = isExpanded ? categoryGroup.places : [];
-
-                return (
-                  <View key={categoryGroup.category} style={styles.modalCategorySection}>
-                    {/* 手風琴標題（可點擊展開/收合） */}
-                    <TouchableOpacity
-                      style={[
-                        styles.accordionHeader,
-                        isExpanded && styles.accordionHeaderExpanded,
-                      ]}
-                      onPress={() => setExpandedCategory(isExpanded ? null : categoryGroup.category)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={styles.accordionHeaderLeft}>
-                        <View
-                          style={[
-                            styles.accordionStripe,
-                            { backgroundColor: categoryToken.stripe },
-                          ]}
-                        />
-                        <Text style={styles.accordionTitle}>{categoryGroup.categoryName}</Text>
-                        <View style={styles.accordionCountBadge}>
-                          <Text style={styles.accordionCountText}>{categoryGroup.places.length}</Text>
-                        </View>
-                      </View>
-                      <Ionicons
-                        name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                        size={20}
-                        color={MibuBrand.copper}
-                      />
-                    </TouchableOpacity>
-
-                    {/* 展開的景點列表（可滑動） */}
-                    {isExpanded && (
-                      <ScrollView
-                        style={styles.accordionContent}
-                        nestedScrollEnabled
-                        showsVerticalScrollIndicator={true}
-                      >
-                        {displayPlaces.map(place => {
-                          const isSelected = selectedCollectionIds.includes(place.collectionId);
-                          return (
-                            <TouchableOpacity
-                              key={place.collectionId}
-                              style={[
-                                styles.modalPlaceItem,
-                                isSelected && styles.modalPlaceItemSelected,
-                              ]}
-                              activeOpacity={0.7}
-                              onPress={() => togglePlaceSelection(place.collectionId)}
-                            >
-                              <View
-                                style={[
-                                  styles.modalPlaceStripe,
-                                  { backgroundColor: categoryToken.stripe },
-                                ]}
-                              />
-                              <View style={styles.modalPlaceInfo}>
-                                <Text style={styles.modalPlaceName}>{place.name}</Text>
-                                {place.nameEn && (
-                                  <Text style={styles.modalPlaceNameEn}>{place.nameEn}</Text>
-                                )}
-                              </View>
-                              <View style={[
-                                styles.modalCheckbox,
-                                isSelected && styles.modalCheckboxSelected,
-                              ]}>
-                                {isSelected && (
-                                  <Ionicons name="checkmark" size={16} color={MibuBrand.warmWhite} />
-                                )}
-                              </View>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </ScrollView>
-                    )}
-                  </View>
-                );
-              })}
-            </ScrollView>
-          )}
-        </View>
-      </Modal>
-    );
-  };
-
-  // ===== 建立行程 Modal（方案 A 卡片式）=====
-  const renderCreateModal = () => {
-    const canCreate = !!newItinerary.countryId && !!newItinerary.regionId;
-    return (
-      <Modal
-        visible={createModalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setCreateModalVisible(false)}
-      >
-        <View style={[styles.createModalContainer, { paddingTop: insets.top }]}>
-          {/* Header：關閉 + 標題 */}
-          <View style={styles.createModalHeader}>
-            <TouchableOpacity
-              onPress={() => setCreateModalVisible(false)}
-              style={styles.modalCloseButton}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="close" size={24} color={MibuBrand.copper} />
-            </TouchableOpacity>
-            <Text style={styles.createModalTitle}>
-              {t.itinerary_newItinerary}
-            </Text>
-            {/* 佔位，讓標題置中 */}
-            <View style={{ width: 44 }} />
-          </View>
-
-          {/* 卡片區 */}
-          <ScrollView
-            style={styles.modalScroll}
-            contentContainerStyle={styles.createCardScroll}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.createCard}>
-              {/* 行程標題（可選） */}
-              <View style={styles.createFieldGroup}>
-                <View style={styles.createFieldIcon}>
-                  <Ionicons name="create-outline" size={18} color={MibuBrand.copper} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.createFieldLabel}>{t.itinerary_tripTitle}</Text>
-                  <TextInput
-                    style={styles.createFieldInput}
-                    value={newItinerary.title}
-                    onChangeText={(text) => setNewItinerary(prev => ({ ...prev, title: text }))}
-                    placeholder={t.itinerary_tripTitlePlaceholder}
-                    placeholderTextColor={MibuBrand.tan}
-                    maxLength={50}
-                    autoCapitalize="none"
-                    returnKeyType="next"
-                  />
-                </View>
-              </View>
-
-              {/* 分隔線 */}
-              <View style={styles.createDivider} />
-
-              {/* 日期（月曆選擇器） */}
-              <View style={styles.createFieldGroup}>
-                <View style={styles.createFieldIcon}>
-                  <Ionicons name="calendar-outline" size={18} color={MibuBrand.copper} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.createFieldLabel}>{t.itinerary_date}</Text>
-                  <TouchableOpacity
-                    style={[styles.createFieldInput, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
-                    onPress={() => setShowCalendar(!showCalendar)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={{ fontSize: FontSize.md, color: MibuBrand.brownDark }}>
-                      {newItinerary.date}
-                    </Text>
-                    <Ionicons
-                      name={showCalendar ? 'chevron-up' : 'chevron-down'}
-                      size={16}
-                      color={MibuBrand.copper}
-                    />
-                  </TouchableOpacity>
-                  {showCalendar && (
-                    <View style={{ marginTop: Spacing.sm, borderRadius: Radius.md, overflow: 'hidden' }}>
-                      <Calendar
-                        current={newItinerary.date}
-                        onDayPress={(day: { dateString: string }) => {
-                          setNewItinerary(prev => ({ ...prev, date: day.dateString }));
-                          setShowCalendar(false);
-                        }}
-                        markedDates={{
-                          [newItinerary.date]: { selected: true, selectedColor: MibuBrand.brown },
-                        }}
-                        theme={{
-                          backgroundColor: MibuBrand.warmWhite,
-                          calendarBackground: MibuBrand.warmWhite,
-                          todayTextColor: MibuBrand.copper,
-                          selectedDayBackgroundColor: MibuBrand.brown,
-                          selectedDayTextColor: MibuBrand.warmWhite,
-                          arrowColor: MibuBrand.copper,
-                          monthTextColor: MibuBrand.brownDark,
-                          dayTextColor: MibuBrand.brownDark,
-                          textDisabledColor: MibuBrand.tan,
-                          textDayFontWeight: '500',
-                          textMonthFontWeight: '700',
-                          textDayHeaderFontWeight: '600',
-                          textDayFontSize: FontSize.md,
-                          textMonthFontSize: FontSize.lg,
-                          textDayHeaderFontSize: FontSize.sm,
-                        }}
-                      />
-                    </View>
-                  )}
-                </View>
-              </View>
-
-              {/* 分隔線 */}
-              <View style={styles.createDivider} />
-
-              {/* 國家 + 城市並排 */}
-              <View style={styles.createFieldGroup}>
-                <View style={styles.createFieldIcon}>
-                  <Ionicons name="globe-outline" size={18} color={MibuBrand.copper} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <View style={styles.createLocationRow}>
-                    {/* 國家 */}
-                    <View style={{ flex: 1, marginRight: Spacing.sm }}>
-                      <Select
-                        label={t.itinerary_country}
-                        options={countries.map(c => ({ label: getLocalizedName(c), value: c.id }))}
-                        value={newItinerary.countryId || null}
-                        onChange={(value) => {
-                          const country = countries.find(c => c.id === value);
-                          setNewItinerary(prev => ({
-                            ...prev,
-                            countryId: value as number,
-                            countryName: country ? getLocalizedName(country) : '',
-                            regionId: null,
-                            regionName: '',
-                          }));
-                        }}
-                        placeholder={t.itinerary_countryPlaceholder}
-                        loading={loadingCountries}
-                      />
-                    </View>
-                    {/* 城市 */}
-                    <View style={{ flex: 1, marginLeft: Spacing.sm }}>
-                      <Select
-                        label={t.itinerary_city}
-                        options={regions.map(r => ({ label: getLocalizedName(r), value: r.id }))}
-                        value={newItinerary.regionId || null}
-                        onChange={(value) => {
-                          const region = regions.find(r => r.id === value);
-                          setNewItinerary(prev => ({
-                            ...prev,
-                            regionId: value as number,
-                            regionName: region?.nameZh || '',
-                          }));
-                        }}
-                        placeholder={t.itinerary_cityPlaceholder}
-                        loading={loadingRegions || !newItinerary.countryId}
-                      />
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </ScrollView>
-
-          {/* 底部建立按鈕 */}
-          <View style={[styles.createBottomBar, { paddingBottom: insets.bottom + Spacing.lg }]}>
-            <TouchableOpacity
-              onPress={handleCreateItinerary}
-              style={[
-                styles.createBottomButton,
-                !canCreate && styles.createBottomButtonDisabled,
-              ]}
-              disabled={!canCreate || creating}
-              activeOpacity={0.8}
-            >
-              {creating ? (
-                <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
-              ) : (
-                <>
-                  <Ionicons name="sparkles" size={20} color={MibuBrand.warmWhite} style={{ marginRight: Spacing.sm }} />
-                  <Text style={styles.createBottomButtonText}>
-                    {t.itinerary_createItinerary}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    );
-  };
+  // Modals 已抽至獨立元件：CreateItineraryModal, AddPlacesModal
 
   // 【截圖 9-15 #8 #11】Toast 通知組件
   const renderToast = () =>
@@ -2314,11 +1765,23 @@ export function ItineraryScreenV2() {
           {renderOverlay()}
           {renderLeftDrawer()}
           {renderRightDrawer()}
-          {renderAddPlacesModal()}
         </>
       )}
-      {/* Modal 不管有沒有行程都要渲染，這樣空狀態也能建立行程 */}
-      {renderCreateModal()}
+      {/* Modal 子元件 */}
+      <AddPlacesModal
+        visible={addPlacesModalVisible}
+        itineraryId={currentItinerary?.id ?? null}
+        onClose={() => setAddPlacesModalVisible(false)}
+        onConfirmed={handleAddPlacesConfirmed}
+        showToast={showToastMessage}
+        cachedPlaces={collectionCacheRef.current}
+        onCacheUpdate={(places) => { collectionCacheRef.current = places; }}
+      />
+      <CreateItineraryModal
+        visible={createModalVisible}
+        onClose={() => setCreateModalVisible(false)}
+        onCreated={handleItineraryCreated}
+      />
       {renderToast()}
 
       {/* Mini 頭像放大預覽（LINE 風格） */}

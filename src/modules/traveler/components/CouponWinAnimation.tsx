@@ -33,7 +33,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { CouponTier } from '../../../types';
 import { UIColors } from '../../../../constants/Colors';
-import { useApp } from '../../../context/AppContext';
+import { useI18n } from '../../../context/AppContext';
 import { tFormat } from '../../../utils/i18n';
 
 // ============================================================
@@ -155,7 +155,7 @@ export default function CouponWinAnimation({
   const config = TIER_CONFIG[tier];
 
   // 多語系翻譯
-  const { t } = useApp();
+  const { t } = useI18n();
 
   // 是否為高稀有度（有光暈效果）
   const isHighTier = tier === 'SP' || tier === 'SSR' || tier === 'SR';

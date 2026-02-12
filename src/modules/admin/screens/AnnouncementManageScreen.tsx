@@ -33,7 +33,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { Announcement, AnnouncementType } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
@@ -60,7 +60,8 @@ const TYPE_OPTIONS: { value: AnnouncementType; labelKey: string }[] = [
  */
 export function AnnouncementManageScreen() {
   // ============ Hooks & Context ============
-  const { getToken, t } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   // ============ 狀態管理 ============

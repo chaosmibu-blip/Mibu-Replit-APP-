@@ -30,7 +30,7 @@ import {
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../../constants/translations';
-import { useApp } from '../../../context/AppContext';
+import { useI18n } from '../../../context/AppContext';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
@@ -75,7 +75,7 @@ function getDistanceFromLatLonInMeters(
 // ============ 元件本體 ============
 
 export function LocationScreen() {
-  const { t } = useApp();
+  const { t } = useI18n();
 
   // ============ 狀態管理 ============
 

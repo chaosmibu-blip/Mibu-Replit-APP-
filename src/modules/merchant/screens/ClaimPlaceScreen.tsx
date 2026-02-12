@@ -16,13 +16,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 import { apiService } from '../../../services/api';
 import { PlaceSearchResult } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 export function ClaimPlaceScreen() {
-  const { state, t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
   const [searchQuery, setSearchQuery] = useState('');

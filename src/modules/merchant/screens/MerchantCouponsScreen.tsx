@@ -29,7 +29,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 import { apiService } from '../../../services/api';
 import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../../../types';
 import { TierBadge } from '../../shared/components/TierBadge';
@@ -40,7 +41,8 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 // ============ 主元件 ============
 export function MerchantCouponsScreen() {
   // ============ Hooks ============
-  const { state, t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -284,7 +286,7 @@ export function MerchantCouponsScreen() {
    */
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString(LOCALE_MAP[state.language]);
+    return new Date(dateStr).toLocaleDateString(LOCALE_MAP[language]);
   };
 
   /**

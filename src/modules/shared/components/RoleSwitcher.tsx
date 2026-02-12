@@ -26,7 +26,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { UserRole } from '../../../types';
 import { MibuBrand, UIColors, RoleColors } from '../../../../constants/Colors';
 
@@ -63,14 +63,13 @@ const ROLE_CONFIG: Record<UserRole, { labelKey: string; color: string; icon: str
  * - 用戶必須有超過一個可訪問的角色
  */
 export function RoleSwitcher({ compact = false }: RoleSwitcherProps) {
-  const { state, switchRole, t } = useApp();
+  const { user, switchRole } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   // 控制選單/Modal 顯示狀態
   const [showMenu, setShowMenu] = useState(false);
   // 切換中的載入狀態
   const [switching, setSwitching] = useState(false);
-
-  const user = state.user;
 
   // 檢查是否應該顯示切換器
   if (!user?.isSuperAdmin || !user?.accessibleRoles || user.accessibleRoles.length <= 1) {

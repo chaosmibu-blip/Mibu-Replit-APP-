@@ -13,16 +13,16 @@
  * Super Admin 可透過 activeRole 切換介面
  */
 import { Redirect } from 'expo-router';
-import { useApp } from '../src/context/AppContext';
+import { useAuth } from '../src/context/AppContext';
 
 export default function Index() {
-  const { state } = useApp();
-  
-  if (!state.isAuthenticated || !state.user) {
+  const { user, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated || !user) {
     return <Redirect href="/login" />;
   }
 
-  const { role, activeRole, isApproved, isSuperAdmin } = state.user;
+  const { role, activeRole, isApproved, isSuperAdmin } = user;
   
   // For super admin, use activeRole to determine interface
   const effectiveRole = isSuperAdmin ? (activeRole || role) : role;

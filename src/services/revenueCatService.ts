@@ -37,12 +37,12 @@ import Purchases, {
 /**
  * RevenueCat API Keys
  *
- * 注意：正式環境應從環境變數或後端配置取得
- * 目前為佔位符，需替換為實際的 API Key
+ * 從環境變數讀取，避免硬編碼在原始碼中
+ * 設定方式：在 .env 或 EAS Secrets 中設定 EXPO_PUBLIC_REVENUECAT_IOS_KEY / EXPO_PUBLIC_REVENUECAT_ANDROID_KEY
  */
 const REVENUECAT_API_KEYS = {
-  ios: 'appl_YOUR_IOS_API_KEY',       // 替換為實際的 iOS API Key
-  android: 'goog_YOUR_ANDROID_API_KEY', // 替換為實際的 Android API Key
+  ios: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || '',
+  android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '',
 };
 
 // ========== 服務類別 ==========

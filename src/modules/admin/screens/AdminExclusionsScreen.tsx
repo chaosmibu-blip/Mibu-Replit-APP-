@@ -29,7 +29,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { GlobalExclusion } from '../../../types';
 import { apiService } from '../../../services/api';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
@@ -44,7 +44,8 @@ import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../
 export function AdminExclusionsScreen() {
   // ============ Hooks & Context ============
   const router = useRouter();
-  const { state } = useApp();
+  const { user } = useAuth();
+  const { language } = useI18n();
 
   // ============ 狀態管理 ============
 
@@ -72,10 +73,10 @@ export function AdminExclusionsScreen() {
   // ============ 權限檢查 ============
 
   /** 判斷當前用戶是否為管理員 */
-  const isAdmin = state.user?.role === 'admin';
+  const isAdmin = user?.role === 'admin';
 
   /** Token（用於 API 請求） */
-  const token = state.user?.id || '';
+  const token = user?.id || '';
 
   // ============ 多國語系 ============
 
@@ -152,7 +153,7 @@ export function AdminExclusionsScreen() {
   };
 
   /** 根據當前語言取得翻譯文字 */
-  const t = translations[state.language] || translations['zh-TW'];
+  const t = translations[language] || translations['zh-TW'];
 
   // ============ 副作用 ============
 

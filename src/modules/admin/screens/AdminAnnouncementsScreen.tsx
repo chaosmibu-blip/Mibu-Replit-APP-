@@ -30,7 +30,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { Announcement, AnnouncementType, CreateAnnouncementParams } from '../../../types';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
@@ -44,7 +44,8 @@ import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../
  */
 export function AdminAnnouncementsScreen() {
   // ============ Hooks & Context ============
-  const { getToken, t } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   // ============ 狀態管理 ============

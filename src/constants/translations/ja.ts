@@ -1025,6 +1025,37 @@ const ja: Record<string, string> = {
     settings_balance: '残高',
     settings_unknownError: 'An unknown error occurred', /* TODO: ja */
     settings_pleaseLoginFirst: 'Please login first', /* TODO: ja */
+    settings_notificationPreferences: '通知設定',
+
+    // ========== NotificationPreferencesScreen ==========
+    notifPref_title: '通知設定',
+    notifPref_categoryTitle: '通知タイプ',
+    notifPref_achievement: '実績解除',
+    notifPref_achievementDesc: '新しい実績が解除された時に通知',
+    notifPref_dailyTask: 'デイリータスク',
+    notifPref_dailyTaskDesc: 'タスク完了やリセット時にリマインド',
+    notifPref_coupon: 'クーポン',
+    notifPref_couponDesc: '新しいクーポン受取時に通知',
+    notifPref_announcement: 'お知らせ',
+    notifPref_announcementDesc: '公式アナウンスと重要なお知らせ',
+    notifPref_quietHoursTitle: 'おやすみモード',
+    notifPref_quietHoursDesc: 'おやすみ時間中はプッシュ通知が届きません（記録は残ります）',
+    notifPref_quietHoursStart: '開始時刻',
+    notifPref_quietHoursEnd: '終了時刻',
+    notifPref_loadFailed: '設定の読み込みに失敗しました',
+    notifPref_saveFailed: '保存に失敗しました。後でもう一度お試しください',
+    notifPref_saveSuccess: '通知設定を更新しました',
+
+    // ========== NotificationListScreen ==========
+    notifList_title: '通知',
+    notifList_empty: '通知はありません',
+    notifList_emptyDesc: '新しい通知がここに表示されます',
+    notifList_markAllRead: 'すべて既読',
+    notifList_loadFailed: '通知の読み込みに失敗しました',
+    notifList_achievementUnlocked: '実績解除',
+    notifList_dailyTaskCompleted: 'タスク完了',
+    notifList_newCoupon: '新しいクーポン',
+    notifList_announcementLabel: 'お知らせ',
 
     // ========== ProfileScreen ==========
     profile_title: 'プロフィール',
@@ -1137,7 +1168,44 @@ const ja: Record<string, string> = {
     mailbox_rewardCoupon: 'Coupon', /* TODO: ja */
     mailbox_rewardPlacePack: 'Place pack', /* TODO: ja */
     mailbox_rewardPerk: 'Perk', /* TODO: ja */
-    mailbox_unreadCount: '{count} unread', /* TODO: ja */
+    mailbox_unreadCount: '{count} 件未読', /* TODO: ja */
+
+    // ========== ItemBox アイテムボックス ==========
+    itemBox_title: 'アイテムボックス',
+    itemBox_loading: '読み込み中...',
+    itemBox_loadFailed: '読み込み失敗',
+    itemBox_loadFailedDesc: 'アイテムの読み込みに失敗しました。後でもう一度お試しください。',
+    itemBox_full: 'アイテムボックスが一杯です！クーポンを削除または使用してからガチャを引いてください。',
+    itemBox_almostFull: 'アイテムボックスがほぼ一杯です、残り{remaining}スロット',
+    itemBox_slotExpired: '期限切れ',
+    itemBox_slotUsed: '使用済',
+    itemBox_expired: '期限切れ',
+    itemBox_validUntil: '{date}まで有効',
+    itemBox_close: '閉じる',
+    itemBox_redeem: '使用する',
+    itemBox_redeemTitle: 'クーポンを使用',
+    itemBox_redeemInputLabel: '店舗の引換コードを入力',
+    itemBox_redeemPlaceholder: '8桁のコード',
+    itemBox_redeemConfirm: '使用を確認',
+    itemBox_redeemSuccess: '使用完了！',
+    itemBox_redeemShowMerchant: 'この画面を店舗スタッフに見せてください',
+    itemBox_redeemCountdown: 'カウントダウン',
+    itemBox_redeemDone: '完了',
+    itemBox_redeemNotice: 'お知らせ',
+    itemBox_redeemEnterCode: '店舗の引換コードを入力してください',
+    itemBox_redeemFailed: '使用失敗',
+    itemBox_redeemInvalidCode: 'コードが無効です',
+    itemBox_redeemInvalidCodeDesc: '店舗から提供されたコードを確認してください',
+    itemBox_redeemExpired: 'このクーポンは期限切れです',
+    itemBox_redeemAlreadyUsed: '使用済み',
+    itemBox_redeemAlreadyUsedDesc: 'このクーポンは既に使用されています',
+    itemBox_redeemError: '使用に失敗しました。後でもう一度お試しください。',
+    itemBox_deleteTitle: '削除しますか？',
+    itemBox_deleteDesc: 'この操作は取り消せません',
+    itemBox_deleteCancel: 'キャンセル',
+    itemBox_deleteConfirm: '削除',
+    itemBox_deleteFailed: '削除失敗',
+    itemBox_error: 'エラー',
 };
 
 export default ja;

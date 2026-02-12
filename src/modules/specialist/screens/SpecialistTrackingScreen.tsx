@@ -24,7 +24,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { io, Socket } from 'socket.io-client';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { API_BASE_URL } from '../../../constants/translations';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { UIColors } from '../../../../constants/Colors';
@@ -45,7 +45,8 @@ interface TravelerLocation {
 
 // ============ 元件主體 ============
 export function SpecialistTrackingScreen() {
-  const { state, getToken, t } = useApp();
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
   const params = useLocalSearchParams();
 
@@ -140,7 +141,7 @@ export function SpecialistTrackingScreen() {
    */
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString(LOCALE_MAP[state.language], {
+    return date.toLocaleTimeString(LOCALE_MAP[language], {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',

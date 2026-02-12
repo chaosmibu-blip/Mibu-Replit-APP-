@@ -35,7 +35,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 import { contributionApi } from '../../../services/contributionApi';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
@@ -74,7 +74,8 @@ const REPORT_REASONS: { value: ReportReason; labelKey: string }[] = [
 // ============================================================
 
 export function ContributionScreen() {
-  const { state, getToken, t } = useApp();
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
 
@@ -274,7 +275,7 @@ export function ContributionScreen() {
                   </Text>
                   <Text style={styles.itemMetaText}>•</Text>
                   <Text style={styles.itemMetaText}>
-                    {new Date(report.createdAt).toLocaleDateString(LOCALE_MAP[state.language])}
+                    {new Date(report.createdAt).toLocaleDateString(LOCALE_MAP[language])}
                   </Text>
                   {report.expEarned > 0 && (
                     <>
@@ -351,7 +352,7 @@ export function ContributionScreen() {
                   <Text style={styles.itemMetaText}>{suggestion.category}</Text>
                   <Text style={styles.itemMetaText}>•</Text>
                   <Text style={styles.itemMetaText}>
-                    {new Date(suggestion.createdAt).toLocaleDateString(LOCALE_MAP[state.language])}
+                    {new Date(suggestion.createdAt).toLocaleDateString(LOCALE_MAP[language])}
                   </Text>
                   {suggestion.expEarned > 0 && (
                     <>

@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { useApp } from '../../src/context/AppContext';
+import { useAuth, useI18n, useGacha } from '../../src/context/AppContext';
 import { MibuBrand, UIColors } from '../../constants/Colors';
 
 function TabIconWithBadge({ 
@@ -57,13 +57,15 @@ function TabIconWithBadge({
 }
 
 export default function TabLayout() {
-  const { t, state, refreshUnreadCount } = useApp();
+  const { isAuthenticated } = useAuth();
+  const { t } = useI18n();
+  const { gachaState, refreshUnreadCount } = useGacha();
   
   useEffect(() => {
-    if (state.isAuthenticated) {
+    if (isAuthenticated) {
       refreshUnreadCount();
     }
-  }, [state.isAuthenticated, refreshUnreadCount]);
+  }, [isAuthenticated, refreshUnreadCount]);
 
   return (
     <Tabs
@@ -115,7 +117,7 @@ export default function TabLayout() {
               icon="gift" 
               focused={focused} 
               color={color} 
-              badgeCount={state.unreadItemCount} 
+              badgeCount={gachaState.unreadItemCount} 
             />
           ),
         }}

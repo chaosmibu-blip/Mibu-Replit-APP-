@@ -10,22 +10,17 @@
  * - 推薦排行榜（週/月/全部）
  * - 獎勵餘額查詢
  *
- * 串接 API：
- * - referralApi.getMyCode() - 取得推薦碼
- * - referralApi.generateCode() - 生成推薦碼
- * - referralApi.applyCode() - 套用推薦碼
- * - referralApi.getMyReferrals() - 取得邀請列表
- * - referralApi.getBalance() - 取得獎勵餘額
- * - referralApi.getLeaderboard() - 取得排行榜
- * - referralApi.getMyRank() - 取得我的排名
+ * 資料層：React Query hooks（useReferralQueries.ts）
+ * - 5 個查詢並行、獨立快取、stale-while-revalidate
+ * - Mutation 自動 invalidate 相關快取
  *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  * @see 後端合約: contracts/APP.md Phase 5
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -33,22 +28,27 @@ import {
   TextInput,
   Alert,
   Share,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 import { referralApi } from '../../../services/referralApi';
 import { MibuBrand } from '../../../../constants/Colors';
 import {
-  ReferralCode,
-  Referral,
-  ReferralBalance,
-  LeaderboardEntry,
   LeaderboardPeriod,
 } from '../../../types/referral';
+import {
+  useReferralCode,
+  useReferralList,
+  useReferralBalance,
+  useReferralLeaderboard,
+  useReferralRank,
+  useGenerateCode,
+  useRefreshReferralData,
+} from '../../../hooks/useReferralQueries';
+import styles from './ReferralScreen.styles';
 
 // ============================================================
 // 常數定義
@@ -81,151 +81,67 @@ const REWARD_TIERS: RewardTier[] = [
 // ============================================================
 
 export function ReferralScreen() {
-  const { state, getToken, t } = useApp();
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
-
   // ============================================================
-  // 狀態管理
+  // React Query 資料查詢（取代手動 useState + loadData）
   // ============================================================
 
-  // 載入狀態
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  // 我的推薦碼
-  const [myCode, setMyCode] = useState<ReferralCode | null>(null);
-
-  // 輸入的推薦碼
-  const [inputCode, setInputCode] = useState('');
-
-  // 操作中狀態
-  const [applyingCode, setApplyingCode] = useState(false);
-  const [generatingCode, setGeneratingCode] = useState(false);
-
-  // 邀請列表
-  const [referrals, setReferrals] = useState<Referral[]>([]);
-
-  // 邀請統計
-  const [referralStats, setReferralStats] = useState({
-    totalReferrals: 0,      // 總邀請數
-    activeReferrals: 0,     // 有效邀請數
-    totalRewardEarned: 0    // 總獎勵
-  });
-
-  // 獎勵餘額
-  const [balance, setBalance] = useState<ReferralBalance | null>(null);
-
-  // 排行榜
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [myRank, setMyRank] = useState<{ rank: number; isOnLeaderboard: boolean } | null>(null);
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<LeaderboardPeriod>('weekly');
+  const [inputCode, setInputCode] = useState('');
+  const [applyingCode, setApplyingCode] = useState(false);
 
-  // ============================================================
-  // API 呼叫
-  // ============================================================
+  // 5 個查詢並行執行，各自獨立快取
+  const codeQuery = useReferralCode();
+  const listQuery = useReferralList();
+  const balanceQuery = useReferralBalance();
+  const leaderboardQuery = useReferralLeaderboard(leaderboardPeriod);
+  const rankQuery = useReferralRank();
+  const generateCodeMutation = useGenerateCode();
+  const refreshAll = useRefreshReferralData();
 
-  /**
-   * 載入所有資料
-   * 包含：推薦碼、邀請列表、餘額、排行榜
-   */
-  const loadData = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) {
-        router.back();
-        return;
-      }
+  // 統一 loading 狀態（任一查詢首次載入中）
+  const loading = codeQuery.isLoading || listQuery.isLoading;
+  const refreshing = codeQuery.isFetching && !codeQuery.isLoading;
 
-      // 載入所有資料
-      const [codeData, referralsData, balanceData, leaderboardData, myRankData] = await Promise.all([
-        referralApi.getMyCode(token).catch(() => null),
-        referralApi.getMyReferrals(token).catch(() => ({ referrals: [], stats: { totalReferrals: 0, activeReferrals: 0, totalRewardEarned: 0 } })),
-        referralApi.getBalance(token).catch(() => null),
-        referralApi.getLeaderboard(token, { period: leaderboardPeriod }).catch(() => ({ success: false, leaderboard: [], period: 'weekly' as LeaderboardPeriod })),
-        referralApi.getMyRank(token).catch(() => null),
-      ]);
+  // 從查詢結果取得資料（搭配預設值）
+  const myCode = codeQuery.data ?? null;
+  const referrals = listQuery.data?.referrals ?? [];
+  const referralStats = listQuery.data?.stats ?? { totalReferrals: 0, activeReferrals: 0, totalRewardEarned: 0 };
+  const balance = balanceQuery.data ?? null;
+  const leaderboard = leaderboardQuery.data?.leaderboard ?? [];
+  const myRank = rankQuery.data ?? null;
 
-      // 如果還沒有推薦碼，自動生成一個
-      if (codeData) {
-        setMyCode(codeData);
-      } else {
-        // 自動生成推薦碼
-        try {
-          const result = await referralApi.generateCode(token);
-          if (result.success) {
-            setMyCode({
-              code: result.code,
-              createdAt: new Date().toISOString(),
-              usageCount: 0,
-              maxUsage: null,
-              isActive: true,
-            });
-          }
-        } catch {
-          // 靜默處理錯誤
-        }
-      }
-
-      setReferrals(referralsData.referrals);
-      setReferralStats(referralsData.stats);
-      if (balanceData) setBalance(balanceData);
-      if (leaderboardData.success) setLeaderboard(leaderboardData.leaderboard);
-      if (myRankData) setMyRank({ rank: myRankData.rank, isOnLeaderboard: myRankData.isOnLeaderboard });
-
-    } catch (error) {
-      console.error('Failed to load referral data:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [getToken, router, leaderboardPeriod]);
-
+  // 自動生成推薦碼（首次載入時如果沒有碼）
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (codeQuery.isSuccess && !codeQuery.data && !generateCodeMutation.isPending) {
+      generateCodeMutation.mutate(undefined as never);
+    }
+  }, [codeQuery.isSuccess, codeQuery.data]);
+
+  // ============================================================
+  // 事件處理
+  // ============================================================
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadData();
-  }, [loadData]);
+    refreshAll();
+  }, [refreshAll]);
 
-  const handleGenerateCode = async () => {
-    if (generatingCode) return;
-    setGeneratingCode(true);
-
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const result = await referralApi.generateCode(token);
-      if (result.success) {
-        setMyCode({
-          code: result.code,
-          createdAt: new Date().toISOString(),
-          usageCount: 0,
-          maxUsage: null,
-          isActive: true,
-        });
-      }
-    } catch (error) {
-      console.error('Failed to generate code:', error);
-      Alert.alert(
-        t.common_error,
-        t.referral_generateError
-      );
-    } finally {
-      setGeneratingCode(false);
-    }
+  const handleGenerateCode = () => {
+    if (generateCodeMutation.isPending) return;
+    generateCodeMutation.mutate(undefined as never, {
+      onError: () => {
+        Alert.alert(t.common_error, t.referral_generateError);
+      },
+    });
   };
 
   const handleCopyCode = async () => {
     if (!myCode) return;
     await Clipboard.setStringAsync(myCode.code);
-    Alert.alert(
-      t.referral_copied,
-      t.referral_copiedDesc
-    );
+    Alert.alert(t.referral_copied, t.referral_copiedDesc);
   };
 
   const handleShareCode = async () => {
@@ -251,7 +167,7 @@ export function ReferralScreen() {
       if (!validation.valid) {
         Alert.alert(
           t.referral_invalidCode,
-          validation.message || t.referral_invalidCodeDesc
+          validation.message || t.referral_invalidCodeDesc,
         );
         return;
       }
@@ -261,16 +177,13 @@ export function ReferralScreen() {
         setInputCode('');
         Alert.alert(
           t.referral_applySuccess,
-          tFormat(t.referral_applySuccessDesc, { amount: result.expEarned })
+          tFormat(t.referral_applySuccessDesc, { amount: result.expEarned }),
         );
-        loadData();
+        refreshAll(); // 刷新所有查詢
       }
     } catch (error: any) {
       console.error('Apply code failed:', error);
-      Alert.alert(
-        t.common_error,
-        error.message || t.referral_applyError
-      );
+      Alert.alert(t.common_error, error.message || t.referral_applyError);
     } finally {
       setApplyingCode(false);
     }
@@ -369,9 +282,9 @@ export function ReferralScreen() {
               <TouchableOpacity
                 style={styles.generateBtn}
                 onPress={handleGenerateCode}
-                disabled={generatingCode}
+                disabled={generateCodeMutation.isPending}
               >
-                {generatingCode ? (
+                {generateCodeMutation.isPending ? (
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                   <>
@@ -678,7 +591,7 @@ export function ReferralScreen() {
                   <View style={styles.referralInfo}>
                     <Text style={styles.referralName}>{referral.userName}</Text>
                     <Text style={styles.referralDate}>
-                      {new Date(referral.joinedAt).toLocaleDateString(LOCALE_MAP[state.language])}
+                      {new Date(referral.joinedAt).toLocaleDateString(LOCALE_MAP[language])}
                     </Text>
                   </View>
                   <View style={styles.referralReward}>
@@ -696,547 +609,3 @@ export function ReferralScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: MibuBrand.creamLight,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: MibuBrand.creamLight,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: MibuBrand.warmWhite,
-    borderBottomWidth: 1,
-    borderBottomColor: MibuBrand.tanLight,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
-  headerPlaceholder: {
-    width: 40,
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-  },
-  // Prominent Referral Code Card - Brown background, white text
-  referralCodeCard: {
-    backgroundColor: MibuBrand.brown,
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  codeCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 16,
-  },
-  codeCardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-    opacity: 0.9,
-  },
-  codeDisplayArea: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  codeTextLarge: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#fff',
-    letterSpacing: 6,
-  },
-  codeCardActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
-  copyButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#fff',
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  copyButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: MibuBrand.brown,
-  },
-  shareButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-  },
-  shareButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  // Generate Code Card (when no code exists)
-  generateCodeCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
-    padding: 4,
-    marginBottom: 20,
-    borderWidth: 2,
-    borderColor: MibuBrand.tanLight,
-    borderStyle: 'dashed',
-  },
-  generateCardInner: {
-    alignItems: 'center',
-    paddingVertical: 32,
-    paddingHorizontal: 24,
-  },
-  generateTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  generateSubtitle: {
-    fontSize: 14,
-    color: MibuBrand.copper,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  generateBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: MibuBrand.brown,
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-  },
-  generateBtnText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  // Stats Row - StatCard style with icon circle
-  statsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  statIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: MibuBrand.brownDark,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: MibuBrand.copper,
-    textAlign: 'center',
-  },
-  // Section styles
-  section: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
-  // How It Works Card
-  howItWorksCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  howItWorksStep: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  stepNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: MibuBrand.brown,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 14,
-  },
-  stepNumberText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  stepContent: {
-    flex: 1,
-  },
-  stepTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginBottom: 4,
-  },
-  stepDesc: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-    lineHeight: 18,
-  },
-  stepConnector: {
-    width: 2,
-    height: 20,
-    backgroundColor: MibuBrand.tanLight,
-    marginLeft: 15,
-    marginVertical: 8,
-  },
-  // Leaderboard
-  leaderboardCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  leaderboardItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  leaderboardItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: MibuBrand.tanLight,
-  },
-  leaderboardItemHighlight: {
-    backgroundColor: MibuBrand.highlight,
-  },
-  rankBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: MibuBrand.creamLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  rankText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: MibuBrand.copper,
-  },
-  leaderboardAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: MibuBrand.cream,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  leaderboardAvatarText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brown,
-  },
-  leaderboardName: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-    color: MibuBrand.brownDark,
-  },
-  leaderboardNameHighlight: {
-    color: MibuBrand.brown,
-    fontWeight: '700',
-  },
-  youBadge: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: MibuBrand.copper,
-  },
-  inviteCountBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: MibuBrand.highlight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  inviteCountText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: MibuBrand.brown,
-  },
-  emptyLeaderboard: {
-    padding: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyLeaderboardText: {
-    marginTop: 12,
-    fontSize: 15,
-    fontWeight: '600',
-    color: MibuBrand.copper,
-  },
-  emptyLeaderboardSubtext: {
-    marginTop: 4,
-    fontSize: 13,
-    color: MibuBrand.tan,
-  },
-  myRankCard: {
-    marginTop: 12,
-    backgroundColor: MibuBrand.highlight,
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
-  },
-  myRankText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: MibuBrand.brown,
-  },
-  // Rewards list
-  rewardsList: {
-    gap: 10,
-  },
-  rewardItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  rewardItemAchieved: {
-    backgroundColor: '#ECFDF5',
-    borderColor: '#059669',
-  },
-  rewardItemNext: {
-    borderWidth: 2,
-    borderColor: MibuBrand.brown,
-  },
-  rewardIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  rewardInfo: {
-    flex: 1,
-  },
-  rewardCount: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-    marginBottom: 2,
-  },
-  rewardValue: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-  },
-  rewardValueAchieved: {
-    color: '#059669',
-  },
-  achievedBadge: {
-    backgroundColor: '#059669',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  achievedText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  nextBadge: {
-    backgroundColor: MibuBrand.highlight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  nextText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: MibuBrand.brown,
-  },
-  // Apply code section
-  applyCard: {
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  applyCardHint: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-    marginBottom: 12,
-  },
-  applyInputRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  applyInput: {
-    flex: 1,
-    backgroundColor: MibuBrand.creamLight,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 18,
-    fontWeight: '600',
-    color: MibuBrand.brownDark,
-    letterSpacing: 2,
-    textAlign: 'center',
-  },
-  applyBtn: {
-    backgroundColor: MibuBrand.brown,
-    width: 52,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  applyBtnDisabled: {
-    backgroundColor: MibuBrand.tan,
-  },
-  // Referrals history
-  referralsList: {
-    gap: 8,
-  },
-  referralItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  referralAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: MibuBrand.cream,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  referralAvatarText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.brown,
-  },
-  referralInfo: {
-    flex: 1,
-  },
-  referralName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: MibuBrand.brownDark,
-    marginBottom: 2,
-  },
-  referralDate: {
-    fontSize: 12,
-    color: MibuBrand.tan,
-  },
-  referralReward: {
-    alignItems: 'flex-end',
-  },
-  referralXp: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#059669',
-  },
-  bottomSpacer: {
-    height: 100,
-  },
-});

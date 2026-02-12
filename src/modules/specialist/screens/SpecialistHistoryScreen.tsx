@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
 import { ServiceRelation } from '../../../types';
 import { UIColors } from '../../../../constants/Colors';
@@ -28,7 +28,8 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 元件主體 ============
 export function SpecialistHistoryScreen() {
-  const { state, t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -86,7 +87,7 @@ export function SpecialistHistoryScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(LOCALE_MAP[state.language], {
+    return date.toLocaleDateString(LOCALE_MAP[language], {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

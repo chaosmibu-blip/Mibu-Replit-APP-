@@ -1025,6 +1025,37 @@ const ko: Record<string, string> = {
     settings_balance: '잔액',
     settings_unknownError: 'An unknown error occurred', /* TODO: ko */
     settings_pleaseLoginFirst: 'Please login first', /* TODO: ko */
+    settings_notificationPreferences: '알림 설정',
+
+    // ========== NotificationPreferencesScreen ==========
+    notifPref_title: '알림 설정',
+    notifPref_categoryTitle: '알림 유형',
+    notifPref_achievement: '업적 달성',
+    notifPref_achievementDesc: '새로운 업적 달성 시 알림',
+    notifPref_dailyTask: '일일 퀘스트',
+    notifPref_dailyTaskDesc: '퀘스트 완료 또는 리셋 시 알림',
+    notifPref_coupon: '쿠폰',
+    notifPref_couponDesc: '새 쿠폰 수신 시 알림',
+    notifPref_announcement: '시스템 공지',
+    notifPref_announcementDesc: '공식 공지 및 중요 알림',
+    notifPref_quietHoursTitle: '방해 금지',
+    notifPref_quietHoursDesc: '방해 금지 시간에는 푸시 알림이 오지 않습니다 (기록은 남습니다)',
+    notifPref_quietHoursStart: '시작 시간',
+    notifPref_quietHoursEnd: '종료 시간',
+    notifPref_loadFailed: '설정 로드 실패',
+    notifPref_saveFailed: '저장 실패, 나중에 다시 시도해 주세요',
+    notifPref_saveSuccess: '알림 설정이 업데이트되었습니다',
+
+    // ========== NotificationListScreen ==========
+    notifList_title: '알림',
+    notifList_empty: '알림이 없습니다',
+    notifList_emptyDesc: '새로운 알림이 여기에 표시됩니다',
+    notifList_markAllRead: '모두 읽음',
+    notifList_loadFailed: '알림 로드 실패',
+    notifList_achievementUnlocked: '업적 달성',
+    notifList_dailyTaskCompleted: '퀘스트 완료',
+    notifList_newCoupon: '새 쿠폰',
+    notifList_announcementLabel: '시스템 공지',
 
     // ========== ProfileScreen ==========
     profile_title: '프로필',
@@ -1137,7 +1168,44 @@ const ko: Record<string, string> = {
     mailbox_rewardCoupon: 'Coupon', /* TODO: ko */
     mailbox_rewardPlacePack: 'Place pack', /* TODO: ko */
     mailbox_rewardPerk: 'Perk', /* TODO: ko */
-    mailbox_unreadCount: '{count} unread', /* TODO: ko */
+    mailbox_unreadCount: '{count}개 읽지 않음', /* TODO: ko */
+
+    // ========== ItemBox 아이템 상자 ==========
+    itemBox_title: '아이템 상자',
+    itemBox_loading: '로딩 중...',
+    itemBox_loadFailed: '로드 실패',
+    itemBox_loadFailedDesc: '아이템을 불러오지 못했습니다. 나중에 다시 시도해주세요.',
+    itemBox_full: '아이템 상자가 가득 찼습니다! 쿠폰을 삭제하거나 사용한 후 뽑기를 해주세요.',
+    itemBox_almostFull: '아이템 상자가 거의 가득 찼습니다, {remaining}칸 남음',
+    itemBox_slotExpired: '만료',
+    itemBox_slotUsed: '사용됨',
+    itemBox_expired: '만료됨',
+    itemBox_validUntil: '{date}까지 유효',
+    itemBox_close: '닫기',
+    itemBox_redeem: '사용하기',
+    itemBox_redeemTitle: '쿠폰 사용',
+    itemBox_redeemInputLabel: '매장 인증 코드 입력',
+    itemBox_redeemPlaceholder: '8자리 코드',
+    itemBox_redeemConfirm: '사용 확인',
+    itemBox_redeemSuccess: '사용 완료!',
+    itemBox_redeemShowMerchant: '이 화면을 매장 직원에게 보여주세요',
+    itemBox_redeemCountdown: '카운트다운',
+    itemBox_redeemDone: '완료',
+    itemBox_redeemNotice: '알림',
+    itemBox_redeemEnterCode: '매장 인증 코드를 입력해주세요',
+    itemBox_redeemFailed: '사용 실패',
+    itemBox_redeemInvalidCode: '잘못된 코드',
+    itemBox_redeemInvalidCodeDesc: '매장에서 제공한 코드를 확인해주세요',
+    itemBox_redeemExpired: '이 쿠폰은 만료되었습니다',
+    itemBox_redeemAlreadyUsed: '이미 사용됨',
+    itemBox_redeemAlreadyUsedDesc: '이 쿠폰은 이미 사용되었습니다',
+    itemBox_redeemError: '사용에 실패했습니다. 나중에 다시 시도해주세요.',
+    itemBox_deleteTitle: '삭제하시겠습니까?',
+    itemBox_deleteDesc: '이 작업은 되돌릴 수 없습니다',
+    itemBox_deleteCancel: '취소',
+    itemBox_deleteConfirm: '삭제',
+    itemBox_deleteFailed: '삭제 실패',
+    itemBox_error: '오류',
 };
 
 export default ko;

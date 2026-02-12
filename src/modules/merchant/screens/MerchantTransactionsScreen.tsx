@@ -21,7 +21,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useApp } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useI18n } from '../../../context/I18nContext';
 import { apiService } from '../../../services/api';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { MerchantTransaction } from '../../../types';
@@ -30,7 +31,8 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 // ============ 主元件 ============
 export function MerchantTransactionsScreen() {
   // ============ Hooks ============
-  const { state, t, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t, language } = useI18n();
   const router = useRouter();
 
   // ============ 狀態變數 ============
@@ -87,7 +89,7 @@ export function MerchantTransactionsScreen() {
    */
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString(LOCALE_MAP[state.language], {
+    return date.toLocaleString(LOCALE_MAP[language], {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

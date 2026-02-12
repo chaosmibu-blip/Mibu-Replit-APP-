@@ -31,7 +31,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
-import { useApp } from '../../../context/AppContext';
+import { useI18n } from '../../../context/AppContext';
 import { Language } from '../../../types';
 
 // ============ 常數定義 ============
@@ -98,9 +98,9 @@ export function TutorialOverlay({
   onComplete,
   showOnMount = true,
 }: TutorialOverlayProps) {
-  const { state, t } = useApp();
+  const { t, language: contextLanguage } = useI18n();
   // 語言：優先使用 prop，否則從 context 取得
-  const language = languageProp ?? state.language;
+  const language = languageProp ?? contextLanguage;
   // 是否顯示教學 Modal
   const [visible, setVisible] = useState(false);
   // 目前步驟索引（從 0 開始）

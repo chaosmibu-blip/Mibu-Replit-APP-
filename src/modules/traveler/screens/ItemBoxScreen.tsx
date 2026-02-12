@@ -20,8 +20,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useApp } from '../../../context/AppContext';
+import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
 import { apiService } from '../../../services/api';
+import { ApiError } from '../../../services/base';
 import { InventoryItem, CouponTier } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
@@ -116,14 +117,15 @@ interface InventorySlotProps {
   index: number;
   onPress: (item: InventoryItem) => void;
   onLongPress: (item: InventoryItem) => void;
-  language: string;
+  /** 翻譯物件（從 useI18n().t 傳入） */
+  t: Record<string, string>;
 }
 
 /**
  * InventorySlot - 單一道具格
  * 顯示優惠券或空格，SP 級別有脈動動畫
  */
-function InventorySlot({ item, index, onPress, onLongPress, language }: InventorySlotProps) {
+function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotProps) {
   // SP 級別的脈動動畫值
   const [pulseAnim] = useState(new Animated.Value(1));
 
@@ -247,7 +249,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
           }}
         >
           <Text style={{ fontSize: 7, color: UIColors.white, fontWeight: '700' }}>
-            {language === 'zh-TW' ? '過期' : 'EXP'}
+            {t.itemBox_slotExpired}
           </Text>
         </View>
       )}
@@ -287,7 +289,7 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
           }}
         >
           <Text style={{ fontSize: 7, color: UIColors.white, fontWeight: '700' }}>
-            {language === 'zh-TW' ? '已用' : 'USED'}
+            {t.itemBox_slotUsed}
           </Text>
         </View>
       )}
@@ -325,7 +327,9 @@ function InventorySlot({ item, index, onPress, onLongPress, language }: Inventor
 // ============================================================
 
 export function ItemBoxScreen() {
-  const { state, setUnreadCount, getToken } = useApp();
+  const { getToken } = useAuth();
+  const { t } = useI18n();
+  const { setUnreadCount } = useGacha();
 
   // ============================================================
   // 狀態管理
@@ -388,10 +392,7 @@ export function ItemBoxScreen() {
       setUnreadCount(unreadCount);
     } catch (error) {
       console.error('Failed to load inventory:', error);
-      Alert.alert(
-        state.language === 'zh-TW' ? '載入失敗' : 'Load Failed',
-        state.language === 'zh-TW' ? '無法載入背包物品，請稍後再試' : 'Failed to load inventory items. Please try again later.'
-      );
+      Alert.alert(t.itemBox_loadFailed, t.itemBox_loadFailedDesc);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -488,10 +489,7 @@ export function ItemBoxScreen() {
    */
   const handleRedeem = async () => {
     if (!selectedItem || !redemptionCode.trim()) {
-      Alert.alert(
-        state.language === 'zh-TW' ? '提示' : 'Notice',
-        state.language === 'zh-TW' ? '請輸入商家核銷碼' : 'Please enter merchant redemption code'
-      );
+      Alert.alert(t.itemBox_redeemNotice, t.itemBox_redeemEnterCode);
       return;
     }
 
@@ -509,29 +507,29 @@ export function ItemBoxScreen() {
         // 更新本地狀態
         setItems(prev => prev.map(i => i.id === selectedItem.id ? { ...i, isRedeemed: true, status: 'redeemed' as const } : i));
       } else {
-        Alert.alert(
-          state.language === 'zh-TW' ? '核銷失敗' : 'Redemption Failed',
-          response.message || (state.language === 'zh-TW' ? '核銷碼錯誤' : 'Invalid redemption code')
-        );
+        Alert.alert(t.itemBox_redeemFailed, response.message || t.itemBox_redeemInvalidCode);
       }
     } catch (error: unknown) {
-      // 處理特定錯誤
-      const errorMessage = (error instanceof Error ? error.message : String(error)) || '';
-      if (errorMessage.includes('expired') || errorMessage.includes('過期')) {
-        Alert.alert(
-          state.language === 'zh-TW' ? '已過期' : 'Expired',
-          state.language === 'zh-TW' ? '此優惠券已過期' : 'This coupon has expired'
-        );
-      } else if (errorMessage.includes('redeemed') || errorMessage.includes('已使用')) {
-        Alert.alert(
-          state.language === 'zh-TW' ? '已使用' : 'Already Used',
-          state.language === 'zh-TW' ? '此優惠券已使用' : 'This coupon has already been used'
-        );
+      // 用 ApiError.code 判斷錯誤類型（對應後端 RedeemErrorResponse.code 枚舉）
+      // 避免用 string match 判斷 — 語言相依、脆弱
+      if (error instanceof ApiError && error.code) {
+        switch (error.code) {
+          case 'COUPON_EXPIRED':
+          case 'REDEMPTION_CODE_EXPIRED':
+            Alert.alert(t.itemBox_expired, t.itemBox_redeemExpired);
+            break;
+          case 'ALREADY_REDEEMED':
+            Alert.alert(t.itemBox_redeemAlreadyUsed, t.itemBox_redeemAlreadyUsedDesc);
+            break;
+          case 'INVALID_REDEMPTION_CODE':
+            Alert.alert(t.itemBox_redeemInvalidCode, t.itemBox_redeemInvalidCodeDesc);
+            break;
+          default:
+            Alert.alert(t.itemBox_error, t.itemBox_redeemError);
+        }
       } else {
-        Alert.alert(
-          state.language === 'zh-TW' ? '錯誤' : 'Error',
-          state.language === 'zh-TW' ? '核銷失敗，請稍後再試' : 'Redemption failed. Please try again.'
-        );
+        // 非 ApiError（網路錯誤等）
+        Alert.alert(t.itemBox_error, t.itemBox_redeemError);
       }
     } finally {
       setRedeeming(false);
@@ -556,10 +554,7 @@ export function ItemBoxScreen() {
         await loadInventory(); // 重新載入列表
       }
     } catch (error) {
-      Alert.alert(
-        state.language === 'zh-TW' ? '錯誤' : 'Error',
-        state.language === 'zh-TW' ? '刪除失敗' : 'Delete failed'
-      );
+      Alert.alert(t.itemBox_error, t.itemBox_deleteFailed);
     } finally {
       setDeleting(false);
     }
@@ -617,7 +612,7 @@ export function ItemBoxScreen() {
       <View style={{ flex: 1, backgroundColor: MibuBrand.warmWhite, alignItems: 'center', justifyContent: 'center' }}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={{ marginTop: 16, color: MibuBrand.brownLight }}>
-          {state.language === 'zh-TW' ? '載入中...' : 'Loading...'}
+          {t.itemBox_loading}
         </Text>
       </View>
     );
@@ -648,7 +643,7 @@ export function ItemBoxScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="cube-outline" size={28} color={MibuBrand.brown} />
             <Text style={{ fontSize: 24, fontWeight: '800', color: MibuBrand.brown, marginLeft: 10 }}>
-              {state.language === 'zh-TW' ? '道具箱' : 'Item Box'}
+              {t.itemBox_title}
             </Text>
           </View>
           {/* 容量顯示 */}
@@ -681,7 +676,7 @@ export function ItemBoxScreen() {
           <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 12, marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="warning" size={18} color={MibuBrand.error} />
             <Text style={{ fontSize: 13, color: MibuBrand.error, marginLeft: 8, flex: 1 }}>
-              {state.language === 'zh-TW' ? '道具箱已滿！請刪除或使用部分優惠券後再抽卡。' : 'Item box is full! Please delete or use some coupons before drawing.'}
+              {t.itemBox_full}
             </Text>
           </View>
         )}
@@ -691,7 +686,7 @@ export function ItemBoxScreen() {
           <View style={{ backgroundColor: '#fef3c7', borderRadius: 12, padding: 12, marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="alert-circle" size={18} color="#d97706" />
             <Text style={{ fontSize: 13, color: '#92400e', marginLeft: 8, flex: 1 }}>
-              {state.language === 'zh-TW' ? `道具箱快滿了，還剩 ${maxSlots - slotCount} 格` : `Item box almost full, ${maxSlots - slotCount} slots remaining`}
+              {t.itemBox_almostFull.replace('{remaining}', String(maxSlots - slotCount))}
             </Text>
           </View>
         )}
@@ -739,7 +734,7 @@ export function ItemBoxScreen() {
               index={index}
               onPress={handleItemPress}
               onLongPress={handleItemLongPress}
-              language={state.language}
+              t={t}
             />
           ))}
         </View>
@@ -810,8 +805,8 @@ export function ItemBoxScreen() {
                   <View style={{ backgroundColor: selIsExpired ? MibuBrand.error : MibuBrand.cream, padding: 12, borderRadius: 12, marginBottom: 20 }}>
                     <Text style={{ fontSize: 12, color: selIsExpired ? UIColors.white : MibuBrand.brown, textAlign: 'center' }}>
                       {selIsExpired
-                        ? (state.language === 'zh-TW' ? '已過期' : 'Expired')
-                        : `${state.language === 'zh-TW' ? '有效期至' : 'Valid until'} ${new Date(selectedItem.expiresAt).toLocaleDateString()}`
+                        ? t.itemBox_expired
+                        : t.itemBox_validUntil.replace('{date}', new Date(selectedItem.expiresAt).toLocaleDateString())
                       }
                     </Text>
                   </View>
@@ -824,7 +819,7 @@ export function ItemBoxScreen() {
                     style={{ flex: 1, backgroundColor: MibuBrand.tan, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
                   >
                     <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark }}>
-                      {state.language === 'zh-TW' ? '關閉' : 'Close'}
+                      {t.itemBox_close}
                     </Text>
                   </TouchableOpacity>
 
@@ -835,7 +830,7 @@ export function ItemBoxScreen() {
                       style={{ flex: 1, backgroundColor: MibuBrand.brown, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
                     >
                       <Text style={{ fontSize: 16, fontWeight: '700', color: UIColors.white }}>
-                        {state.language === 'zh-TW' ? '核銷' : 'Redeem'}
+                        {t.itemBox_redeem}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -862,10 +857,10 @@ export function ItemBoxScreen() {
                   <Ionicons name="checkmark-circle" size={48} color={UIColors.white} />
                 </View>
                 <Text style={{ fontSize: 20, fontWeight: '800', color: MibuBrand.success, marginBottom: 8 }}>
-                  {state.language === 'zh-TW' ? '核銷成功！' : 'Redeemed!'}
+                  {t.itemBox_redeemSuccess}
                 </Text>
                 <Text style={{ fontSize: 14, color: MibuBrand.brownLight, textAlign: 'center', marginBottom: 16 }}>
-                  {state.language === 'zh-TW' ? '請出示此畫面給商家確認' : 'Please show this screen to the merchant'}
+                  {t.itemBox_redeemShowMerchant}
                 </Text>
 
                 {/* 倒數計時 */}
@@ -875,7 +870,7 @@ export function ItemBoxScreen() {
                       {formatCountdown(countdown)}
                     </Text>
                     <Text style={{ fontSize: 12, color: MibuBrand.cream, textAlign: 'center', marginTop: 4 }}>
-                      {state.language === 'zh-TW' ? '倒數計時' : 'Countdown'}
+                      {t.itemBox_redeemCountdown}
                     </Text>
                   </View>
                 )}
@@ -885,7 +880,7 @@ export function ItemBoxScreen() {
                   style={{ backgroundColor: MibuBrand.tan, paddingVertical: 14, paddingHorizontal: 32, borderRadius: 12 }}
                 >
                   <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark }}>
-                    {state.language === 'zh-TW' ? '完成' : 'Done'}
+                    {t.itemBox_redeemDone}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -895,9 +890,9 @@ export function ItemBoxScreen() {
                 {/* 標題列 */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark }}>
-                    {state.language === 'zh-TW' ? '核銷優惠券' : 'Redeem Coupon'}
+                    {t.itemBox_redeemTitle}
                   </Text>
-                  <TouchableOpacity onPress={() => setRedeemModalVisible(false)} accessibilityLabel={state.language === 'zh-TW' ? '關閉核銷' : 'Close redeem'}>
+                  <TouchableOpacity onPress={() => setRedeemModalVisible(false)} accessibilityLabel={t.itemBox_close}>
                     <Ionicons name="close" size={24} color={MibuBrand.brownLight} />
                   </TouchableOpacity>
                 </View>
@@ -916,12 +911,12 @@ export function ItemBoxScreen() {
 
                 {/* 核銷碼輸入 */}
                 <Text style={{ fontSize: 14, fontWeight: '600', color: MibuBrand.brownLight, marginBottom: 8 }}>
-                  {state.language === 'zh-TW' ? '請輸入商家核銷碼' : 'Enter Merchant Redemption Code'}
+                  {t.itemBox_redeemInputLabel}
                 </Text>
                 <TextInput
                   value={redemptionCode}
                   onChangeText={setRedemptionCode}
-                  placeholder={state.language === 'zh-TW' ? '8位核銷碼' : '8-digit code'}
+                  placeholder={t.itemBox_redeemPlaceholder}
                   placeholderTextColor={MibuBrand.copper}
                   autoCapitalize="characters"
                   maxLength={8}
@@ -955,7 +950,7 @@ export function ItemBoxScreen() {
                     <ActivityIndicator color={UIColors.white} />
                   ) : (
                     <Text style={{ fontSize: 16, fontWeight: '700', color: redemptionCode.length >= 8 ? UIColors.white : MibuBrand.brownLight }}>
-                      {state.language === 'zh-TW' ? '確認核銷' : 'Confirm Redemption'}
+                      {t.itemBox_redeemConfirm}
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -980,10 +975,10 @@ export function ItemBoxScreen() {
                 <Ionicons name="trash" size={28} color={MibuBrand.error} />
               </View>
               <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark, marginBottom: 8 }}>
-                {state.language === 'zh-TW' ? '確定刪除？' : 'Delete Item?'}
+                {t.itemBox_deleteTitle}
               </Text>
               <Text style={{ fontSize: 14, color: MibuBrand.brownLight, textAlign: 'center' }}>
-                {state.language === 'zh-TW' ? '此操作無法復原' : 'This action cannot be undone'}
+                {t.itemBox_deleteDesc}
               </Text>
             </View>
 
@@ -1000,25 +995,25 @@ export function ItemBoxScreen() {
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity
                 onPress={() => setDeleteModalVisible(false)}
-                accessibilityLabel={state.language === 'zh-TW' ? '取消刪除' : 'Cancel delete'}
+                accessibilityLabel={t.itemBox_deleteCancel}
                 style={{ flex: 1, backgroundColor: MibuBrand.tan, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
               >
                 <Text style={{ fontSize: 16, fontWeight: '700', color: MibuBrand.dark }}>
-                  {state.language === 'zh-TW' ? '取消' : 'Cancel'}
+                  {t.itemBox_deleteCancel}
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handleDelete}
                 disabled={deleting}
-                accessibilityLabel={state.language === 'zh-TW' ? '確認刪除優惠券' : 'Confirm delete coupon'}
+                accessibilityLabel={t.itemBox_deleteConfirm}
                 style={{ flex: 1, backgroundColor: MibuBrand.error, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }}
               >
                 {deleting ? (
                   <ActivityIndicator color={UIColors.white} />
                 ) : (
                   <Text style={{ fontSize: 16, fontWeight: '700', color: UIColors.white }}>
-                    {state.language === 'zh-TW' ? '刪除' : 'Delete'}
+                    {t.itemBox_deleteConfirm}
                   </Text>
                 )}
               </TouchableOpacity>
