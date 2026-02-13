@@ -263,7 +263,7 @@ export function ChatScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
     >
       {/* ===== 頂部導航列 ===== */}
       <View style={styles.header}>
