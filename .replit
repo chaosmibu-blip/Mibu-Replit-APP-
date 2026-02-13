@@ -44,7 +44,7 @@ externalPort = 3000
 # 在 Replit 介面上點擊即可執行的快捷指令
 
 [workflows]
-runButton = "Project"   # 點擊 Run 按鈕時執行的工作流
+runButton = "Project"
 
 # --- 開發伺服器 ---
 [[workflows.workflow]]
@@ -112,11 +112,6 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-# --web: 啟動 Web 版
-# --port 5000: 使用 5000 端口
-# --tunnel: 建立 ngrok 公網連線（讓手機掃碼）
-# --go: 強制使用 Expo Go 模式（避免 Dev Client 空白畫面）
-# --clear: 清除快取
 args = "npx expo start --web --port 5000 --tunnel --go --clear"
 waitForPort = 5000
 
