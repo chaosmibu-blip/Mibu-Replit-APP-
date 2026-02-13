@@ -9,19 +9,21 @@
  * - 核銷優惠券功能（輸入商家核銷碼）
  * - 顯示優惠券到期倒數
  *
- * 串接 API：
- * - apiService.getInventory() - 取得道具箱列表
- * - apiService.markInventoryItemRead() - 標記已讀
- * - apiService.redeemInventoryItem() - 核銷優惠券
- * - apiService.deleteInventoryItem() - 刪除優惠券
+ * 串接 API（透過 React Query hooks）：
+ * - useInventory() - 取得道具箱列表
+ * - useMarkItemRead() - 標記已讀 mutation
+ * - useRedeemItem() - 核銷優惠券 mutation
+ * - useDeleteItem() - 刪除優惠券 mutation
  *
  * @see 後端合約: contracts/APP.md
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
-import { apiService } from '../../../services/api';
+import { useI18n, useGacha } from '../../../context/AppContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { useInventory, useRedeemItem, useDeleteItem, useMarkItemRead } from '../../../hooks/useInventoryQueries';
 import { ApiError } from '../../../services/base';
 import { InventoryItem, CouponTier } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
@@ -327,22 +329,40 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
 // ============================================================
 
 export function ItemBoxScreen() {
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const { setUnreadCount } = useGacha();
+  const queryClient = useQueryClient();
 
   // ============================================================
-  // 狀態管理
+  // React Query Hooks
   // ============================================================
 
-  // 道具箱資料
-  const [items, setItems] = useState<InventoryItem[]>([]);
-  const [slotCount, setSlotCount] = useState(0);
-  const [maxSlots, setMaxSlots] = useState(MAX_SLOTS);
+  const inventoryQuery = useInventory();
+  const redeemItemMutation = useRedeemItem();
+  const deleteItemMutation = useDeleteItem();
+  const markItemReadMutation = useMarkItemRead();
+
+  // 從查詢結果派生資料（過濾已刪除項目）
+  const allItems = inventoryQuery.data?.items ?? [];
+  const items = allItems.filter(i => !i.isDeleted && i.status !== 'deleted');
+  const slotCount = inventoryQuery.data?.slotCount ?? items.length;
+  const maxSlots = inventoryQuery.data?.maxSlots ?? MAX_SLOTS;
 
   // 載入狀態
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const loading = inventoryQuery.isLoading;
+  const refreshing = inventoryQuery.isFetching && !inventoryQuery.isLoading;
+
+  // 更新未讀數量（當資料變更時）
+  useEffect(() => {
+    if (inventoryQuery.data) {
+      const unreadCount = items.filter((item: InventoryItem) => !item.isRead && item.status === 'active').length;
+      setUnreadCount(unreadCount);
+    }
+  }, [inventoryQuery.data, items, setUnreadCount]);
+
+  // ============================================================
+  // 狀態管理（UI 狀態）
+  // ============================================================
 
   // Modal 狀態
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
@@ -358,51 +378,14 @@ export function ItemBoxScreen() {
   }, []);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
-  // 核銷相關狀態
+  // 核銷相關狀態（UI 狀態）
   const [redemptionCode, setRedemptionCode] = useState('');
-  const [redeeming, setRedeeming] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [redeemSuccess, setRedeemSuccess] = useState(false);
 
-  // ============================================================
-  // API 呼叫
-  // ============================================================
-
-  /**
-   * 載入道具箱資料
-   */
-  const loadInventory = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      const data = await apiService.getInventory(token);
-      // 過濾已刪除的項目（檢查 isDeleted 或 status === 'deleted'）
-      const inventoryItems = (data.items || []).filter(i => !i.isDeleted && i.status !== 'deleted');
-      setItems(inventoryItems);
-      setSlotCount(data.slotCount || inventoryItems.length);
-      setMaxSlots(data.maxSlots || MAX_SLOTS);
-
-      // 更新未讀數量
-      const unreadCount = inventoryItems.filter((item: InventoryItem) => !item.isRead && item.status === 'active').length;
-      setUnreadCount(unreadCount);
-    } catch (error) {
-      console.error('Failed to load inventory:', error);
-      Alert.alert(t.itemBox_loadFailed, t.itemBox_loadFailedDesc);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [setUnreadCount]);
-
-  // 初始載入
-  useEffect(() => {
-    loadInventory();
-  }, [loadInventory]);
+  // 從 mutation 派生 loading 狀態
+  const redeeming = redeemItemMutation.isPending;
+  const deleting = deleteItemMutation.isPending;
 
   /**
    * 核銷成功後的倒數計時
@@ -428,9 +411,8 @@ export function ItemBoxScreen() {
    * 下拉重新整理
    */
   const handleRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadInventory();
-  }, [loadInventory]);
+    queryClient.invalidateQueries({ queryKey: ['inventory'] });
+  }, [queryClient]);
 
   // ============================================================
   // 事件處理
@@ -440,19 +422,10 @@ export function ItemBoxScreen() {
    * 點擊優惠券：標記已讀 + 開啟詳情 Modal
    */
   const handleItemPress = async (item: InventoryItem) => {
-    // 若未讀，先標記已讀
+    // 若未讀，先標記已讀（mutation 會自動 invalidate inventory 查詢）
     if (!item.isRead && item.status === 'active') {
       try {
-        const token = await getToken();
-        if (token) {
-          await apiService.markInventoryItemRead(token, item.id);
-          setItems(prev => {
-            const updated = prev.map(i => i.id === item.id ? { ...i, isRead: true } : i);
-            const newUnreadCount = updated.filter(i => !i.isRead && i.status === 'active').length;
-            setUnreadCount(newUnreadCount);
-            return updated;
-          });
-        }
+        await markItemReadMutation.mutateAsync(item.id);
       } catch (error) {
         console.error('Failed to mark item as read:', error);
       }
@@ -493,21 +466,19 @@ export function ItemBoxScreen() {
       return;
     }
 
-    setRedeeming(true);
     try {
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await apiService.redeemInventoryItem(token, selectedItem.id, redemptionCode.trim());
+      const response = await redeemItemMutation.mutateAsync({
+        itemId: selectedItem.id,
+        dailyCode: redemptionCode.trim(),
+      });
 
       if (response.success) {
         // 核銷成功，顯示倒數計時
         setRedeemSuccess(true);
         setCountdown(180); // 3 分鐘
-        // 更新本地狀態
-        setItems(prev => prev.map(i => i.id === selectedItem.id ? { ...i, isRedeemed: true, status: 'redeemed' as const } : i));
+        // React Query 的 onSuccess 會自動 invalidate inventory 查詢
       } else {
-        Alert.alert(t.itemBox_redeemFailed, response.message || t.itemBox_redeemInvalidCode);
+        Alert.alert(t.itemBox_redeemFailed, (response as any).message || t.itemBox_redeemInvalidCode);
       }
     } catch (error: unknown) {
       // 用 ApiError.code 判斷錯誤類型（對應後端 RedeemErrorResponse.code 枚舉）
@@ -531,8 +502,6 @@ export function ItemBoxScreen() {
         // 非 ApiError（網路錯誤等）
         Alert.alert(t.itemBox_error, t.itemBox_redeemError);
       }
-    } finally {
-      setRedeeming(false);
     }
   };
 
@@ -542,21 +511,15 @@ export function ItemBoxScreen() {
   const handleDelete = async () => {
     if (!selectedItem) return;
 
-    setDeleting(true);
     try {
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await apiService.deleteInventoryItem(token, selectedItem.id);
+      const response = await deleteItemMutation.mutateAsync(selectedItem.id);
       if (response.success) {
         setDeleteModalVisible(false);
         setSelectedItem(null);
-        await loadInventory(); // 重新載入列表
+        // React Query 的 onSuccess 會自動 invalidate inventory 查詢
       }
     } catch (error) {
       Alert.alert(t.itemBox_error, t.itemBox_deleteFailed);
-    } finally {
-      setDeleting(false);
     }
   };
 

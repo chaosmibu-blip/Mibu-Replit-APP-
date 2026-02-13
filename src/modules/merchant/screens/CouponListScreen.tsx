@@ -1,7 +1,9 @@
 /**
  * CouponListScreen - 優惠券列表
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -14,10 +16,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
+import {
+  useMerchantCoupons,
+  useDeleteMerchantCoupon,
+} from '../../../hooks/useMerchantQueries';
 import { MerchantCoupon, MerchantCouponTier } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
@@ -40,45 +43,21 @@ const TIER_PROBABILITY: Record<MerchantCouponTier, string> = {
 };
 
 export function CouponListScreen() {
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
-  const [coupons, setCoupons] = useState<MerchantCoupon[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  // ============ React Query Hooks ============
+  const couponsQuery = useMerchantCoupons();
+  const deleteMutation = useDeleteMerchantCoupon();
+
+  // ============ 衍生狀態 ============
+  const coupons: MerchantCoupon[] = couponsQuery.data?.coupons ?? [];
+  const loading = couponsQuery.isLoading;
+  const refreshing = couponsQuery.isFetching && !couponsQuery.isLoading;
+  const loadError = couponsQuery.isError;
+
+  // ============ UI 狀態 ============
   const [deleting, setDeleting] = useState<number | null>(null);
-  const [loadError, setLoadError] = useState(false);
-
-  const loadCoupons = async (showRefresh = false) => {
-    try {
-      setLoadError(false);
-      if (showRefresh) setRefreshing(true);
-      else setLoading(true);
-
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await apiService.getMerchantCoupons(token);
-      setCoupons(response.coupons || []);
-    } catch (error) {
-      console.error('Failed to load coupons:', error);
-      setLoadError(true);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    loadCoupons();
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadCoupons();
-    }, [])
-  );
 
   const handleDelete = (coupon: MerchantCoupon) => {
     Alert.alert(
@@ -92,10 +71,7 @@ export function CouponListScreen() {
           onPress: async () => {
             setDeleting(coupon.id);
             try {
-              const token = await getToken();
-              if (!token) return;
-              await apiService.deleteMerchantCoupon(token, coupon.id);
-              setCoupons((prev) => prev.filter((c) => c.id !== coupon.id));
+              await deleteMutation.mutateAsync(coupon.id);
             } catch (error) {
               console.error('Delete failed:', error);
               Alert.alert(t.common_error, t.common_deleteFailed);
@@ -135,7 +111,7 @@ export function CouponListScreen() {
           icon="cloud-offline-outline"
           message={t.merchant_couponLoadFailed}
           detail={t.merchant_couponLoadFailedDetail}
-          onRetry={() => loadCoupons()}
+          onRetry={() => couponsQuery.refetch()}
         />
       </View>
     );
@@ -146,7 +122,7 @@ export function CouponListScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={() => loadCoupons(true)} />
+        <RefreshControl refreshing={refreshing} onRefresh={() => couponsQuery.refetch()} />
       }
     >
       {/* Header */}

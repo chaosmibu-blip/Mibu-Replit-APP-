@@ -12,9 +12,11 @@
  * - POST /admin/announcements - 新增公告
  * - PUT /admin/announcements/:id - 更新公告
  * - DELETE /admin/announcements/:id - 刪除公告
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -30,8 +32,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n } from '../../../context/AppContext';
-import { apiService } from '../../../services/api';
+import { useI18n } from '../../../context/AppContext';
+import {
+  useAdminAnnouncements,
+  useCreateAnnouncement,
+  useUpdateAnnouncement,
+  useDeleteAnnouncement,
+} from '../../../hooks/useAdminQueries';
 import { Announcement, AnnouncementType, CreateAnnouncementParams } from '../../../types';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';

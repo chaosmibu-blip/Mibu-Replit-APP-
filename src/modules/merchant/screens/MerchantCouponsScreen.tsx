@@ -12,8 +12,10 @@
  * - POST /merchant/coupons - 建立優惠券
  * - PUT /merchant/coupons/:id - 更新優惠券
  * - DELETE /merchant/coupons/:id - 刪除優惠券
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -29,9 +31,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
+import {
+  useMerchantCoupons,
+  useCreateMerchantCoupon,
+  useUpdateMerchantCoupon,
+  useDeleteMerchantCoupon,
+} from '../../../hooks/useMerchantQueries';
 import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../../../types';
 import { TierBadge } from '../../shared/components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
@@ -41,21 +47,25 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 // ============ 主元件 ============
 export function MerchantCouponsScreen() {
   // ============ Hooks ============
-  const { getToken } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
-  // loading: 資料載入狀態
-  const [loading, setLoading] = useState(true);
-  // coupons: 優惠券列表
-  const [coupons, setCoupons] = useState<MerchantCoupon[]>([]);
+  // ============ React Query Hooks ============
+  const couponsQuery = useMerchantCoupons();
+  const createMutation = useCreateMerchantCoupon();
+  const updateMutation = useUpdateMerchantCoupon();
+  const deleteMutation = useDeleteMerchantCoupon();
+
+  // ============ 衍生狀態 ============
+  const loading = couponsQuery.isLoading;
+  const coupons: MerchantCoupon[] = couponsQuery.data?.coupons ?? [];
+  const saving = createMutation.isPending || updateMutation.isPending;
+
+  // ============ UI 狀態 ============
   // showModal: 是否顯示新增/編輯彈窗
   const [showModal, setShowModal] = useState(false);
   // editingCoupon: 正在編輯的優惠券（null 表示新增模式）
   const [editingCoupon, setEditingCoupon] = useState<MerchantCoupon | null>(null);
-  // saving: 儲存中狀態
-  const [saving, setSaving] = useState(false);
 
   // formData: 表單資料
   const [formData, setFormData] = useState<{
@@ -95,32 +105,6 @@ export function MerchantCouponsScreen() {
     noCoupons: t.merchant_noCoupons,
     confirmDelete: t.merchant_confirmDeleteCoupon,
     tierProbability: t.merchant_tierProbability,
-  };
-
-  // ============ Effect Hooks ============
-  // 元件載入時取得優惠券列表
-  useEffect(() => {
-    loadCoupons();
-  }, []);
-
-  // ============ 資料載入函數 ============
-
-  /**
-   * loadCoupons - 載入優惠券列表
-   */
-  const loadCoupons = async () => {
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await apiService.getMerchantCoupons(token);
-      setCoupons(response.coupons || []);
-    } catch (error) {
-      console.error('Failed to load coupons:', error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   // ============ 彈窗操作函數 ============
@@ -171,11 +155,7 @@ export function MerchantCouponsScreen() {
       return;
     }
 
-    setSaving(true);
     try {
-      const token = await getToken();
-      if (!token) return;
-
       // 解析數量，預設為 100
       const parsedQuantity = parseInt(formData.quantity, 10);
       const quantity = isNaN(parsedQuantity) || parsedQuantity < 1 ? 100 : parsedQuantity;
@@ -206,7 +186,7 @@ export function MerchantCouponsScreen() {
 
         // 只有有變更才呼叫 API
         if (Object.keys(updateParams).length > 0) {
-          await apiService.updateMerchantCoupon(token, editingCoupon.id, updateParams);
+          await updateMutation.mutateAsync({ couponId: editingCoupon.id, data: updateParams });
         }
       } else {
         // 新增模式
@@ -219,16 +199,13 @@ export function MerchantCouponsScreen() {
           validUntil: formData.validUntil || undefined,
           isActive: true,
         };
-        await apiService.createMerchantCoupon(token, createParams);
+        await createMutation.mutateAsync(createParams);
       }
 
       setShowModal(false);
-      loadCoupons();
     } catch (error) {
       console.error('Save failed:', error);
       Alert.alert(t.common_error, t.common_saveFailed);
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -247,11 +224,7 @@ export function MerchantCouponsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await getToken();
-              if (!token) return;
-
-              await apiService.deleteMerchantCoupon(token, couponId);
-              loadCoupons();
+              await deleteMutation.mutateAsync(couponId);
             } catch (error) {
               Alert.alert(t.common_error, t.common_deleteFailed);
             }
@@ -267,11 +240,7 @@ export function MerchantCouponsScreen() {
    */
   const toggleActive = async (coupon: MerchantCoupon) => {
     try {
-      const token = await getToken();
-      if (!token) return;
-
-      await apiService.updateMerchantCoupon(token, coupon.id, { isActive: !coupon.isActive });
-      loadCoupons();
+      await updateMutation.mutateAsync({ couponId: coupon.id, data: { isActive: !coupon.isActive } });
     } catch (error) {
       console.error('Toggle failed:', error);
     }

@@ -16,9 +16,9 @@
  * - POST /api/notifications/read/:id
  * - POST /api/notifications/read-all
  *
- * 更新日期：2026-02-11（#042 通知系統全面翻新）
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -32,8 +32,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
-import { apiService } from '../../../services/api';
+import { useQueryClient } from '@tanstack/react-query';
+import { useI18n, useGacha } from '../../../context/AppContext';
+import {
+  useNotificationList,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+} from '../../../hooks/useNotificationQueries';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import type {
@@ -84,88 +89,49 @@ const SCREEN_ROUTE_MAP: Record<NotificationScreen, string> = {
 
 export function NotificationListScreen() {
   const router = useRouter();
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const { refreshUnreadCount } = useGacha();
+  const queryClient = useQueryClient();
 
-  // 狀態
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const pageSize = 20;
-  const isLoadingRef = useRef(false);
+  // ========== React Query 資料查詢 ==========
 
-  // ========== 載入通知列表 ==========
+  const listQuery = useNotificationList();
+  const markReadMutation = useMarkNotificationRead();
+  const markAllReadMutation = useMarkAllNotificationsRead();
 
-  const loadNotifications = useCallback(async (pageNum: number, isRefresh: boolean = false) => {
-    if (isLoadingRef.current) return;
-    isLoadingRef.current = true;
+  // 樂觀已讀 ID 集合（本地追蹤，避免等 refetch）
+  const [optimisticReadIds, setOptimisticReadIds] = useState<Set<number>>(new Set());
 
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const data = await apiService.getNotificationList(token, pageNum, pageSize);
-      const items = data.notifications || [];
-
-      if (isRefresh) {
-        setNotifications(items);
-      } else {
-        setNotifications(prev => [...prev, ...items]);
-      }
-
-      setHasMore(items.length === pageSize && pageNum * pageSize < data.total);
-      setPage(pageNum);
-    } catch (error) {
-      console.error('[NotifList] 載入失敗:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-      setLoadingMore(false);
-      isLoadingRef.current = false;
-    }
-  }, [getToken]);
-
-  useEffect(() => {
-    loadNotifications(1, true);
-  }, [loadNotifications]);
+  // 衍生狀態
+  const notifications: NotificationItem[] =
+    listQuery.data?.pages.flatMap((page: any) => page.notifications) ?? [];
+  const loading = listQuery.isLoading;
+  const refreshing = listQuery.isFetching && !listQuery.isLoading && !listQuery.isFetchingNextPage;
+  const loadingMore = listQuery.isFetchingNextPage;
 
   // ========== 下拉重新整理 ==========
 
   const handleRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadNotifications(1, true);
-  }, [loadNotifications]);
+    setOptimisticReadIds(new Set());
+    queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] });
+  }, [queryClient]);
 
   // ========== 載入更多 ==========
 
   const handleLoadMore = useCallback(() => {
-    if (!hasMore || loadingMore) return;
-    setLoadingMore(true);
-    loadNotifications(page + 1, false);
-  }, [hasMore, loadingMore, page, loadNotifications]);
+    if (listQuery.hasNextPage && !loadingMore) {
+      listQuery.fetchNextPage();
+    }
+  }, [listQuery, loadingMore]);
 
   // ========== 點擊通知 → 標記已讀 + 導航 ==========
 
-  const handleNotificationPress = useCallback(async (item: NotificationItem) => {
+  const handleNotificationPress = useCallback((item: NotificationItem) => {
     // 標記已讀（樂觀更新）
-    if (!item.isRead) {
-      setNotifications(prev =>
-        prev.map(n => n.id === item.id ? { ...n, isRead: true } : n)
-      );
-
-      try {
-        const token = await getToken();
-        if (token) {
-          await apiService.markNotificationRead(token, item.id);
-          refreshUnreadCount();
-        }
-      } catch (error) {
-        console.error('[NotifList] 標記已讀失敗:', error);
-      }
+    if (!item.isRead && !optimisticReadIds.has(item.id)) {
+      setOptimisticReadIds(prev => new Set(prev).add(item.id));
+      markReadMutation.mutate(item.id);
+      refreshUnreadCount();
     }
 
     // 導航到對應頁面
@@ -175,26 +141,25 @@ export function NotificationListScreen() {
         router.push(route as any);
       }
     }
-  }, [getToken, refreshUnreadCount, router]);
+  }, [optimisticReadIds, markReadMutation, refreshUnreadCount, router]);
 
   // ========== 全部已讀 ==========
 
-  const handleMarkAllRead = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) return;
+  const handleMarkAllRead = useCallback(() => {
+    // 樂觀更新：把所有通知 ID 加入已讀集合
+    setOptimisticReadIds(new Set(notifications.map(n => n.id)));
 
-      // 樂觀更新
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-
-      await apiService.markAllNotificationsRead(token);
-      refreshUnreadCount();
-    } catch (error) {
-      console.error('[NotifList] 全部已讀失敗:', error);
-      // 重新載入
-      loadNotifications(1, true);
-    }
-  }, [getToken, refreshUnreadCount, loadNotifications]);
+    markAllReadMutation.mutate(undefined, {
+      onSuccess: () => {
+        refreshUnreadCount();
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] });
+      },
+      onError: () => {
+        setOptimisticReadIds(new Set());
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] });
+      },
+    });
+  }, [notifications, markAllReadMutation, refreshUnreadCount, queryClient]);
 
   // ========== 時間格式化 ==========
 
@@ -217,15 +182,16 @@ export function NotificationListScreen() {
 
   const renderItem = useCallback(({ item }: { item: NotificationItem }) => {
     const config = TYPE_CONFIG[item.type] || TYPE_CONFIG.announcement;
+    const isRead = item.isRead || optimisticReadIds.has(item.id);
 
     return (
       <TouchableOpacity
-        style={[styles.notifCard, !item.isRead && styles.notifCardUnread]}
+        style={[styles.notifCard, !isRead && styles.notifCardUnread]}
         onPress={() => handleNotificationPress(item)}
         activeOpacity={0.7}
       >
         {/* 未讀圓點 */}
-        {!item.isRead && <View style={styles.unreadDot} />}
+        {!isRead && <View style={styles.unreadDot} />}
 
         {/* 圖示 */}
         <View style={[styles.iconContainer, { backgroundColor: config.iconBg }]}>
@@ -250,7 +216,7 @@ export function NotificationListScreen() {
         )}
       </TouchableOpacity>
     );
-  }, [t, handleNotificationPress]);
+  }, [t, handleNotificationPress, optimisticReadIds]);
 
   // ========== 空狀態 ==========
 
@@ -278,7 +244,7 @@ export function NotificationListScreen() {
 
   // ========== 主渲染 ==========
 
-  const hasUnread = notifications.some(n => !n.isRead);
+  const hasUnread = notifications.some(n => !n.isRead && !optimisticReadIds.has(n.id));
 
   return (
     <SafeAreaView style={styles.container}>

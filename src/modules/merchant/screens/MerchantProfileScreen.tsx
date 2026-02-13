@@ -7,9 +7,11 @@
  *
  * 串接的 API：
  * - GET /merchant/me - 取得商家個人資料
- * - DELETE /auth/account - 刪除帳號
+ * - DELETE /auth/account - 刪除帳號（保留手動呼叫，破壞性一次性操作）
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -23,9 +25,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
 import { authApi } from '../../../services/authApi';
-import { MerchantMe } from '../../../types';
+import { useMerchantMe } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { LOCALE_MAP } from '../../../utils/i18n';
 
@@ -36,11 +37,12 @@ export function MerchantProfileScreen() {
   const { t, language } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
-  // merchant: 商家資料
-  const [merchant, setMerchant] = useState<MerchantMe | null>(null);
-  // loading: 資料載入狀態
-  const [loading, setLoading] = useState(true);
+  // ============ React Query Hooks ============
+  const merchantQuery = useMerchantMe();
+
+  // ============ 衍生狀態 ============
+  const loading = merchantQuery.isLoading;
+  const merchant = merchantQuery.data ?? null;
 
   // ============ 多語系翻譯（透過 t 字典） ============
   const translations = {
@@ -66,31 +68,6 @@ export function MerchantProfileScreen() {
     confirm: t.merchant_confirmDeleteBtn,
     deleteSuccess: t.merchant_accountDeleted,
     deleteFailed: t.merchant_deleteFailed,
-  };
-
-  // ============ Effect Hooks ============
-  // 元件載入時取得商家資料
-  useEffect(() => {
-    loadMerchant();
-  }, []);
-
-  // ============ 資料載入函數 ============
-
-  /**
-   * loadMerchant - 載入商家資料
-   */
-  const loadMerchant = async () => {
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-      const data = await apiService.getMerchantMe(token);
-      setMerchant(data);
-    } catch (error) {
-      console.error('Failed to load merchant:', error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   // ============ 工具函數 ============

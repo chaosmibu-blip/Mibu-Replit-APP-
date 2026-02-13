@@ -1,7 +1,9 @@
 /**
  * CouponFormScreen - 新增/編輯優惠券
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -16,10 +18,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
-import { MerchantCoupon, MerchantCouponTier } from '../../../types';
+import {
+  useMerchantCoupons,
+  useCreateMerchantCoupon,
+  useUpdateMerchantCoupon,
+} from '../../../hooks/useMerchantQueries';
+import { MerchantCouponTier } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 const TIERS: { id: MerchantCouponTier; label: string; prob: string; color: string }[] = [
@@ -31,14 +36,26 @@ const TIERS: { id: MerchantCouponTier; label: string; prob: string; color: strin
 ];
 
 export function CouponFormScreen() {
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
   const isEdit = !!params.id && params.id !== 'new';
 
-  const [loading, setLoading] = useState(isEdit);
-  const [saving, setSaving] = useState(false);
+  // ============ React Query Hooks ============
+  const couponsQuery = useMerchantCoupons();
+  const createMutation = useCreateMerchantCoupon();
+  const updateMutation = useUpdateMerchantCoupon();
+
+  // 從快取中找出正在編輯的優惠券
+  const existingCoupon = isEdit
+    ? couponsQuery.data?.coupons?.find((c) => c.id === Number(params.id))
+    : undefined;
+
+  // ============ 衍生狀態 ============
+  const loading = isEdit && couponsQuery.isLoading;
+  const saving = createMutation.isPending || updateMutation.isPending;
+
+  // ============ UI 狀態 ============
   const [formData, setFormData] = useState({
     name: '',
     tier: 'R' as MerchantCouponTier,
@@ -49,37 +66,20 @@ export function CouponFormScreen() {
     isActive: true,
   });
 
-  useEffect(() => {
-    if (isEdit) {
-      loadCoupon();
+  // 當快取資料載入完成且有編輯對象時，填入表單
+  React.useEffect(() => {
+    if (existingCoupon) {
+      setFormData({
+        name: existingCoupon.name,
+        tier: existingCoupon.tier,
+        content: existingCoupon.content,
+        terms: existingCoupon.terms || '',
+        quantity: String(existingCoupon.quantity),
+        validUntil: existingCoupon.validUntil ? existingCoupon.validUntil.split('T')[0] : '',
+        isActive: existingCoupon.isActive,
+      });
     }
-  }, [params.id]);
-
-  const loadCoupon = async () => {
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await apiService.getMerchantCoupons(token);
-      const coupon = response.coupons.find((c) => c.id === Number(params.id));
-      if (coupon) {
-        setFormData({
-          name: coupon.name,
-          tier: coupon.tier,
-          content: coupon.content,
-          terms: coupon.terms || '',
-          quantity: String(coupon.quantity),
-          validUntil: coupon.validUntil ? coupon.validUntil.split('T')[0] : '',
-          isActive: coupon.isActive,
-        });
-      }
-    } catch (error) {
-      console.error('Failed to load coupon:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [existingCoupon?.id]);
 
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -91,25 +91,24 @@ export function CouponFormScreen() {
       return;
     }
 
-    setSaving(true);
     try {
-      const token = await getToken();
-      if (!token) return;
-
       const quantity = parseInt(formData.quantity, 10) || 100;
 
       if (isEdit) {
-        await apiService.updateMerchantCoupon(token, Number(params.id), {
-          name: formData.name.trim(),
-          tier: formData.tier,
-          content: formData.content.trim(),
-          terms: formData.terms.trim() || undefined,
-          quantity,
-          validUntil: formData.validUntil || undefined,
-          isActive: formData.isActive,
+        await updateMutation.mutateAsync({
+          couponId: Number(params.id),
+          data: {
+            name: formData.name.trim(),
+            tier: formData.tier,
+            content: formData.content.trim(),
+            terms: formData.terms.trim() || undefined,
+            quantity,
+            validUntil: formData.validUntil || undefined,
+            isActive: formData.isActive,
+          },
         });
       } else {
-        await apiService.createMerchantCoupon(token, {
+        await createMutation.mutateAsync({
           name: formData.name.trim(),
           tier: formData.tier,
           content: formData.content.trim(),
@@ -127,8 +126,6 @@ export function CouponFormScreen() {
     } catch (error) {
       console.error('Save failed:', error);
       Alert.alert(t.common_error, t.common_saveFailed);
-    } finally {
-      setSaving(false);
     }
   };
 

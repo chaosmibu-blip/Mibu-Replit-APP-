@@ -1,6 +1,7 @@
 /**
- * @fileoverview 管理員儀表板畫面
- *
+ * ============================================================
+ * 管理員儀表板畫面 (AdminDashboardScreen.tsx)
+ * ============================================================
  * 功能說明：
  * - 管理員後台的主控制台，提供五大功能分頁
  * - 待審核用戶管理：核准或拒絕新註冊的用戶
@@ -18,9 +19,11 @@
  * - DELETE /places/drafts/:id - 刪除草稿
  * - GET /exclusions - 取得全域排除名單
  * - DELETE /exclusions/:id - 移除排除項目
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -34,7 +37,16 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth, useI18n } from '../../../context/AppContext';
-import { apiService } from '../../../services/api';
+import {
+  useAdminPendingUsers,
+  useAdminUsers,
+  usePlaceDrafts,
+  useGlobalExclusions,
+  useApproveUser,
+  usePublishPlaceDraft,
+  useDeletePlaceDraft,
+  useRemoveGlobalExclusion,
+} from '../../../hooks/useAdminQueries';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { AdminUser, PlaceDraft, GlobalExclusion } from '../../../types';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
@@ -53,35 +65,48 @@ type Tab = 'pending' | 'users' | 'drafts' | 'exclusions' | 'announcements';
  */
 export function AdminDashboardScreen() {
   // ============ Hooks & Context ============
-  const { user, getToken, setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態管理 ============
+  // ============ React Query Hooks ============
+
+  const pendingUsersQuery = useAdminPendingUsers();
+  const allUsersQuery = useAdminUsers();
+  const draftsQuery = usePlaceDrafts();
+  const exclusionsQuery = useGlobalExclusions();
+
+  const approveUserMutation = useApproveUser();
+  const publishDraftMutation = usePublishPlaceDraft();
+  const deleteDraftMutation = useDeletePlaceDraft();
+  const removeExclusionMutation = useRemoveGlobalExclusion();
+
+  // ============ UI 狀態管理 ============
 
   /** 當前選中的分頁 */
   const [activeTab, setActiveTab] = useState<Tab>('pending');
 
-  /** 待審核用戶列表 */
-  const [pendingUsers, setPendingUsers] = useState<AdminUser[]>([]);
-
-  /** 所有用戶列表 */
-  const [allUsers, setAllUsers] = useState<AdminUser[]>([]);
-
-  /** 景點草稿列表 */
-  const [drafts, setDrafts] = useState<PlaceDraft[]>([]);
-
-  /** 全域排除名單 */
-  const [exclusions, setExclusions] = useState<GlobalExclusion[]>([]);
-
-  /** 資料載入中狀態 */
-  const [loading, setLoading] = useState(true);
-
-  /** 下拉刷新中狀態 */
-  const [refreshing, setRefreshing] = useState(false);
-
   /** 操作進行中的項目 ID（用於顯示該項目的 loading） */
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // 從查詢結果衍生狀態
+  const pendingUsers: AdminUser[] = pendingUsersQuery.data?.users || [];
+  const allUsers: AdminUser[] = allUsersQuery.data?.users || [];
+  const drafts: PlaceDraft[] = draftsQuery.data?.drafts || [];
+  const exclusions: GlobalExclusion[] = exclusionsQuery.data || [];
+
+  /** 根據當前分頁取得對應的 loading 狀態 */
+  const getActiveQuery = () => {
+    switch (activeTab) {
+      case 'pending': return pendingUsersQuery;
+      case 'users': return allUsersQuery;
+      case 'drafts': return draftsQuery;
+      case 'exclusions': return exclusionsQuery;
+      default: return pendingUsersQuery;
+    }
+  };
+  const loading = getActiveQuery().isLoading;
+  const refreshing = getActiveQuery().isRefetching;
 
   // ============ 事件處理函數 ============
 
@@ -116,61 +141,11 @@ export function AdminDashboardScreen() {
     }
   };
 
-  // ============ 副作用 ============
-
-  /** 當分頁切換時重新載入資料 */
-  useEffect(() => {
-    loadData();
-  }, [activeTab]);
-
-  // ============ 資料載入函數 ============
-
   /**
-   * 根據當前分頁載入對應資料
-   * 會根據 activeTab 呼叫不同的 API
-   */
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-
-      switch (activeTab) {
-        case 'pending':
-          // 載入待審核用戶
-          const pendingData = await apiService.getAdminPendingUsers(token);
-          setPendingUsers(pendingData.users || []);
-          break;
-        case 'users':
-          // 載入所有用戶
-          const usersData = await apiService.getAdminUsers(token);
-          setAllUsers(usersData.users || []);
-          break;
-        case 'drafts':
-          // 載入景點草稿
-          const draftsData = await apiService.getPlaceDrafts(token);
-          setDrafts(draftsData.drafts || []);
-          break;
-        case 'exclusions':
-          // 載入全域排除名單
-          const exclusionsData = await apiService.getGlobalExclusions(token);
-          setExclusions(exclusionsData || []);
-          break;
-      }
-    } catch (error) {
-      console.error('Failed to load admin data:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  /**
-   * 處理下拉刷新
+   * 處理下拉刷新 — 重新取得當前分頁的資料
    */
   const handleRefresh = () => {
-    setRefreshing(true);
-    loadData();
+    getActiveQuery().refetch();
   };
 
   // ============ 用戶審核操作 ============
@@ -192,10 +167,7 @@ export function AdminDashboardScreen() {
           onPress: async () => {
             try {
               setActionLoading(userId);
-              const token = await getToken();
-              if (!token) return;
-              await apiService.approveUser(token, userId, approve);
-              loadData(); // 重新載入資料
+              await approveUserMutation.mutateAsync({ userId, isApproved: approve });
             } catch (error) {
               console.error('Failed to update user:', error);
             } finally {
@@ -221,10 +193,7 @@ export function AdminDashboardScreen() {
         onPress: async () => {
           try {
             setActionLoading(`draft-${draftId}`);
-            const token = await getToken();
-            if (!token) return;
-            await apiService.publishPlaceDraft(token, draftId);
-            loadData(); // 重新載入資料
+            await publishDraftMutation.mutateAsync(draftId);
           } catch (error) {
             console.error('Failed to publish draft:', error);
           } finally {
@@ -248,10 +217,7 @@ export function AdminDashboardScreen() {
         onPress: async () => {
           try {
             setActionLoading(`draft-${draftId}`);
-            const token = await getToken();
-            if (!token) return;
-            await apiService.deletePlaceDraft(token, draftId);
-            loadData(); // 重新載入資料
+            await deleteDraftMutation.mutateAsync(draftId);
           } catch (error) {
             console.error('Failed to delete draft:', error);
           } finally {
@@ -277,10 +243,7 @@ export function AdminDashboardScreen() {
         onPress: async () => {
           try {
             setActionLoading(`exclusion-${exclusionId}`);
-            const token = await getToken();
-            if (!token) return;
-            await apiService.removeGlobalExclusion(token, exclusionId);
-            loadData(); // 重新載入資料
+            await removeExclusionMutation.mutateAsync(exclusionId);
           } catch (error) {
             console.error('Failed to delete exclusion:', error);
           } finally {
