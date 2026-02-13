@@ -11,7 +11,7 @@
  * 導航結構：
  * - login: 登入頁
  * - (tabs): 旅客主頁面（Tab 導航）
- * - economy/profile/account 等: 旅客功能頁面
+ * - economy/profile 等: 旅客功能頁面
  * - merchant-dashboard: 商家主控台
  * - specialist-dashboard: 專員主控台
  * - admin-dashboard: 管理員主控台
@@ -104,7 +104,6 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="economy" options={{ headerShown: false }} />
             <Stack.Screen name="profile" options={{ headerShown: false }} />
-            <Stack.Screen name="account" options={{ headerShown: false }} />
             <Stack.Screen name="referral" options={{ headerShown: false }} />
             <Stack.Screen name="crowdfunding" options={{ headerShown: false }} />
             <Stack.Screen name="contribution" options={{ headerShown: false }} />
