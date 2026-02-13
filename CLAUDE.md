@@ -22,6 +22,7 @@
 | **不確定就查** | 遇到拿不準的問題（技術選型、必要性、做法對不對），先查業界做法當參考再下判斷，不要自己拍腦袋 |
 | **今日事今日畢** | 沒有先後順序，用戶說要做就代表今天要做完，不拖延不排隊 |
 | **千人日活基準** | 架構設計以 1,000 DAU 為基礎思考。若成本過重，必須明確告知用戶「重多少」（效能、費用、開發時間），由用戶判斷是否承擔 |
+| **只寫高品質程式碼** | 好的程式碼不需要註解就能看懂。命名即文件、結構即邏輯、一致即品質。每一行都要經得起三個月後回來看的考驗（詳見 /quality-code） |
 
 ### 代理人團隊模式（不可違反）
 
@@ -547,6 +548,188 @@ import { Image as ExpoImage } from 'expo-image';
 - 不要拆成多個區塊（用戶要一次複製完）
 - 保持易讀性，用分隔線 `===` 或 `---` 區分段落
 
+### /update-project-docs — 功能變動時更新 WBS 與用戶故事地圖（功能異動自動觸發）
+
+**核心原則**：WBS 和用戶故事地圖是活的文件，跟著產品一起演進。功能變了文件沒跟上，等於沒有文件。
+
+**觸發時機**：用語意與情境判斷 — 當任務涉及功能新增、功能修改、功能移除、畫面新增/刪除、用戶流程變更時自動觸發。純樣式調整、bug 修復（不改流程）不觸發。
+
+**判斷標準**（符合任一即觸發）：
+| 變動類型 | 觸發？ | 範例 |
+|---------|--------|------|
+| 新增功能/畫面 | ✅ | 新增優惠券核銷功能 |
+| 移除功能/畫面 | ✅ | 移除舊版行程頁 |
+| 修改用戶流程 | ✅ | 登入流程加 OTP 驗證 |
+| 新增角色/權限 | ✅ | 新增「合作夥伴」角色 |
+| 架構重構 | ✅ | Context 拆分、React Query 遷移 |
+| 純 UI 調整 | ❌ | 改顏色、調間距 |
+| Bug 修復（不改流程） | ❌ | 修復按鈕點不到的問題 |
+| 效能優化 | ❌ | 圖片懶載入 |
+
+**更新流程**：
+```
+1. 讀取現有文件
+   - docs/WBS-architecture-review.md
+   - docs/user-story-map.md
+
+2. 判斷影響範圍
+   a. WBS：這次的工作屬於哪個 Phase？需要新增 Phase 嗎？
+   b. 用戶故事地圖：哪個角色的哪個活動受影響？
+
+3. 更新 WBS（docs/WBS-architecture-review.md）
+   a. 新增功能 → 在對應 Phase 新增工作項目，或新建 Phase
+   b. 修改功能 → 更新對應工作項目的說明
+   c. 移除功能 → 標記為「已移除」或刪除該項目
+   d. 更新底部成果數據（檔案數、行數、畫面數）
+
+4. 更新用戶故事地圖（docs/user-story-map.md）
+   a. 新增功能 → 在對應角色區塊新增用戶故事行
+   b. 修改功能 → 更新故事描述、畫面名、hooks 來源、狀態
+   c. 移除功能 → 移除對應用戶故事行
+   d. 新角色 → 新增角色定義 + 故事地圖區塊
+   e. 更新底部畫面總覽統計表
+
+5. 更新日期
+   - 兩份文件頂部的「最後更新」日期改為今天
+```
+
+**WBS 新增工作項目格式**：
+```markdown
+| # | 工作項目 | 說明 |
+|---|---------|------|
+| N.M | 項目名稱 | 一句話說明做了什麼 |
+```
+
+**用戶故事地圖新增格式**：
+```markdown
+| 作為{角色}，我想{目標} | {畫面名}Screen | {hooks 來源} | ✅ React Query / ✅ 已實作 / ⚠️ 開發中 |
+```
+
+**狀態標記**：
+| 標記 | 意義 |
+|------|------|
+| ✅ React Query | 已用 React Query hooks 管理資料 |
+| ✅ 已實作 | 已實作但未用 React Query（有特殊原因） |
+| ⚠️ 開發中 | 正在開發 |
+| ❌ 已移除 | 功能已下線 |
+| 🔮 規劃中 | 尚未開始 |
+
+---
+
+### /quality-code — 只寫高品質程式碼（每次寫碼自動觸發）
+
+**核心原則**：好的命名可以在維護時讓人甚至不用看註解。程式碼是寫給人讀的，順便讓機器執行。
+
+**觸發時機**：用語意與情境判斷 — 每次撰寫或修改程式碼時自動觸發。不是事後檢查，而是寫的當下就要符合標準。
+
+#### 一、命名即文件（讀名字就懂意圖）
+
+| 層級 | 原則 | 壞例子 | 好例子 |
+|------|------|--------|--------|
+| **檔案** | 名字說出「這是什麼」 | `utils.ts` | `avatarService.ts`、`useNotificationQueries.ts` |
+| **函數** | 名字說出「做了什麼」 | `handle()` | `handleMarkAllAsRead()`、`toggleSpecialistOnline()` |
+| **變數** | 名字說出「存了什麼」 | `data`、`temp`、`flag` | `unreadCount`、`isRefreshing`、`selectedPeriod` |
+| **Boolean** | `is/has/can/should` 開頭 | `loading`、`active` | `isLoading`、`isActive`、`hasUnread`、`canSubmit` |
+| **陣列** | 複數名詞 | `item` | `notifications`、`excludedPlaces` |
+| **Hook** | `use` + 領域 + 動作 | `useData()` | `useMerchantAnalytics()`、`useMarkNotificationRead()` |
+| **Mutation** | 動詞開頭 | `update()` | `useDeleteMerchantCoupon()`、`useToggleActive()` |
+| **常數** | UPPER_SNAKE 或語意明確 | `30` | `PAGE_SIZE = 30`、`MAX_RETRY_COUNT = 3` |
+
+**命名檢查口訣**：
+```
+1. 能不能不看上下文就知道這是什麼？
+2. 會不會跟其他東西搞混？
+3. 三個月後回來看還記得嗎？
+```
+
+#### 二、結構即邏輯（看結構就懂流程）
+
+**檔案結構（由上到下）**：
+```typescript
+// 1. Import 區（外部 → 內部 → 型別 → 常數）
+// 2. 型別定義（Props、本地型別）
+// 3. 常數定義
+// 4. 主元件
+//    a. Hooks & Context
+//    b. Query & Mutation（React Query）
+//    c. 衍生狀態（從 query 衍生）
+//    d. 本地 UI 狀態（modal、form、selection）
+//    e. 事件處理函數（按用戶操作順序排）
+//    f. 渲染子函數（renderXxx）
+//    g. return JSX
+// 5. StyleSheet
+```
+
+**函數結構**：
+```
+- 一個函數只做一件事（超過 30 行考慮拆分）
+- 提早 return 處理邊界條件（guard clause）
+- 正常路徑放最後，異常路徑先排除
+- 相關邏輯放在一起，用空行分段
+```
+
+**元件拆分時機**：
+| 訊號 | 行動 |
+|------|------|
+| render 函數超過 50 行 | 拆成子元件 |
+| 同一段 JSX 出現 3+ 次 | 抽成共用元件 |
+| 元件超過 300 行 | 檢查是否能拆分 |
+| props 超過 8 個 | 考慮用 context 或拆分 |
+
+#### 三、一致即品質（同樣的事，同樣的方式做）
+
+| 一致性維度 | 具體做法 |
+|-----------|---------|
+| **API 呼叫** | 全部走 React Query hooks，不混用 useState+useEffect |
+| **樣式值** | 全部用 Design Token（MibuBrand、Spacing、Radius、FontSize），不硬編碼 |
+| **狀態管理** | Query 資料用 hooks，UI 狀態用 useState，跨元件用 Context |
+| **錯誤處理** | Query 層統一處理，mutation 用 onError callback |
+| **命名慣例** | hooks 用 `useXxx`，query hooks 用 `useXxxQueries`，畫面用 `XxxScreen` |
+| **Import 順序** | React → RN → 三方庫 → Context → Hooks → Services → Types → Constants |
+
+#### 四、自解釋程式碼（減少註解依賴）
+
+**需要註解的地方**（解釋「為什麼」）：
+```typescript
+// 後端 v1.4.0 回傳 collections 而非 items（#010 教訓）
+const items = response.collections ?? [];
+
+// 防止 onBlur + onSubmitEditing 同時觸發（#006 教訓，用 ref 而非 state）
+const savingRef = useRef(false);
+```
+
+**不需要註解的地方**（程式碼自己說話）：
+```typescript
+// ❌ 不要：設定未讀數量
+const unreadCount = notifications.filter(n => !n.isRead).length;
+
+// ✅ 好的命名讓這行不言自明
+const unreadCount = notifications.filter(n => !n.isRead).length;
+```
+
+**註解精簡原則**：
+| 情境 | 要不要註解 |
+|------|-----------|
+| 命名已經說清楚的 | 不要 |
+| 有歷史原因的 workaround | 要（附 #教訓編號） |
+| 魔術數字 | 要（或改用常數） |
+| 區塊分隔 | 用 `// ========== 區塊名 ==========` |
+| 複雜演算法 | 要（解釋邏輯思路） |
+| 反直覺的決定 | 要（解釋為什麼不用顯而易見的做法） |
+
+#### 五、品質檢查清單（寫完自己過一遍）
+
+```
+□ 命名：隨便指一個變數，不看上下文能懂嗎？
+□ 結構：函數有超過 30 行的嗎？能拆嗎？
+□ 一致：跟專案裡同類的寫法一樣嗎？
+□ 硬編碼：有魔術數字嗎？該用 Token/常數嗎？
+□ 邊界：loading / error / empty 都處理了嗎？
+□ 重複：有沒有跟別處重複的邏輯可以抽出來？
+```
+
+---
+
 ### /skill-evolve — 自動判斷並新增或更新 Skill（任務完成後自動觸發）
 
 **核心原則**：Skill 是團隊的知識結晶。當完成一件有價值的工作時，主動思考「這個經驗能不能變成 Skill，讓下次更快更準？」。不等用戶指示，自己判斷。
@@ -607,6 +790,7 @@ import { Image as ExpoImage } from 'expo-image';
 | API 串接 | 確認契約、記錄到對應 memory |
 | 需要後端配合 | `docs/sync-backend.md` |
 | 踩坑了 | CLAUDE.md 教訓區 |
+| 功能新增/修改/移除 | `docs/WBS-architecture-review.md` + `docs/user-story-map.md`（詳見 /update-project-docs） |
 
 ### 生效方式標註
 
@@ -759,6 +943,8 @@ import { Image as ExpoImage } from 'expo-image';
 | 改登入流程 | `docs/memory-auth-flow.md` |
 | 查三大 Tab 功能 | `docs/memory-tabs.md` |
 | 查同步任務 | 後端 `docs/SYNC_QUEUE.md` |
+| 查工作分解結構 | `docs/WBS-architecture-review.md` |
+| 查功能與用戶故事 | `docs/user-story-map.md` |
 
 ### 快速參考
 
