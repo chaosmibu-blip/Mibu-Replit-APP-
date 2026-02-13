@@ -126,6 +126,8 @@ export function ItineraryScreenV2() {
   const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
   // 【截圖 36 修復】防止動畫中重複觸發
   const drawerAnimating = useRef(false);
+  const removingPlaceIds = useRef<Set<number>>(new Set());
+  const movingPlaceId = useRef<number | null>(null);
 
   // 【截圖 9-15 #2】行程列表多選刪除狀態
   const [selectMode, setSelectMode] = useState(false);
@@ -407,19 +409,32 @@ export function ItineraryScreenV2() {
   // 【截圖 9-15 #11】移除景點 - 不使用彈窗確認，直接移除並顯示 Toast
   const handleRemovePlace = useCallback(async (itemId: number, placeName?: string) => {
     if (!currentItinerary) return;
+    if (removingPlaceIds.current.has(itemId)) return;
+    removingPlaceIds.current.add(itemId);
+
     const token = await getToken();
-    if (!token) return;
+    if (!token) {
+      removingPlaceIds.current.delete(itemId);
+      return;
+    }
+
+    setCurrentItinerary(prev => prev ? {
+      ...prev,
+      places: prev.places.filter(p => p.id !== itemId),
+    } : null);
 
     try {
       const res = await itineraryApi.removePlace(currentItinerary.id, itemId, token);
       if (res.success) {
         await fetchItineraryDetail(currentItinerary.id);
-        // 顯示 Toast 通知
         showToastMessage(tFormat(t.itinerary_removed, { name: placeName || '' }));
       }
     } catch (error) {
       console.error('Remove place error:', error);
+      await fetchItineraryDetail(currentItinerary.id);
       showToastMessage(t.itinerary_removeFailed);
+    } finally {
+      removingPlaceIds.current.delete(itemId);
     }
   }, [currentItinerary, getToken, fetchItineraryDetail, t, showToastMessage]);
 
@@ -506,15 +521,27 @@ export function ItineraryScreenV2() {
   // 【預防卡住】失敗時直接還原本地狀態，不重新載入整個行程
   const handleMovePlace = useCallback(async (itemId: number, direction: 'up' | 'down') => {
     if (!currentItinerary) return;
+    if (movingPlaceId.current !== null) return;
+    movingPlaceId.current = itemId;
+
     const token = await getToken();
-    if (!token) return;
+    if (!token) {
+      movingPlaceId.current = null;
+      return;
+    }
 
     const oldPlaces = currentItinerary.places;
     const currentIndex = oldPlaces.findIndex(p => p.id === itemId);
-    if (currentIndex === -1) return;
+    if (currentIndex === -1) {
+      movingPlaceId.current = null;
+      return;
+    }
 
     const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-    if (newIndex < 0 || newIndex >= oldPlaces.length) return;
+    if (newIndex < 0 || newIndex >= oldPlaces.length) {
+      movingPlaceId.current = null;
+      return;
+    }
 
     // 重新排序陣列
     const newPlaces = [...oldPlaces];
@@ -542,8 +569,9 @@ export function ItineraryScreenV2() {
       }
     } catch (error) {
       console.error('Reorder error:', error);
-      // 【預防卡住】失敗時直接還原本地狀態
       setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
+    } finally {
+      movingPlaceId.current = null;
     }
   }, [currentItinerary, getToken]);
 
