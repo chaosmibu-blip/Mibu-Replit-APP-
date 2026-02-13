@@ -10,6 +10,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthQuery, useAuthMutation } from './useAuthQuery';
 import { merchantApi } from '../services/merchantApi';
+import { AnalyticsPeriod } from '../types/merchant';
 
 // ============ 查詢 Hooks ============
 
@@ -38,7 +39,7 @@ export function useMerchantCredits() {
 }
 
 /** 商家數據分析 */
-export function useMerchantAnalytics(params?: { period?: string; placeId?: number }) {
+export function useMerchantAnalytics(params?: { period?: AnalyticsPeriod; placeId?: number }) {
   return useAuthQuery(
     ['merchant', 'analytics', params ?? {}],
     (token) => merchantApi.getMerchantAnalytics(token, params),

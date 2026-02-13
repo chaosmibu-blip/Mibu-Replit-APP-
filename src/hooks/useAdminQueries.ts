@@ -74,7 +74,7 @@ export function useApproveUser() {
 export function useAddGlobalExclusion() {
   const queryClient = useQueryClient();
   return useAuthMutation(
-    (token, params: { placeName: string; district?: string; city?: string }) =>
+    (token, params: { placeName: string; district: string; city: string }) =>
       adminApi.addGlobalExclusion(token, params),
     {
       onSuccess: () => {
