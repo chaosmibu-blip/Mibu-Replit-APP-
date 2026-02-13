@@ -1161,7 +1161,7 @@ export function ItineraryScreenV2() {
     <KeyboardAvoidingView
       style={styles.mainContainer}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
       {/* Header（insets.top 處理頂部安全區，獨立 tab 時需要） */}
       <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
@@ -1330,7 +1330,7 @@ export function ItineraryScreenV2() {
 
       {/* Input Area */}
       {/* 【截圖 9-15 #3】加大底部間距，避免被底部導航欄擋住 */}
-      <View style={[styles.inputArea, { paddingBottom: keyboardVisible ? 8 : Math.max(insets.bottom, 20) + 60 }]}>
+      <View style={[styles.inputArea, { paddingBottom: keyboardVisible ? 4 : Math.max(insets.bottom, 20) + 60 }]}>
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.textInput}
