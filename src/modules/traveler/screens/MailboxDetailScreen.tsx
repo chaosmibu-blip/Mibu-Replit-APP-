@@ -21,6 +21,7 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -137,10 +138,16 @@ export function MailboxDetailScreen() {
         label = reward.type;
     }
 
+    const isPlacePack = reward.type === 'place_pack' || reward.type === 'place_pack_curated';
+
     return (
       <View key={index} style={styles.rewardRow}>
         <View style={styles.rewardIcon}>
-          <Ionicons name={iconName as any} size={20} color={MibuBrand.copper} />
+          {isPlacePack ? (
+            <Image source={{ uri: 'https://res.cloudinary.com/dgts6a89y/image/upload/v1771009434/mibu/items/%E5%8D%B7%E8%BB%B8.png' }} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          ) : (
+            <Ionicons name={iconName as any} size={20} color={MibuBrand.copper} />
+          )}
         </View>
         <View style={styles.rewardInfo}>
           <Text style={styles.rewardLabel}>{label}</Text>

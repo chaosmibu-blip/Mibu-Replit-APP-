@@ -19,7 +19,7 @@
  * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n, useGacha, useAuth } from '../../../context/AppContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -214,7 +214,7 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
               }}
             />
           )}
-          <Ionicons name="map-outline" size={20} color={MibuBrand.info} />
+          <Image source={{ uri: 'https://res.cloudinary.com/dgts6a89y/image/upload/v1771009433/mibu/items/%E5%AF%B6%E7%AE%B1.png' }} style={{ width: 32, height: 32 }} resizeMode="contain" />
           {item.placeCount != null && (
             <Text style={{ fontSize: 8, fontWeight: '800', color: MibuBrand.info, marginTop: 2 }}>
               ×{item.placeCount}
