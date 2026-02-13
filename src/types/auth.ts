@@ -62,6 +62,12 @@ export interface User {
 export interface AuthResponse {
   user: User;    // 用戶資訊
   token: string; // JWT Token
+  /** #046: 同裝置偵測到非訪客帳號時，後端建議合併 */
+  suggestMerge?: {
+    existingAccountId: string;
+    existingName: string | null;
+    sharedDeviceWarning: string;
+  };
 }
 
 // ============ 用戶個人資料 ============

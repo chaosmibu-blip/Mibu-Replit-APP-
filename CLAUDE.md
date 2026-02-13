@@ -843,6 +843,8 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
 | 前端修改（UI、元件、樣式） | Hot reload 或重新載入 App |
 | 後端修改（API、資料庫） | 需要後端重新部署 |
 | 需後端確認（缺 API 或欄位） | 記錄到 sync-backend.md |
+| 已上架 App 的 JS 層修改 | `eas update --branch production` OTA 推送 |
+| 已上架 App 的 native 層修改 | 需重新 build + 送審 |
 
 ---
 
@@ -909,7 +911,7 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
 
 | 檔案 | 原因 |
 |------|------|
-| `app.json`、`eas.json` | Expo/EAS 設定，改錯會影響 build |
+| `app.json`、`app.config.js`、`eas.json` | Expo/EAS 設定，改錯會影響 build + OTA |
 | `babel.config.js`、`tsconfig.json` | 編譯設定 |
 | `.env*` | 環境變數，含敏感資訊 |
 | `package-lock.json` | 依賴鎖定，手動改會出問題 |
@@ -1236,8 +1238,40 @@ fontSize: FontSize.md       // 不要 14
 ```bash
 npm start                                    # 日常開發
 npx expo start --web --port 5000 --tunnel   # Replit
-eas build --platform ios --profile production  # 正式版
+eas build --platform ios --profile production  # 正式版 build（送審用）
+eas update --branch production --message "說明"  # OTA 推送（不用送審）
 ```
+
+### EAS Update（OTA 熱更新）
+
+**已設定完成**（`app.config.js` + `eas.json`）。送審通過後，JS 層改動可透過 OTA 即時推送。
+
+**可以 OTA 更新的**（純 JS 層）：
+| 類型 | 範例 |
+|------|------|
+| UI 修改 | 改顏色、調間距、改文字、改佈局 |
+| 邏輯修改 | 修 bug、改串接邏輯、改狀態管理 |
+| 新增頁面 | 純 JS 的新畫面（Expo Router） |
+| 翻譯更新 | 修改/新增多語系文字 |
+| API 串接 | 改 endpoint、加新 API 呼叫 |
+
+**必須重新送審的**（動到 native 層）：
+| 類型 | 範例 |
+|------|------|
+| 新增原生套件 | 需要 native module 的新套件 |
+| 改 app.config.js | 權限、bundle ID、version |
+| 升級 Expo SDK | 如 SDK 54 → 55 |
+| 改 eas.json build 設定 | build profile、env |
+
+**設定檔位置**：
+| 設定 | 位置 |
+|------|------|
+| `runtimeVersion: { policy: 'appVersion' }` | `app.config.js` line 130-132 |
+| `updates.url` | `app.config.js` line 126-129 |
+| `projectId` | `app.config.js` line 66-68 |
+| `channel`（per profile） | `eas.json` 每個 build profile |
+
+**注意**：`app.config.js` 會覆蓋 `app.json`，實際設定以 `app.config.js` 為準。
 
 ---
 
@@ -1268,4 +1302,4 @@ eas build --platform ios --profile production  # 正式版
 
 ---
 
-*最後更新：2026-02-07 | API 契約：v1.4.0 | 代理人團隊模式啟用*
+*最後更新：2026-02-13 | API 契約：v1.4.0 | 代理人團隊模式啟用 | EAS Update 已設定*

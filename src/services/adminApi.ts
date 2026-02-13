@@ -38,7 +38,13 @@ import {
   AnnouncementsResponse,
   CreateAnnouncementParams,
   UpdateAnnouncementParams,
-  AnnouncementType
+  AnnouncementType,
+  SendRewardParams,
+  SendRewardResponse,
+  ShopItem,
+  ShopItemsResponse,
+  CreateShopItemParams,
+  UpdateShopItemParams,
 } from '../types';
 
 // ============ API 服務類別 ============
@@ -268,6 +274,89 @@ class AdminApiService extends ApiBase {
    */
   async deleteAnnouncement(token: string, id: number): Promise<{ success: boolean; message: string }> {
     return this.request(`/api/admin/announcements/${id}`, {
+      method: 'DELETE',
+      headers: this.authHeaders(token),
+    });
+  }
+
+  // ============ #047 獎勵發送 ============
+
+  /**
+   * 發送獎勵
+   *
+   * 支援全體發送（target: 'all'）或指定用戶（target: 'users'）
+   *
+   * @param token - JWT Token（需管理員權限）
+   * @param params - 發送參數
+   * @returns 發送結果統計
+   */
+  async sendReward(token: string, params: SendRewardParams): Promise<SendRewardResponse> {
+    return this.request<SendRewardResponse>('/api/admin/rewards', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
+    });
+  }
+
+  // ============ #048 商城道具管理 ============
+
+  /**
+   * 取得商城商品列表（含下架商品）
+   *
+   * @param token - JWT Token（需管理員權限）
+   * @param params - 分頁與篩選參數
+   */
+  async getShopItems(token: string, params?: {
+    page?: number;
+    limit?: number;
+    category?: string;
+  }): Promise<ShopItemsResponse> {
+    const query = new URLSearchParams();
+    if (params?.page) query.set('page', String(params.page));
+    if (params?.limit) query.set('limit', String(params.limit));
+    if (params?.category) query.set('category', params.category);
+    const qs = query.toString();
+    return this.request<ShopItemsResponse>(`/api/admin/shop-items${qs ? `?${qs}` : ''}`, {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 取得單一商品
+   */
+  async getShopItem(token: string, id: number): Promise<ShopItem> {
+    return this.request<ShopItem>(`/api/admin/shop-items/${id}`, {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 建立商品
+   */
+  async createShopItem(token: string, params: CreateShopItemParams): Promise<{ success: boolean; item: ShopItem }> {
+    return this.request('/api/admin/shop-items', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * 更新商品（code 不可修改）
+   */
+  async updateShopItem(token: string, id: number, params: UpdateShopItemParams): Promise<{ success: boolean; item: ShopItem }> {
+    return this.request(`/api/admin/shop-items/${id}`, {
+      method: 'PATCH',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * 停用商品（軟刪除）
+   */
+  async deleteShopItem(token: string, id: number): Promise<{ success: boolean }> {
+    return this.request(`/api/admin/shop-items/${id}`, {
       method: 'DELETE',
       headers: this.authHeaders(token),
     });

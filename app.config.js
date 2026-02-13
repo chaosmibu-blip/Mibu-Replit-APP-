@@ -61,6 +61,15 @@ const baseConfig = {
     typedRoutes: true,                   // 啟用 TypeScript 路由型別
   },
 
+  // EAS Update OTA 更新設定（開發/正式共用）
+  updates: {
+    url: 'https://u.expo.dev/f1c74b9b-747d-450c-8c99-22a7729b4a31',
+    fallbackToCacheTimeout: 0,           // 無網路時直接用快取
+  },
+  runtimeVersion: {
+    policy: 'appVersion',                // 用 App 版本號作為 runtime 版本
+  },
+
   // EAS 專案設定
   extra: {
     eas: {
@@ -121,19 +130,6 @@ const productionConfig = {
       'READ_EXTERNAL_STORAGE',           // 讀取相簿
       'WRITE_EXTERNAL_STORAGE',          // 寫入相簿
     ],
-  },
-  // EAS Update OTA 更新設定
-  updates: {
-    url: 'https://u.expo.dev/f1c74b9b-747d-450c-8c99-22a7729b4a31',
-    fallbackToCacheTimeout: 0,           // 無網路時直接用快取
-  },
-  runtimeVersion: {
-    policy: 'appVersion',                // 用 App 版本號作為 runtime 版本
-  },
-  extra: {
-    eas: {
-      projectId: 'f1c74b9b-747d-450c-8c99-22a7729b4a31',
-    },
   },
 };
 

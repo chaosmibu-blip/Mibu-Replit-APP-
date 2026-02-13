@@ -24,13 +24,15 @@ import {
   InventoryItem,
   InventoryResponse,
   RedeemResponse,
+  PlacePackOptionsResponse,
+  OpenPlacePackResponse,
   PaginationParams,
 } from '../types';
 
 // ============ 類型定義 ============
 
 /** 背包物品類型篩選 */
-export type InventoryFilter = 'all' | 'coupon' | 'ticket' | 'gift';
+export type InventoryFilter = 'all' | 'coupon' | 'ticket' | 'gift' | 'place_pack';
 
 /** 背包物品狀態 */
 export type InventoryStatus = 'active' | 'expired' | 'redeemed';
@@ -231,6 +233,42 @@ class InventoryApiService extends ApiBase {
       method: 'POST',
       headers: this.authHeaders(token),
       body: JSON.stringify(params),
+    });
+  }
+
+  // ============ 景點包 ============
+
+  /**
+   * 查詢景點包開啟選項
+   *
+   * 回傳景點包資訊、是否限定城市、可選城市清單
+   *
+   * @param token - JWT Token
+   * @param itemId - 道具 ID
+   * @returns 景點包資訊與開啟選項
+   */
+  async getPlacePackOptions(token: string, itemId: number): Promise<PlacePackOptionsResponse> {
+    return this.request<PlacePackOptionsResponse>(`/api/inventory/${itemId}/open-options`, {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 開啟景點包
+   *
+   * 景點加入圖鑑，已擁有的自動跳過
+   * 開啟後道具狀態變為 redeemed
+   *
+   * @param token - JWT Token
+   * @param itemId - 道具 ID
+   * @param selectedCity - 用戶選擇的城市
+   * @returns 開啟結果（新增/跳過的景點清單）
+   */
+  async openPlacePack(token: string, itemId: number, selectedCity: string): Promise<OpenPlacePackResponse> {
+    return this.request<OpenPlacePackResponse>(`/api/inventory/${itemId}/open`, {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify({ selectedCity }),
     });
   }
 

@@ -183,7 +183,7 @@ app/
 ### 管理員模組 (Admin)
 | Screen 元件 | 對應路由 | 說明 |
 |-------------|----------|------|
-| `AdminDashboardScreen.tsx` | `/admin-dashboard` | 管理後台 |
+| `AdminDashboardScreen.tsx` | `/admin-dashboard` | 管理後台（7 Tab：用戶/公告/排除/SOS/推播/獎勵發送/商城商品） |
 | `AdminAnnouncementsScreen.tsx` | `/admin-announcements` | 公告管理 |
 | `AdminExclusionsScreen.tsx` | `/admin-exclusions` | 排除管理 |
 | `AnnouncementManageScreen.tsx` | `/announcement-manage` | 公告編輯

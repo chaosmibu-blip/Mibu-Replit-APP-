@@ -35,6 +35,7 @@ import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { randomUUID } from 'expo-crypto';
 import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { useAuth, useI18n } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
@@ -42,6 +43,7 @@ import { UserRole } from '../src/types';
 import { MibuBrand, RoleColors, UIColors } from '../constants/Colors';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
 import { isValidJWTFormat, isAuthCallbackPath } from '../src/utils/validation';
+import { getDeviceId } from '../src/services/gachaApi';
 
 // OAuth 登入 URL - 使用環境變數設定的 API URL（正式或開發環境）
 const OAUTH_BASE_URL = API_BASE_URL;
@@ -286,12 +288,16 @@ export default function LoginScreen() {
       // 1. 取得 Google idToken（原生方式）
       const idToken = await signInWithGoogle();
 
-      // 2. 傳送到後端驗證
+      // 2. 取得裝置 ID（#046 訪客自動升級）
+      const deviceId = await getDeviceId();
+
+      // 3. 傳送到後端驗證
       const apiUrl = `${API_BASE_URL}/api/auth/mobile`;
       const requestBody = {
         provider: 'google',
         idToken: idToken,
         targetPortal: selectedPortal,
+        ...(deviceId ? { deviceId } : {}),
       };
 
       const response = await fetch(apiUrl, {
@@ -322,6 +328,11 @@ export default function LoginScreen() {
         }, data.token);
 
         navigateAfterLogin(userRole, data.user.isApproved, data.user.isSuperAdmin, selectedPortal);
+
+        // #046: 同裝置偵測到既有帳號，提示合併
+        if (data.suggestMerge) {
+          showSuggestMergeAlert(data.suggestMerge);
+        }
       } else {
         Alert.alert(
           t.auth_oauthLoginFailed,
@@ -542,16 +553,34 @@ export default function LoginScreen() {
     }
   };
 
+  // #046: 同裝置偵測到既有帳號時，提示用戶
+  const showSuggestMergeAlert = (suggestMerge: {
+    existingAccountId: string;
+    existingName: string | null;
+    sharedDeviceWarning: string;
+  }) => {
+    const parts: string[] = [];
+    if (suggestMerge.existingName) {
+      parts.push(t.auth_suggestMergeHasAccount.replace('{name}', suggestMerge.existingName));
+    }
+    if (suggestMerge.sharedDeviceWarning) {
+      parts.push(suggestMerge.sharedDeviceWarning);
+    }
+    parts.push(t.auth_suggestMergeHint);
+    Alert.alert(t.auth_suggestMergeTitle, parts.join('\n\n'), [{ text: t.common_confirm }]);
+  };
+
   const handleGuestLogin = () => {
+    const guestId = `guest_${randomUUID()}`;
     setUser({
-      id: 'guest',
-      name: 'Guest User',
+      id: guestId,
+      name: 'Guest',
       email: null,
       avatar: null,
       firstName: 'Guest',
       role: 'traveler',
       provider: 'guest',
-      providerId: 'guest',
+      providerId: guestId,
     });
     router.replace('/(tabs)');
   };
@@ -568,6 +597,9 @@ export default function LoginScreen() {
       });
 
       if (credential.identityToken) {
+        // 取得裝置 ID（#046 訪客自動升級）
+        const deviceId = await getDeviceId();
+
         const apiUrl = `${API_BASE_URL}/api/auth/mobile`;
         const requestBody = {
           provider: 'apple',
@@ -579,6 +611,7 @@ export default function LoginScreen() {
             givenName: credential.fullName.givenName,
             familyName: credential.fullName.familyName,
           } : undefined,
+          ...(deviceId ? { deviceId } : {}),
         };
         
         const bodyString = JSON.stringify(requestBody);
@@ -637,6 +670,11 @@ export default function LoginScreen() {
           }, data.token);
           
           navigateAfterLogin(userRole, data.user.isApproved, data.user.isSuperAdmin, selectedPortal);
+
+          // #046: 同裝置偵測到既有帳號，提示合併
+          if (data.suggestMerge) {
+            showSuggestMergeAlert(data.suggestMerge);
+          }
         } else {
           Alert.alert(
             t.auth_oauthLoginFailed,
@@ -728,6 +766,17 @@ export default function LoginScreen() {
               style={{ width: '100%', height: 52, marginTop: 12 }}
               onPress={handleAppleLogin}
             />
+          )}
+
+          {currentPortal.guestAllowed && (
+            <TouchableOpacity
+              style={styles.guestButton}
+              onPress={handleGuestLogin}
+              accessibilityLabel={t.auth_guestLogin}
+              accessibilityRole="button"
+            >
+              <Text style={styles.guestButtonText}>{t.auth_guestLogin}</Text>
+            </TouchableOpacity>
           )}
 
           <Text style={styles.note}>

@@ -10,6 +10,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthQuery, useAuthMutation } from './useAuthQuery';
 import { adminApi } from '../services/adminApi';
+import type { SendRewardParams, CreateShopItemParams, UpdateShopItemParams } from '../types';
 
 // ============ 查詢 Hooks ============
 
@@ -158,6 +159,65 @@ export function useDeleteAnnouncement() {
     {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] });
+      },
+    },
+  );
+}
+
+// ============ #047 獎勵發送 ============
+
+/** 發送獎勵（全體 / 指定用戶） */
+export function useSendReward() {
+  return useAuthMutation(
+    (token, params: SendRewardParams) => adminApi.sendReward(token, params),
+  );
+}
+
+// ============ #048 商城道具管理 ============
+
+/** 商城商品列表 */
+export function useAdminShopItems(params?: { page?: number; limit?: number; category?: string }) {
+  return useAuthQuery(
+    ['admin', 'shopItems', params],
+    (token) => adminApi.getShopItems(token, params),
+  );
+}
+
+/** 建立商品 */
+export function useCreateShopItem() {
+  const queryClient = useQueryClient();
+  return useAuthMutation(
+    (token, params: CreateShopItemParams) => adminApi.createShopItem(token, params),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'shopItems'] });
+      },
+    },
+  );
+}
+
+/** 更新商品 */
+export function useUpdateShopItem() {
+  const queryClient = useQueryClient();
+  return useAuthMutation(
+    (token, params: { id: number; data: UpdateShopItemParams }) =>
+      adminApi.updateShopItem(token, params.id, params.data),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'shopItems'] });
+      },
+    },
+  );
+}
+
+/** 停用商品 */
+export function useDeleteShopItem() {
+  const queryClient = useQueryClient();
+  return useAuthMutation(
+    (token, id: number) => adminApi.deleteShopItem(token, id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['admin', 'shopItems'] });
       },
     },
   );

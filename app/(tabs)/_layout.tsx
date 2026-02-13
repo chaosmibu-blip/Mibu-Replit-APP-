@@ -3,9 +3,10 @@
  *
  * 定義旅客介面的底部 Tab 導航結構：
  * - index (首頁): 首頁資訊、公告、快速入口
- * - gacha (扭蛋): 扭蛋系統，含未讀 badge
- * - planner (規劃): 隱藏 Tab，定位/行程/聊天功能
- * - collection (圖鑑): 隱藏 Tab，景點圖鑑
+ * - gacha (扭蛋): 扭蛋系統（含圖鑑、道具箱子頁籤），含未讀 badge
+ * - itinerary (行程): 行程規劃和管理
+ * - planner (規劃): 隱藏 Tab
+ * - collection (圖鑑): 隱藏 Tab
  * - settings (設定): 設定頁面
  *
  * 使用 Mibu 品牌配色和樣式
@@ -20,15 +21,15 @@ import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useAuth, useI18n, useGacha } from '../../src/context/AppContext';
 import { MibuBrand, UIColors } from '../../constants/Colors';
 
-function TabIconWithBadge({ 
-  icon, 
-  focused, 
-  color, 
-  badgeCount 
-}: { 
-  icon: string; 
-  focused: boolean; 
-  color: string; 
+function TabIconWithBadge({
+  icon,
+  focused,
+  color,
+  badgeCount
+}: {
+  icon: string;
+  focused: boolean;
+  color: string;
   badgeCount?: number;
 }) {
   return (
@@ -60,7 +61,7 @@ export default function TabLayout() {
   const { isAuthenticated } = useAuth();
   const { t } = useI18n();
   const { gachaState, refreshUnreadCount } = useGacha();
-  
+
   useEffect(() => {
     if (isAuthenticated) {
       refreshUnreadCount();
@@ -113,12 +114,21 @@ export default function TabLayout() {
         options={{
           title: t.navGacha,
           tabBarIcon: ({ color, focused }) => (
-            <TabIconWithBadge 
-              icon="gift" 
-              focused={focused} 
-              color={color} 
-              badgeCount={gachaState.unreadItemCount} 
+            <TabIconWithBadge
+              icon="gift"
+              focused={focused}
+              color={color}
+              badgeCount={gachaState.unreadItemCount}
             />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="itinerary"
+        options={{
+          title: t.navItinerary || '行程',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'map' : 'map-outline'} size={24} color={color} />
           ),
         }}
       />

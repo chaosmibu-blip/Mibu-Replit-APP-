@@ -33,6 +33,8 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  TextInput,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -46,16 +48,27 @@ import {
   usePublishPlaceDraft,
   useDeletePlaceDraft,
   useRemoveGlobalExclusion,
+  useSendReward,
+  useAdminShopItems,
+  useCreateShopItem,
+  useUpdateShopItem,
+  useDeleteShopItem,
 } from '../../../hooks/useAdminQueries';
 import { LOCALE_MAP } from '../../../utils/i18n';
-import { AdminUser, PlaceDraft, GlobalExclusion } from '../../../types';
+import { AdminUser, PlaceDraft, GlobalExclusion, ShopItem, ShopItemCategory, RewardItem, SendRewardParams } from '../../../types';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';
 
 // ============ 型別定義 ============
 
-/** 分頁類型：待審核 | 用戶 | 草稿 | 排除 | 公告 */
-type Tab = 'pending' | 'users' | 'drafts' | 'exclusions' | 'announcements';
+/** 分頁類型 */
+type Tab = 'pending' | 'users' | 'drafts' | 'exclusions' | 'announcements' | 'rewards' | 'shopItems';
+
+/** 商品分類對照表 */
+const SHOP_CATEGORIES: ShopItemCategory[] = ['gacha_ticket', 'inventory_expand', 'cosmetic', 'boost', 'bundle', 'other'];
+
+/** 獎勵類型選項 */
+const REWARD_TYPES = ['coins', 'shop_item', 'perk'] as const;
 
 // ============ 主元件 ============
 
@@ -81,6 +94,15 @@ export function AdminDashboardScreen() {
   const deleteDraftMutation = useDeletePlaceDraft();
   const removeExclusionMutation = useRemoveGlobalExclusion();
 
+  // #047 獎勵發送
+  const sendRewardMutation = useSendReward();
+
+  // #048 商城道具
+  const shopItemsQuery = useAdminShopItems();
+  const createShopItemMutation = useCreateShopItem();
+  const updateShopItemMutation = useUpdateShopItem();
+  const deleteShopItemMutation = useDeleteShopItem();
+
   // ============ UI 狀態管理 ============
 
   /** 當前選中的分頁 */
@@ -89,11 +111,29 @@ export function AdminDashboardScreen() {
   /** 操作進行中的項目 ID（用於顯示該項目的 loading） */
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
+  // #047 獎勵發送表單狀態
+  const [rewardTarget, setRewardTarget] = useState<'all' | 'users'>('all');
+  const [rewardTitle, setRewardTitle] = useState('');
+  const [rewardMessage, setRewardMessage] = useState('');
+  const [rewardUserIds, setRewardUserIds] = useState('');
+  const [rewardItems, setRewardItems] = useState<RewardItem[]>([{ type: 'coins', amount: 100 }]);
+  const [rewardExpiresInDays, setRewardExpiresInDays] = useState('');
+
+  // #048 商品表單狀態
+  const [showShopModal, setShowShopModal] = useState(false);
+  const [editingShopItem, setEditingShopItem] = useState<ShopItem | null>(null);
+  const [shopForm, setShopForm] = useState({
+    code: '', category: 'other' as ShopItemCategory, nameZh: '', nameEn: '',
+    descriptionZh: '', descriptionEn: '', priceCoins: '', imageUrl: '',
+    maxPerUser: '', sortOrder: '0', isActive: true,
+  });
+
   // 從查詢結果衍生狀態
   const pendingUsers: AdminUser[] = pendingUsersQuery.data?.users || [];
   const allUsers: AdminUser[] = allUsersQuery.data?.users || [];
   const drafts: PlaceDraft[] = draftsQuery.data?.drafts || [];
   const exclusions: GlobalExclusion[] = exclusionsQuery.data || [];
+  const shopItems: ShopItem[] = shopItemsQuery.data?.items || [];
 
   /** 根據當前分頁取得對應的 loading 狀態 */
   const getActiveQuery = () => {
@@ -102,6 +142,7 @@ export function AdminDashboardScreen() {
       case 'users': return allUsersQuery;
       case 'drafts': return draftsQuery;
       case 'exclusions': return exclusionsQuery;
+      case 'shopItems': return shopItemsQuery;
       default: return pendingUsersQuery;
     }
   };
@@ -254,6 +295,134 @@ export function AdminDashboardScreen() {
     ]);
   };
 
+  // ============ #047 獎勵發送操作 ============
+
+  const handleSendReward = async () => {
+    if (!rewardTitle.trim() || rewardItems.length === 0) {
+      Alert.alert('', t.admin_rewardFillRequired);
+      return;
+    }
+    if (rewardTarget === 'users') {
+      const ids = rewardUserIds.split('\n').map(s => s.trim()).filter(Boolean);
+      if (ids.length === 0) {
+        Alert.alert('', t.admin_rewardNoUsers);
+        return;
+      }
+    }
+
+    const userIds = rewardUserIds.split('\n').map(s => s.trim()).filter(Boolean);
+    const params: SendRewardParams = rewardTarget === 'all'
+      ? { target: 'all', title: rewardTitle, message: rewardMessage || undefined, rewards: rewardItems, ...(rewardExpiresInDays ? { expiresInDays: Number(rewardExpiresInDays) } : {}) }
+      : { target: 'users', userIds, title: rewardTitle, message: rewardMessage || undefined, rewards: rewardItems, ...(rewardExpiresInDays ? { expiresInDays: Number(rewardExpiresInDays) } : {}) };
+
+    try {
+      const result = await sendRewardMutation.mutateAsync(params);
+      const stats = (t.admin_rewardSentStats || '')
+        .replace('{sent}', String(result.sent))
+        .replace('{total}', String(result.totalUsers))
+        .replace('{batches}', String(result.batches));
+      Alert.alert(t.admin_rewardSuccess, stats);
+      // 重設表單
+      setRewardTitle('');
+      setRewardMessage('');
+      setRewardUserIds('');
+      setRewardItems([{ type: 'coins', amount: 100 }]);
+      setRewardExpiresInDays('');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to send reward');
+    }
+  };
+
+  const updateRewardItem = (index: number, field: string, value: any) => {
+    setRewardItems(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
+  };
+
+  const removeRewardItem = (index: number) => {
+    setRewardItems(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // ============ #048 商城道具操作 ============
+
+  const resetShopForm = () => {
+    setShopForm({ code: '', category: 'other', nameZh: '', nameEn: '', descriptionZh: '', descriptionEn: '', priceCoins: '', imageUrl: '', maxPerUser: '', sortOrder: '0', isActive: true });
+    setEditingShopItem(null);
+  };
+
+  const openCreateShopItem = () => {
+    resetShopForm();
+    setShowShopModal(true);
+  };
+
+  const openEditShopItem = (item: ShopItem) => {
+    setEditingShopItem(item);
+    setShopForm({
+      code: item.code, category: item.category, nameZh: item.nameZh,
+      nameEn: item.nameEn || '', descriptionZh: item.descriptionZh || '',
+      descriptionEn: item.descriptionEn || '', priceCoins: String(item.priceCoins),
+      imageUrl: item.imageUrl || '', maxPerUser: item.maxPerUser ? String(item.maxPerUser) : '',
+      sortOrder: String(item.sortOrder), isActive: item.isActive,
+    });
+    setShowShopModal(true);
+  };
+
+  const handleSaveShopItem = async () => {
+    if (!shopForm.code.trim() || !shopForm.nameZh.trim() || !shopForm.priceCoins) {
+      Alert.alert('', t.admin_shopItemFillRequired);
+      return;
+    }
+    try {
+      if (editingShopItem) {
+        await updateShopItemMutation.mutateAsync({
+          id: editingShopItem.id,
+          data: {
+            category: shopForm.category, nameZh: shopForm.nameZh,
+            nameEn: shopForm.nameEn || undefined, descriptionZh: shopForm.descriptionZh || undefined,
+            descriptionEn: shopForm.descriptionEn || undefined, priceCoins: Number(shopForm.priceCoins),
+            imageUrl: shopForm.imageUrl || undefined, maxPerUser: shopForm.maxPerUser ? Number(shopForm.maxPerUser) : undefined,
+            sortOrder: Number(shopForm.sortOrder), isActive: shopForm.isActive,
+          },
+        });
+      } else {
+        await createShopItemMutation.mutateAsync({
+          code: shopForm.code, category: shopForm.category, nameZh: shopForm.nameZh,
+          nameEn: shopForm.nameEn || undefined, descriptionZh: shopForm.descriptionZh || undefined,
+          descriptionEn: shopForm.descriptionEn || undefined, priceCoins: Number(shopForm.priceCoins),
+          imageUrl: shopForm.imageUrl || undefined, maxPerUser: shopForm.maxPerUser ? Number(shopForm.maxPerUser) : undefined,
+          sortOrder: Number(shopForm.sortOrder), isActive: shopForm.isActive,
+        });
+      }
+      setShowShopModal(false);
+      resetShopForm();
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to save');
+    }
+  };
+
+  const handleDeleteShopItem = (item: ShopItem) => {
+    Alert.alert(t.common_delete, t.admin_shopItemConfirmDelete, [
+      { text: t.cancel, style: 'cancel' },
+      {
+        text: t.common_confirm, style: 'destructive',
+        onPress: async () => {
+          try {
+            setActionLoading(`shop-${item.id}`);
+            await deleteShopItemMutation.mutateAsync(item.id);
+          } catch (error) {
+            console.error('Failed to delete shop item:', error);
+          } finally {
+            setActionLoading(null);
+          }
+        },
+      },
+    ]);
+  };
+
+  /** 商品分類中文 */
+  const getCategoryLabel = (cat: ShopItemCategory) => {
+    const key = `admin_shopCat${cat.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('')}` as string;
+    return (t as any)[key] || cat;
+  };
+
   // ============ 工具函數 ============
 
   /**
@@ -277,8 +446,8 @@ export function AdminDashboardScreen() {
    * 包含五個分頁：待審核、用戶、草稿、排除、公告
    */
   const renderTabs = () => (
-    <View style={styles.tabsContainer}>
-      {(['pending', 'users', 'drafts', 'exclusions', 'announcements'] as Tab[]).map(tab => (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsContainer} contentContainerStyle={styles.tabsContent}>
+      {(['pending', 'users', 'drafts', 'exclusions', 'announcements', 'rewards', 'shopItems'] as Tab[]).map(tab => (
         <TouchableOpacity
           key={tab}
           style={[styles.tab, activeTab === tab && styles.activeTab]}
@@ -286,14 +455,13 @@ export function AdminDashboardScreen() {
         >
           <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
             {t[`admin_${tab}Tab`]}
-            {/* 待審核分頁顯示待處理數量 */}
             {tab === 'pending' && pendingUsers.length > 0 && (
               <Text style={styles.badgeText}> ({pendingUsers.length})</Text>
             )}
           </Text>
         </TouchableOpacity>
       ))}
-    </View>
+    </ScrollView>
   );
 
   // ============ 渲染函數：待審核用戶列表 ============
@@ -520,6 +688,272 @@ export function AdminDashboardScreen() {
     </View>
   );
 
+  // ============ 渲染函數：#047 獎勵發送 ============
+
+  const renderRewards = () => (
+    <View style={styles.listContainer}>
+      {/* 發送對象選擇 */}
+      <View style={styles.formCard}>
+        <Text style={styles.formLabel}>{t.admin_rewardTarget}</Text>
+        <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+          {(['all', 'users'] as const).map(target => (
+            <TouchableOpacity
+              key={target}
+              style={[styles.chipButton, rewardTarget === target && styles.chipButtonActive]}
+              onPress={() => setRewardTarget(target)}
+            >
+              <Text style={[styles.chipText, rewardTarget === target && styles.chipTextActive]}>
+                {target === 'all' ? t.admin_rewardTargetAll : t.admin_rewardTargetUsers}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* 標題 */}
+      <View style={styles.formCard}>
+        <Text style={styles.formLabel}>{t.admin_rewardTitle}</Text>
+        <TextInput style={styles.formInput} value={rewardTitle} onChangeText={setRewardTitle} placeholder={t.admin_rewardTitle} />
+      </View>
+
+      {/* 附加訊息 */}
+      <View style={styles.formCard}>
+        <Text style={styles.formLabel}>{t.admin_rewardMessage}</Text>
+        <TextInput style={styles.formInput} value={rewardMessage} onChangeText={setRewardMessage} placeholder={t.admin_rewardMessage} />
+      </View>
+
+      {/* 指定用戶 ID 輸入 */}
+      {rewardTarget === 'users' && (
+        <View style={styles.formCard}>
+          <Text style={styles.formLabel}>{t.admin_rewardUserIds}</Text>
+          <TextInput
+            style={[styles.formInput, { height: 100, textAlignVertical: 'top' }]}
+            value={rewardUserIds} onChangeText={setRewardUserIds}
+            placeholder={t.admin_rewardUserIds} multiline
+          />
+        </View>
+      )}
+
+      {/* 過期天數 */}
+      <View style={styles.formCard}>
+        <Text style={styles.formLabel}>{t.admin_expiresInDays}</Text>
+        <TextInput style={styles.formInput} value={rewardExpiresInDays} onChangeText={setRewardExpiresInDays} placeholder="30" keyboardType="number-pad" />
+      </View>
+
+      {/* 獎勵項目列表 */}
+      <View style={styles.formCard}>
+        <Text style={styles.formLabel}>{t.admin_rewardType}</Text>
+        {rewardItems.map((item, index) => (
+          <View key={index} style={{ backgroundColor: MibuBrand.creamLight, borderRadius: Radius.md, padding: Spacing.md, marginBottom: Spacing.sm }}>
+            {/* 類型選擇 */}
+            <View style={{ flexDirection: 'row', gap: Spacing.xs, marginBottom: Spacing.sm, flexWrap: 'wrap' }}>
+              {REWARD_TYPES.map(type => (
+                <TouchableOpacity
+                  key={type}
+                  style={[styles.chipButton, { paddingVertical: 4, paddingHorizontal: 8 }, item.type === type && styles.chipButtonActive]}
+                  onPress={() => updateRewardItem(index, 'type', type)}
+                >
+                  <Text style={[styles.chipText, { fontSize: 12 }, item.type === type && styles.chipTextActive]}>
+                    {type === 'coins' ? t.admin_rewardCoins : type === 'shop_item' ? t.admin_rewardShopItem : t.admin_rewardPerk}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {/* 數量 / 代碼 */}
+            {item.type === 'coins' && (
+              <TextInput style={styles.formInput} value={String(item.amount || '')} onChangeText={v => updateRewardItem(index, 'amount', Number(v) || 0)} placeholder={t.admin_rewardAmount} keyboardType="number-pad" />
+            )}
+            {item.type === 'shop_item' && (
+              <View style={{ gap: Spacing.xs }}>
+                <TextInput style={styles.formInput} value={item.itemCode || ''} onChangeText={v => updateRewardItem(index, 'itemCode', v)} placeholder={t.admin_rewardItemCode} />
+                <TextInput style={styles.formInput} value={String(item.quantity || '')} onChangeText={v => updateRewardItem(index, 'quantity', Number(v) || 1)} placeholder={t.admin_rewardAmount} keyboardType="number-pad" />
+              </View>
+            )}
+            {item.type === 'perk' && (
+              <View style={{ gap: Spacing.xs }}>
+                <View style={{ flexDirection: 'row', gap: Spacing.xs }}>
+                  {(['daily_pulls', 'inventory_slots'] as const).map(pt => (
+                    <TouchableOpacity key={pt} style={[styles.chipButton, { paddingVertical: 4, paddingHorizontal: 8 }, item.perkType === pt && styles.chipButtonActive]} onPress={() => updateRewardItem(index, 'perkType', pt)}>
+                      <Text style={[styles.chipText, { fontSize: 12 }, item.perkType === pt && styles.chipTextActive]}>{pt === 'daily_pulls' ? 'Daily Pulls' : 'Inventory'}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TextInput style={styles.formInput} value={String(item.value || '')} onChangeText={v => updateRewardItem(index, 'value', Number(v) || 0)} placeholder={t.admin_rewardAmount} keyboardType="number-pad" />
+              </View>
+            )}
+            {/* 移除按鈕 */}
+            {rewardItems.length > 1 && (
+              <TouchableOpacity onPress={() => removeRewardItem(index)} style={{ alignSelf: 'flex-end', marginTop: Spacing.xs }}>
+                <Text style={{ color: SemanticColors.error.main, fontSize: FontSize.sm }}>{t.admin_rewardRemoveItem}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ))}
+        <TouchableOpacity style={[styles.chipButton, { alignSelf: 'flex-start' }]} onPress={() => setRewardItems(prev => [...prev, { type: 'coins', amount: 100 }])}>
+          <Text style={styles.chipText}>+ {t.admin_rewardAddItem}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 發送按鈕 */}
+      <TouchableOpacity
+        style={[styles.sendButton, sendRewardMutation.isPending && { opacity: 0.6 }]}
+        onPress={handleSendReward}
+        disabled={sendRewardMutation.isPending}
+      >
+        {sendRewardMutation.isPending ? (
+          <ActivityIndicator size="small" color="#FFFEFA" />
+        ) : (
+          <>
+            <Ionicons name="send-outline" size={20} color="#FFFEFA" />
+            <Text style={styles.sendButtonText}>{t.admin_sendReward}</Text>
+          </>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
+  // ============ 渲染函數：#048 商城道具 ============
+
+  const renderShopItems = () => (
+    <View style={styles.listContainer}>
+      {/* 新增按鈕 */}
+      <TouchableOpacity style={styles.sendButton} onPress={openCreateShopItem}>
+        <Ionicons name="add-circle-outline" size={20} color="#FFFEFA" />
+        <Text style={styles.sendButtonText}>{t.admin_shopItemCreate}</Text>
+      </TouchableOpacity>
+
+      {/* 商品列表 */}
+      {shopItems.length === 0 ? (
+        <View style={styles.emptyCard}>
+          <Ionicons name="cart-outline" size={48} color={UIColors.textSecondary} />
+          <Text style={styles.emptyText}>{t.admin_shopItemNoItems}</Text>
+        </View>
+      ) : (
+        shopItems.map(item => (
+          <View key={item.id} style={[styles.draftCard, !item.isActive && { opacity: 0.6 }]}>
+            <View style={styles.draftInfo}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: Spacing.xs }}>
+                <Text style={styles.draftName}>{item.nameZh}</Text>
+                <View style={[styles.statusBadge, item.isActive ? styles.statusApproved : styles.statusPending]}>
+                  <Text style={styles.statusBadgeText}>{item.isActive ? t.admin_shopItemActive : t.admin_shopItemInactive}</Text>
+                </View>
+              </View>
+              <Text style={styles.draftLocation}>{item.code} | {getCategoryLabel(item.category)}</Text>
+              <Text style={{ fontSize: FontSize.md, fontWeight: FontWeight.bold, color: MibuBrand.brown }}>
+                {item.priceCoins} coins
+              </Text>
+            </View>
+            <View style={styles.draftActions}>
+              <TouchableOpacity style={[styles.actionButton, styles.publishButton]} onPress={() => openEditShopItem(item)}>
+                <Ionicons name="create" size={18} color={UIColors.white} />
+              </TouchableOpacity>
+              {item.isActive && (
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.deleteButton]}
+                  onPress={() => handleDeleteShopItem(item)}
+                  disabled={actionLoading === `shop-${item.id}`}
+                >
+                  {actionLoading === `shop-${item.id}` ? (
+                    <ActivityIndicator size="small" color={UIColors.white} />
+                  ) : (
+                    <Ionicons name="close-circle" size={18} color={UIColors.white} />
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        ))
+      )}
+    </View>
+  );
+
+  /** 商品編輯 Modal */
+  const renderShopModal = () => (
+    <Modal visible={showShopModal} animationType="slide" presentationStyle="pageSheet">
+      <View style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>{editingShopItem ? t.admin_shopItemEdit : t.admin_shopItemCreate}</Text>
+          <TouchableOpacity onPress={() => { setShowShopModal(false); resetShopForm(); }}>
+            <Ionicons name="close" size={24} color={MibuBrand.dark} />
+          </TouchableOpacity>
+        </View>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: Spacing.lg, gap: Spacing.md }}>
+          {/* 代碼（編輯時不可修改） */}
+          <View>
+            <Text style={styles.formLabel}>{t.admin_shopItemCode}</Text>
+            <TextInput style={[styles.formInput, editingShopItem && { backgroundColor: MibuBrand.tanLight }]} value={shopForm.code} onChangeText={v => setShopForm(f => ({ ...f, code: v }))} editable={!editingShopItem} />
+          </View>
+          {/* 名稱 */}
+          <View>
+            <Text style={styles.formLabel}>{t.admin_shopItemName}</Text>
+            <TextInput style={styles.formInput} value={shopForm.nameZh} onChangeText={v => setShopForm(f => ({ ...f, nameZh: v }))} />
+          </View>
+          <View>
+            <Text style={styles.formLabel}>{t.admin_shopItemNameEn}</Text>
+            <TextInput style={styles.formInput} value={shopForm.nameEn} onChangeText={v => setShopForm(f => ({ ...f, nameEn: v }))} />
+          </View>
+          {/* 說明 */}
+          <View>
+            <Text style={styles.formLabel}>{t.admin_shopItemDesc}</Text>
+            <TextInput style={[styles.formInput, { height: 80, textAlignVertical: 'top' }]} value={shopForm.descriptionZh} onChangeText={v => setShopForm(f => ({ ...f, descriptionZh: v }))} multiline />
+          </View>
+          {/* 分類 */}
+          <View>
+            <Text style={styles.formLabel}>{t.admin_shopItemCategory}</Text>
+            <View style={{ flexDirection: 'row', gap: Spacing.xs, flexWrap: 'wrap' }}>
+              {SHOP_CATEGORIES.map(cat => (
+                <TouchableOpacity
+                  key={cat}
+                  style={[styles.chipButton, shopForm.category === cat && styles.chipButtonActive]}
+                  onPress={() => setShopForm(f => ({ ...f, category: cat }))}
+                >
+                  <Text style={[styles.chipText, shopForm.category === cat && styles.chipTextActive]}>{getCategoryLabel(cat)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+          {/* 售價 */}
+          <View>
+            <Text style={styles.formLabel}>{t.admin_shopItemPrice}</Text>
+            <TextInput style={styles.formInput} value={shopForm.priceCoins} onChangeText={v => setShopForm(f => ({ ...f, priceCoins: v }))} keyboardType="number-pad" />
+          </View>
+          {/* 每人限購 */}
+          <View>
+            <Text style={styles.formLabel}>{t.admin_shopItemMaxPerUser}</Text>
+            <TextInput style={styles.formInput} value={shopForm.maxPerUser} onChangeText={v => setShopForm(f => ({ ...f, maxPerUser: v }))} keyboardType="number-pad" />
+          </View>
+          {/* 排序 */}
+          <View>
+            <Text style={styles.formLabel}>{t.admin_shopItemSortOrder}</Text>
+            <TextInput style={styles.formInput} value={shopForm.sortOrder} onChangeText={v => setShopForm(f => ({ ...f, sortOrder: v }))} keyboardType="number-pad" />
+          </View>
+          {/* 上架狀態 */}
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm }}
+            onPress={() => setShopForm(f => ({ ...f, isActive: !f.isActive }))}
+          >
+            <Ionicons name={shopForm.isActive ? 'checkbox' : 'square-outline'} size={24} color={MibuBrand.brown} />
+            <Text style={{ fontSize: FontSize.md, color: MibuBrand.dark }}>{t.admin_isActiveLabel}</Text>
+          </TouchableOpacity>
+        </ScrollView>
+        {/* 儲存按鈕 */}
+        <View style={{ padding: Spacing.lg }}>
+          <TouchableOpacity
+            style={[styles.sendButton, (createShopItemMutation.isPending || updateShopItemMutation.isPending) && { opacity: 0.6 }]}
+            onPress={handleSaveShopItem}
+            disabled={createShopItemMutation.isPending || updateShopItemMutation.isPending}
+          >
+            {(createShopItemMutation.isPending || updateShopItemMutation.isPending) ? (
+              <ActivityIndicator size="small" color="#FFFEFA" />
+            ) : (
+              <Text style={styles.sendButtonText}>{t.common_confirm}</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
   // ============ 渲染函數：主內容區 ============
 
   /**
@@ -548,28 +982,21 @@ export function AdminDashboardScreen() {
       case 'exclusions':
         return renderExclusions();
       case 'announcements':
-        // 公告分頁：顯示前往公告管理的按鈕
         return (
           <View style={styles.listContainer}>
             <TouchableOpacity
-              style={{
-                backgroundColor: MibuBrand.brown,
-                borderRadius: Radius.lg,
-                padding: Spacing.lg,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: Spacing.sm,
-              }}
+              style={styles.sendButton}
               onPress={() => router.push('/announcement-manage' as any)}
             >
               <Ionicons name="megaphone-outline" size={20} color="#FFFEFA" />
-              <Text style={{ fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: '#FFFEFA' }}>
-                {t.admin_goToAnnouncement}
-              </Text>
+              <Text style={styles.sendButtonText}>{t.admin_goToAnnouncement}</Text>
             </TouchableOpacity>
           </View>
         );
+      case 'rewards':
+        return renderRewards();
+      case 'shopItems':
+        return renderShopItems();
     }
   };
 
@@ -600,6 +1027,9 @@ export function AdminDashboardScreen() {
       >
         {renderContent()}
       </ScrollView>
+
+      {/* #048 商品編輯 Modal */}
+      {renderShopModal()}
     </View>
   );
 }
@@ -647,13 +1077,14 @@ const styles = StyleSheet.create({
 
   // 分頁標籤樣式
   tabsContainer: {
-    flexDirection: 'row',
     backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: MibuBrand.tanLight,
+  },
+  tabsContent: {
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.md,
     gap: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: MibuBrand.tanLight,
   },
   tab: {
     flex: 1,
@@ -903,5 +1334,85 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     color: SemanticColors.error.main,
     fontWeight: FontWeight.semibold,
+  },
+
+  // #047/#048 表單樣式
+  formCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
+    borderWidth: 2,
+    borderColor: MibuBrand.tanLight,
+    gap: Spacing.sm,
+  },
+  formLabel: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.bold,
+    color: UIColors.textSecondary,
+    marginBottom: Spacing.xs,
+  },
+  formInput: {
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 10,
+    fontSize: FontSize.md,
+    color: MibuBrand.dark,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+  },
+  chipButton: {
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.full,
+    backgroundColor: MibuBrand.creamLight,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+  },
+  chipButtonActive: {
+    backgroundColor: MibuBrand.brown,
+    borderColor: MibuBrand.brown,
+  },
+  chipText: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+    color: UIColors.textSecondary,
+  },
+  chipTextActive: {
+    color: '#FFFEFA',
+  },
+  sendButton: {
+    backgroundColor: MibuBrand.brown,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+  },
+  sendButtonText: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    color: '#FFFEFA',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: MibuBrand.creamLight,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: MibuBrand.tanLight,
+  },
+  modalTitle: {
+    fontSize: FontSize.xl,
+    fontWeight: FontWeight.bold,
+    color: MibuBrand.dark,
   },
 });

@@ -130,8 +130,10 @@ export function MailboxScreen() {
           );
         }
       },
-      onError: () => {
-        Alert.alert(t.mailbox_claimFailed);
+      onError: (error: unknown) => {
+        const detail = error instanceof ApiError ? error.serverMessage : undefined;
+        Alert.alert(t.mailbox_claimFailed, detail || '');
+        console.log('[Mailbox] claimAll error:', error);
       },
     });
   }, [claimAllMutation, t]);

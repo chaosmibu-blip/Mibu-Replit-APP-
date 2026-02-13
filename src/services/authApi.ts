@@ -171,6 +171,7 @@ class AuthApiService extends ApiBase {
     portal?: string;
     email?: string | null;
     fullName?: { givenName?: string | null; familyName?: string | null };
+    deviceId?: string; // #046: 訪客自動升級，後端用此找同裝置訪客帳號
   }): Promise<AuthResponse> {
     return this.request<AuthResponse>('/api/auth/mobile', {
       method: 'POST',

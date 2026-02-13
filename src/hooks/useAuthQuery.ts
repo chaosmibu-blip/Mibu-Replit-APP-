@@ -55,7 +55,8 @@ export function useAuthQuery<TData>(
   queryFn: (token: string) => Promise<TData>,
   options?: Omit<UseQueryOptions<TData, Error>, 'queryKey' | 'queryFn'>,
 ) {
-  const { getToken } = useAuth();
+  const { getToken, user } = useAuth();
+  const isGuest = user?.provider === 'guest';
 
   return useQuery<TData, Error>({
     queryKey,
@@ -66,8 +67,9 @@ export function useAuthQuery<TData>(
       }
       return queryFn(token);
     },
-    // 未登入時停用查詢（由外部 enabled 控制或預設啟用）
     ...options,
+    // 訪客模式停用認證查詢（沒有 token，呼叫必定失敗）
+    enabled: !isGuest && (options?.enabled !== false),
   });
 }
 
@@ -91,7 +93,8 @@ export function useAuthInfiniteQuery<TData>(
     getNextPageParam: (lastPage: TData) => number | undefined;
   },
 ) {
-  const { getToken } = useAuth();
+  const { getToken, user } = useAuth();
+  const isGuest = user?.provider === 'guest';
 
   return useInfiniteQuery({
     queryKey,
@@ -102,6 +105,8 @@ export function useAuthInfiniteQuery<TData>(
     },
     initialPageParam: options.initialPageParam,
     getNextPageParam: options.getNextPageParam,
+    // 訪客模式停用認證查詢
+    enabled: !isGuest,
   });
 }
 

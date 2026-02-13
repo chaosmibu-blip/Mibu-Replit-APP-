@@ -84,8 +84,8 @@ const TAB_LABELS: Record<GachaSubView, Record<Language, string>> = {
 /**
  * 扭蛋模組頂部導航元件
  *
- * 目前只顯示三個頁籤：扭蛋、圖鑑、行程。
- * 道具箱（itembox）已在 TAB_LABELS 中定義但未顯示。
+ * 顯示三個頁籤：扭蛋、圖鑑、道具箱。
+ * 行程已移至底部導航欄獨立 tab。
  */
 export function GachaTopNav({
   currentTab,
@@ -98,7 +98,7 @@ export function GachaTopNav({
   const tabs: { key: GachaSubView; hasNew: boolean }[] = [
     { key: 'gacha', hasNew: false },
     { key: 'collection', hasNew: hasNewCollection },
-    { key: 'itinerary', hasNew: false },
+    { key: 'itembox', hasNew: hasNewItems },
   ];
 
   return (

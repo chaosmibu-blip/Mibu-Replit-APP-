@@ -219,6 +219,56 @@ const ja: Record<string, string> = {
     admin_isActiveLabel: '有効',
     admin_datePlaceholder: 'YYYY-MM-DD',
 
+    // #047 報酬送信
+    admin_rewardsTab: '報酬',
+    admin_sendReward: '報酬を送信',
+    admin_rewardTarget: '送信先',
+    admin_rewardTargetAll: '全ユーザー',
+    admin_rewardTargetUsers: '指定ユーザー',
+    admin_rewardTitle: '報酬タイトル',
+    admin_rewardMessage: 'メッセージ（任意）',
+    admin_rewardType: '報酬タイプ',
+    admin_rewardAmount: '数量',
+    admin_rewardItemCode: 'アイテムコード',
+    admin_rewardUserIds: 'ユーザーID（1行に1つ）',
+    admin_rewardAddItem: '報酬アイテムを追加',
+    admin_rewardSending: '送信中...',
+    admin_rewardSuccess: '報酬を送信しました',
+    admin_rewardSentStats: '{sent}/{total}人のユーザーに{batches}バッチで送信しました',
+    admin_rewardFillRequired: 'タイトルを入力し、報酬を1つ以上追加してください',
+    admin_rewardNoUsers: 'ユーザーIDを1つ以上入力してください',
+    admin_rewardCoins: 'コイン',
+    admin_rewardShopItem: 'ショップアイテム',
+    admin_rewardPerk: '特典ブースト',
+    admin_rewardRemoveItem: '削除',
+    admin_expiresInDays: '有効期限（日数、任意）',
+
+    // #048 ショップアイテム管理
+    admin_shopItemsTab: 'ショップ',
+    admin_shopItemsManage: 'ショップアイテム管理',
+    admin_shopItemCreate: 'アイテム追加',
+    admin_shopItemEdit: 'アイテム編集',
+    admin_shopItemCode: 'アイテムコード',
+    admin_shopItemName: 'アイテム名',
+    admin_shopItemNameEn: '英語名（任意）',
+    admin_shopItemDesc: '説明',
+    admin_shopItemDescEn: '英語説明（任意）',
+    admin_shopItemPrice: '価格（コイン）',
+    admin_shopItemCategory: 'カテゴリー',
+    admin_shopItemMaxPerUser: '1人あたりの上限（任意）',
+    admin_shopItemActive: '販売中',
+    admin_shopItemInactive: '販売停止',
+    admin_shopItemConfirmDelete: 'このアイテムを停止しますか？',
+    admin_shopItemNoItems: 'アイテムがありません',
+    admin_shopItemSortOrder: '並び順',
+    admin_shopCatGachaTicket: 'ガチャチケット',
+    admin_shopCatInventoryExpand: 'インベントリ拡張',
+    admin_shopCatCosmetic: '装飾',
+    admin_shopCatBoost: 'ブースト',
+    admin_shopCatBundle: 'バンドル',
+    admin_shopCatOther: 'その他',
+    admin_shopItemFillRequired: 'コード、名前、価格を入力してください',
+
     // ========== スペシャリストモジュール ==========
     specialist_dashboard: 'Specialist Dashboard', /* TODO: ja */
     specialist_online: 'Online', /* TODO: ja */
@@ -275,6 +325,14 @@ const ja: Record<string, string> = {
     auth_backToLogin: 'ログインページに戻る',
     auth_registrationFailed: '登録失敗', /* TODO: ja */
     auth_registrationError: '登録に失敗しました。後でもう一度お試しください', /* TODO: ja */
+    auth_suggestMergeTitle: '既存アカウントを検出',
+    auth_suggestMergeHasAccount: 'このデバイスにアカウント「{name}」が見つかりました。',
+    auth_suggestMergeHint: 'アカウントを統合するには「設定 > アカウント統合」へ。',
+
+    // ========== ゲストモード ==========
+    guest_loginRequired: 'ログインが必要です',
+    guest_profileLoginDesc: 'ログインしてプロフィールやアバターを管理',
+    guest_goToLogin: 'ログインへ',
 
     // ========== 加盟店登録（フォーム） ==========
     merchant_registration: '加盟店登録', /* TODO: ja */
@@ -446,7 +504,7 @@ const ja: Record<string, string> = {
     auth_selectRole: '役割を選択',
     auth_noAccount: 'アカウントをお持ちでない方',
     auth_hasAccount: 'すでにアカウントをお持ちの方',
-    auth_guestLogin: 'ゲストとして続行',
+    auth_guestLogin: 'ゲストログイン',
     auth_guestNote: 'ゲストモードではデータはローカルにのみ保存されます',
     auth_pendingApproval: '店舗・スペシャリストアカウントは管理者の承認が必要です', /* TODO: ja */
     auth_loginFailed: 'ログインに失敗しました。認証情報を確認してください',
@@ -1206,6 +1264,15 @@ const ja: Record<string, string> = {
     itemBox_deleteConfirm: '削除',
     itemBox_deleteFailed: '削除失敗',
     itemBox_error: 'エラー',
+    itemBox_packOpenTitle: 'スポットパックを開く',
+    itemBox_packOpenConfirm: '「{name}」を開きますか？\n{city}のスポットが{count}件獲得できます',
+    itemBox_packOpen: '開く',
+    itemBox_packOpenSuccess: 'スポットパックを開きました',
+    itemBox_packOpenResult: '{added}件追加、{skipped}件スキップ（所有済み）',
+    itemBox_packOpenFailed: '開封に失敗しました。後でもう一度お試しください',
+    itemBox_packSelectCity: '都市を選択',
+    itemBox_packPlaces: '件のスポット',
+    itemBox_packOpening: '開封中...',
 };
 
 export default ja;

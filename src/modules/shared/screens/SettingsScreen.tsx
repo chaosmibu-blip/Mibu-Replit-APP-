@@ -314,20 +314,20 @@ export function SettingsScreen() {
         },
       ],
     },
-    // 探索群組（成就與任務 — #043 規則引擎）
-    {
-      title: t.explore,
-      items: [
-        {
-          icon: 'trophy-outline',
-          label: t.settings_achievements,
-          action: () => router.push('/economy' as any),
-          hasArrow: true,
-          iconBg: '#FFF3D4',
-          iconColor: '#D4A24C',
-        },
-      ],
-    },
+    // [HIDDEN] 送審隱藏 — 成就與任務（#043 規則引擎，功能未完成）
+    // {
+    //   title: t.explore,
+    //   items: [
+    //     {
+    //       icon: 'trophy-outline',
+    //       label: t.settings_achievements,
+    //       action: () => router.push('/economy' as any),
+    //       hasArrow: true,
+    //       iconBg: '#FFF3D4',
+    //       iconColor: '#D4A24C',
+    //     },
+    //   ],
+    // },
     // 信箱群組（#045 統一收件箱）
     {
       title: t.mailbox_title,
@@ -343,18 +343,19 @@ export function SettingsScreen() {
         },
       ],
     },
-    // 偏好設定群組（我的最愛/黑名單 + 推播通知）
+    // 偏好設定群組（推播通知開關）
     {
       title: t.settings_preferences,
       items: [
-        {
-          icon: 'heart-outline',
-          label: t.settings_favoritesBlacklist,
-          action: () => router.push('/favorites-management' as any),
-          hasArrow: true,
-          iconBg: '#FEE2E2',
-          iconColor: MibuBrand.tierSP,
-        },
+        // [HIDDEN] 送審隱藏 — 我的最愛/黑名單（功能未完成）
+        // {
+        //   icon: 'heart-outline',
+        //   label: t.settings_favoritesBlacklist,
+        //   action: () => router.push('/favorites-management' as any),
+        //   hasArrow: true,
+        //   iconBg: '#FEE2E2',
+        //   iconColor: MibuBrand.tierSP,
+        // },
         {
           icon: 'notifications-outline',
           label: t.settings_pushNotifications,
@@ -365,38 +366,40 @@ export function SettingsScreen() {
           iconBg: '#FFF7ED',
           iconColor: '#EA580C',
         },
-        {
-          icon: 'options-outline',
-          label: t.settings_notificationPreferences,
-          action: () => router.push('/notification-preferences' as any),
-          hasArrow: true,
-          iconBg: '#F5F3FF',
-          iconColor: '#7C3AED',
-        },
-        {
-          icon: 'list-outline',
-          label: t.notifList_title,
-          action: () => router.push('/notifications' as any),
-          hasArrow: true,
-          iconBg: '#FEF3C7',
-          iconColor: '#D97706',
-        },
+        // [HIDDEN] 送審隱藏 — 通知偏好（功能未完成）
+        // {
+        //   icon: 'options-outline',
+        //   label: t.settings_notificationPreferences,
+        //   action: () => router.push('/notification-preferences' as any),
+        //   hasArrow: true,
+        //   iconBg: '#F5F3FF',
+        //   iconColor: '#7C3AED',
+        // },
+        // [HIDDEN] 送審隱藏 — 通知紀錄（功能未完成）
+        // {
+        //   icon: 'list-outline',
+        //   label: t.notifList_title,
+        //   action: () => router.push('/notifications' as any),
+        //   hasArrow: true,
+        //   iconBg: '#FEF3C7',
+        //   iconColor: '#D97706',
+        // },
       ],
     },
-    // 更多功能群組（帳號綁定 + 社群貢獻）
-    {
-      title: t.settings_moreFeatures,
-      items: [
-        {
-          icon: 'hand-left-outline',
-          label: t.settings_contributions,
-          action: () => router.push('/contribution' as any),
-          hasArrow: true,
-          iconBg: '#F0FDF4',
-          iconColor: '#16a34a',
-        },
-      ],
-    },
+    // [HIDDEN] 送審隱藏 — 社群貢獻（功能未完成）
+    // {
+    //   title: t.settings_moreFeatures,
+    //   items: [
+    //     {
+    //       icon: 'hand-left-outline',
+    //       label: t.settings_contributions,
+    //       action: () => router.push('/contribution' as any),
+    //       hasArrow: true,
+    //       iconBg: '#F0FDF4',
+    //       iconColor: '#16a34a',
+    //     },
+    //   ],
+    // },
     {
       title: t.settings_about,
       items: [

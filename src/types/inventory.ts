@@ -20,8 +20,9 @@ import { CouponTier, Pagination } from './common';
  * - coupon: 優惠券
  * - ticket: 票券
  * - gift: 禮物
+ * - place_pack: 景點包（開啟後獲得多個景點收藏）
  */
-export type InventoryItemType = 'coupon' | 'ticket' | 'gift';
+export type InventoryItemType = 'coupon' | 'ticket' | 'gift' | 'place_pack';
 
 /**
  * 背包項目狀態
@@ -72,6 +73,12 @@ export interface InventoryItem {
   placeName?: string;                  // 關聯的地點名稱
   city?: string;                       // 關聯的城市
 
+  // ============ place_pack 專用欄位 ============
+  /** 景點包代碼 */
+  packCode?: string;
+  /** 景點包內的景點數量 */
+  placeCount?: number;
+
   // ============ 擴充欄位（UI 使用） ============
   /** 稀有度別名（與 rarity 相同，向後兼容） */
   tier?: CouponTier;
@@ -112,6 +119,46 @@ export interface RedeemResponse {
   redemptionCode: string;  // 核銷確認碼
   expiresAt: string;       // 確認碼過期時間（ISO 8601）
   redeemedAt: string;      // 核銷時間（ISO 8601）
+}
+
+// ============ 景點包 ============
+
+/**
+ * 景點包開啟選項
+ * GET /api/inventory/:id/open-options
+ */
+export interface PlacePackOptionsResponse {
+  packId: number;
+  packName: string;
+  placeCount: number;
+  restricted: boolean;
+  restrictedCity?: string | null;
+  availableCities?: string[];
+  description: string | null;
+}
+
+/**
+ * 景點包開啟結果
+ * POST /api/inventory/:id/open
+ */
+export interface OpenPlacePackResponse {
+  success: boolean;
+  packId: number;
+  openedAt: string;
+  addedPlaces: Array<{
+    collectionId: number;
+    placeName: string;
+    address?: string;
+  }>;
+  skippedPlaces: Array<{
+    reason: 'already_owned' | 'invalid';
+    placeName: string;
+  }>;
+  summary: {
+    totalPlaces: number;
+    addedCount: number;
+    skippedCount: number;
+  };
 }
 
 /**

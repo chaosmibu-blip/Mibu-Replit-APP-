@@ -21,11 +21,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useI18n, useGacha } from '../../../context/AppContext';
+import { useI18n, useGacha, useAuth } from '../../../context/AppContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { useInventory, useRedeemItem, useDeleteItem, useMarkItemRead } from '../../../hooks/useInventoryQueries';
+import { useInventory, useRedeemItem, useDeleteItem, useMarkItemRead, useOpenPlacePack } from '../../../hooks/useInventoryQueries';
+import { inventoryApi } from '../../../services/inventoryApi';
 import { ApiError } from '../../../services/base';
-import { InventoryItem, CouponTier } from '../../../types';
+import { InventoryItem, CouponTier, PlacePackOptionsResponse } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 // ============================================================
@@ -170,6 +171,57 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
         {/* 格子序號 */}
         <Text style={{ fontSize: 10, color: '#cbd5e1' }}>{index + 1}</Text>
       </View>
+    );
+  }
+
+  // ========== 景點包格子 ==========
+  if (item.type === 'place_pack') {
+    return (
+      <TouchableOpacity onPress={() => onPress(item)} onLongPress={() => onLongPress(item)}>
+        <View
+          style={{
+            width: SLOT_SIZE,
+            height: SLOT_SIZE,
+            margin: 4,
+            borderRadius: 12,
+            backgroundColor: '#e8f4f8',
+            borderWidth: 3,
+            borderColor: MibuBrand.info,
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: MibuBrand.info,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            elevation: 2,
+            position: 'relative',
+          }}
+        >
+          {/* 未讀紅點 */}
+          {!item.isRead && (
+            <View
+              style={{
+                position: 'absolute',
+                top: -4,
+                right: -4,
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: '#ef4444',
+                borderWidth: 2,
+                borderColor: UIColors.white,
+                zIndex: 10,
+              }}
+            />
+          )}
+          <Ionicons name="map-outline" size={20} color={MibuBrand.info} />
+          {item.placeCount != null && (
+            <Text style={{ fontSize: 8, fontWeight: '800', color: MibuBrand.info, marginTop: 2 }}>
+              ×{item.placeCount}
+            </Text>
+          )}
+        </View>
+      </TouchableOpacity>
     );
   }
 
@@ -331,6 +383,7 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
 export function ItemBoxScreen() {
   const { t } = useI18n();
   const { setUnreadCount } = useGacha();
+  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   // ============================================================
@@ -341,10 +394,13 @@ export function ItemBoxScreen() {
   const redeemItemMutation = useRedeemItem();
   const deleteItemMutation = useDeleteItem();
   const markItemReadMutation = useMarkItemRead();
+  const openPlacePackMutation = useOpenPlacePack();
 
-  // 從查詢結果派生資料（過濾已刪除項目）
+  // 從查詢結果派生資料（過濾已刪除和已開啟的景點包）
   const allItems = inventoryQuery.data?.items ?? [];
-  const items = allItems.filter(i => !i.isDeleted && i.status !== 'deleted');
+  const items = allItems.filter(i =>
+    !i.isDeleted && i.status !== 'deleted' && i.status !== 'redeemed',
+  );
   const slotCount = inventoryQuery.data?.slotCount ?? items.length;
   const maxSlots = inventoryQuery.data?.maxSlots ?? MAX_SLOTS;
 
@@ -352,13 +408,17 @@ export function ItemBoxScreen() {
   const loading = inventoryQuery.isLoading;
   const refreshing = inventoryQuery.isFetching && !inventoryQuery.isLoading;
 
-  // 更新未讀數量（當資料變更時）
+  // 更新未讀數量（當 API 資料變更時）
+  // 注意：不能依賴 items（每次 render 都是新陣列引用，會造成無限循環）
   useEffect(() => {
     if (inventoryQuery.data) {
-      const unreadCount = items.filter((item: InventoryItem) => !item.isRead && item.status === 'active').length;
-      setUnreadCount(unreadCount);
+      const activeItems = inventoryQuery.data.items ?? [];
+      const unread = activeItems.filter(
+        (item: InventoryItem) => !item.isDeleted && item.status === 'active' && !item.isRead,
+      ).length;
+      setUnreadCount(unread);
     }
-  }, [inventoryQuery.data, items, setUnreadCount]);
+  }, [inventoryQuery.data, setUnreadCount]);
 
   // ============================================================
   // 狀態管理（UI 狀態）
@@ -382,6 +442,11 @@ export function ItemBoxScreen() {
   const [redemptionCode, setRedemptionCode] = useState('');
   const [countdown, setCountdown] = useState<number | null>(null);
   const [redeemSuccess, setRedeemSuccess] = useState(false);
+
+  // 景點包相關狀態
+  const [cityPickerVisible, setCityPickerVisible] = useState(false);
+  const [packOptions, setPackOptions] = useState<PlacePackOptionsResponse | null>(null);
+  const [packLoading, setPackLoading] = useState(false);
 
   // 從 mutation 派生 loading 狀態
   const redeeming = redeemItemMutation.isPending;
@@ -419,10 +484,12 @@ export function ItemBoxScreen() {
   // ============================================================
 
   /**
-   * 點擊優惠券：標記已讀 + 開啟詳情 Modal
+   * 點擊道具：依類型分流處理
+   * - place_pack → 觸發開啟流程
+   * - 其他 → 標記已讀 + 開啟詳情 Modal
    */
   const handleItemPress = async (item: InventoryItem) => {
-    // 若未讀，先標記已讀（mutation 會自動 invalidate inventory 查詢）
+    // 若未讀，先標記已讀
     if (!item.isRead && item.status === 'active') {
       try {
         await markItemReadMutation.mutateAsync(item.id);
@@ -431,8 +498,80 @@ export function ItemBoxScreen() {
       }
     }
 
+    // 景點包 → 開啟流程
+    if (item.type === 'place_pack') {
+      setSelectedItem(item);
+      await handleOpenPlacePack(item);
+      return;
+    }
+
+    // 其他類型 → 詳情 Modal
     setSelectedItem(item);
     setDetailModalVisible(true);
+  };
+
+  /**
+   * 景點包開啟流程
+   * 1. 查詢開啟選項（是否限定城市）
+   * 2. 限定城市 → 確認後直接開
+   * 3. 非限定 → 彈出城市選擇器
+   */
+  const handleOpenPlacePack = async (item: InventoryItem) => {
+    setPackLoading(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const options = await inventoryApi.getPlacePackOptions(token, item.id);
+      setPackOptions(options);
+
+      if (options.restricted && options.restrictedCity) {
+        // 限定城市 → 直接確認開啟
+        Alert.alert(
+          t.itemBox_packOpenTitle,
+          t.itemBox_packOpenConfirm
+            .replace('{name}', options.packName)
+            .replace('{count}', String(options.placeCount))
+            .replace('{city}', options.restrictedCity),
+          [
+            { text: t.itemBox_deleteCancel, style: 'cancel' },
+            {
+              text: t.itemBox_packOpen,
+              onPress: () => executeOpenPack(item.id, options.restrictedCity!),
+            },
+          ],
+        );
+      } else {
+        // 非限定 → 城市選擇器
+        setCityPickerVisible(true);
+      }
+    } catch (error) {
+      Alert.alert(t.itemBox_error, t.itemBox_packOpenFailed);
+    } finally {
+      setPackLoading(false);
+    }
+  };
+
+  /**
+   * 執行開啟景點包
+   */
+  const executeOpenPack = async (itemId: number, city: string) => {
+    try {
+      const result = await openPlacePackMutation.mutateAsync({ itemId, selectedCity: city });
+      const { addedCount, skippedCount } = result.summary;
+      // Toast 提示
+      Alert.alert(
+        t.itemBox_packOpenSuccess,
+        t.itemBox_packOpenResult
+          .replace('{added}', String(addedCount))
+          .replace('{skipped}', String(skippedCount)),
+      );
+      setCityPickerVisible(false);
+      setPackOptions(null);
+      setSelectedItem(null);
+    } catch (error) {
+      Alert.alert(t.itemBox_error, t.itemBox_packOpenFailed);
+    }
   };
 
   /**
@@ -984,6 +1123,83 @@ export function ItemBoxScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* ========== 城市選擇器 Modal（景點包用） ========== */}
+      <Modal
+        visible={cityPickerVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => { setCityPickerVisible(false); setPackOptions(null); }}
+      >
+        <View style={{ flex: 1, backgroundColor: UIColors.overlayMedium, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, maxHeight: '70%' }}>
+            {/* 標題 */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark }}>
+                  {t.itemBox_packSelectCity}
+                </Text>
+                {packOptions && (
+                  <Text style={{ fontSize: 13, color: MibuBrand.brownLight, marginTop: 4 }}>
+                    {packOptions.packName} — {packOptions.placeCount} {t.itemBox_packPlaces}
+                  </Text>
+                )}
+              </View>
+              <TouchableOpacity onPress={() => { setCityPickerVisible(false); setPackOptions(null); }}>
+                <Ionicons name="close" size={24} color={MibuBrand.brownLight} />
+              </TouchableOpacity>
+            </View>
+
+            {/* 城市列表 */}
+            <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={false}>
+              {packOptions?.availableCities?.map((city) => (
+                <TouchableOpacity
+                  key={city}
+                  onPress={() => selectedItem && executeOpenPack(selectedItem.id, city)}
+                  disabled={openPlacePackMutation.isPending}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: MibuBrand.cream,
+                    padding: 16,
+                    borderRadius: 12,
+                    marginBottom: 8,
+                  }}
+                >
+                  <Ionicons name="location-outline" size={20} color={MibuBrand.brown} />
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: MibuBrand.dark, marginLeft: 12, flex: 1 }}>
+                    {city}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={18} color={MibuBrand.brownLight} />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Loading */}
+            {openPlacePackMutation.isPending && (
+              <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+                <ActivityIndicator size="small" color={MibuBrand.brown} />
+                <Text style={{ fontSize: 13, color: MibuBrand.brownLight, marginTop: 8 }}>
+                  {t.itemBox_packOpening}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* 景點包載入中覆蓋層 */}
+      {packLoading && (
+        <View style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: UIColors.overlayLight,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <ActivityIndicator size="large" color={MibuBrand.brown} />
+        </View>
+      )}
     </View>
   );
 }

@@ -132,3 +132,107 @@ export interface UpdateAnnouncementParams {
   isActive?: boolean;      // 是否啟用
   priority?: number;       // 優先順序
 }
+
+// ============ #047 獎勵發送 ============
+
+/** 獎勵項目（發送用） */
+export interface RewardItem {
+  type: 'coins' | 'shop_item' | 'inventory_coupon' | 'place_pack' | 'perk';
+  amount?: number;       // coins 類型時必填
+  itemCode?: string;     // shop_item / inventory_coupon 類型時必填
+  quantity?: number;
+  perkType?: 'daily_pulls' | 'inventory_slots'; // perk 類型時必填
+  value?: number;        // perk 類型時必填
+}
+
+/** 發送獎勵參數 — 全體發送 */
+export interface SendRewardAllParams {
+  target: 'all';
+  title: string;
+  message?: string;
+  rewards: RewardItem[];
+  expiresInDays?: number;
+}
+
+/** 發送獎勵參數 — 指定用戶 */
+export interface SendRewardUsersParams {
+  target: 'users';
+  userIds: string[];
+  title: string;
+  message?: string;
+  rewards: RewardItem[];
+  expiresInDays?: number;
+}
+
+/** 發送獎勵參數（聯合型別） */
+export type SendRewardParams = SendRewardAllParams | SendRewardUsersParams;
+
+/** 發送獎勵回應 */
+export interface SendRewardResponse {
+  success: boolean;
+  target: 'all' | 'users';
+  totalUsers: number;
+  sent: number;
+  batches: number;
+  mailboxItemIds: string[];
+}
+
+// ============ #048 商城道具管理 ============
+
+/** 商城商品分類 */
+export type ShopItemCategory = 'gacha_ticket' | 'inventory_expand' | 'cosmetic' | 'boost' | 'bundle' | 'other';
+
+/** 商城商品 */
+export interface ShopItem {
+  id: number;
+  code: string;                    // 唯一代碼（建立後不可修改）
+  category: ShopItemCategory;
+  nameZh: string;                  // 中文名稱
+  nameEn?: string;                 // 英文名稱
+  descriptionZh?: string;          // 中文說明
+  descriptionEn?: string;          // 英文說明
+  priceCoins: number;              // 金幣售價
+  imageUrl?: string;               // 商品圖片
+  maxPerUser?: number;             // 每人限購數量
+  isActive: boolean;               // 是否上架
+  sortOrder: number;               // 排序
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** 商品列表回應 */
+export interface ShopItemsResponse {
+  items: ShopItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+/** 建立商品參數 */
+export interface CreateShopItemParams {
+  code: string;
+  category: ShopItemCategory;
+  nameZh: string;
+  nameEn?: string;
+  descriptionZh?: string;
+  descriptionEn?: string;
+  priceCoins: number;
+  imageUrl?: string;
+  maxPerUser?: number;
+  isActive?: boolean;
+  sortOrder?: number;
+}
+
+/** 更新商品參數（code 不可修改） */
+export interface UpdateShopItemParams {
+  category?: ShopItemCategory;
+  nameZh?: string;
+  nameEn?: string;
+  descriptionZh?: string;
+  descriptionEn?: string;
+  priceCoins?: number;
+  imageUrl?: string;
+  maxPerUser?: number;
+  isActive?: boolean;
+  sortOrder?: number;
+}

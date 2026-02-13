@@ -102,7 +102,7 @@ import { AddPlacesModal } from './AddPlacesModal';
 export function ItineraryScreenV2() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isAuthenticated, getToken } = useAuth();
+  const { isAuthenticated, getToken, user } = useAuth();
   const { t, language } = useI18n();
 
   // ===== 狀態管理 =====
@@ -1093,8 +1093,8 @@ export function ItineraryScreenV2() {
     });
   }, [rightDrawerAnim, overlayAnim]);
 
-  // ===== 未登入狀態 =====
-  if (!isAuthenticated) {
+  // ===== 未登入 / 訪客狀態 =====
+  if (!isAuthenticated || user?.provider === 'guest') {
     return (
       <View style={styles.emptyContainer}>
         <Ionicons name="airplane-outline" size={64} color={MibuBrand.tanLight} />
@@ -1158,8 +1158,8 @@ export function ItineraryScreenV2() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: Spacing.md }]}>
+      {/* Header（insets.top 處理頂部安全區，獨立 tab 時需要） */}
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
         <TouchableOpacity
           onPress={openLeftDrawer}
           style={styles.headerIconButton}

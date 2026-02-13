@@ -6,6 +6,136 @@
 
 ## 最新回報
 
+### 2026-02-13 #047（更新）：道具箱新增景點包（place_pack）類型支援
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #047（更新） |
+| 狀態 | ✅ 完成 |
+
+**型別定義** (`src/types/inventory.ts`)
+- [x] `InventoryItemType` 新增 `'place_pack'`
+- [x] `InventoryItem` 新增 `packCode`、`placeCount` 欄位
+- [x] `PlacePackOptionsResponse` — 景點包開啟選項（packName、restricted、availableCities）
+- [x] `OpenPlacePackResponse` — 開啟結果（addedPlaces、skippedPlaces、summary）
+
+**API 層** (`src/services/inventoryApi.ts`)
+- [x] `GET /api/inventory/:id/open-options` — 查詢景點包資訊
+- [x] `POST /api/inventory/:id/open` — 開啟景點包
+- [x] `InventoryFilter` 新增 `'place_pack'` 篩選
+
+**React Query Hooks** (`src/hooks/useInventoryQueries.ts`)
+- [x] `useOpenPlacePack()` — 開啟景點包 mutation
+
+**UI** (`ItemBoxScreen.tsx`)
+- [x] `InventorySlot` 支援 place_pack 類型渲染（地圖 icon + 景點數量）
+- [x] 點擊景點包 → 查詢 open-options → 分流：
+  - 限定城市 → Alert 確認後直接開
+  - 非限定 → 城市選擇器 Modal
+- [x] 開啟成功 → Alert 提示（新增/跳過數量）
+- [x] 已開啟的包從列表移除（過濾 status=redeemed）
+- [x] 開啟中顯示 loading 覆蓋層
+
+**翻譯**
+- [x] 4 語系各 9 組 keys（zh-TW / en / ja / ko）
+
+**設計決策**
+- 不使用結果彈窗（用 Alert 簡潔提示）
+- 已開啟的景點包直接從列表移除（不顯示灰色已開啟狀態）
+
+---
+
+### 2026-02-13 #048：商城商品管理（管理員 CRUD）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #048 |
+| 狀態 | ✅ 完成 |
+
+**型別定義** (`src/types/admin.ts`)
+- [x] `ShopItemCategory` — 6 種分類（gacha_ticket / inventory_expand / cosmetic / boost / bundle / other）
+- [x] `ShopItem` — 商品完整型別（id、code、category、nameZh/En、priceCoins、imageUrl、maxPerUser、isActive、sortOrder）
+- [x] `ShopItemsResponse` — 商品列表回應
+- [x] `CreateShopItemParams` / `UpdateShopItemParams` — 新增/更新參數
+
+**API 層** (`src/services/adminApi.ts`)
+- [x] `GET /api/admin/shop-items` — 商品列表
+- [x] `GET /api/admin/shop-items/:id` — 商品詳情
+- [x] `POST /api/admin/shop-items` — 新增商品
+- [x] `PUT /api/admin/shop-items/:id` — 更新商品
+- [x] `DELETE /api/admin/shop-items/:id` — 刪除商品
+
+**React Query Hooks** (`src/hooks/useAdminQueries.ts`)
+- [x] `useAdminShopItems()` — 查詢商品列表
+- [x] `useCreateShopItem()` — 新增商品 mutation
+- [x] `useUpdateShopItem()` — 更新商品 mutation
+- [x] `useDeleteShopItem()` — 刪除商品 mutation
+
+**UI** (`AdminDashboardScreen.tsx`)
+- [x] 新增「商城商品」Tab
+- [x] 商品列表（卡片式、狀態 badge、分類標籤）
+- [x] 新增/編輯 Modal（完整 CRUD 表單）
+- [x] 刪除確認（Alert）
+
+**翻譯**
+- [x] 4 語系各 ~25 組 keys（zh-TW / en / ja / ko）
+
+---
+
+### 2026-02-13 #047：獎勵發送 API 升級（支援全體廣播）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #047 |
+| 狀態 | ✅ 完成 |
+
+**型別定義** (`src/types/admin.ts`)
+- [x] `RewardItem` — 獎勵項目（type: coins/gacha_ticket/inventory_expand/shop_item、amount、shopItemCode）
+- [x] `SendRewardAllParams` — 全體發送參數（target: 'all'）
+- [x] `SendRewardUsersParams` — 指定用戶發送參數（target: 'users' + userIds）
+- [x] `SendRewardParams` — 聯合型別
+- [x] `SendRewardResponse` — 發送結果（totalUsers、sent、batches、mailboxItemIds）
+
+**API 層** (`src/services/adminApi.ts`)
+- [x] `POST /api/admin/rewards` — 發送獎勵
+
+**React Query Hooks** (`src/hooks/useAdminQueries.ts`)
+- [x] `useSendReward()` — 發送獎勵 mutation
+
+**UI** (`AdminDashboardScreen.tsx`)
+- [x] 新增「獎勵發送」Tab
+- [x] 發送目標切換（全體 / 指定用戶）
+- [x] 獎勵項目動態新增/移除
+- [x] 信件標題、訊息、有效天數輸入
+- [x] 發送確認 Alert
+
+**翻譯**
+- [x] 4 語系各 ~25 組 keys（zh-TW / en / ja / ko）
+
+---
+
+### 2026-02-13 #046：訪客自動升級（登入帶 deviceId）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #046 |
+| 狀態 | ✅ 完成 |
+
+**型別更新** (`src/types/auth.ts`)
+- [x] `AuthResponse` 新增 `suggestMerge` 欄位（existingAccountId、existingName、sharedDeviceWarning）
+
+**API 層** (`src/services/authApi.ts`)
+- [x] `mobileAuth()` 新增 `deviceId` 可選參數
+
+**登入流程** (`app/login.tsx`)
+- [x] Google 原生登入 — 取得 `deviceId` 並帶入 request body
+- [x] Apple 登入 — 取得 `deviceId` 並帶入 request body
+- [x] 複用既有 `getDeviceId()`（來自 `gachaApi.ts`，使用 `expo-application`）
+
+**注意**：`suggestMerge` UI（彈窗提示用戶合併帳號）尚未實作，需後端確認是否已啟用此邏輯後再做。
+
+---
+
 ### 2026-02-10 #045：信箱系統（統一收件箱 + 優惠碼）
 
 | 項目 | 內容 |
@@ -855,6 +985,9 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 048 | 02-13 | 商城商品管理（管理員 CRUD）型別 + API + Hooks + UI | ✅ |
+| 047 | 02-13 | 獎勵發送 API 升級（全體廣播）型別 + API + Hooks + UI | ✅ |
+| 046 | 02-13 | 訪客自動升級（登入帶 deviceId）型別 + API + 登入流程 | ✅ |
 | 045 | 02-10 | 信箱系統（統一收件箱 + 優惠碼）API + UI + 路由 | ✅ |
 | 043 | 02-10 | 規則引擎 API + EconomyScreen 動態整合 | ✅ |
 | 044 | 02-10 | 移除廢棄密碼認證 API（register/login/merge） | ✅ |

@@ -170,7 +170,7 @@ const ko: Record<string, string> = {
     auth_selectRole: '역할 선택',
     auth_noAccount: '계정이 없으신가요?',
     auth_hasAccount: '이미 계정이 있으신가요?',
-    auth_guestLogin: '게스트로 계속',
+    auth_guestLogin: '게스트 로그인',
     auth_guestNote: '게스트 모드에서는 데이터가 로컬에만 저장됩니다',
     auth_pendingApproval: '가맹점 및 전문가 계정은 관리자 승인이 필요합니다',
     auth_loginFailed: '로그인 실패, 계정과 비밀번호를 확인해주세요',
@@ -213,6 +213,14 @@ const ko: Record<string, string> = {
     auth_backToLogin: '로그인 페이지로 돌아가기',
     auth_registrationFailed: 'Registration Failed', /* TODO: ko */
     auth_registrationError: 'Registration failed. Please try again.', /* TODO: ko */
+    auth_suggestMergeTitle: '기존 계정 감지',
+    auth_suggestMergeHasAccount: '이 기기에서 계정 "{name}"이(가) 발견되었습니다.',
+    auth_suggestMergeHint: '계정을 병합하려면 설정 > 계정 병합으로 이동하세요.',
+
+    // ========== 게스트 모드 ==========
+    guest_loginRequired: '로그인 필요',
+    guest_profileLoginDesc: '로그인하여 프로필과 아바타를 관리하세요',
+    guest_goToLogin: '로그인하기',
 
     // ========== 가맹점 등록 (양식) ==========
     merchant_registration: 'Merchant Registration', /* TODO: ko */
@@ -421,6 +429,56 @@ const ko: Record<string, string> = {
     admin_endDateLabel: '종료일',
     admin_isActiveLabel: '활성',
     admin_datePlaceholder: 'YYYY-MM-DD',
+
+    // #047 보상 발송
+    admin_rewardsTab: '보상',
+    admin_sendReward: '보상 발송',
+    admin_rewardTarget: '발송 대상',
+    admin_rewardTargetAll: '전체 사용자',
+    admin_rewardTargetUsers: '지정 사용자',
+    admin_rewardTitle: '보상 제목',
+    admin_rewardMessage: '메시지 (선택)',
+    admin_rewardType: '보상 유형',
+    admin_rewardAmount: '수량',
+    admin_rewardItemCode: '아이템 코드',
+    admin_rewardUserIds: '사용자 ID (줄당 하나)',
+    admin_rewardAddItem: '보상 항목 추가',
+    admin_rewardSending: '발송 중...',
+    admin_rewardSuccess: '보상이 발송되었습니다',
+    admin_rewardSentStats: '{sent}/{total}명에게 {batches}배치로 발송 완료',
+    admin_rewardFillRequired: '제목을 입력하고 보상을 하나 이상 추가하세요',
+    admin_rewardNoUsers: '사용자 ID를 하나 이상 입력하세요',
+    admin_rewardCoins: '코인',
+    admin_rewardShopItem: '상점 아이템',
+    admin_rewardPerk: '특전 부스트',
+    admin_rewardRemoveItem: '삭제',
+    admin_expiresInDays: '만료일 (일수, 선택)',
+
+    // #048 상점 아이템 관리
+    admin_shopItemsTab: '상점',
+    admin_shopItemsManage: '상점 아이템 관리',
+    admin_shopItemCreate: '아이템 추가',
+    admin_shopItemEdit: '아이템 편집',
+    admin_shopItemCode: '아이템 코드',
+    admin_shopItemName: '아이템 이름',
+    admin_shopItemNameEn: '영문 이름 (선택)',
+    admin_shopItemDesc: '설명',
+    admin_shopItemDescEn: '영문 설명 (선택)',
+    admin_shopItemPrice: '가격 (코인)',
+    admin_shopItemCategory: '카테고리',
+    admin_shopItemMaxPerUser: '1인당 구매 제한 (선택)',
+    admin_shopItemActive: '판매 중',
+    admin_shopItemInactive: '판매 중지',
+    admin_shopItemConfirmDelete: '이 아이템을 비활성화하시겠습니까?',
+    admin_shopItemNoItems: '아이템이 없습니다',
+    admin_shopItemSortOrder: '정렬 순서',
+    admin_shopCatGachaTicket: '가챠 티켓',
+    admin_shopCatInventoryExpand: '인벤토리 확장',
+    admin_shopCatCosmetic: '장식',
+    admin_shopCatBoost: '부스트',
+    admin_shopCatBundle: '번들',
+    admin_shopCatOther: '기타',
+    admin_shopItemFillRequired: '코드, 이름, 가격을 입력하세요',
 
     // ========== 스페셜리스트 모듈 ==========
     specialist_dashboard: 'Specialist Dashboard', /* TODO: ko */
@@ -1206,6 +1264,15 @@ const ko: Record<string, string> = {
     itemBox_deleteConfirm: '삭제',
     itemBox_deleteFailed: '삭제 실패',
     itemBox_error: '오류',
+    itemBox_packOpenTitle: '장소 팩 열기',
+    itemBox_packOpenConfirm: '"{name}"을(를) 여시겠습니까?\n{city}의 장소 {count}개를 획득합니다',
+    itemBox_packOpen: '열기',
+    itemBox_packOpenSuccess: '장소 팩 열기 완료',
+    itemBox_packOpenResult: '{added}개 추가, {skipped}개 건너뜀 (이미 보유)',
+    itemBox_packOpenFailed: '열기 실패, 나중에 다시 시도해주세요',
+    itemBox_packSelectCity: '도시 선택',
+    itemBox_packPlaces: '개 장소',
+    itemBox_packOpening: '여는 중...',
 };
 
 export default ko;

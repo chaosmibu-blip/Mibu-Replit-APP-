@@ -19,7 +19,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthQuery, useAuthMutation } from './useAuthQuery';
 import { inventoryApi } from '../services/inventoryApi';
-import type { InventoryResponse, RedeemResponse } from '../types';
+import type { InventoryResponse, RedeemResponse, OpenPlacePackResponse } from '../types';
 
 // ============ 查詢 Hooks ============
 
@@ -61,6 +61,20 @@ export function useDeleteItem() {
 
   return useAuthMutation<{ success: boolean; message: string }, number>(
     (token, itemId) => inventoryApi.deleteInventoryItem(token, itemId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      },
+    },
+  );
+}
+
+/** 開啟景點包 */
+export function useOpenPlacePack() {
+  const queryClient = useQueryClient();
+
+  return useAuthMutation<OpenPlacePackResponse, { itemId: number; selectedCity: string }>(
+    (token, { itemId, selectedCity }) => inventoryApi.openPlacePack(token, itemId, selectedCity),
     {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['inventory'] });
