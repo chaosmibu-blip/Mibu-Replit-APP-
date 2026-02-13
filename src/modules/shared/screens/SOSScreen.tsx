@@ -185,15 +185,15 @@ export function SOSScreen() {
   const triggerSOS = async () => {
     setSending(true);
     try {
-      let locationData: { latitude?: number; longitude?: number; message?: string } = {};
+      let locationData: { location?: string; locationAddress?: string; message?: string } = {};
 
       // 嘗試取得位置資訊
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
           const position = await Location.getCurrentPositionAsync({});
-          locationData.latitude = position.coords.latitude;
-          locationData.longitude = position.coords.longitude;
+          // 契約要求 location 為經緯度字串格式
+          locationData.location = `${position.coords.latitude},${position.coords.longitude}`;
 
           // 反向地理編碼取得地址
           try {
@@ -202,7 +202,7 @@ export function SOSScreen() {
               longitude: position.coords.longitude,
             });
             if (address) {
-              locationData.message = [
+              locationData.locationAddress = [
                 address.street,
                 address.district,
                 address.city,
@@ -214,10 +214,10 @@ export function SOSScreen() {
         }
       } catch {}
 
-      // 使用 mutation 發送 SOS
+      // 使用 mutation 發送 SOS（欄位對齊 SosSendParams 契約）
       await sendSOSMutation.mutateAsync({
-        latitude: locationData.latitude || 0,
-        longitude: locationData.longitude || 0,
+        location: locationData.location,
+        locationAddress: locationData.locationAddress,
         message: locationData.message,
       });
 

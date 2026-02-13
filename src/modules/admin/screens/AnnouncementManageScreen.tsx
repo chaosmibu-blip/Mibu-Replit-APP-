@@ -21,7 +21,7 @@
  * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -37,6 +37,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
+import { apiService } from '../../../services/api';
 import {
   useAdminAnnouncements,
   useCreateAnnouncement,
