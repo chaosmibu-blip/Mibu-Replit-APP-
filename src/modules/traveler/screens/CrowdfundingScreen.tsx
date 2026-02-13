@@ -13,8 +13,10 @@
  * - crowdfundingApi.getMyContributions() - 取得我的贊助記錄
  *
  * @see 後端合約: contracts/APP.md Phase 5
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -24,12 +26,12 @@ import {
   ActivityIndicator,
   RefreshControl,
   Platform,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n } from '../../../context/AppContext';
-import { crowdfundingApi } from '../../../services/crowdfundingApi';
+import { useQueryClient } from '@tanstack/react-query';
+import { useI18n } from '../../../context/AppContext';
+import { useCampaigns, useMyContributions } from '../../../hooks/useCrowdfundingQueries';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
 import { Campaign, MyContribution } from '../../../types/crowdfunding';
@@ -120,26 +122,22 @@ const STATUS_CONFIG: Record<RegionStatus, {
 // ============================================================
 
 export function CrowdfundingScreen() {
-  const { getToken } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  // ============================================================
-  // 狀態管理
-  // ============================================================
+  // React Query：募資活動列表 + 個人贊助記錄
+  const campaignsQuery = useCampaigns({ status: 'active' });
+  const contributionsQuery = useMyContributions();
 
-  // 載入狀態
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  // 從 React Query 衍生狀態
+  const campaigns = campaignsQuery.data?.campaigns ?? [];
+  const myContributions = contributionsQuery.data?.contributions ?? [];
+  const loading = campaignsQuery.isLoading;
+  const refreshing = (campaignsQuery.isFetching || contributionsQuery.isFetching) && !loading;
 
-  // 地區列表
-  const [regions, setRegions] = useState<Region[]>(REGIONS);
-
-  // 募資活動列表
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-
-  // 我的贊助記錄
-  const [myContributions, setMyContributions] = useState<MyContribution[]>([]);
+  // 地區列表（目前使用靜態資料，TODO: 從 API 取得）
+  const [regions] = useState<Region[]>(REGIONS);
 
   // ============================================================
   // 計算衍生數據
@@ -152,46 +150,10 @@ export function CrowdfundingScreen() {
     coming: regions.filter(r => r.status === 'coming_soon').length,
   };
 
-  const loadData = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) {
-        router.back();
-        return;
-      }
-
-      // 載入進行中的募資活動
-      const data = await crowdfundingApi.getCampaigns(token, { status: 'active' });
-      setCampaigns(data.campaigns);
-
-      // 載入我的贊助紀錄
-      try {
-        const myData = await crowdfundingApi.getMyContributions(token);
-        setMyContributions(myData.contributions);
-      } catch {
-        // 忽略錯誤
-      }
-
-      // TODO: 從 API 取得地區狀態並更新 regions
-      // 目前使用靜態資料
-
-    } catch (error) {
-      console.error('Failed to load crowdfunding data:', error);
-      Alert.alert(t.crowdfunding_loadFailed, t.crowdfunding_loadFailedDesc);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [getToken, router]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
+  // 下拉重新整理：React Query invalidate
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadData();
-  }, [loadData]);
+    queryClient.invalidateQueries({ queryKey: ['crowdfunding'] });
+  }, [queryClient]);
 
   const handleRegionPress = (region: Region) => {
     if (region.status === 'fundraising' && region.campaignId) {

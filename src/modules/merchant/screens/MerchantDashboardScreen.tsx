@@ -10,8 +10,10 @@
  * - GET /merchant/daily-code - 取得今日核銷碼
  * - GET /merchant/credits - 取得點數餘額
  * - POST /merchant/credits/purchase - 購買點數
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -26,8 +28,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
-import { MerchantDailyCode, MerchantCredits } from '../../../types';
+import {
+  useMerchantDailyCode,
+  useMerchantCredits,
+  usePurchaseCredits,
+} from '../../../hooks/useMerchantQueries';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
 import { MibuBrand } from '../../../../constants/Colors';
 import { LOCALE_MAP } from '../../../utils/i18n';
@@ -35,19 +40,20 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 // ============ 主元件 ============
 export function MerchantDashboardScreen() {
   // ============ Hooks ============
-  const { user, getToken, setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
-  // dailyCode: 今日核銷碼資料
-  const [dailyCode, setDailyCode] = useState<MerchantDailyCode | null>(null);
-  // credits: 商家點數餘額資料
-  const [credits, setCredits] = useState<MerchantCredits | null>(null);
-  // loading: 資料載入中狀態
-  const [loading, setLoading] = useState(true);
-  // purchasing: 購買點數進行中狀態
-  const [purchasing, setPurchasing] = useState(false);
+  // ============ React Query Hooks ============
+  const dailyCodeQuery = useMerchantDailyCode();
+  const creditsQuery = useMerchantCredits();
+  const purchaseMutation = usePurchaseCredits();
+
+  // ============ 衍生狀態 ============
+  const loading = dailyCodeQuery.isLoading || creditsQuery.isLoading;
+  const dailyCode = dailyCodeQuery.data ?? null;
+  const credits = creditsQuery.data ?? null;
+  const purchasing = purchaseMutation.isPending;
 
   // ============ 多語系翻譯（透過 t 字典） ============
   const translations = {
@@ -77,37 +83,6 @@ export function MerchantDashboardScreen() {
     router.replace('/login');
   };
 
-  // ============ Effect Hooks ============
-  // 元件載入時取得資料
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  /**
-   * loadData - 載入商家資料
-   * 同時取得今日核銷碼和點數餘額
-   */
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-
-      // 並行請求核銷碼和點數資料
-      const [codeData, creditsData] = await Promise.all([
-        apiService.getMerchantDailyCode(token).catch(() => null),
-        apiService.getMerchantCredits(token).catch(() => null),
-      ]);
-
-      setDailyCode(codeData);
-      setCredits(creditsData);
-    } catch (error) {
-      console.error('Failed to load merchant data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   /**
    * handlePurchase - 處理購買點數
    * @param provider - 付款提供商 ('stripe' | 'recur')
@@ -115,11 +90,7 @@ export function MerchantDashboardScreen() {
    */
   const handlePurchase = async (provider: 'stripe' | 'recur', amount: number) => {
     try {
-      setPurchasing(true);
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await apiService.purchaseCredits(token, amount, provider);
+      const response = await purchaseMutation.mutateAsync({ amount, provider });
 
       // 如果有結帳 URL，開啟外部連結
       if (response.checkoutUrl) {
@@ -133,8 +104,6 @@ export function MerchantDashboardScreen() {
     } catch (error) {
       console.error('Purchase failed:', error);
       Alert.alert(t.common_error, t.merchant_purchaseFailed);
-    } finally {
-      setPurchasing(false);
     }
   };
 

@@ -13,7 +13,7 @@
  * - GET /api/notifications/preferences
  * - PUT /api/notifications/preferences
  *
- * 更新日期：2026-02-11（#042 通知系統全面翻新）
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -30,8 +30,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n } from '../../../context/AppContext';
-import { apiService } from '../../../services/api';
+import { useI18n } from '../../../context/AppContext';
+import {
+  useNotificationPreferences,
+  useUpdateNotificationPreferences,
+} from '../../../hooks/useNotificationQueries';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import type { NotificationPreferences } from '../../../types/notifications';
@@ -86,60 +89,48 @@ const NOTIF_ITEMS: NotifToggleItem[] = [
 
 export function NotificationPreferencesScreen() {
   const router = useRouter();
-  const { getToken } = useAuth();
   const { t } = useI18n();
 
-  // 狀態
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
+  // ========== React Query 資料查詢 ==========
 
-  // ========== 載入偏好設定 ==========
+  const prefQuery = useNotificationPreferences();
+  const updateMutation = useUpdateNotificationPreferences();
 
-  const loadPreferences = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) return;
-      const data = await apiService.getNotificationPreferences(token);
-      setPreferences(data);
-    } catch (error) {
-      console.error('[NotifPref] 載入失敗:', error);
-      Alert.alert(t.notifPref_loadFailed);
-    } finally {
-      setLoading(false);
-    }
-  }, [getToken, t]);
+  // 本地表單狀態（從 query 資料初始化，用於樂觀 UI 更新）
+  const [localPrefs, setLocalPrefs] = useState<NotificationPreferences | null>(null);
 
+  // 同步 query 資料到本地狀態（僅初次載入時）
   useEffect(() => {
-    loadPreferences();
-  }, [loadPreferences]);
+    if (prefQuery.data && !localPrefs) {
+      setLocalPrefs(prefQuery.data);
+    }
+  }, [prefQuery.data, localPrefs]);
+
+  // 衍生狀態
+  const loading = prefQuery.isLoading;
+  const saving = updateMutation.isPending;
+  const preferences = localPrefs;
 
   // ========== 切換開關 ==========
 
-  const handleToggle = useCallback(async (key: string, value: boolean) => {
+  const handleToggle = useCallback((key: string, value: boolean) => {
     if (!preferences || saving) return;
 
     // 樂觀更新 UI
-    setPreferences(prev => prev ? { ...prev, [key]: value } : prev);
-    setSaving(true);
+    setLocalPrefs(prev => prev ? { ...prev, [key]: value } : prev);
 
-    try {
-      const token = await getToken();
-      if (!token) return;
-      await apiService.updateNotificationPreferences(token, { [key]: value });
-    } catch (error) {
-      console.error('[NotifPref] 儲存失敗:', error);
-      // 回滾
-      setPreferences(prev => prev ? { ...prev, [key]: !value } : prev);
-      Alert.alert(t.notifPref_saveFailed);
-    } finally {
-      setSaving(false);
-    }
-  }, [preferences, saving, getToken, t]);
+    updateMutation.mutate({ [key]: value } as any, {
+      onError: () => {
+        // 回滾
+        setLocalPrefs(prev => prev ? { ...prev, [key]: !value } : prev);
+        Alert.alert(t.notifPref_saveFailed);
+      },
+    });
+  }, [preferences, saving, updateMutation, t]);
 
   // ========== 切換勿擾時段 ==========
 
-  const handleToggleQuietHours = useCallback(async (enabled: boolean) => {
+  const handleToggleQuietHours = useCallback((enabled: boolean) => {
     if (!preferences || saving) return;
 
     const updates: Partial<NotificationPreferences> = {
@@ -151,21 +142,15 @@ export function NotificationPreferencesScreen() {
       }),
     };
 
-    setPreferences(prev => prev ? { ...prev, ...updates } : prev);
-    setSaving(true);
+    setLocalPrefs(prev => prev ? { ...prev, ...updates } : prev);
 
-    try {
-      const token = await getToken();
-      if (!token) return;
-      await apiService.updateNotificationPreferences(token, updates);
-    } catch (error) {
-      console.error('[NotifPref] 勿擾設定失敗:', error);
-      setPreferences(prev => prev ? { ...prev, quietHoursEnabled: !enabled } : prev);
-      Alert.alert(t.notifPref_saveFailed);
-    } finally {
-      setSaving(false);
-    }
-  }, [preferences, saving, getToken, t]);
+    updateMutation.mutate(updates as any, {
+      onError: () => {
+        setLocalPrefs(prev => prev ? { ...prev, quietHoursEnabled: !enabled } : prev);
+        Alert.alert(t.notifPref_saveFailed);
+      },
+    });
+  }, [preferences, saving, updateMutation, t]);
 
   // ========== 渲染 ==========
 

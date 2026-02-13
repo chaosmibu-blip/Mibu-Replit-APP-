@@ -12,9 +12,11 @@
  * - POST /admin/announcements - 新增公告
  * - PUT /admin/announcements/:id - 更新公告
  * - DELETE /admin/announcements/:id - 刪除公告
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -30,8 +32,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n } from '../../../context/AppContext';
-import { apiService } from '../../../services/api';
+import { useI18n } from '../../../context/AppContext';
+import {
+  useAdminAnnouncements,
+  useCreateAnnouncement,
+  useUpdateAnnouncement,
+  useDeleteAnnouncement,
+} from '../../../hooks/useAdminQueries';
 import { Announcement, AnnouncementType, CreateAnnouncementParams } from '../../../types';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';
@@ -44,20 +51,21 @@ import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../
  */
 export function AdminAnnouncementsScreen() {
   // ============ Hooks & Context ============
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態管理 ============
+  // ============ React Query ============
+  const announcementsQuery = useAdminAnnouncements();
+  const createMutation = useCreateAnnouncement();
+  const updateMutation = useUpdateAnnouncement();
+  const deleteMutation = useDeleteAnnouncement();
 
-  /** 公告列表 */
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  /** 從 query 衍生狀態 */
+  const announcements: Announcement[] = (announcementsQuery.data as any)?.announcements ?? [];
+  const loading = announcementsQuery.isLoading;
+  const refreshing = announcementsQuery.isFetching && !announcementsQuery.isLoading;
 
-  /** 資料載入中狀態 */
-  const [loading, setLoading] = useState(true);
-
-  /** 下拉刷新中狀態 */
-  const [refreshing, setRefreshing] = useState(false);
+  // ============ 本地 UI 狀態 ============
 
   /** 操作進行中的公告 ID（用於顯示該公告的 loading） */
   const [actionLoading, setActionLoading] = useState<number | null>(null);
@@ -95,42 +103,7 @@ export function AdminAnnouncementsScreen() {
     holiday_event: MibuBrand.error,    // 紅色 - 節日限定
   };
 
-  // ============ 副作用 ============
-
-  /** 元件掛載時載入資料 */
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  // ============ 資料載入函數 ============
-
-  /**
-   * 載入公告列表
-   * 呼叫 API 取得所有公告
-   */
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-
-      const data = await apiService.getAdminAnnouncements(token);
-      setAnnouncements(data.announcements || []);
-    } catch (error) {
-      console.error('Failed to load announcements:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  /**
-   * 處理下拉刷新
-   */
-  const handleRefresh = () => {
-    setRefreshing(true);
-    loadData();
-  };
+  // （React Query 自動載入，不需要 useEffect + loadData）
 
   // ============ Modal 操作 ============
 
@@ -181,46 +154,40 @@ export function AdminAnnouncementsScreen() {
    * 儲存公告（新增或更新）
    * 根據 editingAnnouncement 是否存在決定是新增還是更新
    */
-  const handleSave = async () => {
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      // 驗證必填欄位
-      if (!formData.title.trim() || !formData.content.trim()) {
-        Alert.alert(t.common_error, t.admin_fillTitleContent);
-        return;
-      }
-
-      // 組裝請求參數
-      const params: CreateAnnouncementParams = {
-        type: formData.type,
-        title: formData.title.trim(),
-        content: formData.content.trim(),
-        isActive: formData.isActive,
-        priority: formData.priority,
-      };
-
-      // 選填欄位只在有值時才加入
-      if (formData.imageUrl?.trim()) params.imageUrl = formData.imageUrl.trim();
-      if (formData.linkUrl?.trim()) params.linkUrl = formData.linkUrl.trim();
-      if (formData.startDate?.trim()) params.startDate = formData.startDate.trim();
-      if (formData.endDate?.trim()) params.endDate = formData.endDate.trim();
-
-      // 根據模式執行新增或更新
-      if (editingAnnouncement) {
-        await apiService.updateAnnouncement(token, editingAnnouncement.id, params);
-      } else {
-        await apiService.createAnnouncement(token, params);
-      }
-
-      setModalVisible(false);
-      loadData(); // 重新載入列表
-    } catch (error) {
-      console.error('Failed to save announcement:', error);
-      Alert.alert(t.common_error, t.common_saveFailed);
+  const handleSave = useCallback(() => {
+    // 驗證必填欄位
+    if (!formData.title.trim() || !formData.content.trim()) {
+      Alert.alert(t.common_error, t.admin_fillTitleContent);
+      return;
     }
-  };
+
+    // 組裝請求參數
+    const params: CreateAnnouncementParams = {
+      type: formData.type,
+      title: formData.title.trim(),
+      content: formData.content.trim(),
+      isActive: formData.isActive,
+      priority: formData.priority,
+    };
+
+    // 選填欄位只在有值時才加入
+    if (formData.imageUrl?.trim()) params.imageUrl = formData.imageUrl.trim();
+    if (formData.linkUrl?.trim()) params.linkUrl = formData.linkUrl.trim();
+    if (formData.startDate?.trim()) params.startDate = formData.startDate.trim();
+    if (formData.endDate?.trim()) params.endDate = formData.endDate.trim();
+
+    const callbacks = {
+      onSuccess: () => setModalVisible(false),
+      onError: () => Alert.alert(t.common_error, t.common_saveFailed),
+    };
+
+    // 根據模式執行新增或更新
+    if (editingAnnouncement) {
+      updateMutation.mutate({ id: editingAnnouncement.id, data: params }, callbacks);
+    } else {
+      createMutation.mutate(params, callbacks);
+    }
+  }, [formData, editingAnnouncement, t]);
 
   /**
    * 刪除公告
@@ -236,19 +203,11 @@ export function AdminAnnouncementsScreen() {
         {
           text: t.common_delete,
           style: 'destructive',
-          onPress: async () => {
-            try {
-              setActionLoading(id);
-              const token = await getToken();
-              if (!token) return;
-
-              await apiService.deleteAnnouncement(token, id);
-              loadData(); // 重新載入列表
-            } catch (error) {
-              console.error('Failed to delete:', error);
-            } finally {
-              setActionLoading(null);
-            }
+          onPress: () => {
+            setActionLoading(id);
+            deleteMutation.mutate(id, {
+              onSettled: () => setActionLoading(null),
+            });
           },
         },
       ]
@@ -259,21 +218,12 @@ export function AdminAnnouncementsScreen() {
    * 切換公告啟用/停用狀態
    * @param announcement - 要切換的公告
    */
-  const toggleActive = async (announcement: Announcement) => {
-    try {
-      setActionLoading(announcement.id);
-      const token = await getToken();
-      if (!token) return;
-
-      await apiService.updateAnnouncement(token, announcement.id, {
-        isActive: !announcement.isActive,
-      });
-      loadData(); // 重新載入列表
-    } catch (error) {
-      console.error('Failed to toggle active:', error);
-    } finally {
-      setActionLoading(null);
-    }
+  const toggleActive = (announcement: Announcement) => {
+    setActionLoading(announcement.id);
+    updateMutation.mutate(
+      { id: announcement.id, data: { isActive: !announcement.isActive } },
+      { onSettled: () => setActionLoading(null) },
+    );
   };
 
   // ============ 渲染函數：公告卡片 ============
@@ -540,7 +490,7 @@ export function AdminAnnouncementsScreen() {
         <ScrollView
           style={styles.content}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+            <RefreshControl refreshing={refreshing} onRefresh={() => announcementsQuery.refetch()} />
           }
         >
           {announcements.length === 0 ? (

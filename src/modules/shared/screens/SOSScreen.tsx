@@ -1,6 +1,7 @@
 /**
+ * ============================================================
  * SOSScreen - SOS 緊急求助畫面
- *
+ * ============================================================
  * 功能說明：
  * - 長按 3 秒發送 SOS 求救訊號
  * - 自動取得並傳送當前位置
@@ -15,6 +16,7 @@
  * - POST /api/sos/send - 發送 SOS 求救
  * - PUT /api/sos/cancel/:id - 取消求救
  *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  * @see 後端合約: contracts/APP.md Phase 5
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -35,9 +37,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL } from '../../../constants/translations';
-import { useAuth, useI18n } from '../../../context/AppContext';
-import { apiService } from '../../../services/api';
-import { SosAlert, SosAlertStatus } from '../../../types';
+import { useI18n } from '../../../context/AppContext';
+import { useSOSEligibility, useSOSAlerts, useSendSOS, useCancelSOS } from '../../../hooks/useSOSQueries';
+import { SosAlertStatus } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
 import { LOCALE_MAP } from '../../../utils/i18n';
@@ -48,16 +50,25 @@ export function SOSScreen() {
   const { t, language } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態管理 ============
+  // ============ React Query Hooks ============
+
+  const eligibilityQuery = useSOSEligibility();
+  const alertsQuery = useSOSAlerts();
+  const sendSOSMutation = useSendSOS();
+  const cancelSOSMutation = useCancelSOS();
+
+  // 從查詢結果衍生狀態
+  const loading = eligibilityQuery.isLoading || alertsQuery.isLoading;
+  const eligible = eligibilityQuery.data?.eligible ?? true;
+  const eligibilityReason = eligibilityQuery.data?.reason ?? null;
+  const alerts = alertsQuery.data?.alerts || [];
+
+  // ============ UI 狀態管理 ============
 
   const [webhookUrl, setWebhookUrl] = useState<string | null>(null); // Webhook URL
   const [sosKey, setSosKey] = useState<string | null>(null); // SOS 驗證 key
-  const [loading, setLoading] = useState(true); // 頁面載入中
   const [sending, setSending] = useState(false); // 正在發送 SOS
   const [copied, setCopied] = useState(false); // 已複製到剪貼簿
-  const [eligible, setEligible] = useState(true); // 是否有使用資格
-  const [eligibilityReason, setEligibilityReason] = useState<string | null>(null); // 無資格原因
-  const [alerts, setAlerts] = useState<SosAlert[]>([]); // 求救記錄列表
 
   // 長按動畫相關
   const progressAnim = useRef(new Animated.Value(0)).current; // 進度條動畫值
@@ -71,40 +82,16 @@ export function SOSScreen() {
     cancelled: { bg: '#f1f5f9', text: UIColors.textSecondary, label: t.sos_statusCancelled },
   };
 
-  // ============ 資料載入 ============
+  // ============ Webhook 載入（非標準 auth API，保留手動 fetch）============
 
   /**
-   * 載入所有 SOS 相關資料
-   * 包含資格檢查、求救記錄、Webhook URL
+   * 載入 Webhook URL（不透過 React Query，因為這不是標準 auth API）
    */
-  const fetchData = useCallback(async () => {
+  const fetchWebhook = useCallback(async () => {
     const userToken = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
-    if (!userToken) {
-      setLoading(false);
-      return;
-    }
+    if (!userToken) return;
 
     try {
-      setLoading(true);
-
-      // 並行請求資格與記錄
-      const [eligibilityData, alertsData] = await Promise.allSettled([
-        apiService.getSosEligibility(userToken),
-        apiService.getSosAlerts(userToken),
-      ]);
-
-      // 處理資格資料
-      if (eligibilityData.status === 'fulfilled') {
-        setEligible(eligibilityData.value.eligible);
-        setEligibilityReason(eligibilityData.value.reason);
-      }
-
-      // 處理求救記錄
-      if (alertsData.status === 'fulfilled') {
-        setAlerts(alertsData.value.alerts || []);
-      }
-
-      // 取得 Webhook URL
       const fullUrl = `${API_BASE_URL}/api/user/sos-link`;
       const response = await fetch(fullUrl, {
         method: 'GET',
@@ -136,15 +123,13 @@ export function SOSScreen() {
         }
       }
     } catch (error: unknown) {
-      console.error('Failed to fetch SOS data:', error);
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch webhook URL:', error);
     }
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchWebhook();
+  }, [fetchWebhook]);
 
   // ============ 事件處理 ============
 
@@ -200,17 +185,15 @@ export function SOSScreen() {
   const triggerSOS = async () => {
     setSending(true);
     try {
-      const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
-      if (!token) return;
-
-      let locationData: { location?: string; locationAddress?: string } = {};
+      let locationData: { latitude?: number; longitude?: number; message?: string } = {};
 
       // 嘗試取得位置資訊
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
           const position = await Location.getCurrentPositionAsync({});
-          locationData.location = `${position.coords.latitude},${position.coords.longitude}`;
+          locationData.latitude = position.coords.latitude;
+          locationData.longitude = position.coords.longitude;
 
           // 反向地理編碼取得地址
           try {
@@ -219,7 +202,7 @@ export function SOSScreen() {
               longitude: position.coords.longitude,
             });
             if (address) {
-              locationData.locationAddress = [
+              locationData.message = [
                 address.street,
                 address.district,
                 address.city,
@@ -231,16 +214,18 @@ export function SOSScreen() {
         }
       } catch {}
 
-      // 發送 SOS
-      const response = await apiService.sendSosAlert(token, locationData);
+      // 使用 mutation 發送 SOS
+      await sendSOSMutation.mutateAsync({
+        latitude: locationData.latitude || 0,
+        longitude: locationData.longitude || 0,
+        message: locationData.message,
+      });
 
-      if (response.success) {
-        Alert.alert(
-          t.sos_alertSent,
-          response.message || t.sos_willContactYou,
-          [{ text: 'OK', onPress: fetchData }]
-        );
-      }
+      Alert.alert(
+        t.sos_alertSent,
+        t.sos_willContactYou,
+        [{ text: 'OK' }]
+      );
     } catch (error: unknown) {
       // 如果主要 API 失敗，嘗試備用 Webhook
       if (sosKey) {
@@ -253,7 +238,6 @@ export function SOSScreen() {
 
           if (response.ok) {
             Alert.alert(t.sent, t.sosSuccess);
-            fetchData();
             return;
           }
         } catch {}
@@ -282,11 +266,7 @@ export function SOSScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
-              if (!token) return;
-
-              await apiService.cancelSosAlert(token, alertId);
-              fetchData();
+              await cancelSOSMutation.mutateAsync(alertId);
             } catch (error) {
               Alert.alert(
                 t.common_error,

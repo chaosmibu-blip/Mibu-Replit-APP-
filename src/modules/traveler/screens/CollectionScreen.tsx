@@ -22,9 +22,9 @@
  * - 使用分類色彩區分不同類型景點
  * - PRO 商家顯示品牌色
  *
- * 更新日期：2026-02-12（Phase 2E - 提取 StyleSheet）
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -40,11 +40,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
+import { useCollectionList, useMarkCollectionRead } from '../../../hooks/useCollectionQueries';
 import { collectionApi } from '../../../services/collectionApi';
 import { contributionApi } from '../../../services/contributionApi';
-import { GachaItem, Language, CollectionItem } from '../../../types';
+import { GachaItem, Language } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme, UIColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
@@ -242,7 +243,12 @@ export function CollectionScreen() {
   const { getToken } = useAuth();
   const { t, language } = useI18n();
   const { gachaState } = useGacha();
-  const localCollection = gachaState.collection;
+  const queryClient = useQueryClient();
+
+  // React Query：圖鑑列表（取代 useState + useEffect + loadCollections）
+  const collectionQuery = useCollectionList({ sort: 'unread' });
+  const markAllReadMutation = useMarkCollectionRead();
+
   // 【圖鑑導航】麵包屑導航狀態
   const [navLevel, setNavLevel] = useState<0 | 1 | 2>(0);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -250,16 +256,40 @@ export function CollectionScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategoryTab, setActiveCategoryTab] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<GachaItemWithRead | null>(null);
-  const [apiCollection, setApiCollection] = useState<GachaItemWithRead[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [hasLoadedFromApi, setHasLoadedFromApi] = useState(false);
   // #028 優惠更新通知
   const [promoUpdateIds, setPromoUpdateIds] = useState<Set<number>>(new Set());
-  // 錯誤狀態（API 載入失敗時顯示）
-  const [loadError, setLoadError] = useState(false);
 
-  // 使用 API 資料或本地資料
-  const collection = hasLoadedFromApi ? apiCollection : localCollection as GachaItemWithRead[];
+  // 從 React Query 衍生狀態（API 有資料用 API，否則 fallback 到 gachaState 本地快取）
+  const apiCollection: GachaItemWithRead[] = useMemo(() => {
+    if (!collectionQuery.data?.collections) return [];
+    return collectionQuery.data.collections.map(item => ({
+      id: parseInt(item.placeId || item.id?.toString() || '0', 10) || 0,
+      placeId: item.placeId,
+      placeName: item.placeName,
+      description: item.description,
+      category: item.category,
+      subcategory: null,
+      address: null,
+      rating: null,
+      locationLat: null,
+      locationLng: null,
+      city: item.city,
+      cityDisplay: item.cityDisplay,
+      district: item.district,
+      districtDisplay: item.districtDisplay,
+      collectedAt: item.collectedAt,
+      isRead: item.isRead,
+      collectionId: item.id,
+      merchant: item.merchant,
+      isCoupon: item.isCoupon,
+      couponData: item.couponData,
+    })) as GachaItemWithRead[];
+  }, [collectionQuery.data]);
+
+  const collection = collectionQuery.data
+    ? apiCollection
+    : (gachaState?.collection ?? []) as GachaItemWithRead[];
+  const refreshing = collectionQuery.isFetching && !collectionQuery.isLoading;
 
   // 統計資料（useMemo 避免每次渲染重算）
   const { totalSpots, uniqueCities, uniqueCategories, unreadCount } = useMemo(() => ({
@@ -271,7 +301,7 @@ export function CollectionScreen() {
     unreadCount: collection.filter(item => item.isRead === false).length,
   }), [collection]);
 
-  // #028 載入優惠更新通知
+  // #028 載入優惠更新通知（保留：promo 更新尚未納入 React Query）
   const loadPromoUpdates = useCallback(async () => {
     try {
       const token = await getToken();
@@ -285,72 +315,11 @@ export function CollectionScreen() {
     }
   }, [getToken]);
 
-  // 從後端載入圖鑑資料，使用 sort=unread 排序
-  const loadCollections = useCallback(async () => {
-    try {
-      setLoadError(false);
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await collectionApi.getCollections(token, { sort: 'unread' });
-      if (response.collections) {
-        // 將 CollectionItem 轉換為 GachaItemWithRead
-        const items = response.collections.map(item => ({
-          id: parseInt(item.placeId || item.id?.toString() || '0', 10) || 0,
-          placeId: item.placeId,
-          placeName: item.placeName,
-          description: item.description,
-          category: item.category,
-          subcategory: null,
-          address: null,
-          rating: null,
-          locationLat: null,
-          locationLng: null,
-          city: item.city,
-          cityDisplay: item.cityDisplay,
-          district: item.district,
-          districtDisplay: item.districtDisplay,
-          collectedAt: item.collectedAt,
-          isRead: item.isRead,
-          collectionId: item.id,
-          merchant: item.merchant,
-          isCoupon: item.isCoupon,
-          couponData: item.couponData,
-        })) as GachaItemWithRead[];
-        setApiCollection(items);
-        setHasLoadedFromApi(true);
-      }
-    } catch (error) {
-      console.error('Failed to load collections:', error);
-      setLoadError(true);
-    }
-  }, [getToken]);
-
-  // 首次掛載時載入
-  const hasInitialLoaded = useRef(false);
-  useEffect(() => {
-    loadCollections();
-    loadPromoUpdates(); // #028
-    hasInitialLoaded.current = true;
-  }, [loadCollections, loadPromoUpdates]);
-
-  // 每次頁面獲得焦點時重新載入（修復：登入後切回圖鑑不會重新拉資料的問題）
-  useFocusEffect(
-    useCallback(() => {
-      // 跳過首次（useEffect 已處理），避免重複呼叫
-      if (!hasInitialLoaded.current) return;
-      // 重置載入狀態，讓 loading guard 生效，避免閃現舊數量
-      setHasLoadedFromApi(false);
-      loadCollections();
-      loadPromoUpdates();
-    }, [loadCollections, loadPromoUpdates])
-  );
-
+  // 下拉重新整理：React Query invalidate + promo 更新
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await Promise.all([loadCollections(), loadPromoUpdates()]); // #028
-    setRefreshing(false);
-  }, [loadCollections, loadPromoUpdates]);
+    queryClient.invalidateQueries({ queryKey: ['collection'] });
+    loadPromoUpdates();
+  }, [queryClient, loadPromoUpdates]);
 
   // 點擊項目時標記為已讀
   const handleItemPress = useCallback(async (item: GachaItemWithRead) => {
@@ -359,14 +328,21 @@ export function CollectionScreen() {
     const token = await getToken();
     if (!token || !item.collectionId) return;
 
-    // 如果是未讀項目，樂觀更新 UI 為已讀
+    // 如果是未讀項目，樂觀更新 React Query 快取
     // 注意：後端尚未實作 PATCH /api/collections/:id/read（契約無此端點）
-    // 目前僅前端標記，下次 loadCollections 會以後端 isRead 為準
+    // 目前僅前端標記，下次 query refetch 會以後端 isRead 為準
     if (item.isRead === false) {
-      setApiCollection(prev =>
-        prev.map(i =>
-          i.collectionId === item.collectionId ? { ...i, isRead: true } : i
-        )
+      queryClient.setQueryData(
+        ['collection', { sort: 'unread' }],
+        (old: any) => {
+          if (!old?.collections) return old;
+          return {
+            ...old,
+            collections: old.collections.map((i: any) =>
+              i.id === item.collectionId ? { ...i, isRead: true } : i
+            ),
+          };
+        }
       );
     }
 
@@ -383,7 +359,7 @@ export function CollectionScreen() {
         console.error('Failed to mark promo as read:', error);
       }
     }
-  }, [getToken, promoUpdateIds]);
+  }, [getToken, promoUpdateIds, queryClient]);
 
   // ========== 麵包屑導航函數 ==========
 
@@ -601,22 +577,27 @@ export function CollectionScreen() {
 
   // ========== 全部已讀（POST /api/collections/read-all） ==========
 
-  /** 全部標記已讀：樂觀更新 UI + 呼叫後端 API 清除所有未讀 */
-  const handleMarkAllRead = useCallback(async () => {
-    // 樂觀更新：全部標已讀（後端 API 也是全域標記）
-    setApiCollection(prev =>
-      prev.map(item => item.isRead === false ? { ...item, isRead: true } : item)
+  /** 全部標記已讀：樂觀更新 React Query 快取 + mutation 呼叫後端 API */
+  const handleMarkAllRead = useCallback(() => {
+    // 樂觀更新 React Query 快取
+    queryClient.setQueryData(
+      ['collection', { sort: 'unread' }],
+      (old: any) => {
+        if (!old?.collections) return old;
+        return {
+          ...old,
+          collections: old.collections.map((item: any) =>
+            item.isRead === false ? { ...item, isRead: true } : item
+          ),
+        };
+      }
     );
-    try {
-      const token = await getToken();
-      if (token) await collectionApi.markCollectionRead(token);
-    } catch (error) {
-      console.error('Failed to mark all as read:', error);
-    }
-  }, [getToken]);
+    // 透過 mutation hook 呼叫後端 API（自動 invalidate 快取）
+    markAllReadMutation.mutate(undefined as never);
+  }, [queryClient, markAllReadMutation]);
 
   // 錯誤狀態：API 載入失敗且沒有本地資料時顯示
-  if (loadError && collection.length === 0) {
+  if (collectionQuery.error && collection.length === 0) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centeredContainer}>
@@ -624,15 +605,15 @@ export function CollectionScreen() {
           icon="cloud-offline-outline"
           message={language === 'zh-TW' ? '圖鑑載入失敗' : 'Failed to load collection'}
           detail={language === 'zh-TW' ? '請檢查網路連線後再試' : 'Please check your connection and try again'}
-            onRetry={loadCollections}
+            onRetry={() => collectionQuery.refetch()}
           />
         </View>
       </SafeAreaView>
     );
   }
 
-  // API 尚未回傳時顯示 loading，避免閃現舊快取的錯誤數量
-  if (!hasLoadedFromApi) {
+  // React Query 尚未回傳時顯示 loading，避免閃現舊快取的錯誤數量
+  if (collectionQuery.isLoading) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>

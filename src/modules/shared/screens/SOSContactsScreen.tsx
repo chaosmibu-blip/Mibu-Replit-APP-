@@ -1,6 +1,7 @@
 /**
+ * ============================================================
  * SOSContactsScreen - SOS 緊急聯絡人管理畫面
- *
+ * ============================================================
  * 功能說明：
  * - 顯示緊急聯絡人列表（最多 3 位）
  * - 新增緊急聯絡人
@@ -14,9 +15,10 @@
  * - PUT /api/sos/contacts/:id - 更新緊急聯絡人
  * - DELETE /api/sos/contacts/:id - 刪除緊急聯絡人
  *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  * @see 後端合約: contracts/APP.md Phase 5
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -33,8 +35,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n } from '../../../context/AppContext';
-import { commonApi } from '../../../services/commonApi';
+import { useI18n } from '../../../context/AppContext';
+import { useSOSContacts, useAddSOSContact, useUpdateSOSContact, useDeleteSOSContact } from '../../../hooks/useSOSQueries';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { SOSContact, CreateSOSContactParams } from '../../../types/sos';
 import { tFormat } from '../../../utils/i18n';
@@ -55,15 +57,22 @@ const RELATIONSHIP_OPTIONS = [
 // ============ 元件本體 ============
 
 export function SOSContactsScreen() {
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態管理 ============
+  // ============ React Query Hooks ============
 
-  const [loading, setLoading] = useState(true); // 頁面載入中
-  const [refreshing, setRefreshing] = useState(false); // 下拉刷新中
-  const [contacts, setContacts] = useState<SOSContact[]>([]); // 聯絡人列表
+  const contactsQuery = useSOSContacts();
+  const addContactMutation = useAddSOSContact();
+  const updateContactMutation = useUpdateSOSContact();
+  const deleteContactMutation = useDeleteSOSContact();
+
+  // 從查詢結果衍生狀態
+  const loading = contactsQuery.isLoading;
+  const contacts: SOSContact[] = contactsQuery.data?.contacts || [];
+
+  // ============ UI 狀態管理 ============
+
   const [modalVisible, setModalVisible] = useState(false); // 新增/編輯 Modal 是否顯示
   const [editingContact, setEditingContact] = useState<SOSContact | null>(null); // 正在編輯的聯絡人
   const [saving, setSaving] = useState(false); // 儲存中
@@ -72,43 +81,6 @@ export function SOSContactsScreen() {
   const [formName, setFormName] = useState(''); // 姓名
   const [formPhone, setFormPhone] = useState(''); // 電話
   const [formRelationship, setFormRelationship] = useState('family'); // 關係
-
-  // ============ 資料載入 ============
-
-  /**
-   * 載入緊急聯絡人列表
-   */
-  const loadData = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) {
-        router.back();
-        return;
-      }
-
-      const data = await commonApi.getSOSContacts(token);
-      if (data.success) {
-        setContacts(data.contacts);
-      }
-    } catch (error) {
-      console.error('Failed to load SOS contacts:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [getToken, router]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  /**
-   * 下拉刷新處理
-   */
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadData();
-  }, [loadData]);
 
   // ============ 事件處理 ============
 
@@ -159,9 +131,6 @@ export function SOSContactsScreen() {
 
     setSaving(true);
     try {
-      const token = await getToken();
-      if (!token) return;
-
       const params: CreateSOSContactParams = {
         name: formName.trim(),
         phone: formPhone.trim(),
@@ -170,18 +139,15 @@ export function SOSContactsScreen() {
 
       if (editingContact) {
         // 更新現有聯絡人
-        const result = await commonApi.updateSOSContact(token, editingContact.id, params);
-        if (result.success) {
-          setContacts(prev =>
-            prev.map(c => (c.id === editingContact.id ? result.contact : c))
-          );
-        }
+        await updateContactMutation.mutateAsync({
+          contactId: editingContact.id,
+          name: params.name,
+          phone: params.phone,
+          relationship: params.relationship,
+        });
       } else {
         // 新增聯絡人
-        const result = await commonApi.addSOSContact(token, params);
-        if (result.success) {
-          setContacts(prev => [...prev, result.contact]);
-        }
+        await addContactMutation.mutateAsync(params);
       }
 
       setModalVisible(false);
@@ -210,13 +176,7 @@ export function SOSContactsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await getToken();
-              if (!token) return;
-
-              const result = await commonApi.deleteSOSContact(token, contact.id);
-              if (result.success) {
-                setContacts(prev => prev.filter(c => c.id !== contact.id));
-              }
+              await deleteContactMutation.mutateAsync(contact.id);
             } catch (error) {
               console.error('Failed to delete contact:', error);
               Alert.alert(
@@ -334,8 +294,8 @@ export function SOSContactsScreen() {
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
+              refreshing={contactsQuery.isRefetching}
+              onRefresh={() => contactsQuery.refetch()}
               tintColor={MibuBrand.brown}
             />
           }

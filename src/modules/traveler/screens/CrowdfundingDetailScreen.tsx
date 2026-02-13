@@ -15,8 +15,10 @@
  * - revenueCatService.purchasePackage() - IAP 購買
  *
  * @see 後端合約: contracts/APP.md Phase 5
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -30,10 +32,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth, useI18n } from '../../../context/AppContext';
 import { tFormat } from '../../../utils/i18n';
 import { LOCALE_MAP } from '../../../utils/i18n';
-import { crowdfundingApi } from '../../../services/crowdfundingApi';
+import { useCampaignDetail, useContribute } from '../../../hooks/useCrowdfundingQueries';
 import { revenueCatService } from '../../../services/revenueCatService';
 import { MibuBrand } from '../../../../constants/Colors';
 import { Image as ExpoImage } from 'expo-image';
@@ -44,73 +47,39 @@ import { CampaignDetail, CampaignReward, CampaignUpdate } from '../../../types/c
 // ============================================================
 
 export function CrowdfundingDetailScreen() {
-  const { user, getToken } = useAuth();
+  const { user } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   // 從路由參數取得活動 ID
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  // React Query：活動詳情 + 贊助 mutation
+  const detailQuery = useCampaignDetail(id ?? null);
+  const contributeMutation = useContribute();
+
+  // 從 React Query 衍生狀態
+  const campaign = detailQuery.data ?? null;
+  const loading = detailQuery.isLoading;
+  const refreshing = detailQuery.isFetching && !detailQuery.isLoading;
 
   // ============================================================
-  // 狀態管理
+  // 狀態管理（UI 狀態）
   // ============================================================
-
-  // 載入狀態
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
   // 購買中狀態
   const [purchasing, setPurchasing] = useState(false);
 
-  // 活動詳情
-  const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
-
   // 選中的贊助方案
   const [selectedTier, setSelectedTier] = useState<CampaignReward | null>(null);
 
-  // ============================================================
-  // API 呼叫
-  // ============================================================
-
   /**
-   * 載入活動詳情
+   * 下拉重新整理：React Query invalidate
    */
-  const loadData = useCallback(async () => {
-    if (!id) return;
-
-    try {
-      const token = await getToken();
-      if (!token) {
-        router.back();
-        return;
-      }
-
-      const data = await crowdfundingApi.getCampaignDetail(token, id);
-      setCampaign(data);
-    } catch (error) {
-      console.error('Failed to load campaign detail:', error);
-      Alert.alert(
-        t.common_error,
-        t.crowdfunding_loadFailedDetail
-      );
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [id, getToken, router]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  /**
-   * 下拉重新整理
-   */
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadData();
-  }, [loadData]);
+  const onRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['crowdfunding', 'campaign', id] });
+  };
 
   // ============================================================
   // 輔助函數
@@ -179,11 +148,10 @@ export function CrowdfundingDetailScreen() {
             {
               text: t.crowdfunding_simulateSuccess,
               onPress: async () => {
-                // 模擬購買成功後通知後端
+                // 模擬購買成功後通知後端（使用 mutation hook）
                 try {
-                  const token = await getToken();
-                  if (token && campaign) {
-                    await crowdfundingApi.contribute(token, {
+                  if (campaign) {
+                    await contributeMutation.mutateAsync({
                       campaignId: campaign.id,
                       amount: selectedTier.minAmount,
                       rewardTier: selectedTier.tier,
@@ -194,7 +162,7 @@ export function CrowdfundingDetailScreen() {
                     Alert.alert(
                       t.crowdfunding_thankYou,
                       t.crowdfunding_thankYouDesc,
-                      [{ text: 'OK', onPress: () => loadData() }]
+                      [{ text: 'OK', onPress: () => detailQuery.refetch() }]
                     );
                   }
                 } catch (error) {
@@ -217,10 +185,9 @@ export function CrowdfundingDetailScreen() {
       const result = await revenueCatService.purchase(matchingPackage);
 
       if (result.success) {
-        // 5. 購買成功，通知後端記錄
-        const token = await getToken();
-        if (token && campaign) {
-          await crowdfundingApi.contribute(token, {
+        // 5. 購買成功，通知後端記錄（使用 mutation hook）
+        if (campaign) {
+          await contributeMutation.mutateAsync({
             campaignId: campaign.id,
             amount: selectedTier.minAmount,
             rewardTier: selectedTier.tier,
@@ -231,7 +198,7 @@ export function CrowdfundingDetailScreen() {
         Alert.alert(
           t.crowdfunding_thankYou,
           t.crowdfunding_thankYouDescFull,
-          [{ text: 'OK', onPress: () => loadData() }]
+          [{ text: 'OK', onPress: () => detailQuery.refetch() }]
         );
       } else if (result.error === 'USER_CANCELLED') {
         // 用戶取消，不顯示錯誤

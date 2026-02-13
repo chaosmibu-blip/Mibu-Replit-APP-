@@ -10,8 +10,10 @@
  * 串接的 API：
  * - GET /merchant/places - 取得商家店家列表
  * - GET /merchant/analytics - 取得分析數據
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -23,38 +25,43 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { merchantApi } from '../../../services/merchantApi';
+import {
+  useMerchantAnalytics,
+  useMerchantPlaces,
+} from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import {
-  MerchantAnalytics,
-  MerchantPlace,
   AnalyticsPeriod,
 } from '../../../types';
 
 // ============ 主元件 ============
 export function MerchantAnalyticsScreen() {
   // ============ Hooks ============
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
-  // loading: 初始載入狀態
-  const [loading, setLoading] = useState(true);
-  // refreshing: 下拉刷新狀態
-  const [refreshing, setRefreshing] = useState(false);
-  // analytics: 分析數據
-  const [analytics, setAnalytics] = useState<MerchantAnalytics | null>(null);
-  // places: 店家列表（用於篩選）
-  const [places, setPlaces] = useState<MerchantPlace[]>([]);
+  // ============ UI 狀態 ============
   // selectedPeriod: 選中的時間區間
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod>('30d');
   // selectedPlaceId: 選中的店家 ID（null 表示全部）
   const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
   // showPlaceDropdown: 是否顯示店家下拉選單
   const [showPlaceDropdown, setShowPlaceDropdown] = useState(false);
+
+  // ============ React Query Hooks ============
+  // analytics query key 包含 period 和 placeId，篩選條件變更時自動重新取得
+  const analyticsQuery = useMerchantAnalytics({
+    period: selectedPeriod,
+    placeId: selectedPlaceId ?? undefined,
+  });
+  const placesQuery = useMerchantPlaces();
+
+  // ============ 衍生狀態 ============
+  const loading = analyticsQuery.isLoading;
+  const refreshing = analyticsQuery.isFetching && !analyticsQuery.isLoading;
+  const analytics = analyticsQuery.data ?? null;
+  const places = placesQuery.data?.places ?? [];
 
   // ============ 常數定義 ============
   // 時間區間選項
@@ -65,72 +72,13 @@ export function MerchantAnalyticsScreen() {
     { value: 'all', label: t.merchant_allPeriod },
   ];
 
-  // ============ Effect Hooks ============
-  // 元件載入時取得初始資料
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  // 時間區間或店家篩選變更時重新載入分析數據
-  useEffect(() => {
-    loadAnalytics();
-  }, [selectedPeriod, selectedPlaceId]);
-
-  // ============ 資料載入函數 ============
-
-  /**
-   * loadInitialData - 載入初始資料
-   * 同時取得店家列表和分析數據
-   */
-  const loadInitialData = async () => {
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      // 同時載入地點列表和分析數據
-      const [placesData] = await Promise.all([
-        merchantApi.getMerchantPlaces(token),
-      ]);
-      setPlaces(placesData.places || []);
-      await loadAnalytics();
-    } catch (error) {
-      console.error('Failed to load initial data:', error);
-    }
-  };
-
-  /**
-   * loadAnalytics - 載入分析數據
-   * 根據選中的時間區間和店家取得數據
-   */
-  const loadAnalytics = async () => {
-    try {
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await merchantApi.getMerchantAnalytics(token, {
-        period: selectedPeriod,
-        placeId: selectedPlaceId || undefined,
-      });
-
-      if (response) {
-        setAnalytics(response);
-      }
-    } catch (error) {
-      console.error('Failed to load analytics:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
   // ============ 事件處理函數 ============
 
   /**
    * handleRefresh - 處理下拉刷新
    */
   const handleRefresh = () => {
-    setRefreshing(true);
-    loadAnalytics();
+    analyticsQuery.refetch();
   };
 
   /**

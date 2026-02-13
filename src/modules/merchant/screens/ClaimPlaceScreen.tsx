@@ -1,5 +1,7 @@
 /**
  * ClaimPlaceScreen - 搜尋並認領現有景點
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
 import React, { useState } from 'react';
 import {
@@ -16,9 +18,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
+import {
+  useSearchMerchantPlaces,
+  useClaimMerchantPlace,
+} from '../../../hooks/useMerchantQueries';
 import { PlaceSearchResult } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 

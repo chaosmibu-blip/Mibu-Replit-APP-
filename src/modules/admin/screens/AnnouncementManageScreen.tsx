@@ -1,6 +1,7 @@
 /**
- * @fileoverview 公告管理畫面
- *
+ * ============================================================
+ * 公告管理畫面 (AnnouncementManageScreen.tsx)
+ * ============================================================
  * 功能說明：
  * - 顯示所有公告列表（使用 Mibu 品牌設計系統）
  * - 新增、編輯、刪除公告
@@ -16,9 +17,11 @@
  * 設計規範：
  * - 使用 MibuBrand 品牌色彩
  * - 使用 SemanticColors 狀態色彩
+ *
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -33,8 +36,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n } from '../../../context/AppContext';
-import { apiService } from '../../../services/api';
+import { useI18n } from '../../../context/AppContext';
+import {
+  useAdminAnnouncements,
+  useCreateAnnouncement,
+  useUpdateAnnouncement,
+  useDeleteAnnouncement,
+} from '../../../hooks/useAdminQueries';
 import { Announcement, AnnouncementType } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 

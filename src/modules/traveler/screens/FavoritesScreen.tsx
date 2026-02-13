@@ -8,15 +8,16 @@
  * - 顯示景點分類、評分、位置、加入時間
  * - 空狀態提示
  *
- * 串接 API：
- * - collectionApi.getFavorites() - 取得收藏列表
- * - collectionApi.removeFavorite() - 移除收藏
+ * 串接 API（透過 React Query hooks）：
+ * - useAuthQuery(['favorites']) - 取得收藏列表
+ * - useAuthMutation - 移除收藏
  *
  * UI 框架：React Native Paper
  *
  * @see 後端合約: contracts/APP.md
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -36,10 +37,13 @@ import {
 } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n } from '../../../context/AppContext';
+import { useI18n } from '../../../context/AppContext';
+import { useAuthQuery, useAuthMutation } from '../../../hooks/useAuthQuery';
+import { useQueryClient } from '@tanstack/react-query';
 import { collectionApi } from '../../../services/collectionApi';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { FavoriteItem } from '../../../types/collection';
+import type { FavoritesResponse, RemoveFavoriteResponse } from '../../../types/collection';
 import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 
 // ============================================================
@@ -47,65 +51,43 @@ import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 // ============================================================
 
 export function FavoritesScreen() {
-  const { getToken } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
   const theme = useTheme();
+  const queryClient = useQueryClient();
 
   // ============================================================
-  // 狀態管理
+  // React Query Hooks
   // ============================================================
 
-  // 載入狀態
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  /** 收藏列表查詢 */
+  const favoritesQuery = useAuthQuery<FavoritesResponse>(
+    ['favorites'],
+    (token) => collectionApi.getFavorites(token),
+  );
 
-  // 收藏列表
-  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  /** 移除收藏 mutation */
+  const removeFavoriteMutation = useAuthMutation<RemoveFavoriteResponse, string>(
+    (token, placeId) => collectionApi.removeFavorite(token, placeId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      },
+    },
+  );
 
-  // 總數量
-  const [total, setTotal] = useState(0);
-
-  // ============================================================
-  // API 呼叫
-  // ============================================================
-
-  /**
-   * 載入收藏列表
-   */
-  const loadData = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) {
-        router.back();
-        return;
-      }
-
-      const data = await collectionApi.getFavorites(token);
-      if (data.success) {
-        setFavorites(data.favorites);
-        setTotal(data.total);
-      }
-    } catch (error) {
-      console.error('Failed to load favorites:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [getToken, router]);
-
-  // 初始載入
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  // 從查詢結果派生資料
+  const favorites = favoritesQuery.data?.favorites ?? [];
+  const total = favoritesQuery.data?.total ?? 0;
+  const loading = favoritesQuery.isLoading;
+  const refreshing = favoritesQuery.isFetching && !favoritesQuery.isLoading;
 
   /**
    * 下拉重新整理
    */
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadData();
-  }, [loadData]);
+    queryClient.invalidateQueries({ queryKey: ['favorites'] });
+  }, [queryClient]);
 
   // ============================================================
   // 事件處理
@@ -113,7 +95,7 @@ export function FavoritesScreen() {
 
   /**
    * 移除收藏
-   * 顯示確認對話框，確認後呼叫 API 移除
+   * 顯示確認對話框，確認後呼叫 mutation 移除
    */
   const handleRemoveFavorite = async (placeId: string, placeName: string) => {
     Alert.alert(
@@ -126,14 +108,7 @@ export function FavoritesScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const token = await getToken();
-              if (!token) return;
-
-              const result = await collectionApi.removeFavorite(token, placeId);
-              if (result.success) {
-                setFavorites(prev => prev.filter(f => f.placeId !== placeId));
-                setTotal(prev => prev - 1);
-              }
+              await removeFavoriteMutation.mutateAsync(placeId);
             } catch (error) {
               console.error('Failed to remove favorite:', error);
               Alert.alert(t.favorites_error, t.favorites_removeFailed);

@@ -6,9 +6,9 @@
  * - 基本資訊（名稱、位置、狀態）為唯讀
  * - 可編輯：店家介紹、Google 地圖連結、營業時間、優惠推廣
  *
- * 串接的 API：
- * - GET /merchant/places - 取得店家列表（找出特定店家）
- * - PUT /merchant/places/:id - 更新店家資訊
+ * 使用 React Query：
+ * - useMerchantPlaces() 取得店家列表，從中找出特定店家
+ * - useUpdateMerchantPlace() 更新店家資訊
  */
 import React, { useState, useEffect } from 'react';
 import {
@@ -26,31 +26,32 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { merchantApi } from '../../../services/merchantApi';
-import { MerchantPlace, UpdateMerchantPlaceParams, MerchantPlaceOpeningHours } from '../../../types';
+import { useMerchantPlaces, useUpdateMerchantPlace } from '../../../hooks/useMerchantQueries';
+import { UpdateMerchantPlaceParams, MerchantPlaceOpeningHours } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function PlaceEditScreen() {
   // ============ Hooks ============
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   // 將路由參數轉為數字 ID
   const placeId = id ? parseInt(id, 10) : null;
 
-  // ============ 狀態變數 ============
-  // place: 店家原始資料
-  const [place, setPlace] = useState<MerchantPlace | null>(null);
-  // loading: 資料載入狀態
-  const [loading, setLoading] = useState(true);
-  // saving: 儲存中狀態
-  const [saving, setSaving] = useState(false);
+  // ============ React Query ============
+  // 取得店家列表（從中找出特定店家）
+  const placesQuery = useMerchantPlaces();
+  // 更新店家 mutation（token 由 hook 自動注入）
+  const updatePlace = useUpdateMerchantPlace();
 
-  // ============ 可編輯欄位狀態 ============
+  // 從查詢結果中找出對應的店家
+  const place = (placesQuery.data?.places ?? []).find(p => p.id === placeId) ?? null;
+  const loading = placesQuery.isLoading;
+  const saving = updatePlace.isPending;
+
+  // ============ 可編輯欄位狀態（本地表單） ============
   // description: 店家介紹
   const [description, setDescription] = useState('');
   // googleMapUrl: Google 地圖連結
@@ -98,94 +99,62 @@ export function PlaceEditScreen() {
   };
 
   // ============ Effect Hooks ============
-  // 當 placeId 變更時載入店家資料
+  // 當 query 資料載入完成時，將店家資料同步到表單狀態
   useEffect(() => {
-    loadPlace();
-  }, [placeId]);
-
-  // ============ 資料載入函數 ============
-
-  /**
-   * loadPlace - 載入店家資料
-   * 從 API 取得店家列表並找出對應 ID 的店家
-   */
-  const loadPlace = async () => {
-    if (!placeId) return;
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) {
-        router.push('/login');
-        return;
+    if (place) {
+      setDescription(place.description || '');
+      setGoogleMapUrl(place.googleMapUrl || '');
+      setPromoTitle(place.promoTitle || '');
+      setPromoDescription(place.promoDescription || '');
+      setIsPromoActive(place.isPromoActive || false);
+      // 將 openingHours 物件轉成文字格式
+      if (place.openingHours?.weekdayText) {
+        setOpeningHoursText(place.openingHours.weekdayText.join('\n'));
       }
-      // 取得店家列表並找出對應的店家
-      const data = await merchantApi.getMerchantPlaces(token);
-      const foundPlace = data.places.find(p => p.id === placeId);
-      if (foundPlace) {
-        setPlace(foundPlace);
-        // 設定表單初始值
-        setDescription(foundPlace.description || '');
-        setGoogleMapUrl(foundPlace.googleMapUrl || '');
-        setPromoTitle(foundPlace.promoTitle || '');
-        setPromoDescription(foundPlace.promoDescription || '');
-        setIsPromoActive(foundPlace.isPromoActive || false);
-        // 將 openingHours 物件轉成文字格式
-        if (foundPlace.openingHours?.weekdayText) {
-          setOpeningHoursText(foundPlace.openingHours.weekdayText.join('\n'));
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load place:', error);
-      Alert.alert(t.common_error, translations.loadFailed);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [place?.id]); // 只在店家 ID 變更時同步（避免每次 refetch 覆蓋用戶編輯）
 
   // ============ 事件處理函數 ============
 
   /**
    * handleSave - 處理儲存
-   * 將表單資料組裝後呼叫 API 更新店家資訊
+   * 將表單資料組裝後透過 mutation 更新店家資訊
    */
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!placeId || !place) return;
-    try {
-      setSaving(true);
-      const token = await getToken();
-      if (!token) {
-        router.push('/login');
-        return;
-      }
 
-      // 將營業時間文字轉成 openingHours 格式
-      let openingHours: MerchantPlaceOpeningHours | undefined;
-      if (openingHoursText.trim()) {
-        openingHours = {
-          weekdayText: openingHoursText.split('\n').filter(line => line.trim()),
-        };
-      }
-
-      // 組裝更新參數
-      const params: UpdateMerchantPlaceParams = {
-        description: description || undefined,
-        googleMapUrl: googleMapUrl || undefined,
-        openingHours,
-        promoTitle: promoTitle || undefined,
-        promoDescription: promoDescription || undefined,
-        isPromoActive,
+    // 將營業時間文字轉成 openingHours 格式
+    let openingHours: MerchantPlaceOpeningHours | undefined;
+    if (openingHoursText.trim()) {
+      openingHours = {
+        weekdayText: openingHoursText.split('\n').filter(line => line.trim()),
       };
-
-      await merchantApi.updateMerchantPlace(token, placeId, params);
-      Alert.alert(t.common_success, translations.saveSuccess, [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
-    } catch (error) {
-      console.error('Failed to save place:', error);
-      Alert.alert(t.common_error, translations.saveFailed);
-    } finally {
-      setSaving(false);
     }
+
+    // 組裝更新參數
+    const params: UpdateMerchantPlaceParams = {
+      description: description || undefined,
+      googleMapUrl: googleMapUrl || undefined,
+      openingHours,
+      promoTitle: promoTitle || undefined,
+      promoDescription: promoDescription || undefined,
+      isPromoActive,
+    };
+
+    updatePlace.mutate(
+      { placeId, data: params },
+      {
+        onSuccess: () => {
+          Alert.alert(t.common_success, translations.saveSuccess, [
+            { text: 'OK', onPress: () => router.back() },
+          ]);
+        },
+        onError: (error) => {
+          console.error('Failed to save place:', error);
+          Alert.alert(t.common_error, translations.saveFailed);
+        },
+      },
+    );
   };
 
   // ============ 工具函數 ============

@@ -11,8 +11,10 @@
  * - GET /specialist/me - 取得專員資訊
  * - GET /specialist/services - 取得服務中的旅客列表
  * - POST /specialist/toggle-online - 切換上線狀態
+ *
+ * 更新日期：2026-02-13（遷移至 React Query hooks）
  */
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -25,27 +27,39 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth, useI18n } from '../../../context/AppContext';
-import { apiService } from '../../../services/api';
 import { SpecialistInfo, ServiceRelation } from '../../../types';
+import {
+  useSpecialistMe,
+  useSpecialistServices,
+  useToggleSpecialistOnline,
+} from '../../../hooks/useSpecialistQueries';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
 import { MibuBrand } from '../../../../constants/Colors';
 import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 元件主體 ============
 export function SpecialistDashboardScreen() {
-  const { user, getToken, setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
-  // specialist: 專員資訊（名稱、上線狀態、服務地區等）
-  const [specialist, setSpecialist] = useState<SpecialistInfo | null>(null);
-  // services: 服務中的旅客關係列表
-  const [services, setServices] = useState<ServiceRelation[]>([]);
-  // loading: 是否正在載入資料
-  const [loading, setLoading] = useState(true);
-  // toggling: 是否正在切換上線狀態
-  const [toggling, setToggling] = useState(false);
+  // ============ React Query Hooks ============
+
+  /** 專員資訊查詢 */
+  const specialistQuery = useSpecialistMe();
+  /** 服務中旅客查詢 */
+  const servicesQuery = useSpecialistServices();
+  /** 切換上線狀態 mutation */
+  const toggleOnlineMutation = useToggleSpecialistOnline();
+
+  // ============ 衍生狀態 ============
+
+  /** 專員資訊（預設 null） */
+  const specialist = (specialistQuery.data as SpecialistInfo) ?? null;
+  /** 服務中旅客列表（預設空陣列） */
+  const services = ((servicesQuery.data as any)?.relations ?? []) as ServiceRelation[];
+  /** 資料載入中（兩個查詢任一載入中即為 true） */
+  const loading = specialistQuery.isLoading || servicesQuery.isLoading;
 
   // ============ 事件處理函數 ============
 
@@ -58,53 +72,12 @@ export function SpecialistDashboardScreen() {
     router.replace('/login');
   };
 
-  // 元件載入時取得資料
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  /**
-   * 載入專員資訊與服務列表
-   * 同時呼叫兩個 API 並更新狀態
-   */
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-
-      // 同時取得專員資訊與服務列表
-      const [specialistData, servicesData] = await Promise.all([
-        apiService.getSpecialistMe(token).catch(() => null),
-        apiService.getSpecialistServices(token).catch(() => ({ relations: [] })),
-      ]);
-
-      setSpecialist(specialistData);
-      setServices(servicesData.relations || []);
-    } catch (error) {
-      console.error('Failed to load specialist data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   /**
    * 切換上線/離線狀態
-   * 呼叫 API 並更新專員狀態
+   * 透過 mutation 呼叫 API 並自動刷新專員資料
    */
-  const handleToggleOnline = async () => {
-    try {
-      setToggling(true);
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await apiService.toggleSpecialistOnline(token);
-      setSpecialist(response.specialist);
-    } catch (error) {
-      console.error('Failed to toggle online:', error);
-    } finally {
-      setToggling(false);
-    }
+  const handleToggleOnline = () => {
+    toggleOnlineMutation.mutate(undefined as any);
   };
 
   /**
@@ -164,7 +137,7 @@ export function SpecialistDashboardScreen() {
           </View>
           {/* 上線狀態開關 */}
           <View style={styles.toggleContainer}>
-            {toggling ? (
+            {toggleOnlineMutation.isPending ? (
               <ActivityIndicator size="small" color={MibuBrand.brown} />
             ) : (
               <Switch

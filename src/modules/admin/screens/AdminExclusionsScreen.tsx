@@ -14,9 +14,11 @@
  *
  * 權限控制：
  * - 僅限 admin 角色可存取此畫面
+ *
+ * 更新日期：2026-02-13（遷移至 React Query hooks）
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -31,7 +33,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth, useI18n } from '../../../context/AppContext';
 import { GlobalExclusion } from '../../../types';
-import { apiService } from '../../../services/api';
+import {
+  useGlobalExclusions,
+  useAddGlobalExclusion,
+  useRemoveGlobalExclusion,
+} from '../../../hooks/useAdminQueries';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';
 
@@ -47,16 +53,23 @@ export function AdminExclusionsScreen() {
   const { user } = useAuth();
   const { language } = useI18n();
 
-  // ============ 狀態管理 ============
+  // ============ React Query Hooks ============
 
-  /** 全域排除名單 */
-  const [exclusions, setExclusions] = useState<GlobalExclusion[]>([]);
+  /** 全域排除名單查詢 */
+  const exclusionsQuery = useGlobalExclusions();
+  /** 新增排除 mutation */
+  const addMutation = useAddGlobalExclusion();
+  /** 移除排除 mutation */
+  const removeMutation = useRemoveGlobalExclusion();
 
-  /** 資料載入中狀態 */
-  const [loading, setLoading] = useState(true);
+  // ============ 衍生狀態 ============
 
-  /** 新增排除項目中狀態 */
-  const [adding, setAdding] = useState(false);
+  /** 排除名單資料（預設空陣列） */
+  const exclusions = (exclusionsQuery.data ?? []) as GlobalExclusion[];
+  /** 資料載入中 */
+  const loading = exclusionsQuery.isLoading;
+
+  // ============ 本地 UI 狀態 ============
 
   /** 是否顯示新增表單 */
   const [showAddForm, setShowAddForm] = useState(false);
@@ -74,9 +87,6 @@ export function AdminExclusionsScreen() {
 
   /** 判斷當前用戶是否為管理員 */
   const isAdmin = user?.role === 'admin';
-
-  /** Token（用於 API 請求） */
-  const token = user?.id || '';
 
   // ============ 多國語系 ============
 
@@ -155,36 +165,11 @@ export function AdminExclusionsScreen() {
   /** 根據當前語言取得翻譯文字 */
   const t = translations[language] || translations['zh-TW'];
 
-  // ============ 副作用 ============
-
-  /** 元件掛載時載入排除名單 */
-  useEffect(() => {
-    loadExclusions();
-  }, []);
-
-  // ============ 資料載入函數 ============
-
-  /**
-   * 載入全域排除名單
-   * 呼叫 API 取得所有排除項目
-   */
-  const loadExclusions = async () => {
-    try {
-      setLoading(true);
-      const data = await apiService.getGlobalExclusions(token);
-      setExclusions(data);
-    } catch (error) {
-      console.error('Failed to load exclusions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // ============ CRUD 操作 ============
 
   /**
    * 處理新增排除項目
-   * 驗證必填欄位後呼叫 API 新增
+   * 驗證必填欄位後透過 mutation 新增
    */
   const handleAdd = async () => {
     // 驗證必填欄位
@@ -193,34 +178,30 @@ export function AdminExclusionsScreen() {
       return;
     }
 
-    try {
-      setAdding(true);
-      // 呼叫 API 新增排除項目
-      const newExclusion = await apiService.addGlobalExclusion(token, {
+    addMutation.mutate(
+      {
         placeName: placeName.trim(),
         district: district.trim(),
         city: city.trim(),
-      });
-
-      // 將新項目加入列表頂部
-      setExclusions([newExclusion, ...exclusions]);
-
-      // 重置表單
-      setPlaceName('');
-      setDistrict('');
-      setCity('');
-      setShowAddForm(false);
-    } catch (error) {
-      console.error('Failed to add exclusion:', error);
-      Alert.alert('Error', 'Failed to add exclusion');
-    } finally {
-      setAdding(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          // 重置表單
+          setPlaceName('');
+          setDistrict('');
+          setCity('');
+          setShowAddForm(false);
+        },
+        onError: () => {
+          Alert.alert('Error', 'Failed to add exclusion');
+        },
+      },
+    );
   };
 
   /**
    * 處理移除排除項目
-   * 顯示確認對話框後執行移除
+   * 顯示確認對話框後透過 mutation 移除
    * @param exclusion - 要移除的排除項目
    */
   const handleRemove = (exclusion: GlobalExclusion) => {
@@ -229,16 +210,12 @@ export function AdminExclusionsScreen() {
       {
         text: t.remove,
         style: 'destructive',
-        onPress: async () => {
-          try {
-            // 呼叫 API 移除排除項目
-            await apiService.removeGlobalExclusion(token, exclusion.id);
-            // 從列表中移除該項目
-            setExclusions(exclusions.filter(e => e.id !== exclusion.id));
-          } catch (error) {
-            console.error('Failed to remove exclusion:', error);
-            Alert.alert('Error', 'Failed to remove exclusion');
-          }
+        onPress: () => {
+          removeMutation.mutate(exclusion.id, {
+            onError: () => {
+              Alert.alert('Error', 'Failed to remove exclusion');
+            },
+          });
         },
       },
     ]);
@@ -322,11 +299,11 @@ export function AdminExclusionsScreen() {
             </TouchableOpacity>
             {/* 新增按鈕 */}
             <TouchableOpacity
-              style={[styles.addButton, adding && styles.addButtonDisabled]}
+              style={[styles.addButton, addMutation.isPending && styles.addButtonDisabled]}
               onPress={handleAdd}
-              disabled={adding}
+              disabled={addMutation.isPending}
             >
-              {adding ? (
+              {addMutation.isPending ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
                 <Text style={styles.addButtonText}>{t.add}</Text>

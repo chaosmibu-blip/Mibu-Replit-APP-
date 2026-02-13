@@ -1,5 +1,8 @@
 /**
  * NewPlaceScreen - 新增自有景點表單
+ *
+ * 使用 React Query mutation 處理表單提交，
+ * 本地 useState 管理表單欄位狀態。
  */
 import React, { useState } from 'react';
 import {
@@ -16,9 +19,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
+import { useClaimMerchantPlace } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // 分類選項定義：透過 t key 取得多語系標籤
@@ -42,11 +44,15 @@ const CATEGORY_T_KEYS: Record<string, string> = {
 };
 
 export function NewPlaceScreen() {
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
-  const [saving, setSaving] = useState(false);
+  // ============ React Query Mutation ============
+  // 認領/新增店家（token 由 hook 自動注入）
+  const claimPlace = useClaimMerchantPlace();
+  const saving = claimPlace.isPending;
+
+  // ============ 本地表單狀態 ============
   const [formData, setFormData] = useState({
     placeName: '',
     category: '',
@@ -60,37 +66,31 @@ export function NewPlaceScreen() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async () => {
+  // ============ 表單提交 ============
+  const handleSubmit = () => {
     if (!formData.placeName.trim() || !formData.category || !formData.city.trim()) {
       Alert.alert(t.merchant_notice, t.common_fillRequired);
       return;
     }
 
-    setSaving(true);
-    try {
-      const token = await getToken();
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
-      // 使用 claimMerchantPlace 來新增店家
-      await apiService.claimMerchantPlace(token, {
+    claimPlace.mutate(
+      {
         placeName: formData.placeName.trim(),
         district: formData.district.trim(),
         city: formData.city.trim(),
-        country: '台灣',
-      });
-
-      Alert.alert(t.common_success, t.merchant_applicationSubmitted, [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
-    } catch (error) {
-      console.error('Submit failed:', error);
-      Alert.alert(t.common_error, t.merchant_submitError);
-    } finally {
-      setSaving(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          Alert.alert(t.common_success, t.merchant_applicationSubmitted, [
+            { text: 'OK', onPress: () => router.back() },
+          ]);
+        },
+        onError: (error) => {
+          console.error('Submit failed:', error);
+          Alert.alert(t.common_error, t.merchant_submitError);
+        },
+      },
+    );
   };
 
   return (

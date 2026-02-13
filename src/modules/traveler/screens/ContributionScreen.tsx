@@ -9,18 +9,18 @@
  * - 查看自己的回報/建議記錄
  * - 獎勵經驗值機制
  *
- * 串接 API：
- * - contributionApi.getMyReports() - 取得我的回報
- * - contributionApi.getMySuggestions() - 取得我的建議
- * - contributionApi.getPendingVotes() - 取得待投票景點
- * - contributionApi.getPendingSuggestions() - 取得待投票建議
- * - contributionApi.submitReport() - 提交回報
- * - contributionApi.submitSuggestion() - 提交建議
- * - contributionApi.submitVote() - 提交投票
+ * 串接 API（透過 React Query hooks）：
+ * - useMyReports() - 取得我的回報
+ * - useMySuggestions() - 取得我的建議
+ * - usePendingVotes() - 取得待投票景點
+ * - usePendingSuggestions() - 取得待投票建議
+ * - useVotePlace() - 投票景點 mutation
+ * - useVoteSuggestion() - 投票建議 mutation
  *
  * @see 後端合約: contracts/APP.md Phase 6
+ * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -35,9 +35,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n } from '../../../context/AppContext';
+import { useI18n } from '../../../context/AppContext';
 import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
-import { contributionApi } from '../../../services/contributionApi';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useMyReports,
+  useMySuggestions,
+  usePendingVotes,
+  usePendingSuggestions,
+  useVotePlace,
+  useVoteSuggestion,
+} from '../../../hooks/useContributionQueries';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import {
   MyReport,
@@ -74,96 +82,77 @@ const REPORT_REASONS: { value: ReportReason; labelKey: string }[] = [
 // ============================================================
 
 export function ContributionScreen() {
-  const { getToken } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
-
+  const queryClient = useQueryClient();
 
   // ============================================================
   // 狀態管理
   // ============================================================
 
-  // 載入狀態
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  // 當前選中的 Tab
+  // 當前選中的 Tab（UI 狀態）
   const [activeTab, setActiveTab] = useState<TabType>('report');
 
-  // 回報 Tab 狀態
-  const [myReports, setMyReports] = useState<MyReport[]>([]);
-
-  // 建議 Tab 狀態
-  const [mySuggestions, setMySuggestions] = useState<MySuggestion[]>([]);
-
-  // 投票 Tab 狀態
-  const [pendingVotes, setPendingVotes] = useState<PendingVotePlace[]>([]);
-  const [pendingSuggestions, setPendingSuggestions] = useState<PendingSuggestion[]>([]);
-  const [votingId, setVotingId] = useState<string | null>(null); // 正在投票的項目 ID
+  // 正在投票的項目 ID（UI 狀態）
+  const [votingId, setVotingId] = useState<string | null>(null);
 
   // ============================================================
-  // API 呼叫
+  // React Query Hooks
   // ============================================================
 
-  /**
-   * 根據當前 Tab 載入對應資料
-   */
-  const loadData = useCallback(async () => {
-    try {
-      const token = await getToken();
-      if (!token) {
-        router.back();
-        return;
-      }
+  const reportsQuery = useMyReports();
+  const suggestionsQuery = useMySuggestions();
+  const pendingVotesQuery = usePendingVotes();
+  const pendingSuggestionsQuery = usePendingSuggestions();
+  const votePlaceMutation = useVotePlace();
+  const voteSuggestionMutation = useVoteSuggestion();
 
-      if (activeTab === 'report') {
-        const data = await contributionApi.getMyReports(token);
-        setMyReports(data.reports ?? []);
-      } else if (activeTab === 'suggest') {
-        const data = await contributionApi.getMySuggestions(token);
-        setMySuggestions(data.suggestions ?? []);
-      } else if (activeTab === 'vote') {
-        const [votesData, suggestionsData] = await Promise.all([
-          contributionApi.getPendingVotes(token),
-          contributionApi.getPendingSuggestions(token),
-        ]);
-        setPendingVotes(votesData.places ?? []);
-        setPendingSuggestions(suggestionsData.suggestions ?? []);
-      }
-    } catch (error) {
-      console.error('Failed to load contribution data:', error);
-      Alert.alert(t.contribution_loadFailed, t.contribution_loadFailedDesc);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [getToken, router, activeTab]);
+  // 從查詢結果派生資料
+  const myReports = reportsQuery.data?.reports ?? [];
+  const mySuggestions = suggestionsQuery.data?.suggestions ?? [];
+  const pendingVotes = pendingVotesQuery.data?.places ?? [];
+  const pendingSuggestions = pendingSuggestionsQuery.data?.suggestions ?? [];
 
-  // 切換 Tab 或初始載入時重新載入資料
-  useEffect(() => {
-    setLoading(true);
-    loadData();
-  }, [loadData]);
+  // 根據當前 Tab 判斷載入狀態
+  const loading = activeTab === 'report'
+    ? reportsQuery.isLoading
+    : activeTab === 'suggest'
+      ? suggestionsQuery.isLoading
+      : pendingVotesQuery.isLoading || pendingSuggestionsQuery.isLoading;
+
+  // 重新整理狀態（任一查詢正在 refetch）
+  const refreshing = activeTab === 'report'
+    ? reportsQuery.isFetching && !reportsQuery.isLoading
+    : activeTab === 'suggest'
+      ? suggestionsQuery.isFetching && !suggestionsQuery.isLoading
+      : (pendingVotesQuery.isFetching && !pendingVotesQuery.isLoading)
+        || (pendingSuggestionsQuery.isFetching && !pendingSuggestionsQuery.isLoading);
 
   /**
-   * 下拉重新整理
+   * 下拉重新整理：根據當前 Tab invalidate 對應查詢
    */
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadData();
-  }, [loadData]);
+    if (activeTab === 'report') {
+      queryClient.invalidateQueries({ queryKey: ['contribution', 'myReports'] });
+    } else if (activeTab === 'suggest') {
+      queryClient.invalidateQueries({ queryKey: ['contribution', 'mySuggestions'] });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ['contribution', 'pendingVotes'] });
+      queryClient.invalidateQueries({ queryKey: ['contribution', 'pendingSuggestions'] });
+    }
+  }, [activeTab, queryClient]);
+
+  // ============================================================
+  // 投票事件處理
+  // ============================================================
 
   const handleVotePlace = async (placeId: string, vote: 'exclude' | 'keep') => {
     if (votingId) return;
     setVotingId(placeId);
 
     try {
-      const token = await getToken();
-      if (!token) return;
-
-      const result = await contributionApi.votePlace(token, placeId, { vote });
+      const result = await votePlaceMutation.mutateAsync({ placeId, params: { vote } });
       if (result.success) {
-        setPendingVotes(prev => prev.filter(p => p.placeId !== placeId));
         Alert.alert(
           t.contribution_voteSuccess,
           tFormat(t.contribution_voteEarned, { amount: result.expEarned })
@@ -182,12 +171,8 @@ export function ContributionScreen() {
     setVotingId(suggestionId);
 
     try {
-      const token = await getToken();
-      if (!token) return;
-
-      const result = await contributionApi.voteSuggestion(token, suggestionId, { vote });
+      const result = await voteSuggestionMutation.mutateAsync({ suggestionId, params: { vote } });
       if (result.success) {
-        setPendingSuggestions(prev => prev.filter(s => s.id !== suggestionId));
         Alert.alert(
           t.contribution_voteSuccess,
           tFormat(t.contribution_voteEarned, { amount: result.expEarned })
