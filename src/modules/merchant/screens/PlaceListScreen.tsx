@@ -7,10 +7,10 @@
  * - 提供認領現有店家和新增自有店家的入口
  * - 顯示店家驗證狀態
  *
- * 串接的 API：
- * - GET /merchant/places - 取得已認領店家列表
+ * 使用 React Query：
+ * - useMerchantPlaces() 取得已認領店家列表（自動快取 + 重新驗證）
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -23,62 +23,29 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
+import { useMerchantPlaces } from '../../../hooks/useMerchantQueries';
 import { tFormat } from '../../../utils/i18n';
-import { MerchantPlace } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function PlaceListScreen() {
   // ============ Hooks ============
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
-  // places: 店家列表
-  const [places, setPlaces] = useState<MerchantPlace[]>([]);
-  // loading: 初始載入狀態
-  const [loading, setLoading] = useState(true);
-  // refreshing: 下拉刷新狀態
-  const [refreshing, setRefreshing] = useState(false);
+  // ============ React Query ============
+  // 取得店家列表（token 由 hook 自動注入）
+  const placesQuery = useMerchantPlaces();
+  const places = placesQuery.data?.places ?? [];
+  const loading = placesQuery.isLoading;
+  // 下拉刷新使用 refetching 狀態（排除初次載入）
+  const refreshing = placesQuery.isRefetching && !placesQuery.isLoading;
 
-  // ============ 資料載入函數 ============
-
-  /**
-   * loadPlaces - 載入店家列表
-   * @param showRefresh - 是否顯示刷新指示器（否則顯示載入指示器）
-   */
-  const loadPlaces = async (showRefresh = false) => {
-    try {
-      if (showRefresh) setRefreshing(true);
-      else setLoading(true);
-
-      const token = await getToken();
-      if (!token) return;
-
-      const data = await apiService.getMerchantPlaces(token);
-      setPlaces(data.places || []);
-    } catch (error) {
-      console.error('Failed to load places:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  // ============ Effect Hooks ============
-  // 元件載入時取得店家列表
-  useEffect(() => {
-    loadPlaces();
-  }, []);
-
-  // 從其他頁面返回時重新載入
+  // 從其他頁面返回時重新驗證資料
   useFocusEffect(
     useCallback(() => {
-      loadPlaces();
+      placesQuery.refetch();
     }, [])
   );
 
@@ -99,7 +66,7 @@ export function PlaceListScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={() => loadPlaces(true)} />
+        <RefreshControl refreshing={refreshing} onRefresh={() => placesQuery.refetch()} />
       }
     >
       {/* ============ 頂部標題區 ============ */}

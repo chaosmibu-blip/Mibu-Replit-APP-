@@ -11,7 +11,7 @@
  * - GET /merchant/places/search - 搜尋可認領店家
  * - POST /merchant/places/claim - 認領店家
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -26,9 +26,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
+import {
+  useMerchantPlaces,
+  useSearchMerchantPlaces,
+  useClaimMerchantPlace,
+} from '../../../hooks/useMerchantQueries';
 import { MerchantPlace, PlaceSearchResult } from '../../../types';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
@@ -37,27 +40,33 @@ import { ErrorState } from '../../shared/components/ui/ErrorState';
 // ============ 主元件 ============
 export function MerchantPlacesScreen() {
   // ============ Hooks ============
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
-  // places: 已認領的店家列表
-  const [places, setPlaces] = useState<MerchantPlace[]>([]);
+  // ============ React Query：已認領店家列表 ============
+  const {
+    data: placesData,
+    isLoading,
+    isError: loadError,
+    refetch: refetchPlaces,
+  } = useMerchantPlaces();
+
+  // 從 API 回傳取出店家列表，預設空陣列
+  const places: MerchantPlace[] = placesData?.places ?? [];
+
+  // ============ React Query：搜尋與認領 Mutations ============
+  const searchMutation = useSearchMerchantPlaces();
+  const claimMutation = useClaimMerchantPlace();
+
+  // ============ 本地 UI 狀態 ============
   // searchResults: 搜尋結果列表
   const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
   // searchQuery: 搜尋關鍵字
   const [searchQuery, setSearchQuery] = useState('');
-  // loading: 初始載入狀態
-  const [loading, setLoading] = useState(true);
-  // searching: 搜尋中狀態
-  const [searching, setSearching] = useState(false);
-  // claiming: 正在認領的店家 placeId
+  // claiming: 正在認領的店家 placeId（用於個別按鈕 loading 狀態）
   const [claiming, setClaiming] = useState<string | null>(null);
   // showSearch: 是否顯示搜尋模式
   const [showSearch, setShowSearch] = useState(false);
-  // loadError: API 載入錯誤狀態
-  const [loadError, setLoadError] = useState(false);
 
   // ============ 工具函數 ============
 
@@ -100,95 +109,61 @@ export function MerchantPlacesScreen() {
     back: t.common_back,
   };
 
-  // ============ Effect Hooks ============
-  // 元件載入時取得店家列表
-  useEffect(() => {
-    loadPlaces();
-  }, []);
-
-  // ============ 資料載入函數 ============
-
-  /**
-   * loadPlaces - 載入已認領的店家列表
-   */
-  const loadPlaces = async () => {
-    try {
-      setLoadError(false);
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-      const data = await apiService.getMerchantPlaces(token);
-      setPlaces(data.places || []);
-    } catch (error) {
-      console.error('Failed to load places:', error);
-      setLoadError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // ============ 事件處理函數 ============
 
   /**
-   * handleSearch - 執行搜尋
+   * handleSearch - 執行搜尋（透過 mutation）
    */
-  const handleSearch = async () => {
+  const handleSearch = () => {
     if (!searchQuery.trim()) return;
-    try {
-      setSearching(true);
-      const token = await getToken();
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-      const data = await apiService.searchMerchantPlaces(token, searchQuery);
-      setSearchResults(data.places || []);
-    } catch (error: unknown) {
-      console.error('Search failed:', error);
-      // 401 未授權：Token 過期或無效，導回登入頁
-      if ((error as any)?.status === 401) {
-        router.push('/login');
-        return;
-      }
-      Alert.alert(t.common_error, t.merchant_searchFailedRetry);
-    } finally {
-      setSearching(false);
-    }
+    searchMutation.mutate(searchQuery, {
+      onSuccess: (data) => {
+        setSearchResults(data.places ?? []);
+      },
+      onError: (error: any) => {
+        console.error('Search failed:', error);
+        // 401 未授權：Token 過期或無效，導回登入頁
+        if (error?.status === 401) {
+          router.push('/login');
+          return;
+        }
+        Alert.alert(t.common_error, t.merchant_searchFailedRetry);
+      },
+    });
   };
 
   /**
-   * handleClaim - 認領店家
+   * handleClaim - 認領店家（透過 mutation）
    * @param place - 要認領的店家搜尋結果
    */
-  const handleClaim = async (place: PlaceSearchResult) => {
-    try {
-      setClaiming(place.placeId);
-      const token = await getToken();
-      if (!token) return;
-      await apiService.claimMerchantPlace(token, {
+  const handleClaim = (place: PlaceSearchResult) => {
+    setClaiming(place.placeId);
+    claimMutation.mutate(
+      {
         placeName: place.placeName,
         district: place.district,
         city: place.city,
-        country: '台灣',
-        placeCacheId: String(place.id),
-        googlePlaceId: place.placeId,
-      });
-      Alert.alert(t.common_success, translations.claimSuccess);
-      // 認領成功後返回列表模式並重新載入
-      setShowSearch(false);
-      setSearchQuery('');
-      setSearchResults([]);
-      loadPlaces();
-    } catch (error) {
-      console.error('Claim failed:', error);
-      Alert.alert(t.common_error, translations.claimFailed);
-    } finally {
-      setClaiming(null);
-    }
+      },
+      {
+        onSuccess: () => {
+          Alert.alert(t.common_success, translations.claimSuccess);
+          // 認領成功後返回列表模式（React Query 的 onSuccess 已自動 invalidate places）
+          setShowSearch(false);
+          setSearchQuery('');
+          setSearchResults([]);
+          setClaiming(null);
+        },
+        onError: (error) => {
+          console.error('Claim failed:', error);
+          Alert.alert(t.common_error, translations.claimFailed);
+          setClaiming(null);
+        },
+      },
+    );
   };
 
   // ============ 載入中畫面 ============
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
@@ -205,7 +180,7 @@ export function MerchantPlacesScreen() {
           icon="cloud-offline-outline"
           message={t.merchant_loadPlacesFailed}
           detail={t.merchant_checkConnection}
-          onRetry={loadPlaces}
+          onRetry={() => refetchPlaces()}
         />
       </View>
     );
@@ -309,10 +284,10 @@ export function MerchantPlacesScreen() {
                 <TouchableOpacity
                   style={styles.searchButton}
                   onPress={handleSearch}
-                  disabled={searching}
+                  disabled={searchMutation.isPending}
                   accessibilityLabel="搜尋"
                 >
-                  {searching ? (
+                  {searchMutation.isPending ? (
                     <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
                   ) : (
                     <Ionicons name="search" size={20} color={MibuBrand.warmWhite} />
@@ -334,7 +309,7 @@ export function MerchantPlacesScreen() {
             </View>
 
             {/* 搜尋結果列表 */}
-            {searchResults.length === 0 && searchQuery && !searching ? (
+            {searchResults.length === 0 && searchQuery && !searchMutation.isPending ? (
               // 無搜尋結果
               <View style={styles.emptyCard}>
                 <Ionicons name="search-outline" size={48} color={MibuBrand.tan} />

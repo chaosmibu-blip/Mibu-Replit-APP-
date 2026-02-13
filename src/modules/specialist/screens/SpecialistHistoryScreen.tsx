@@ -8,8 +8,10 @@
  *
  * 串接的 API：
  * - GET /specialist/services - 取得服務紀錄列表
+ *
+ * 更新日期：2026-02-13（遷移至 React Query hooks）
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -20,50 +22,33 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth, useI18n } from '../../../context/AppContext';
-import { apiService } from '../../../services/api';
+import { useI18n } from '../../../context/AppContext';
 import { ServiceRelation } from '../../../types';
+import { useSpecialistServices } from '../../../hooks/useSpecialistQueries';
 import { UIColors } from '../../../../constants/Colors';
 import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 元件主體 ============
 export function SpecialistHistoryScreen() {
-  const { getToken } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
-  // services: 服務紀錄列表
-  const [services, setServices] = useState<ServiceRelation[]>([]);
-  // loading: 是否正在載入資料
-  const [loading, setLoading] = useState(true);
-  // filter: 目前的篩選條件（全部 / 進行中 / 已完成）
+  // ============ React Query Hooks ============
+
+  /** 服務紀錄查詢 */
+  const servicesQuery = useSpecialistServices();
+
+  // ============ 衍生狀態 ============
+
+  /** 服務紀錄列表（預設空陣列） */
+  const services = ((servicesQuery.data as any)?.relations ?? []) as ServiceRelation[];
+  /** 資料載入中 */
+  const loading = servicesQuery.isLoading;
+
+  // ============ 本地 UI 狀態 ============
+
+  /** 目前的篩選條件（全部 / 進行中 / 已完成） */
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
-
-  // 元件載入時取得服務紀錄
-  useEffect(() => {
-    loadServices();
-  }, []);
-
-  // ============ 資料載入函數 ============
-
-  /**
-   * 載入服務紀錄列表
-   * 從 API 取得所有服務關係資料
-   */
-  const loadServices = async () => {
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-      const data = await apiService.getSpecialistServices(token);
-      setServices(data.relations || []);
-    } catch (error) {
-      console.error('Failed to load services:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // ============ 篩選邏輯 ============
 

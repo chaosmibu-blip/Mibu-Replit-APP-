@@ -23,35 +23,37 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
+import { useVerifyMerchantCode } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function MerchantVerifyScreen() {
   // ============ Hooks ============
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
+  // ============ React Query：驗證碼 Mutation ============
+  const verifyMutation = useVerifyMerchantCode();
+
+  // 驗證中狀態（來自 mutation）
+  const loading = verifyMutation.isPending;
+
+  // ============ 本地 UI 狀態 ============
   // code: 核銷碼輸入值
   const [code, setCode] = useState('');
   // merchantId: 商家 ID 輸入值
   const [merchantId, setMerchantId] = useState('');
-  // loading: 驗證中狀態
-  const [loading, setLoading] = useState(false);
   // result: 驗證結果
   const [result, setResult] = useState<{ valid: boolean; message?: string } | null>(null);
 
   // ============ 事件處理函數 ============
 
   /**
-   * handleVerify - 處理驗證
+   * handleVerify - 處理驗證（透過 mutation）
    * 驗證輸入後呼叫 API 進行核銷碼驗證
    */
-  const handleVerify = async () => {
+  const handleVerify = () => {
     // 驗證必填欄位
     if (!code.trim() || !merchantId.trim()) {
       Alert.alert('', t.merchant_errorEmpty);
@@ -65,25 +67,24 @@ export function MerchantVerifyScreen() {
       return;
     }
 
-    try {
-      setLoading(true);
-      setResult(null);
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await apiService.verifyMerchantCode(token, merchantIdNum, code.trim());
-      setResult({
-        valid: response.valid,
-        message: response.valid
-          ? t.merchant_codeValid
-          : (response.error || t.merchant_codeInvalid)
-      });
-    } catch (error) {
-      console.error('Verify failed:', error);
-      setResult({ valid: false, message: t.merchant_verifyFailed });
-    } finally {
-      setLoading(false);
-    }
+    setResult(null);
+    verifyMutation.mutate(
+      { merchantId: merchantIdNum, code: code.trim() },
+      {
+        onSuccess: (response) => {
+          setResult({
+            valid: response.valid,
+            message: response.valid
+              ? t.merchant_codeValid
+              : (response.error || t.merchant_codeInvalid),
+          });
+        },
+        onError: (error) => {
+          console.error('Verify failed:', error);
+          setResult({ valid: false, message: t.merchant_verifyFailed });
+        },
+      },
+    );
   };
 
   /**

@@ -12,7 +12,7 @@
  * - PUT /merchant/products/:id - 更新產品
  * - DELETE /merchant/products/:id - 刪除產品
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -28,9 +28,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
+import {
+  useMerchantProducts,
+  useCreateMerchantProduct,
+  useUpdateMerchantProduct,
+  useDeleteMerchantProduct,
+} from '../../../hooks/useMerchantQueries';
 import { MerchantProduct } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
@@ -38,17 +42,27 @@ import { EmptyState } from '../../shared/components/ui/EmptyState';
 // ============ 主元件 ============
 export function MerchantProductsScreen() {
   // ============ Hooks ============
-  const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
-  // products: 產品列表
-  const [products, setProducts] = useState<MerchantProduct[]>([]);
-  // loading: 初始載入狀態
-  const [loading, setLoading] = useState(true);
-  // saving: 儲存中狀態
-  const [saving, setSaving] = useState(false);
+  // ============ React Query：產品列表 ============
+  const {
+    data: productsData,
+    isLoading,
+  } = useMerchantProducts();
+
+  // 從 API 回傳取出產品列表，預設空陣列
+  const products: MerchantProduct[] = productsData?.products ?? [];
+
+  // ============ React Query：產品 CRUD Mutations ============
+  const createMutation = useCreateMerchantProduct();
+  const updateMutation = useUpdateMerchantProduct();
+  const deleteMutation = useDeleteMerchantProduct();
+
+  // 儲存中狀態（新增或更新任一進行中）
+  const saving = createMutation.isPending || updateMutation.isPending;
+
+  // ============ 本地 UI 狀態 ============
   // modalVisible: 是否顯示新增/編輯彈窗
   const [modalVisible, setModalVisible] = useState(false);
   // editingProduct: 正在編輯的產品（null 表示新增模式）
@@ -60,31 +74,6 @@ export function MerchantProductsScreen() {
     price: '',          // 原價
     discountPrice: '',  // 優惠價
   });
-
-  // ============ Effect Hooks ============
-  // 元件載入時取得產品列表
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  // ============ 資料載入函數 ============
-
-  /**
-   * loadProducts - 載入產品列表
-   */
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-      const data = await apiService.getMerchantProducts(token);
-      setProducts(data.products || []);
-    } catch (error) {
-      console.error('Failed to load products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // ============ 彈窗操作函數 ============
 
@@ -113,45 +102,43 @@ export function MerchantProductsScreen() {
   // ============ 事件處理函數 ============
 
   /**
-   * handleSave - 處理儲存產品
+   * handleSave - 處理儲存產品（透過 mutation）
    */
-  const handleSave = async () => {
+  const handleSave = () => {
     // 驗證必填欄位
     if (!formData.name.trim()) return;
-    try {
-      setSaving(true);
-      const token = await getToken();
-      if (!token) return;
 
-      // 組裝參數
-      const params = {
-        name: formData.name,
-        description: formData.description || undefined,
-        price: formData.price ? parseFloat(formData.price) : undefined,
-        discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : undefined,
-      };
+    // 組裝參數
+    const params = {
+      name: formData.name,
+      description: formData.description || undefined,
+      price: formData.price ? parseFloat(formData.price) : undefined,
+      discountPrice: formData.discountPrice ? parseFloat(formData.discountPrice) : undefined,
+    };
 
-      if (editingProduct) {
-        // 更新模式
-        await apiService.updateMerchantProduct(token, editingProduct.id, params);
-      } else {
-        // 新增模式
-        await apiService.createMerchantProduct(token, params);
-      }
+    const callbacks = {
+      onSuccess: () => {
+        setModalVisible(false);
+        // React Query 的 onSuccess 已自動 invalidate products
+        Alert.alert(t.common_success, t.merchant_saved);
+      },
+      onError: (error: Error) => {
+        console.error('Save failed:', error);
+        Alert.alert(t.common_error, t.common_saveFailed);
+      },
+    };
 
-      setModalVisible(false);
-      loadProducts();
-      Alert.alert(t.common_success, t.merchant_saved);
-    } catch (error) {
-      console.error('Save failed:', error);
-      Alert.alert(t.common_error, t.common_saveFailed);
-    } finally {
-      setSaving(false);
+    if (editingProduct) {
+      // 更新模式
+      updateMutation.mutate({ productId: editingProduct.id, data: params }, callbacks);
+    } else {
+      // 新增模式
+      createMutation.mutate(params, callbacks);
     }
   };
 
   /**
-   * handleDelete - 處理刪除產品
+   * handleDelete - 處理刪除產品（透過 mutation）
    * @param product - 要刪除的產品
    */
   const handleDelete = (product: MerchantProduct) => {
@@ -163,16 +150,16 @@ export function MerchantProductsScreen() {
         {
           text: t.common_delete,
           style: 'destructive',
-          onPress: async () => {
-            try {
-              const token = await getToken();
-              if (!token) return;
-              await apiService.deleteMerchantProduct(token, product.id);
-              loadProducts();
-              Alert.alert(t.common_success, t.merchant_deleted);
-            } catch (error) {
-              console.error('Delete failed:', error);
-            }
+          onPress: () => {
+            deleteMutation.mutate(product.id, {
+              onSuccess: () => {
+                // React Query 的 onSuccess 已自動 invalidate products
+                Alert.alert(t.common_success, t.merchant_deleted);
+              },
+              onError: (error) => {
+                console.error('Delete failed:', error);
+              },
+            });
           },
         },
       ]
@@ -180,7 +167,7 @@ export function MerchantProductsScreen() {
   };
 
   // ============ 載入中畫面 ============
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />

@@ -9,7 +9,7 @@
  * 串接的 API：
  * - GET /merchant/transactions - 取得交易紀錄列表
  */
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -21,9 +21,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import { apiService } from '../../../services/api';
+import { useMerchantTransactions } from '../../../hooks/useMerchantQueries';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { MerchantTransaction } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
@@ -31,54 +30,19 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 // ============ 主元件 ============
 export function MerchantTransactionsScreen() {
   // ============ Hooks ============
-  const { getToken } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
 
-  // ============ 狀態變數 ============
-  // transactions: 交易紀錄列表
-  const [transactions, setTransactions] = useState<MerchantTransaction[]>([]);
-  // loading: 初始載入狀態
-  const [loading, setLoading] = useState(true);
-  // refreshing: 下拉刷新狀態
-  const [refreshing, setRefreshing] = useState(false);
+  // ============ React Query：交易紀錄 ============
+  const {
+    data: transactionsData,
+    isLoading,
+    isRefetching,
+    refetch,
+  } = useMerchantTransactions();
 
-  // ============ Effect Hooks ============
-  // 元件載入時取得交易紀錄
-  useEffect(() => {
-    loadTransactions();
-  }, []);
-
-  // ============ 資料載入函數 ============
-
-  /**
-   * loadTransactions - 載入交易紀錄列表
-   */
-  const loadTransactions = async () => {
-    try {
-      setLoading(true);
-      const token = await getToken();
-      if (!token) return;
-
-      const response = await apiService.getMerchantTransactions(token);
-      setTransactions(response.transactions || []);
-    } catch (error) {
-      console.error('Failed to load transactions:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ============ 事件處理函數 ============
-
-  /**
-   * handleRefresh - 處理下拉刷新
-   */
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadTransactions();
-    setRefreshing(false);
-  };
+  // 從 API 回傳取出交易列表，預設空陣列
+  const transactions: MerchantTransaction[] = transactionsData?.transactions ?? [];
 
   // ============ 工具函數 ============
 
@@ -127,7 +91,7 @@ export function MerchantTransactionsScreen() {
   };
 
   // ============ 載入中畫面 ============
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
@@ -153,7 +117,7 @@ export function MerchantTransactionsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />
         }
       >
         {/* 空狀態或交易列表 */}
