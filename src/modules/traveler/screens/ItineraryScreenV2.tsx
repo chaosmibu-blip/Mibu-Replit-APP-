@@ -1558,7 +1558,7 @@ export function ItineraryScreenV2() {
             data={currentItinerary.places}
             keyExtractor={(item) => String(item.id)}
             onDragEnd={({ data }) => handleDragReorder(data)}
-            contentContainerStyle={{ paddingBottom: Spacing.xxl, flexGrow: 1 }}
+            contentContainerStyle={{ paddingBottom: 120, flexGrow: 1 }}
             containerStyle={{ flex: 1 }}
             showsVerticalScrollIndicator={false}
             style={styles.drawerScroll}
