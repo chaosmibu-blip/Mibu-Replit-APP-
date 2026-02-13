@@ -13,7 +13,7 @@
  *
  * 更新日期：2026-02-12（Phase 3 遷移至 React Query + useInfiniteQuery）
  */
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -31,8 +31,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '../../../context/AppContext';
-import { useMailboxList, useClaimAll, useRedeemPromoCode } from '../../../hooks/useMailboxQueries';
+import { useMailboxList, useClaimAll, useClaimItem, useRedeemPromoCode } from '../../../hooks/useMailboxQueries';
 import { ApiError } from '../../../services/base';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
@@ -75,6 +76,8 @@ export function MailboxScreen() {
 
   const [activeTab, setActiveTab] = useState<MailboxStatus>('unclaimed');
   const [promoCode, setPromoCode] = useState('');
+  const [claimingItemId, setClaimingItemId] = useState<number | null>(null);
+  const queryClient = useQueryClient();
 
   // 防重複觸發（教訓 #006：useState 是異步的，ref 才能即時鎖定）
   const redeemingRef = useRef(false);
@@ -83,6 +86,7 @@ export function MailboxScreen() {
 
   const listQuery = useMailboxList(activeTab);
   const claimAllMutation = useClaimAll();
+  const claimItemMutation = useClaimItem();
   const redeemMutation = useRedeemPromoCode();
 
   // 衍生狀態（從 infinite query 展平所有頁面的項目）
@@ -170,6 +174,26 @@ export function MailboxScreen() {
     });
   }, [promoCode, redeemMutation, t]);
 
+  // ========== 單項領取 ==========
+
+  const handleClaimItem = useCallback((itemId: number) => {
+    if (claimingItemId) return;
+    setClaimingItemId(itemId);
+    claimItemMutation.mutate(itemId, {
+      onSuccess: () => {
+        Alert.alert(t.mailbox_claimSuccess);
+        queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      },
+      onError: (error: unknown) => {
+        const detail = error instanceof ApiError ? error.serverMessage : undefined;
+        Alert.alert(t.mailbox_claimFailed, detail || '');
+      },
+      onSettled: () => {
+        setClaimingItemId(null);
+      },
+    });
+  }, [claimingItemId, claimItemMutation, queryClient, t]);
+
   // ========== 渲染輔助 ==========
 
   /** 來源標籤文字 */
@@ -193,6 +217,7 @@ export function MailboxScreen() {
     const iconName = SOURCE_ICON_MAP[item.sourceType] || 'mail-outline';
     const isUnclaimed = item.status === 'unclaimed';
     const isExpired = item.status === 'expired';
+    const isClaiming = claimingItemId === item.id;
 
     return (
       <TouchableOpacity
@@ -200,7 +225,12 @@ export function MailboxScreen() {
           styles.card,
           !item.isRead && isUnclaimed && styles.cardUnread,
         ]}
-        onPress={() => router.push(`/mailbox/${item.id}` as any)}
+        onPress={() => {
+          if (isUnclaimed && !isClaiming) {
+            handleClaimItem(item.id);
+          }
+        }}
+        disabled={!isUnclaimed || isClaiming}
         activeOpacity={0.7}
       >
         {/* 未讀圓點 */}
@@ -268,7 +298,13 @@ export function MailboxScreen() {
           </View>
         )}
         {isUnclaimed && (
-          <Ionicons name="chevron-forward" size={18} color={UIColors.textSecondary} />
+          isClaiming ? (
+            <ActivityIndicator size="small" color={MibuBrand.brown} />
+          ) : (
+            <View style={styles.claimBadge}>
+              <Text style={styles.claimBadgeText}>{t.mailbox_claim || '領取'}</Text>
+            </View>
+          )
         )}
       </TouchableOpacity>
     );
@@ -629,6 +665,18 @@ const styles = StyleSheet.create({
   statusBadgeExpiredText: {
     fontSize: FontSize.xs,
     color: UIColors.textSecondary,
+  },
+  claimBadge: {
+    marginLeft: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 4,
+    borderRadius: Radius.sm,
+    backgroundColor: MibuBrand.brown,
+  },
+  claimBadgeText: {
+    fontSize: FontSize.xs,
+    fontWeight: '600' as const,
+    color: UIColors.white,
   },
 
   // 空狀態

@@ -184,12 +184,12 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
             height: SLOT_SIZE,
             margin: 4,
             borderRadius: 12,
-            backgroundColor: '#e8f4f8',
+            backgroundColor: MibuBrand.tierSBg,
             borderWidth: 3,
-            borderColor: MibuBrand.info,
+            borderColor: MibuBrand.copper,
             alignItems: 'center',
             justifyContent: 'center',
-            shadowColor: MibuBrand.info,
+            shadowColor: MibuBrand.copper,
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 0.3,
             shadowRadius: 4,
@@ -216,7 +216,7 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
           )}
           <Image source={{ uri: 'https://res.cloudinary.com/dgts6a89y/image/upload/v1771009433/mibu/items/%E5%AF%B6%E7%AE%B1.png' }} style={{ width: 32, height: 32 }} resizeMode="contain" />
           {item.placeCount != null && (
-            <Text style={{ fontSize: 8, fontWeight: '800', color: MibuBrand.info, marginTop: 2 }}>
+            <Text style={{ fontSize: 8, fontWeight: '800', color: MibuBrand.copper, marginTop: 2 }}>
               ×{item.placeCount}
             </Text>
           )}
@@ -793,32 +793,6 @@ export function ItemBoxScreen() {
           </View>
         )}
 
-        {/* 各稀有度統計 */}
-        <View style={{ flexDirection: 'row', marginTop: 12, gap: 8, flexWrap: 'wrap' }}>
-          {(['SP', 'SSR', 'SR', 'S', 'R'] as CouponTier[]).map(tier => {
-            // 檢查 tier 或 rarity 欄位
-            const count = items.filter(i => (i.tier || i.rarity) === tier && i.status === 'active').length;
-            return (
-              <View
-                key={tier}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: TIER_STYLES[tier].bgColor,
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: TIER_STYLES[tier].borderColor,
-                }}
-              >
-                <Text style={{ fontSize: 10, fontWeight: '700', color: TIER_STYLES[tier].borderColor }}>
-                  {tier}: {count}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
       </View>
 
       {/* ========== 格狀列表 ========== */}
