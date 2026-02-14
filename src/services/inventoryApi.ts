@@ -103,6 +103,7 @@ class InventoryApiService extends ApiBase {
       });
 
       // 後端沒有 success 欄位，HTTP 200 就是成功
+      console.log('[Inventory] 道具箱資料 →', (data.items || []).map(i => ({ id: i.id, type: i.type, name: i.name, tier: i.tier })));
       return {
         success: true,
         items: data.items || [],
