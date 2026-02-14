@@ -398,7 +398,7 @@ export function ItemBoxScreen() {
   const openPlacePackMutation = useOpenPlacePack();
 
   const allItems = inventoryQuery.data?.items ?? [];
-  const items = allItems.filter(i => !i.isDeleted && i.status === 'active');
+  const items = allItems.filter(i => !i.isDeleted && i.status === 'active' && !hiddenItemIds.has(i.id));
   const slotCount = inventoryQuery.data?.slotCount ?? items.length;
   const maxSlots = inventoryQuery.data?.maxSlots ?? MAX_SLOTS;
 
@@ -445,6 +445,7 @@ export function ItemBoxScreen() {
   const [cityPickerVisible, setCityPickerVisible] = useState(false);
   const [packOptions, setPackOptions] = useState<PlacePackOptionsResponse | null>(null);
   const [packLoading, setPackLoading] = useState(false);
+  const [hiddenItemIds, setHiddenItemIds] = useState<Set<number>>(new Set());
 
   // 從 mutation 派生 loading 狀態
   const redeeming = redeemItemMutation.isPending;
@@ -548,8 +549,8 @@ export function ItemBoxScreen() {
         setPackOptions({ ...options, availableCities: cityNames });
         setCityPickerVisible(true);
       }
-    } catch (error) {
-      Alert.alert(t.itemBox_error, t.itemBox_packOpenFailed);
+    } catch (error: any) {
+      setHiddenItemIds(prev => new Set([...prev, item.id]));
     } finally {
       setPackLoading(false);
     }
