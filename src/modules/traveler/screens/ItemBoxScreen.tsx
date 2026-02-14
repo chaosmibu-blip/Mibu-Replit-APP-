@@ -25,6 +25,7 @@ import { useI18n, useGacha, useAuth } from '../../../context/AppContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useInventory, useRedeemItem, useDeleteItem, useMarkItemRead, useOpenPlacePack } from '../../../hooks/useInventoryQueries';
 import { inventoryApi } from '../../../services/inventoryApi';
+import { preloadService } from '../../../services/preloadService';
 import { ApiError } from '../../../services/base';
 import { InventoryItem, CouponTier, PlacePackOptionsResponse } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
@@ -523,11 +524,9 @@ export function ItemBoxScreen() {
       if (!token) return;
 
       const options = await inventoryApi.getPlacePackOptions(token, item.id);
-      console.log('[PlacePack] open-options API response:', JSON.stringify(options));
-      setPackOptions(options);
 
       if (options.restricted && options.restrictedCity) {
-        // 限定城市 → 直接確認開啟
+        setPackOptions(options);
         Alert.alert(
           t.itemBox_packOpenTitle,
           t.itemBox_packOpenConfirm
@@ -543,7 +542,13 @@ export function ItemBoxScreen() {
           ],
         );
       } else {
-        // 非限定 → 城市選擇器
+        const countries = await preloadService.getCountries();
+        let cityNames: string[] = [];
+        if (countries.length > 0) {
+          const regions = await preloadService.getRegions(countries[0].id);
+          cityNames = regions.map(r => r.nameZh || r.nameEn);
+        }
+        setPackOptions({ ...options, availableCities: cityNames });
         setCityPickerVisible(true);
       }
     } catch (error) {
