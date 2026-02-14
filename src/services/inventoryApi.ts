@@ -102,6 +102,7 @@ class InventoryApiService extends ApiBase {
         headers: this.authHeaders(token),
       });
 
+      console.log('[DEBUG-INV] Raw items:', JSON.stringify((data.items || []).map((i: any) => ({ id: i.id, type: i.itemType || i.type, status: i.status, isDeleted: i.isDeleted, name: i.name?.substring(0, 20) }))));
       const normalizedItems = (data.items || []).map((item: any) => {
         const normalized = {
           ...item,

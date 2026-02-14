@@ -76,7 +76,18 @@ export function useOpenPlacePack() {
   return useAuthMutation<OpenPlacePackResponse, { itemId: number; selectedCity: string }>(
     (token, { itemId, selectedCity }) => inventoryApi.openPlacePack(token, itemId, selectedCity),
     {
-      onSuccess: () => {
+      onSuccess: (_data, variables) => {
+        queryClient.setQueryData<InventoryResponse | undefined>(
+          ['inventory', 'list'],
+          (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              items: old.items.filter((item: any) => item.id !== variables.itemId),
+              slotCount: Math.max(0, (old.slotCount || 0) - 1),
+            };
+          },
+        );
         queryClient.invalidateQueries({ queryKey: ['inventory'] });
       },
     },
