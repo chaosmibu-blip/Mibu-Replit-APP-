@@ -111,23 +111,10 @@ class MailboxApiService extends ApiBase {
    * @returns 領取結果（含每個獎勵的成功/失敗狀態）
    */
   async claimItem(token: string, itemId: number): Promise<MailboxClaimResponse> {
-    console.log('[Mailbox] 領取請求 →', { itemId, baseUrl: this.baseUrl, tokenPrefix: token?.substring(0, 20) + '...' });
-    try {
-      const result = await this.request<MailboxClaimResponse>(`/api/mailbox/${itemId}/claim`, {
-        method: 'POST',
-        headers: this.authHeaders(token),
-      });
-      console.log('[Mailbox] 領取成功 ←', JSON.stringify(result));
-      return result;
-    } catch (error: any) {
-      console.log('[Mailbox] 領取失敗 ←', {
-        message: error?.message,
-        serverMessage: error?.serverMessage,
-        statusCode: error?.statusCode,
-        raw: String(error),
-      });
-      throw error;
-    }
+    return this.request<MailboxClaimResponse>(`/api/mailbox/${itemId}/claim`, {
+      method: 'POST',
+      headers: this.authHeaders(token),
+    });
   }
 
   /**
@@ -157,24 +144,11 @@ class MailboxApiService extends ApiBase {
    * @returns 兌換結果（含信箱項目 ID 和獎勵摘要）
    */
   async redeemPromoCode(token: string, code: string): Promise<PromoCodeRedeemResponse> {
-    console.log('[PromoCode] 兌換請求 →', { code, tokenPrefix: token?.substring(0, 20) + '...', baseUrl: this.baseUrl });
-    try {
-      const result = await this.request<PromoCodeRedeemResponse>('/api/promo-code/redeem', {
-        method: 'POST',
-        headers: this.authHeaders(token),
-        body: JSON.stringify({ code }),
-      });
-      console.log('[PromoCode] 兌換成功 ←', JSON.stringify(result));
-      return result;
-    } catch (error: any) {
-      console.log('[PromoCode] 兌換失敗 ←', {
-        message: error?.message,
-        serverMessage: error?.serverMessage,
-        statusCode: error?.statusCode,
-        raw: String(error),
-      });
-      throw error;
-    }
+    return this.request<PromoCodeRedeemResponse>('/api/promo-code/redeem', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify({ code }),
+    });
   }
 
   /**

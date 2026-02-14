@@ -102,11 +102,14 @@ class InventoryApiService extends ApiBase {
         headers: this.authHeaders(token),
       });
 
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      console.log('[Inventory] 道具箱資料 →', (data.items || []).map(i => ({ id: i.id, type: i.type, name: i.name, tier: i.tier })));
+      const normalizedItems = (data.items || []).map((item: any) => ({
+        ...item,
+        type: item.itemType || item.type || 'coupon',
+        itemType: item.itemType || item.type || 'coupon',
+      }));
       return {
         success: true,
-        items: data.items || [],
+        items: normalizedItems,
         slotCount: data.slotCount || 0,
         maxSlots: data.maxSlots || 30,
         isFull: data.isFull || false,

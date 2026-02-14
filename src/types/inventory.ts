@@ -59,7 +59,8 @@ export interface InventoryCouponData {
 export interface InventoryItem {
   id: number;                          // 項目 ID
   userId: string;                      // 用戶 ID
-  type: InventoryItemType;             // 項目類型
+  itemType: InventoryItemType;         // 項目類型（後端 camelCase 欄位）
+  type: InventoryItemType;             // 項目類型（前端別名，由 normalizeItem 映射）
   name: string;                        // 項目名稱
   description: string | null;          // 項目描述
   rarity: CouponTier;                  // 稀有度
