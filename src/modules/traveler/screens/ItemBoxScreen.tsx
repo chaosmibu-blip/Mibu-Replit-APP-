@@ -398,9 +398,7 @@ export function ItemBoxScreen() {
   const openPlacePackMutation = useOpenPlacePack();
 
   const allItems = inventoryQuery.data?.items ?? [];
-  const items = allItems.filter(i =>
-    !i.isDeleted && i.status !== 'deleted' && i.status !== 'redeemed' && i.status !== 'used' && i.status !== 'opened',
-  );
+  const items = allItems.filter(i => !i.isDeleted && i.status === 'active');
   const slotCount = inventoryQuery.data?.slotCount ?? items.length;
   const maxSlots = inventoryQuery.data?.maxSlots ?? MAX_SLOTS;
 
