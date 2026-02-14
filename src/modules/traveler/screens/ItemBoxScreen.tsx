@@ -575,8 +575,9 @@ export function ItemBoxScreen() {
       setCityPickerVisible(false);
       setPackOptions(null);
       setSelectedItem(null);
-    } catch (error) {
-      Alert.alert(t.itemBox_error, t.itemBox_packOpenFailed);
+    } catch (error: any) {
+      const msg = error?.serverMessage || error?.message || String(error);
+      Alert.alert(t.itemBox_error, `${t.itemBox_packOpenFailed}\n\n[Debug] ${msg}`);
     }
   };
 
