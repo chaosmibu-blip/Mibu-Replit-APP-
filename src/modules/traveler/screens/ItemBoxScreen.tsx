@@ -398,7 +398,7 @@ export function ItemBoxScreen() {
   const openPlacePackMutation = useOpenPlacePack();
 
   const allItems = inventoryQuery.data?.items ?? [];
-  const items = allItems.filter(i => !i.isDeleted && i.status === 'active' && !hiddenItemIds.has(i.id));
+  const items = allItems.filter(i => !i.isDeleted && i.status === 'active' && !hiddenItemIds.includes(i.id));
   const slotCount = inventoryQuery.data?.slotCount ?? items.length;
   const maxSlots = inventoryQuery.data?.maxSlots ?? MAX_SLOTS;
 
@@ -445,7 +445,7 @@ export function ItemBoxScreen() {
   const [cityPickerVisible, setCityPickerVisible] = useState(false);
   const [packOptions, setPackOptions] = useState<PlacePackOptionsResponse | null>(null);
   const [packLoading, setPackLoading] = useState(false);
-  const [hiddenItemIds, setHiddenItemIds] = useState<Set<number>>(new Set());
+  const [hiddenItemIds, setHiddenItemIds] = useState<number[]>([]);
 
   // 從 mutation 派生 loading 狀態
   const redeeming = redeemItemMutation.isPending;
@@ -550,7 +550,7 @@ export function ItemBoxScreen() {
         setCityPickerVisible(true);
       }
     } catch (error: any) {
-      setHiddenItemIds(prev => new Set([...prev, item.id]));
+      setHiddenItemIds(prev => [...prev, item.id]);
     } finally {
       setPackLoading(false);
     }
