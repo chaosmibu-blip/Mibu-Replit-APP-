@@ -144,11 +144,24 @@ class MailboxApiService extends ApiBase {
    * @returns 兌換結果（含信箱項目 ID 和獎勵摘要）
    */
   async redeemPromoCode(token: string, code: string): Promise<PromoCodeRedeemResponse> {
-    return this.request<PromoCodeRedeemResponse>('/api/promo-code/redeem', {
-      method: 'POST',
-      headers: this.authHeaders(token),
-      body: JSON.stringify({ code }),
-    });
+    console.log('[PromoCode] 兌換請求 →', { code, tokenPrefix: token?.substring(0, 20) + '...' });
+    try {
+      const result = await this.request<PromoCodeRedeemResponse>('/api/promo-code/redeem', {
+        method: 'POST',
+        headers: this.authHeaders(token),
+        body: JSON.stringify({ code }),
+      });
+      console.log('[PromoCode] 兌換成功 ←', JSON.stringify(result));
+      return result;
+    } catch (error: any) {
+      console.log('[PromoCode] 兌換失敗 ←', {
+        message: error?.message,
+        serverMessage: error?.serverMessage,
+        statusCode: error?.statusCode,
+        raw: String(error),
+      });
+      throw error;
+    }
   }
 
   /**
