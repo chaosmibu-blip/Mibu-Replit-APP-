@@ -111,10 +111,23 @@ class MailboxApiService extends ApiBase {
    * @returns 領取結果（含每個獎勵的成功/失敗狀態）
    */
   async claimItem(token: string, itemId: number): Promise<MailboxClaimResponse> {
-    return this.request<MailboxClaimResponse>(`/api/mailbox/${itemId}/claim`, {
-      method: 'POST',
-      headers: this.authHeaders(token),
-    });
+    console.log('[Mailbox] 領取請求 →', { itemId, baseUrl: this.baseUrl, tokenPrefix: token?.substring(0, 20) + '...' });
+    try {
+      const result = await this.request<MailboxClaimResponse>(`/api/mailbox/${itemId}/claim`, {
+        method: 'POST',
+        headers: this.authHeaders(token),
+      });
+      console.log('[Mailbox] 領取成功 ←', JSON.stringify(result));
+      return result;
+    } catch (error: any) {
+      console.log('[Mailbox] 領取失敗 ←', {
+        message: error?.message,
+        serverMessage: error?.serverMessage,
+        statusCode: error?.statusCode,
+        raw: String(error),
+      });
+      throw error;
+    }
   }
 
   /**
