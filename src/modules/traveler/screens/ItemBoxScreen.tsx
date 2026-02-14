@@ -562,8 +562,10 @@ export function ItemBoxScreen() {
    * 執行開啟景點包
    */
   const executeOpenPack = async (itemId: number, city: string) => {
+    console.log('[PlacePack] executeOpenPack called:', { itemId, city, cityType: typeof city, cityLength: city?.length });
     try {
       const result = await openPlacePackMutation.mutateAsync({ itemId, selectedCity: city });
+      console.log('[PlacePack] open success:', JSON.stringify(result));
       const { addedCount, skippedCount } = result.summary;
       // Toast 提示
       Alert.alert(
@@ -1138,13 +1140,15 @@ export function ItemBoxScreen() {
                   key={city}
                   onPress={() => {
                     if (!selectedItem) return;
+                    const itemId = selectedItem.id;
+                    const cityName = city;
                     setCityPickerVisible(false);
                     Alert.alert(
                       t.itemBox_packOpenTitle,
-                      `${packOptions.packName}\n${packOptions.placeCount} ${t.itemBox_packPlaces}\n\n${t.itemBox_packSelectCity}：${city}`,
+                      `${packOptions.packName}\n${packOptions.placeCount} ${t.itemBox_packPlaces}\n\n${t.itemBox_packSelectCity}：${cityName}`,
                       [
                         { text: t.itemBox_deleteCancel, style: 'cancel', onPress: () => setCityPickerVisible(true) },
-                        { text: t.itemBox_packOpen, onPress: () => executeOpenPack(selectedItem.id, city) },
+                        { text: t.itemBox_packOpen, onPress: () => executeOpenPack(itemId, cityName) },
                       ],
                     );
                   }}
