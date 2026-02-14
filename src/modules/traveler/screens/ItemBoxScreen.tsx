@@ -562,10 +562,8 @@ export function ItemBoxScreen() {
    * 執行開啟景點包
    */
   const executeOpenPack = async (itemId: number, city: string) => {
-    console.log('[PlacePack] executeOpenPack called:', { itemId, city, cityType: typeof city, cityLength: city?.length });
     try {
       const result = await openPlacePackMutation.mutateAsync({ itemId, selectedCity: city });
-      console.log('[PlacePack] open success:', JSON.stringify(result));
       const { addedCount, skippedCount } = result.summary;
       // Toast 提示
       Alert.alert(
@@ -577,9 +575,8 @@ export function ItemBoxScreen() {
       setCityPickerVisible(false);
       setPackOptions(null);
       setSelectedItem(null);
-    } catch (error: any) {
-      const msg = error?.serverMessage || error?.message || String(error);
-      Alert.alert(t.itemBox_error, `${t.itemBox_packOpenFailed}\n\n[Debug] ${msg}`);
+    } catch (error) {
+      Alert.alert(t.itemBox_error, t.itemBox_packOpenFailed);
     }
   };
 
