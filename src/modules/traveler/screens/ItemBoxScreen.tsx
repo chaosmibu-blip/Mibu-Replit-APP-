@@ -523,6 +523,7 @@ export function ItemBoxScreen() {
       if (!token) return;
 
       const options = await inventoryApi.getPlacePackOptions(token, item.id);
+      console.log('[PlacePack] open-options API response:', JSON.stringify(options));
       setPackOptions(options);
 
       if (options.restricted && options.restrictedCity) {
