@@ -102,11 +102,15 @@ class InventoryApiService extends ApiBase {
         headers: this.authHeaders(token),
       });
 
-      const normalizedItems = (data.items || []).map((item: any) => ({
-        ...item,
-        type: item.itemType || item.type || 'coupon',
-        itemType: item.itemType || item.type || 'coupon',
-      }));
+      const normalizedItems = (data.items || []).map((item: any) => {
+        const normalized = {
+          ...item,
+          type: item.itemType || item.type || 'coupon',
+          itemType: item.itemType || item.type || 'coupon',
+        };
+        delete normalized.slotIndex;
+        return normalized;
+      });
       return {
         success: true,
         items: normalizedItems,

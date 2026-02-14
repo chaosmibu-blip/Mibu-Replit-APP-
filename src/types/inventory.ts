@@ -31,7 +31,7 @@ export type InventoryItemType = 'coupon' | 'ticket' | 'gift' | 'place_pack';
  * - redeemed: 已核銷
  * - deleted: 已刪除
  */
-export type InventoryItemStatus = 'active' | 'expired' | 'redeemed' | 'deleted';
+export type InventoryItemStatus = 'active' | 'expired' | 'redeemed' | 'deleted' | 'used' | 'opened';
 
 // ============ 優惠券資料 ============
 
@@ -144,18 +144,22 @@ export interface PlacePackOptionsResponse {
  */
 export interface OpenPlacePackResponse {
   success: boolean;
-  packId: number;
-  openedAt: string;
-  addedPlaces: Array<{
+  packName?: string;
+  city?: string;
+  requestedCount?: number;
+  addedCount: number;
+  skippedCount: number;
+  addedPlaceIds?: number[];
+  addedPlaces?: Array<{
     collectionId: number;
     placeName: string;
     address?: string;
   }>;
-  skippedPlaces: Array<{
+  skippedPlaces?: Array<{
     reason: 'already_owned' | 'invalid';
     placeName: string;
   }>;
-  summary: {
+  summary?: {
     totalPlaces: number;
     addedCount: number;
     skippedCount: number;

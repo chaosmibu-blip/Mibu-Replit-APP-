@@ -397,10 +397,9 @@ export function ItemBoxScreen() {
   const markItemReadMutation = useMarkItemRead();
   const openPlacePackMutation = useOpenPlacePack();
 
-  // 從查詢結果派生資料（過濾已刪除和已開啟的景點包）
   const allItems = inventoryQuery.data?.items ?? [];
   const items = allItems.filter(i =>
-    !i.isDeleted && i.status !== 'deleted' && i.status !== 'redeemed',
+    !i.isDeleted && i.status !== 'deleted' && i.status !== 'redeemed' && i.status !== 'used' && i.status !== 'opened',
   );
   const slotCount = inventoryQuery.data?.slotCount ?? items.length;
   const maxSlots = inventoryQuery.data?.maxSlots ?? MAX_SLOTS;
@@ -564,7 +563,8 @@ export function ItemBoxScreen() {
   const executeOpenPack = async (itemId: number, city: string) => {
     try {
       const result = await openPlacePackMutation.mutateAsync({ itemId, selectedCity: city });
-      const { addedCount, skippedCount } = result.summary;
+      const addedCount = result.addedCount ?? result.summary?.addedCount ?? 0;
+      const skippedCount = result.skippedCount ?? result.summary?.skippedCount ?? 0;
       // Toast 提示
       Alert.alert(
         t.itemBox_packOpenSuccess,
