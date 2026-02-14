@@ -144,7 +144,7 @@ class MailboxApiService extends ApiBase {
    * @returns 兌換結果（含信箱項目 ID 和獎勵摘要）
    */
   async redeemPromoCode(token: string, code: string): Promise<PromoCodeRedeemResponse> {
-    console.log('[PromoCode] 兌換請求 →', { code, tokenPrefix: token?.substring(0, 20) + '...' });
+    console.log('[PromoCode] 兌換請求 →', { code, tokenPrefix: token?.substring(0, 20) + '...', baseUrl: this.baseUrl });
     try {
       const result = await this.request<PromoCodeRedeemResponse>('/api/promo-code/redeem', {
         method: 'POST',
