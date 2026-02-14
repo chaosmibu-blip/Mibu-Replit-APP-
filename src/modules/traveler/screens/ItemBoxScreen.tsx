@@ -1136,7 +1136,18 @@ export function ItemBoxScreen() {
               {packOptions?.availableCities?.map((city) => (
                 <TouchableOpacity
                   key={city}
-                  onPress={() => selectedItem && executeOpenPack(selectedItem.id, city)}
+                  onPress={() => {
+                    if (!selectedItem) return;
+                    setCityPickerVisible(false);
+                    Alert.alert(
+                      t.itemBox_packOpenTitle,
+                      `${packOptions.packName}\n${packOptions.placeCount} ${t.itemBox_packPlaces}\n\n${t.itemBox_packSelectCity}：${city}`,
+                      [
+                        { text: t.itemBox_deleteCancel, style: 'cancel', onPress: () => setCityPickerVisible(true) },
+                        { text: t.itemBox_packOpen, onPress: () => executeOpenPack(selectedItem.id, city) },
+                      ],
+                    );
+                  }}
                   disabled={openPlacePackMutation.isPending}
                   style={{
                     flexDirection: 'row',
@@ -1151,7 +1162,6 @@ export function ItemBoxScreen() {
                   <Text style={{ fontSize: 16, fontWeight: '600', color: MibuBrand.dark, marginLeft: 12, flex: 1 }}>
                     {city}
                   </Text>
-                  <Ionicons name="chevron-forward" size={18} color={MibuBrand.brownLight} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
