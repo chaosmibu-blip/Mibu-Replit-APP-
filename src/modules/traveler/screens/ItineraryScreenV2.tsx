@@ -94,6 +94,8 @@ import {
 // Phase 2A 抽離的子元件
 import { CreateItineraryModal } from './CreateItineraryModal';
 import { AddPlacesModal } from './AddPlacesModal';
+import { useGuestUpgradePrompt } from '../../../hooks/useGuestUpgradePrompt';
+import { UpgradePromptToast } from '../../shared/components/UpgradePromptToast';
 
 // 常數、TypewriterText、輔助函數已拆至獨立檔案
 // → ItineraryScreenV2.styles.ts / TypewriterText.tsx / itineraryHelpers.ts
@@ -104,6 +106,7 @@ export function ItineraryScreenV2() {
   const router = useRouter();
   const { isAuthenticated, getToken, user } = useAuth();
   const { t, language } = useI18n();
+  const guestUpgrade = useGuestUpgradePrompt();
 
   // ===== 狀態管理 =====
   const [loading, setLoading] = useState(true);
@@ -394,6 +397,9 @@ export function ItineraryScreenV2() {
         setTimeout(() => {
           chatScrollRef.current?.scrollToEnd({ animated: true });
         }, 100);
+
+        // #051: 首次 AI 對話 → 升級提示
+        guestUpgrade.checkFirstAiChat();
       }
     } catch (error) {
       console.error('AI chat error:', error);
@@ -1126,8 +1132,9 @@ export function ItineraryScreenV2() {
     });
   }, [rightDrawerAnim, overlayAnim]);
 
-  // ===== 未登入 / 訪客狀態 =====
-  if (!isAuthenticated || user?.provider === 'guest') {
+  // ===== 未登入狀態 =====
+  // #051: 訪客有 JWT Token（#049），不再擋訪客
+  if (!isAuthenticated) {
     return (
       <View style={styles.emptyContainer}>
         <Ionicons name="airplane-outline" size={64} color={MibuBrand.tanLight} />
@@ -1816,6 +1823,14 @@ export function ItineraryScreenV2() {
         onCreated={handleItineraryCreated}
       />
       {renderToast()}
+      {/* #051: 訪客升級提示 */}
+      <UpgradePromptToast
+        visible={!!guestUpgrade.activePrompt}
+        message={guestUpgrade.promptMessage}
+        actionLabel={guestUpgrade.promptActionLabel}
+        onAction={guestUpgrade.handlePromptAction}
+        onDismiss={guestUpgrade.dismissPrompt}
+      />
 
       {/* Mini 頭像放大預覽（LINE 風格） */}
       <Modal

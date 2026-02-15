@@ -14,7 +14,7 @@
  *
  * @updated 2026-02-12 Phase 3 遷移至 React Query
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -40,6 +40,9 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 import { Event } from '../../../types';
 import { useHomeEvents, useDailyTasks } from '../../../hooks/useHomeQueries';
 import { useCoins, usePerks } from '../../../hooks/useEconomyQueries';
+import { useCollectionStats } from '../../../hooks/useCollectionQueries';
+import { useGuestUpgradePrompt } from '../../../hooks/useGuestUpgradePrompt';
+import { UpgradePromptToast } from '../components/UpgradePromptToast';
 import { avatarService } from '../../../services/avatarService';
 import { AvatarPreset } from '../../../types/asset';
 
@@ -103,6 +106,8 @@ export function HomeScreen() {
   const coinsQuery = useCoins();
   const perksQuery = usePerks();
   const dailyTasksQuery = useDailyTasks();
+  const collectionStatsQuery = useCollectionStats();
+  const guestUpgrade = useGuestUpgradePrompt();
 
   // 衍生狀態
   const loading = eventsQuery.isLoading;
@@ -112,6 +117,21 @@ export function HomeScreen() {
   const coinsData = coinsQuery.data;
   const perksData = perksQuery.data;
   const dailyTask = dailyTasksQuery.dailyTask;
+
+  // #051: 訪客升級提示 — 連續登入 3 天 / 收集 10 個景點
+  useEffect(() => {
+    const streak = coinsData?.loginStreak ?? 0;
+    if (streak >= 3) {
+      guestUpgrade.checkLoginStreak(streak);
+    }
+  }, [coinsData?.loginStreak]);
+
+  useEffect(() => {
+    const total = collectionStatsQuery.data?.total ?? 0;
+    if (total >= 10) {
+      guestUpgrade.checkCollectionMilestone(total);
+    }
+  }, [collectionStatsQuery.data?.total]);
 
   /**
    * 根據累計金幣決定稱號
@@ -552,6 +572,15 @@ export function HomeScreen() {
         )}
       </View>
     </ScrollView>
+
+    {/* #051 訪客升級提示 */}
+    <UpgradePromptToast
+      visible={!!guestUpgrade.activePrompt}
+      message={guestUpgrade.promptMessage}
+      actionLabel={guestUpgrade.promptActionLabel}
+      onAction={guestUpgrade.handlePromptAction}
+      onDismiss={guestUpgrade.dismissPrompt}
+    />
     </SafeAreaView>
   );
 }

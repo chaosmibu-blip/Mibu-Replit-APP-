@@ -6,6 +6,39 @@
 
 ## 最新回報
 
+### 2026-02-15 #051：訪客升級提醒（關鍵功能觸發提示）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #051 |
+| 狀態 | ✅ 完成 |
+
+**移除訪客硬擋**
+- [x] `ItineraryScreenV2.tsx`：移除 `user?.provider === 'guest'` 條件，訪客可用行程功能
+- [x] `ProfileScreen.tsx`：移除 `isGuest` 變數和整個訪客攔截區塊，訪客可查看/編輯個人資料
+
+**新增基礎建設**
+- [x] `storageKeys.ts`：新增 3 個 storage key（`GUEST_PROMPT_COLLECTION/AI_CHAT/LOGIN_STREAK`）
+- [x] `useGuestUpgradePrompt.ts`（新檔）：中央邏輯 hook，管理 3 個觸發點
+- [x] `UpgradePromptToast.tsx`（新檔）：非阻塞式底部 toast + CTA 按鈕
+
+**觸發點整合**
+- [x] `HomeScreen.tsx`：收集 ≥ 10 景點觸發（用 `useCollectionStats()` API 查詢）
+- [x] `HomeScreen.tsx`：連續登入 ≥ 3 天觸發（用 `useCoins()` → `loginStreak`）
+- [x] `ItineraryScreenV2.tsx`：首次 AI 對話觸發（`sendAiMessage` 成功後）
+
+**翻譯**
+- [x] 4 語系各 4 組 keys（guestPrompt_collectionMilestone/aiChat/loginStreak/bindAccount）
+
+**設計決策**
+- 每個提示最多顯示一次（AsyncStorage 記錄），登出自動清除（不在 keepKeys 白名單）
+- 非 guest 用戶所有 check 函數為 no-op
+- CTA「前往綁定」= `setUser(null)` 登出回登入頁（同 E1016 模式）
+- 收集里程碑用 `useCollectionStats()` 而非 `gachaState.collection`（後者每次開 App 從 0 開始）
+- 跳過「首次分享行程」觸發（分享功能尚未實作）
+
+---
+
 ### 2026-02-15 #050：APP 金流頁面處理 E1016 錯誤（訪客金流限制）
 
 | 項目 | 內容 |

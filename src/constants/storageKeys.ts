@@ -56,6 +56,14 @@ export const STORAGE_KEYS = {
   // --- 登入流程 ---
   /** 登入後目標入口（暫存用，登入完成後刪除） */
   POST_LOGIN_PORTAL: '@mibu_post_login_portal',
+
+  // --- 訪客升級提示（#051） ---
+  /** 收集第 10 個景點時的升級提示 */
+  GUEST_PROMPT_COLLECTION: '@mibu_guest_prompt_collection',
+  /** 首次 AI 對話時的升級提示 */
+  GUEST_PROMPT_AI_CHAT: '@mibu_guest_prompt_ai_chat',
+  /** 連續登入 3 天時的升級提示 */
+  GUEST_PROMPT_LOGIN_STREAK: '@mibu_guest_prompt_login_streak',
 } as const;
 
 // ============ 動態 Key 生成函數 ============

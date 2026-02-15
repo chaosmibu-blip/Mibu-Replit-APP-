@@ -218,8 +218,6 @@ export function ProfileScreen() {
    * 載入個人資料
    * 從後端 API 取得用戶 profile 並填入表單
    */
-  const isGuest = user?.provider === 'guest';
-
   const loadProfile = async () => {
     try {
       const token = await getToken();
@@ -333,39 +331,7 @@ export function ProfileScreen() {
     }
   };
 
-  // ============ 訪客模式 ============
-
-  if (isGuest) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t.profile_title}</Text>
-          <View style={{ width: 60 }} />
-        </View>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: Spacing.xxl }}>
-          <Ionicons name="person-outline" size={64} color={MibuBrand.tanLight} />
-          <Text style={{ fontSize: FontSize.xl, fontWeight: '700', color: MibuBrand.brown, marginTop: Spacing.lg }}>
-            {t.guest_loginRequired}
-          </Text>
-          <Text style={{ fontSize: FontSize.md, color: MibuBrand.copper, marginTop: Spacing.sm, textAlign: 'center' }}>
-            {t.guest_profileLoginDesc}
-          </Text>
-          <TouchableOpacity
-            style={{ backgroundColor: MibuBrand.brown, paddingVertical: 14, paddingHorizontal: Spacing.xxl, borderRadius: Radius.xl, marginTop: Spacing.xl }}
-            onPress={() => router.replace('/login')}
-            activeOpacity={0.8}
-          >
-            <Text style={{ color: MibuBrand.warmWhite, fontSize: FontSize.lg, fontWeight: '700' }}>
-              {t.guest_goToLogin}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
+  // #051: 訪客有 JWT Token（#049），不再擋訪客，可查看/編輯個人資料
 
   // ============ 載入狀態 ============
 

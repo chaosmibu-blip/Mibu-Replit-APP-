@@ -231,6 +231,12 @@ const ko: Record<string, string> = {
     e1016_later: '나중에',
     e1016_goToBind: '연동하기',
 
+    // ========== 게스트 업그레이드 안내 (#051) ==========
+    guestPrompt_collectionMilestone: '계정 연동으로 도감을 모든 기기에서 동기화',
+    guestPrompt_aiChat: '계정 연동으로 채팅 기록을 안전하게 보관',
+    guestPrompt_loginStreak: '계정 연동으로 데이터를 영구 보존',
+    guestPrompt_bindAccount: '연동하기',
+
     // ========== 가맹점 등록 (양식) ==========
     merchant_registration: 'Merchant Registration', /* TODO: ko */
     merchant_registrationSubtitle: 'Fill in your details to apply', /* TODO: ko */

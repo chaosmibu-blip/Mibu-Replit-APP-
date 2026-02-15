@@ -630,6 +630,12 @@ const zhTW: Record<string, string> = {
     e1016_later: '稍後再說',
     e1016_goToBind: '前往綁定',
 
+    // ========== 訪客升級提示（#051） ==========
+    guestPrompt_collectionMilestone: '綁定帳號，跨裝置同步你的圖鑑收藏',
+    guestPrompt_aiChat: '綁定帳號，保留聊天記錄不怕遺失',
+    guestPrompt_loginStreak: '綁定帳號，資料永不遺失',
+    guestPrompt_bindAccount: '前往綁定',
+
     // ========== 商家註冊（表單） ==========
     merchant_registration: '商家註冊',
     merchant_registrationSubtitle: '填寫資料以申請成為合作商家',

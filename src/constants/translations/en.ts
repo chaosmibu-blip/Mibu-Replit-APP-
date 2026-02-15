@@ -490,6 +490,12 @@ const en: Record<string, string> = {
     e1016_later: 'Later',
     e1016_goToBind: 'Link Account',
 
+    // ========== Guest Upgrade Prompt (#051) ==========
+    guestPrompt_collectionMilestone: 'Link account to sync collection across devices',
+    guestPrompt_aiChat: 'Link account to keep chat history safe',
+    guestPrompt_loginStreak: 'Link account, never lose your data',
+    guestPrompt_bindAccount: 'Link Account',
+
     // ========== Merchant Registration (Form) ==========
     merchant_registration: 'Merchant Registration',
     merchant_registrationSubtitle: 'Fill in your details to apply as a partner merchant',

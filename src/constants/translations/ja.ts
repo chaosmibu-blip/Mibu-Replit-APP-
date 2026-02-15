@@ -343,6 +343,12 @@ const ja: Record<string, string> = {
     e1016_later: '後で',
     e1016_goToBind: '連携する',
 
+    // ========== ゲストアップグレード案内（#051） ==========
+    guestPrompt_collectionMilestone: 'アカウント連携で図鑑をどのデバイスでも同期',
+    guestPrompt_aiChat: 'アカウント連携でチャット履歴を安全に保存',
+    guestPrompt_loginStreak: 'アカウント連携でデータを永久保存',
+    guestPrompt_bindAccount: '連携する',
+
     // ========== 加盟店登録（フォーム） ==========
     merchant_registration: '加盟店登録', /* TODO: ja */
     merchant_registrationSubtitle: 'Fill in your details to apply', /* TODO: ja */
