@@ -15,6 +15,7 @@
  * - PATCH /api/profile         - 更新用戶檔案
  * - DELETE /api/auth/account   - 刪除帳號 (#011)
  * - POST /api/auth/mobile      - Mobile OAuth 登入
+ * - POST /api/auth/guest       - 訪客登入（#049 後端建帳 + 發 JWT）
  * （帳號綁定 API 已移除：bindIdentity / getIdentities / unlinkIdentity）
  *
  * #044 已移除：密碼登入/註冊、帳號合併（2026-02-10）
@@ -27,7 +28,8 @@ import {
   UserProfile,
   UpdateProfileParams,
   ProfileResponse,
-  DeleteAccountResponse
+  DeleteAccountResponse,
+  GuestLoginResponse,
 } from '../types';
 
 // ============ API 服務類別 ============
@@ -176,6 +178,24 @@ class AuthApiService extends ApiBase {
     return this.request<AuthResponse>('/api/auth/mobile', {
       method: 'POST',
       body: JSON.stringify(params),
+    });
+  }
+
+  // ============ #049 訪客登入 ============
+
+  /**
+   * 訪客登入（後端建帳 + 發 JWT）
+   *
+   * 取代前端自行產生 UUID 的舊做法。
+   * 同一 deviceId 重複呼叫不會重複建帳（冪等操作）。
+   *
+   * @param deviceId - 裝置唯一識別碼
+   * @returns 訪客帳號資訊 + JWT Token
+   */
+  async guestLogin(deviceId: string): Promise<GuestLoginResponse> {
+    return this.request<GuestLoginResponse>('/api/auth/guest', {
+      method: 'POST',
+      body: JSON.stringify({ deviceId }),
     });
   }
 

@@ -333,6 +333,9 @@ const ja: Record<string, string> = {
     guest_loginRequired: 'ログインが必要です',
     guest_profileLoginDesc: 'ログインしてプロフィールやアバターを管理',
     guest_goToLogin: 'ログインへ',
+    guest_existingAccountTitle: '既存のアカウントが見つかりました',
+    guest_existingAccountDesc: 'このデバイスに {provider} アカウント（{name}）が見つかりました。データを保持するにはログインしてください。',
+    guest_continueAsGuest: 'ゲストを続ける',
 
     // ========== 加盟店登録（フォーム） ==========
     merchant_registration: '加盟店登録', /* TODO: ja */

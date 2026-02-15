@@ -480,6 +480,9 @@ const en: Record<string, string> = {
     guest_loginRequired: 'Login Required',
     guest_profileLoginDesc: 'Sign in to edit your profile and manage avatars',
     guest_goToLogin: 'Go to Login',
+    guest_existingAccountTitle: 'Existing Account Detected',
+    guest_existingAccountDesc: 'A {provider} account ({name}) was found on this device. Sign in to keep your full data.',
+    guest_continueAsGuest: 'Continue as Guest',
 
     // ========== Merchant Registration (Form) ==========
     merchant_registration: 'Merchant Registration',

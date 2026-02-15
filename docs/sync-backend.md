@@ -6,6 +6,45 @@
 
 ## 最新回報
 
+### 2026-02-15 #049：訪客登入改為呼叫後端 API（伺服器端建帳）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #049 |
+| 狀態 | ✅ 完成 |
+
+**型別定義** (`src/types/auth.ts`)
+- [x] `GuestLoginResponse` — 訪客登入回應（token、user、isNewAccount、existingAccount）
+
+**API 層** (`src/services/authApi.ts`)
+- [x] `POST /api/auth/guest` — 訪客登入（後端建帳 + 發 JWT）
+- [x] `api.ts` proxy binding 同步新增
+
+**登入流程** (`app/login.tsx`)
+- [x] `handleGuestLogin()` 從純前端 UUID 改為呼叫 `POST /api/auth/guest`
+- [x] 帶 `deviceId` 參數（iOS: vendorId、Android: androidId、Web: 持久化 UUID）
+- [x] 成功後用 `setUser(user, token)` 儲存 JWT（跟 OAuth 登入一致）
+- [x] `existingAccount` 偵測 — 同裝置已有正式帳號時 Alert 提示用戶
+- [x] 錯誤處理（網路錯誤 → Alert 提示重試）
+
+**認證查詢解鎖** (`src/hooks/useAuthQuery.ts`)
+- [x] 移除 `useAuthQuery` 的 `isGuest` 停用（訪客現在有 JWT Token）
+- [x] 移除 `useAuthInfiniteQuery` 的 `isGuest` 停用
+
+**AuthContext 簡化** (`src/context/AuthContext.tsx`)
+- [x] 移除舊 guest fallback 邏輯（「沒有 token 時檢查 guest 快取」）
+- [x] 訪客走正常 token 驗證路徑
+
+**翻譯**
+- [x] 4 語系各 3 組 keys（guest_existingAccountTitle、guest_existingAccountDesc、guest_continueAsGuest）
+
+**設計決策**
+- 訪客帳號由後端統一管理，前端不再自行產生 UUID
+- 同一 deviceId 重複呼叫為冪等操作（不重複建帳）
+- `ItineraryScreenV2` 和 `ProfileScreen` 的 `provider === 'guest'` 檢查保留（留給 #051 升級提醒）
+
+---
+
 ### 2026-02-13 #047（更新）：道具箱新增景點包（place_pack）類型支援
 
 | 項目 | 內容 |
@@ -985,6 +1024,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 049 | 02-15 | 訪客登入改為呼叫後端 API（後端建帳 + 發 JWT） | ✅ |
 | 048 | 02-13 | 商城商品管理（管理員 CRUD）型別 + API + Hooks + UI | ✅ |
 | 047 | 02-13 | 獎勵發送 API 升級（全體廣播）型別 + API + Hooks + UI | ✅ |
 | 046 | 02-13 | 訪客自動升級（登入帶 deviceId）型別 + API + 登入流程 | ✅ |

@@ -141,6 +141,8 @@ class ApiService {
   updateProfile = authApi.updateProfile.bind(authApi);
   /** 刪除帳號 */
   deleteAccount = authApi.deleteAccount.bind(authApi);
+  /** #049 訪客登入（後端建帳 + 發 JWT） */
+  guestLogin = authApi.guestLogin.bind(authApi);
 
   // ============ Location 地點相關 ============
 

@@ -133,6 +133,37 @@ export interface ProfileResponse {
   token?: string;        // 更新 firstName/lastName/email 時回傳新 token（#040 補齊）
 }
 
+// ============ 訪客登入 ============
+
+/**
+ * #049: 訪客登入 API 回應
+ *
+ * 後端統一建帳 + 發 JWT，取代前端自行產生 UUID
+ */
+export interface GuestLoginResponse {
+  success: boolean;
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    name: string;
+    profileImageUrl: string | null;
+    role: string;
+    isApproved: boolean;
+    isSuperAdmin: boolean;
+    provider: string;
+  };
+  isNewAccount: boolean;
+  /** 同裝置已有正式帳號時，後端回傳提示資訊 */
+  existingAccount?: {
+    id: string;
+    provider: string;
+    name: string | null;
+  };
+}
+
 // ============ 帳號操作 ============
 
 /**

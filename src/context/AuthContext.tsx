@@ -80,17 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await removeToken();
           }
         }
-      } else {
-        // 檢查訪客用戶
-        const storedUser = await AsyncStorage.getItem(STORAGE_KEYS.USER);
-        if (storedUser) {
-          const cachedUser = JSON.parse(storedUser);
-          if (cachedUser.id === 'guest' || cachedUser.provider === 'guest') {
-            setUserState(cachedUser);
-            setIsAuthenticated(true);
-          }
-        }
       }
+      // #049: 訪客現在有 JWT Token，走正常 token 路徑，不再需要舊的 guest fallback
     } catch (error) {
       console.error('Error loading auth data:', error);
     }

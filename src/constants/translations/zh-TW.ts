@@ -620,6 +620,9 @@ const zhTW: Record<string, string> = {
     guest_loginRequired: '需要登入',
     guest_profileLoginDesc: '登入後可編輯個人資料、管理頭像',
     guest_goToLogin: '前往登入',
+    guest_existingAccountTitle: '偵測到既有帳號',
+    guest_existingAccountDesc: '此裝置已有 {provider} 帳號（{name}），建議直接登入以保留完整資料',
+    guest_continueAsGuest: '繼續使用訪客',
 
     // ========== 商家註冊（表單） ==========
     merchant_registration: '商家註冊',

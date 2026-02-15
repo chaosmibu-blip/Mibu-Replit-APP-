@@ -55,8 +55,8 @@ export function useAuthQuery<TData>(
   queryFn: (token: string) => Promise<TData>,
   options?: Omit<UseQueryOptions<TData, Error>, 'queryKey' | 'queryFn'>,
 ) {
-  const { getToken, user } = useAuth();
-  const isGuest = user?.provider === 'guest';
+  const { getToken } = useAuth();
+  // #049: 訪客現在有 JWT Token，不再需要 isGuest 停用
 
   return useQuery<TData, Error>({
     queryKey,
@@ -68,8 +68,6 @@ export function useAuthQuery<TData>(
       return queryFn(token);
     },
     ...options,
-    // 訪客模式停用認證查詢（沒有 token，呼叫必定失敗）
-    enabled: !isGuest && (options?.enabled !== false),
   });
 }
 
@@ -93,8 +91,8 @@ export function useAuthInfiniteQuery<TData>(
     getNextPageParam: (lastPage: TData) => number | undefined;
   },
 ) {
-  const { getToken, user } = useAuth();
-  const isGuest = user?.provider === 'guest';
+  const { getToken } = useAuth();
+  // #049: 訪客現在有 JWT Token，不再需要 isGuest 停用
 
   return useInfiniteQuery({
     queryKey,
@@ -105,8 +103,6 @@ export function useAuthInfiniteQuery<TData>(
     },
     initialPageParam: options.initialPageParam,
     getNextPageParam: options.getNextPageParam,
-    // 訪客模式停用認證查詢
-    enabled: !isGuest,
   });
 }
 

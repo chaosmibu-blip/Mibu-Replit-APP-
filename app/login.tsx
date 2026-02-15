@@ -36,6 +36,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { randomUUID } from 'expo-crypto';
+import { authApi } from '../src/services/authApi';
 import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { useAuth, useI18n } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
@@ -570,19 +571,71 @@ export default function LoginScreen() {
     Alert.alert(t.auth_suggestMergeTitle, parts.join('\n\n'), [{ text: t.common_confirm }]);
   };
 
-  const handleGuestLogin = () => {
-    const guestId = `guest_${randomUUID()}`;
-    setUser({
-      id: guestId,
-      name: 'Guest',
-      email: null,
-      avatar: null,
-      firstName: 'Guest',
-      role: 'traveler',
-      provider: 'guest',
-      providerId: guestId,
-    });
-    router.replace('/(tabs)');
+  // #049: 訪客登入改為呼叫後端 API（後端建帳 + 發 JWT）
+  const handleGuestLogin = async () => {
+    try {
+      setLoading(true);
+
+      // 取得 deviceId（Web 平台用持久化 UUID fallback）
+      let deviceId = await getDeviceId();
+      if (!deviceId) {
+        const storageKey = '@mibu_web_device_id';
+        deviceId = await AsyncStorage.getItem(storageKey) || '';
+        if (!deviceId) {
+          deviceId = randomUUID();
+          await AsyncStorage.setItem(storageKey, deviceId);
+        }
+      }
+
+      const data = await authApi.guestLogin(deviceId);
+
+      if (data.token && data.user) {
+        await setUser({
+          id: data.user.id,
+          name: data.user.name || 'Guest',
+          email: data.user.email || null,
+          avatar: null,
+          firstName: data.user.firstName || 'Guest',
+          profileImageUrl: data.user.profileImageUrl || null,
+          role: (data.user.role as UserRole) || 'traveler',
+          isApproved: data.user.isApproved,
+          isSuperAdmin: data.user.isSuperAdmin || false,
+          provider: 'guest',
+          providerId: data.user.id,
+        }, data.token);
+
+        // 同裝置已有正式帳號 → 提示用戶
+        if (data.existingAccount) {
+          const providerLabel = data.existingAccount.provider === 'google' ? 'Google' : 'Apple';
+          const accountName = data.existingAccount.name || providerLabel;
+          Alert.alert(
+            t.guest_existingAccountTitle,
+            t.guest_existingAccountDesc
+              .replace('{provider}', providerLabel)
+              .replace('{name}', accountName),
+            [
+              { text: t.guest_continueAsGuest, style: 'cancel' },
+              {
+                text: t.guest_goToLogin,
+                onPress: async () => {
+                  await setUser(null);
+                  // 不需要 router.replace — setUser(null) 會觸發 401 攔截器回登入頁
+                },
+              },
+            ]
+          );
+        }
+
+        router.replace('/(tabs)');
+      } else {
+        Alert.alert(t.auth_loginError, t.auth_tryAgainLater);
+      }
+    } catch (error: any) {
+      console.error('[Guest Login] Error:', error);
+      Alert.alert(t.auth_loginError, t.auth_tryAgainLater);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAppleLogin = async () => {

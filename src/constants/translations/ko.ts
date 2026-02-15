@@ -221,6 +221,9 @@ const ko: Record<string, string> = {
     guest_loginRequired: '로그인 필요',
     guest_profileLoginDesc: '로그인하여 프로필과 아바타를 관리하세요',
     guest_goToLogin: '로그인하기',
+    guest_existingAccountTitle: '기존 계정 감지',
+    guest_existingAccountDesc: '이 기기에서 {provider} 계정({name})이 발견되었습니다. 데이터를 유지하려면 로그인하세요.',
+    guest_continueAsGuest: '게스트로 계속',
 
     // ========== 가맹점 등록 (양식) ==========
     merchant_registration: 'Merchant Registration', /* TODO: ko */
