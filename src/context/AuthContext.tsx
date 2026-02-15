@@ -22,9 +22,11 @@ import { apiService } from '../services/api';
 import { pushNotificationService } from '../services/pushNotificationService';
 import { preloadService } from '../services/preloadService';
 import { disconnectSocket } from '../services/socket';
-import { setOnUnauthorized, resetUnauthorizedFlag } from '../services/base';
+import { Alert } from 'react-native';
+import { setOnUnauthorized, resetUnauthorizedFlag, setOnVerifiedProviderRequired, resetVerifiedProviderFlag } from '../services/base';
 import { saveToken, loadToken, removeToken } from './tokenUtils';
 import { queryClient } from './QueryProvider';
+import { useI18n } from './I18nContext';
 
 // ============ 型別定義 ============
 
@@ -43,6 +45,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // ============ Provider ============
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const [user, setUserState] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -100,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserState(user);
       setIsAuthenticated(true);
       resetUnauthorizedFlag();
+      resetVerifiedProviderFlag(); // #050: 綁定帳號後重置 E1016 旗標
       await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
       if (token) {
         await saveToken(token);
@@ -202,6 +206,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     return () => setOnUnauthorized(null);
   }, [setUser]);
+
+  // ========== #050: E1016 攔截器（訪客金流限制） ==========
+  useEffect(() => {
+    setOnVerifiedProviderRequired(() => {
+      Alert.alert(
+        t.e1016_title,
+        t.e1016_message,
+        [
+          { text: t.e1016_later, style: 'cancel' },
+          {
+            text: t.e1016_goToBind,
+            onPress: async () => {
+              await setUser(null);
+            },
+          },
+        ]
+      );
+    });
+    return () => setOnVerifiedProviderRequired(null);
+  }, [setUser, t]);
 
   // ========== Memoized Value（避免不必要的 re-render） ==========
   const value = useMemo<AuthContextType>(() => ({

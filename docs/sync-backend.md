@@ -6,6 +6,41 @@
 
 ## 最新回報
 
+### 2026-02-15 #050：APP 金流頁面處理 E1016 錯誤（訪客金流限制）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #050 |
+| 狀態 | ✅ 完成 |
+
+**錯誤碼定義** (`src/types/errors.ts`)
+- [x] `AUTH_ERRORS` 新增 `E1016: 'VERIFIED_PROVIDER_REQUIRED'`
+- [x] `ERROR_MESSAGES` 新增 E1016 中英文訊息
+
+**API 基礎設施** (`src/services/base.ts`)
+- [x] 新增 E1016 攔截器（仿 401 模式）
+  - `setOnVerifiedProviderRequired()` — 註冊回調
+  - `resetVerifiedProviderFlag()` — 重置防重入旗標
+- [x] `request()` 方法偵測 403 + `code === 'E1016'` → 觸發回調
+- [x] 防重入機制（多個併發 403 只觸發一次）
+
+**AuthContext 回調** (`src/context/AuthContext.tsx`)
+- [x] 註冊 E1016 回調 → Alert 提示用戶綁定帳號
+- [x] 「前往綁定」→ 登出（`setUser(null)`）→ 回到登入頁
+- [x] 「稍後再說」→ 取消（本次不綁定）
+- [x] 登入時呼叫 `resetVerifiedProviderFlag()` 重置旗標
+- [x] Alert 文字使用翻譯系統（`useI18n()`）
+
+**翻譯**
+- [x] 4 語系各 4 組 keys（e1016_title、e1016_message、e1016_later、e1016_goToBind）
+
+**設計決策**
+- 集中攔截（base.ts）而非分散到各元件，所有 403 + E1016 統一處理
+- 「前往綁定」= 登出回登入頁，用戶用 Google/Apple 登入後 #046 deviceId 機制自動升級帳號
+- 不需要前端對每個金流端點個別處理，攔截器自動生效
+
+---
+
 ### 2026-02-15 #049：訪客登入改為呼叫後端 API（伺服器端建帳）
 
 | 項目 | 內容 |
@@ -1024,6 +1059,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 050 | 02-15 | APP 金流頁面處理 E1016 錯誤（訪客金流限制攔截器） | ✅ |
 | 049 | 02-15 | 訪客登入改為呼叫後端 API（後端建帳 + 發 JWT） | ✅ |
 | 048 | 02-13 | 商城商品管理（管理員 CRUD）型別 + API + Hooks + UI | ✅ |
 | 047 | 02-13 | 獎勵發送 API 升級（全體廣播）型別 + API + Hooks + UI | ✅ |

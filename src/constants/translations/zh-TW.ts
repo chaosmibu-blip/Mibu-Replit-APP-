@@ -624,6 +624,12 @@ const zhTW: Record<string, string> = {
     guest_existingAccountDesc: '此裝置已有 {provider} 帳號（{name}），建議直接登入以保留完整資料',
     guest_continueAsGuest: '繼續使用訪客',
 
+    // ========== E1016 訪客金流限制（#050） ==========
+    e1016_title: '需要綁定帳號',
+    e1016_message: '涉及付款的功能需要先綁定 Google 或 Apple 帳號，才能繼續操作。',
+    e1016_later: '稍後再說',
+    e1016_goToBind: '前往綁定',
+
     // ========== 商家註冊（表單） ==========
     merchant_registration: '商家註冊',
     merchant_registrationSubtitle: '填寫資料以申請成為合作商家',

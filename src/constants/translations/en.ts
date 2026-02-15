@@ -484,6 +484,12 @@ const en: Record<string, string> = {
     guest_existingAccountDesc: 'A {provider} account ({name}) was found on this device. Sign in to keep your full data.',
     guest_continueAsGuest: 'Continue as Guest',
 
+    // ========== E1016 Guest Payment Restriction (#050) ==========
+    e1016_title: 'Account Linking Required',
+    e1016_message: 'Payment features require a linked Google or Apple account to continue.',
+    e1016_later: 'Later',
+    e1016_goToBind: 'Link Account',
+
     // ========== Merchant Registration (Form) ==========
     merchant_registration: 'Merchant Registration',
     merchant_registrationSubtitle: 'Fill in your details to apply as a partner merchant',

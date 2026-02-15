@@ -225,6 +225,12 @@ const ko: Record<string, string> = {
     guest_existingAccountDesc: '이 기기에서 {provider} 계정({name})이 발견되었습니다. 데이터를 유지하려면 로그인하세요.',
     guest_continueAsGuest: '게스트로 계속',
 
+    // ========== E1016 게스트 결제 제한 (#050) ==========
+    e1016_title: '계정 연동 필요',
+    e1016_message: '결제 기능을 이용하려면 Google 또는 Apple 계정을 연동해야 합니다.',
+    e1016_later: '나중에',
+    e1016_goToBind: '연동하기',
+
     // ========== 가맹점 등록 (양식) ==========
     merchant_registration: 'Merchant Registration', /* TODO: ko */
     merchant_registrationSubtitle: 'Fill in your details to apply', /* TODO: ko */

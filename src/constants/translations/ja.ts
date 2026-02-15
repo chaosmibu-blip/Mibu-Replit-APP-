@@ -337,6 +337,12 @@ const ja: Record<string, string> = {
     guest_existingAccountDesc: 'このデバイスに {provider} アカウント（{name}）が見つかりました。データを保持するにはログインしてください。',
     guest_continueAsGuest: 'ゲストを続ける',
 
+    // ========== E1016 ゲスト決済制限（#050） ==========
+    e1016_title: 'アカウント連携が必要',
+    e1016_message: '決済機能を利用するには、Google または Apple アカウントの連携が必要です。',
+    e1016_later: '後で',
+    e1016_goToBind: '連携する',
+
     // ========== 加盟店登録（フォーム） ==========
     merchant_registration: '加盟店登録', /* TODO: ja */
     merchant_registrationSubtitle: 'Fill in your details to apply', /* TODO: ja */

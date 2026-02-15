@@ -17,8 +17,10 @@
  * - authHeaders(): 生成 Bearer Token 認證標頭
  * - setOnUnauthorized(): 註冊 401 回調（由 AppContext 掛載）
  * - resetUnauthorizedFlag(): 登入後重置防重入旗標
+ * - setOnVerifiedProviderRequired(): 註冊 E1016 回調（#050 訪客金流限制）
+ * - resetVerifiedProviderFlag(): 綁定帳號後重置旗標
  *
- * 更新日期：2026-02-10（401 攔截器 + 智慧重試機制）
+ * 更新日期：2026-02-15（#050 E1016 攔截器）
  */
 import { API_BASE_URL } from '../constants/translations';
 
@@ -45,6 +47,31 @@ export function setOnUnauthorized(callback: (() => void) | null): void {
  */
 export function resetUnauthorizedFlag(): void {
   _unauthorizedHandled = false;
+}
+
+// ============ E1016 攔截器（#050 訪客金流限制） ============
+// 訪客帳號呼叫金流端點時，後端回傳 403 + E1016
+// 統一攔截後引導用戶綁定 Google/Apple 帳號
+
+/** E1016 回調函數（由 AuthContext 註冊） */
+let _onVerifiedProviderRequired: (() => void) | null = null;
+/** 防重入旗標 */
+let _verifiedProviderHandled = false;
+
+/**
+ * 註冊 E1016 回調
+ * @param callback - 收到 E1016 時要執行的函數（顯示綁定帳號引導）
+ */
+export function setOnVerifiedProviderRequired(callback: (() => void) | null): void {
+  _onVerifiedProviderRequired = callback;
+}
+
+/**
+ * 重置 E1016 防重入旗標
+ * @description 用戶綁定帳號或重新登入後呼叫
+ */
+export function resetVerifiedProviderFlag(): void {
+  _verifiedProviderHandled = false;
 }
 
 // ============ 類型定義 ============
@@ -230,6 +257,12 @@ export class ApiBase {
           if (response.status === 401 && _onUnauthorized && !_unauthorizedHandled) {
             _unauthorizedHandled = true;
             _onUnauthorized();
+          }
+
+          // #050: 403 + E1016 → 訪客金流限制，引導綁定帳號
+          if (response.status === 403 && errorData.code === 'E1016' && _onVerifiedProviderRequired && !_verifiedProviderHandled) {
+            _verifiedProviderHandled = true;
+            _onVerifiedProviderRequired();
           }
 
           // 5xx + GET → 重試

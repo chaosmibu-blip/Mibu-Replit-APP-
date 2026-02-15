@@ -53,6 +53,7 @@ export const AUTH_ERRORS = {
   E1011: 'ACCOUNT_PENDING_APPROVAL',  // 帳號待審核
   E1012: 'ROLE_SWITCH_NOT_ALLOWED',   // 不允許切換角色
   E1013: 'SUPER_ADMIN_REQUIRED',      // 需要超級管理員權限
+  E1016: 'VERIFIED_PROVIDER_REQUIRED', // #050: 需要綁定 Google/Apple 帳號（訪客金流限制）
 } as const;
 
 // ============ E2xxx: 扭蛋相關錯誤 ============
@@ -296,6 +297,7 @@ export function getErrorMessage(code: ErrorMessage, language: 'zh-TW' | 'en' = '
     ACCOUNT_PENDING_APPROVAL: { 'zh-TW': '帳號審核中', en: 'Account pending approval' },
     ROLE_SWITCH_NOT_ALLOWED: { 'zh-TW': '無法切換角色', en: 'Role switch not allowed' },
     SUPER_ADMIN_REQUIRED: { 'zh-TW': '需要超級管理員權限', en: 'Super admin required' },
+    VERIFIED_PROVIDER_REQUIRED: { 'zh-TW': '此功能需要綁定 Google 或 Apple 帳號', en: 'This feature requires a linked Google or Apple account' },
 
     // 扭蛋錯誤 (E2xxx)
     DAILY_LIMIT_EXCEEDED: { 'zh-TW': '今日抽卡次數已達上限', en: 'Daily limit exceeded' },
