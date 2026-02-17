@@ -38,7 +38,7 @@ import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
 import { useSOSContacts, useAddSOSContact, useUpdateSOSContact, useDeleteSOSContact } from '../../../hooks/useSOSQueries';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
-import { SOSContact, CreateSOSContactParams } from '../../../types/sos';
+import { SOSContact } from '../../../types/sos';
 import { tFormat } from '../../../utils/i18n';
 
 // ============ 常數定義 ============
@@ -131,7 +131,7 @@ export function SOSContactsScreen() {
 
     setSaving(true);
     try {
-      const params: CreateSOSContactParams = {
+      const params = {
         name: formName.trim(),
         phone: formPhone.trim(),
         relationship: formRelationship,

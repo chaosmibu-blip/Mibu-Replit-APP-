@@ -19,10 +19,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/I18nContext';
-import {
-  useSearchMerchantPlaces,
-  useClaimMerchantPlace,
-} from '../../../hooks/useMerchantQueries';
+import { useAuth } from '../../../context/AuthContext';
+import { merchantApi } from '../../../services/merchantApi';
 import { PlaceSearchResult } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
@@ -46,7 +44,7 @@ export function ClaimPlaceScreen() {
         router.push('/login');
         return;
       }
-      const data = await apiService.searchMerchantPlaces(token, searchQuery);
+      const data = await merchantApi.searchMerchantPlaces(token, searchQuery);
       setSearchResults(data.places || []);
     } catch (error: unknown) {
       console.error('Search failed:', error);
@@ -66,7 +64,7 @@ export function ClaimPlaceScreen() {
       setClaiming(place.placeId);
       const token = await getToken();
       if (!token) return;
-      await apiService.claimMerchantPlace(token, {
+      await merchantApi.claimMerchantPlace(token, {
         placeName: place.placeName,
         district: place.district,
         city: place.city,

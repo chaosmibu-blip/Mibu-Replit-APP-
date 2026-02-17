@@ -104,7 +104,7 @@ const productionConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.chaos.mibu',
-    buildNumber: '1',                    // iOS Build 號（每次提審要遞增）
+    buildNumber: '2',                    // iOS Build 號（每次提審要遞增）
     usesAppleSignIn: true,
     // iOS 權限說明文字（App Store 審核必填）
     infoPlist: {

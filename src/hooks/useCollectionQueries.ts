@@ -18,7 +18,7 @@ import { collectionApi } from '../services/collectionApi';
 // ============ 查詢 Hooks ============
 
 /** 取得收藏列表 */
-export function useCollectionList(params?: { page?: number; limit?: number; city?: string; sort?: string }) {
+export function useCollectionList(params?: { page?: number; limit?: number; city?: string; sort?: 'unread' | 'newest' | 'oldest' }) {
   return useAuthQuery(
     queryKeys.collection(params as Record<string, unknown>),
     (token) => collectionApi.getCollections(token, params),
