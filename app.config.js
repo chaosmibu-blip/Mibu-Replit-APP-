@@ -17,6 +17,10 @@ const IS_EAS_BUILD = process.env.EAS_BUILD === 'true';
 const IS_EAS_UPDATE = process.env.EAS_UPDATE === 'true';
 const IS_PRODUCTION = IS_EAS_BUILD || IS_EAS_UPDATE || process.env.APP_ENV === 'production';
 
+// ============ 版本常數（統一管理，避免兩邊不同步） ============
+const IOS_BUILD_NUMBER = '2';            // iOS Build 號（每次提審要遞增）
+const ANDROID_VERSION_CODE = 1;          // Android 版本碼（每次上架要遞增）
+
 // ============ 基礎設定（開發/正式共用） ============
 const baseConfig = {
   name: 'Mibu',                          // App 名稱（顯示在手機桌面）
@@ -85,10 +89,12 @@ const developmentConfig = {
   ios: {
     supportsTablet: true,                // 支援 iPad（但會以 2x 模式運行）
     bundleIdentifier: 'com.chaos.mibu',  // iOS Bundle ID
+    buildNumber: IOS_BUILD_NUMBER,
     usesAppleSignIn: true,               // 啟用 Apple 登入
   },
   android: {
     package: 'com.chaos.mibu',           // Android 套件名稱
+    versionCode: ANDROID_VERSION_CODE,
     adaptiveIcon: {                      // Android 自適應圖示
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#F5E6D3',
@@ -104,7 +110,7 @@ const productionConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.chaos.mibu',
-    buildNumber: '2',                    // iOS Build 號（每次提審要遞增）
+    buildNumber: IOS_BUILD_NUMBER,
     usesAppleSignIn: true,
     // iOS 權限說明文字（App Store 審核必填）
     infoPlist: {
@@ -116,7 +122,7 @@ const productionConfig = {
   },
   android: {
     package: 'com.chaos.mibu',
-    versionCode: 1,                      // Android 版本碼（每次上架要遞增）
+    versionCode: ANDROID_VERSION_CODE,
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#F5E6D3',
