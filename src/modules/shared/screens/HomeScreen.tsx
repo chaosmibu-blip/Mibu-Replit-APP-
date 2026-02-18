@@ -507,7 +507,7 @@ export function HomeScreen() {
               activeOpacity={event.id > 0 ? 0.8 : 1}
             >
               <Text style={styles.announcementItem}>
-                ・{getLocalizedDesc(event)}
+                ・{getLocalizedTitle(event)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -528,7 +528,7 @@ export function HomeScreen() {
               activeOpacity={event.id > 0 ? 0.8 : 1}
             >
               <Text style={styles.flashItem}>
-                {getLocalizedDesc(event)}
+                {getLocalizedTitle(event)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -549,7 +549,7 @@ export function HomeScreen() {
               activeOpacity={event.id > 0 ? 0.8 : 1}
             >
               <Text style={styles.localItem}>
-                ・{getLocalizedDesc(event)}
+                ・{getLocalizedTitle(event)}
               </Text>
             </TouchableOpacity>
           ))}
