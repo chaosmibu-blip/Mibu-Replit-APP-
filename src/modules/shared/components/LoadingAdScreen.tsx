@@ -107,14 +107,6 @@ const LOADING_TIPS: Record<string, string[]> = {
   ],
 };
 
-/** 各語系的預估時間提示文字 */
-const ESTIMATED_TIME_TEXT: Record<string, string> = {
-  'zh-TW': '預計需要 1-2 分鐘，請耐心等候',
-  'en': 'This may take 1-2 minutes, please wait',
-  'ja': '約1〜2分かかります、お待ちください',
-  'ko': '약 1-2분 소요됩니다, 잠시만 기다려주세요',
-};
-
 // ============ 子元件 ============
 
 /**
@@ -211,7 +203,6 @@ export function LoadingAdScreen({ visible, onComplete, onCancel, isApiComplete, 
 
   // 根據語言取得對應的提示文字
   const tips = LOADING_TIPS[language] || LOADING_TIPS['zh-TW'];
-  const estimatedTimeText = ESTIMATED_TIME_TEXT[language] || ESTIMATED_TIME_TEXT['zh-TW'];
 
   // 當 visible 變化時重置所有狀態
   useEffect(() => {
@@ -323,18 +314,6 @@ export function LoadingAdScreen({ visible, onComplete, onCancel, isApiComplete, 
             }}
           >
             {statusText}
-          </Text>
-
-          {/* 預估時間提示 */}
-          <Text
-            style={{
-              fontSize: 13,
-              color: '#aaaaaa',
-              textAlign: 'center',
-              marginBottom: 24,
-            }}
-          >
-            {estimatedTimeText}
           </Text>
 
           {/* 已經過時間顯示 */}
