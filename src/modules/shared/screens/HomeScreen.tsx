@@ -86,6 +86,107 @@ interface DailyTaskSummary {
 }
 
 // ============================================================
+// 預設活動內容（API 尚未有資料時顯示）
+// ============================================================
+
+const now = new Date().toISOString();
+
+const DEFAULT_ANNOUNCEMENTS: Event[] = [
+  {
+    id: -1,
+    type: 'announcement',
+    title: '歡迎使用 Mibu 旅遊扭蛋！探索台灣各地的精彩景點',
+    titleEn: 'Welcome to Mibu! Explore amazing attractions across Taiwan',
+    titleJa: 'Mibu へようこそ！台湾各地の素敵なスポットを探索しよう',
+    titleKo: 'Mibu에 오신 것을 환영합니다! 대만 각지의 멋진 명소를 탐험하세요',
+    description: '歡迎使用 Mibu 旅遊扭蛋！探索台灣各地的精彩景點',
+    descriptionEn: 'Welcome to Mibu! Explore amazing attractions across Taiwan',
+    descriptionJa: 'Mibu へようこそ！台湾各地の素敵なスポットを探索しよう',
+    descriptionKo: 'Mibu에 오신 것을 환영합니다! 대만 각지의 멋진 명소를 탐험하세요',
+    status: 'active',
+    priority: 1,
+    startDate: now,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: -2,
+    type: 'announcement',
+    title: '新功能：旅程策劃模組已上線，規劃你的完美行程',
+    titleEn: 'New: Trip planner is live — plan your perfect itinerary',
+    titleJa: '新機能：旅行プランナーがリリース、完璧な旅程を計画しよう',
+    titleKo: '새 기능: 여행 플래너가 출시되었습니다 — 완벽한 여행을 계획하세요',
+    description: '新功能：旅程策劃模組已上線，規劃你的完美行程',
+    descriptionEn: 'New: Trip planner is live — plan your perfect itinerary',
+    descriptionJa: '新機能：旅行プランナーがリリース、完璧な旅程を計画しよう',
+    descriptionKo: '새 기능: 여행 플래너가 출시되었습니다 — 완벽한 여행을 계획하세요',
+    status: 'active',
+    priority: 0,
+    startDate: now,
+    createdAt: now,
+    updatedAt: now,
+  },
+];
+
+const DEFAULT_LIMITED_EVENTS: Event[] = [
+  {
+    id: -3,
+    type: 'limited',
+    title: '🎁 春季限定：陽明山花季 — 收集花卉景點獲得特別優惠！',
+    titleEn: '🎁 Spring special: Yangmingshan Flower Festival — collect flower spots for rewards!',
+    titleJa: '🎁 春限定：陽明山花祭り — 花スポットを集めて特別特典をゲット！',
+    titleKo: '🎁 봄 한정: 양밍산 꽃 축제 — 꽃 명소를 수집하고 특별 혜택을 받으세요!',
+    description: '🎁 春季限定：陽明山花季 — 收集花卉景點獲得特別優惠！',
+    descriptionEn: '🎁 Spring special: Yangmingshan Flower Festival — collect flower spots for rewards!',
+    descriptionJa: '🎁 春限定：陽明山花祭り — 花スポットを集めて特別特典をゲット！',
+    descriptionKo: '🎁 봄 한정: 양밍산 꽃 축제 — 꽃 명소를 수집하고 특별 혜택을 받으세요!',
+    status: 'active',
+    priority: 1,
+    startDate: now,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: -4,
+    type: 'limited',
+    title: '🌟 本週熱門：台南古蹟巡禮 — 走訪府城經典景點',
+    titleEn: '🌟 Trending: Tainan heritage tour — visit classic landmarks',
+    titleJa: '🌟 今週の人気：台南古跡巡り — 府城の名所を訪ねよう',
+    titleKo: '🌟 이번 주 인기: 타이난 유적 투어 — 부성의 명소를 방문하세요',
+    description: '🌟 本週熱門：台南古蹟巡禮 — 走訪府城經典景點',
+    descriptionEn: '🌟 Trending: Tainan heritage tour — visit classic landmarks',
+    descriptionJa: '🌟 今週の人気：台南古跡巡り — 府城の名所を訪ねよう',
+    descriptionKo: '🌟 이번 주 인기: 타이난 유적 투어 — 부성의 명소를 방문하세요',
+    status: 'active',
+    priority: 0,
+    startDate: now,
+    createdAt: now,
+    updatedAt: now,
+  },
+];
+
+const DEFAULT_FESTIVALS: Event[] = [
+  {
+    id: -5,
+    type: 'festival',
+    title: '🏮 2026 台灣燈會在高雄 — 元宵節限定活動開跑',
+    titleEn: '🏮 2026 Taiwan Lantern Festival in Kaohsiung — Lantern Festival event starts now',
+    titleJa: '🏮 2026 台湾ランタンフェスティバル in 高雄 — 元宵節イベント開催中',
+    titleKo: '🏮 2026 대만 랜턴 페스티벌 in 가오슝 — 원소절 이벤트 시작',
+    description: '🏮 2026 台灣燈會在高雄 — 元宵節限定活動開跑',
+    descriptionEn: '🏮 2026 Taiwan Lantern Festival in Kaohsiung — Lantern Festival event starts now',
+    descriptionJa: '🏮 2026 台湾ランタンフェスティバル in 高雄 — 元宵節イベント開催中',
+    descriptionKo: '🏮 2026 대만 랜턴 페스티벌 in 가오슝 — 원소절 이벤트 시작',
+    city: '高雄市',
+    status: 'active',
+    priority: 1,
+    startDate: now,
+    createdAt: now,
+    updatedAt: now,
+  },
+];
+
+// ============================================================
 // 主元件
 // ============================================================
 
@@ -113,7 +214,14 @@ export function HomeScreen() {
   const loading = eventsQuery.isLoading;
   const refreshing = eventsQuery.isFetching && !eventsQuery.isLoading;
 
-  const events = eventsQuery.data ?? { announcements: [], festivals: [], limitedEvents: [] };
+  const apiEvents = eventsQuery.data ?? { announcements: [], festivals: [], limitedEvents: [] };
+
+  // 預設內容（API 尚未有資料時顯示）
+  const events = {
+    announcements: apiEvents.announcements.length > 0 ? apiEvents.announcements : DEFAULT_ANNOUNCEMENTS,
+    festivals: apiEvents.festivals.length > 0 ? apiEvents.festivals : DEFAULT_FESTIVALS,
+    limitedEvents: apiEvents.limitedEvents.length > 0 ? apiEvents.limitedEvents : DEFAULT_LIMITED_EVENTS,
+  };
   const coinsData = coinsQuery.data;
   const perksData = perksQuery.data;
   const dailyTask = dailyTasksQuery.dailyTask;
@@ -395,8 +503,8 @@ export function HomeScreen() {
           {events.announcements.map(event => (
             <TouchableOpacity
               key={event.id}
-              onPress={() => router.push(`/event/${event.id}`)}
-              activeOpacity={0.8}
+              onPress={event.id > 0 ? () => router.push(`/event/${event.id}`) : undefined}
+              activeOpacity={event.id > 0 ? 0.8 : 1}
             >
               <Text style={styles.announcementItem}>
                 ・{getLocalizedDesc(event)}
@@ -416,8 +524,8 @@ export function HomeScreen() {
           {events.limitedEvents.map(event => (
             <TouchableOpacity
               key={event.id}
-              onPress={() => router.push(`/event/${event.id}`)}
-              activeOpacity={0.8}
+              onPress={event.id > 0 ? () => router.push(`/event/${event.id}`) : undefined}
+              activeOpacity={event.id > 0 ? 0.8 : 1}
             >
               <Text style={styles.flashItem}>
                 {getLocalizedDesc(event)}
@@ -431,14 +539,14 @@ export function HomeScreen() {
       {events.festivals.length > 0 && (
         <View style={styles.localSection}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="location-outline" size={20} color={SemanticColors.infoDark} />
+            <Ionicons name="location-outline" size={20} color={MibuBrand.copper} />
             <Text style={styles.localSectionHeaderText}>{t.home_localTab}</Text>
           </View>
           {events.festivals.map(event => (
             <TouchableOpacity
               key={event.id}
-              onPress={() => router.push(`/event/${event.id}`)}
-              activeOpacity={0.8}
+              onPress={event.id > 0 ? () => router.push(`/event/${event.id}`) : undefined}
+              activeOpacity={event.id > 0 ? 0.8 : 1}
             >
               <Text style={styles.localItem}>
                 ・{getLocalizedDesc(event)}
@@ -724,17 +832,17 @@ const styles = StyleSheet.create({
 
   // 在地活動卡片
   localSection: {
-    backgroundColor: SemanticColors.infoLight,
+    backgroundColor: MibuBrand.cream,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: SemanticColors.infoLight,
+    borderColor: MibuBrand.tanLight,
   },
   localSectionHeaderText: {
     fontSize: 18,
     fontWeight: '800',
-    color: SemanticColors.infoDark,
+    color: MibuBrand.brownDark,
   },
   localItem: {
     fontSize: 14,
