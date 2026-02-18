@@ -166,7 +166,6 @@ export function HomeScreen() {
   // ============================================================
 
   // 活動 Tab 當前選中項（公告/在地/限時）
-  const [activeEventTab, setActiveEventTab] = useState<'announcements' | 'local' | 'flash'>('announcements');
 
   // 用戶頭像設定（從 AsyncStorage 讀取）
   const [userAvatar, setUserAvatar] = useState<string>('default');
@@ -386,191 +385,81 @@ export function HomeScreen() {
         </View>
       </View> */}
 
-      {/* ========== 活動 Tab 導航（公告/在地/限時）========== */}
-      <View style={styles.eventTabsContainer}>
-        {/* 公告 Tab */}
-        <TouchableOpacity
-          style={[
-            styles.eventTab,
-            activeEventTab === 'announcements' && styles.eventTabActive,
-          ]}
-          onPress={() => setActiveEventTab('announcements')}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.eventTabText,
-              activeEventTab === 'announcements' && styles.eventTabTextActive,
-            ]}
-          >
-            {t.home_newsTab}
-          </Text>
-        </TouchableOpacity>
-
-        {/* 在地活動 Tab */}
-        <TouchableOpacity
-          style={[
-            styles.eventTab,
-            activeEventTab === 'local' && styles.eventTabActive,
-          ]}
-          onPress={() => setActiveEventTab('local')}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.eventTabText,
-              activeEventTab === 'local' && styles.eventTabTextActive,
-            ]}
-          >
-            {t.home_localTab}
-          </Text>
-        </TouchableOpacity>
-
-        {/* 限時活動 Tab */}
-        <TouchableOpacity
-          style={[
-            styles.eventTab,
-            activeEventTab === 'flash' && styles.eventTabActive,
-          ]}
-          onPress={() => setActiveEventTab('flash')}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.eventTabText,
-              activeEventTab === 'flash' && styles.eventTabTextActive,
-            ]}
-          >
-            {t.home_flashTab}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* ========== 活動內容區（延伸到底部）========== */}
-      <View style={styles.eventContentContainer}>
-        {/* 公告內容 */}
-        {activeEventTab === 'announcements' && (
-          <View style={styles.section}>
-            {events.announcements.length > 0 ? (
-              // 有公告：顯示公告列表
-              events.announcements.map(event => (
-                <TouchableOpacity
-                  key={event.id}
-                  style={styles.announcementCard}
-                  onPress={() => router.push(`/event/${event.id}`)}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.announcementIcon}>
-                    <Ionicons name="megaphone-outline" size={18} color={MibuBrand.brown} />
-                  </View>
-                  <View style={styles.announcementContent}>
-                    <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
-                    <Text style={styles.announcementDesc} numberOfLines={2}>
-                      {getLocalizedDesc(event)}
-                    </Text>
-                    <Text style={styles.announcementDate}>
-                      {formatDate(event.startDate || event.createdAt)}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))
-            ) : (
-              // 無公告：顯示空狀態
-              <View style={styles.tabEmptyState}>
-                <Ionicons name="megaphone-outline" size={40} color={MibuBrand.tan} />
-                <Text style={styles.tabEmptyText}>
-                  {t.home_noAnnouncements}
-                </Text>
-                <Text style={styles.tabEmptySubtext}>
-                  {t.home_stayTuned}
-                </Text>
-              </View>
-            )}
+      {/* ========== 公告卡片 ========== */}
+      {events.announcements.length > 0 && (
+        <View style={styles.announcementSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="megaphone-outline" size={20} color={MibuBrand.brown} />
+            <Text style={styles.sectionHeaderText}>{t.home_newsTab}</Text>
           </View>
-        )}
+          {events.announcements.map(event => (
+            <TouchableOpacity
+              key={event.id}
+              onPress={() => router.push(`/event/${event.id}`)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.announcementItem}>
+                ・{getLocalizedDesc(event)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
-        {/* 在地活動內容 */}
-        {activeEventTab === 'local' && (
-          <View style={styles.section}>
-            {events.festivals.length > 0 ? (
-              // 有在地活動：顯示活動列表
-              events.festivals.map(event => (
-                <TouchableOpacity
-                  key={event.id}
-                  style={[styles.announcementCard, styles.localActivityCard]}
-                  onPress={() => router.push(`/event/${event.id}`)}
-                  activeOpacity={0.8}
-                >
-                  <View style={[styles.announcementIcon, { backgroundColor: SemanticColors.infoLight }]}>
-                    <Ionicons name="location-outline" size={18} color={SemanticColors.infoDark} />
-                  </View>
-                  <View style={styles.announcementContent}>
-                    <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
-                    <Text style={styles.announcementDesc} numberOfLines={2}>
-                      {getLocalizedDesc(event)}
-                    </Text>
-                    <Text style={[styles.announcementDate, { color: SemanticColors.infoDark }]}>
-                      {formatDate(event.startDate || event.createdAt)}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))
-            ) : (
-              // 無在地活動：顯示空狀態
-              <View style={styles.tabEmptyState}>
-                <Ionicons name="location-outline" size={40} color={MibuBrand.tan} />
-                <Text style={styles.tabEmptyText}>
-                  {t.home_noLocalActivities}
-                </Text>
-                <Text style={styles.tabEmptySubtext}>
-                  {t.home_discoverNearby}
-                </Text>
-              </View>
-            )}
+      {/* ========== 快閃活動卡片 ========== */}
+      {events.limitedEvents.length > 0 && (
+        <View style={styles.flashSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="flash" size={20} color={MibuBrand.cream} />
+            <Text style={styles.flashSectionHeaderText}>{t.home_flashTab}</Text>
           </View>
-        )}
+          {events.limitedEvents.map(event => (
+            <TouchableOpacity
+              key={event.id}
+              onPress={() => router.push(`/event/${event.id}`)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.flashItem}>
+                {getLocalizedDesc(event)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
-        {/* 限時活動內容 */}
-        {activeEventTab === 'flash' && (
-          <View style={styles.section}>
-            {events.limitedEvents.length > 0 ? (
-              // 有限時活動：顯示活動列表
-              events.limitedEvents.map(event => (
-                <TouchableOpacity
-                  key={event.id}
-                  style={[styles.announcementCard, styles.flashEventCard]}
-                  onPress={() => router.push(`/event/${event.id}`)}
-                  activeOpacity={0.8}
-                >
-                  <View style={[styles.announcementIcon, { backgroundColor: SemanticColors.warningLight }]}>
-                    <Ionicons name="sparkles" size={18} color={SemanticColors.warningDark} />
-                  </View>
-                  <View style={styles.announcementContent}>
-                    <Text style={styles.announcementTitle}>{getLocalizedTitle(event)}</Text>
-                    <Text style={styles.announcementDesc} numberOfLines={2}>
-                      {getLocalizedDesc(event)}
-                    </Text>
-                    <Text style={[styles.announcementDate, { color: SemanticColors.warningDark }]}>
-                      {formatDate(event.startDate || event.createdAt)}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))
-            ) : (
-              // 無限時活動：顯示空狀態
-              <View style={styles.tabEmptyState}>
-                <Ionicons name="sparkles" size={40} color={MibuBrand.tan} />
-                <Text style={styles.tabEmptyText}>
-                  {t.home_noFlashEvents}
-                </Text>
-                <Text style={styles.tabEmptySubtext}>
-                  {t.home_limitedOffersSoon}
-                </Text>
-              </View>
-            )}
+      {/* ========== 在地活動卡片 ========== */}
+      {events.festivals.length > 0 && (
+        <View style={styles.localSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="location-outline" size={20} color={SemanticColors.infoDark} />
+            <Text style={styles.localSectionHeaderText}>{t.home_localTab}</Text>
           </View>
-        )}
-      </View>
+          {events.festivals.map(event => (
+            <TouchableOpacity
+              key={event.id}
+              onPress={() => router.push(`/event/${event.id}`)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.localItem}>
+                ・{getLocalizedDesc(event)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {/* 三類活動都沒有時顯示空狀態 */}
+      {events.announcements.length === 0 && events.limitedEvents.length === 0 && events.festivals.length === 0 && (
+        <View style={styles.tabEmptyState}>
+          <Ionicons name="megaphone-outline" size={40} color={MibuBrand.tan} />
+          <Text style={styles.tabEmptyText}>
+            {t.home_noAnnouncements}
+          </Text>
+          <Text style={styles.tabEmptySubtext}>
+            {t.home_stayTuned}
+          </Text>
+        </View>
+      )}
     </ScrollView>
 
     {/* #051 訪客升級提示 */}
@@ -785,52 +674,76 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
 
-  // 活動 Tab 導航
-  eventTabsContainer: {
+  // 區塊共用標題
+  sectionHeader: {
     flexDirection: 'row',
-    backgroundColor: MibuBrand.creamLight,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    borderWidth: 1,
-    borderBottomWidth: 0,
-    borderColor: MibuBrand.tanLight,
-    overflow: 'hidden',
-  },
-  eventTab: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    gap: 8,
+    marginBottom: 12,
   },
-  eventTabActive: {
-    borderBottomColor: MibuBrand.brown,
-    backgroundColor: MibuBrand.warmWhite,
-  },
-  eventTabText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: MibuBrand.tan,
-  },
-  eventTabTextActive: {
+  sectionHeaderText: {
+    fontSize: 18,
+    fontWeight: '800',
     color: MibuBrand.brownDark,
   },
 
-  // 活動內容區（延伸到底部）
-  // 使用 minHeight 確保內容區延伸到螢幕底部
-  // 計算：螢幕高度 - 頂部內容估算高度(~420px) - 底部 Tab Bar(~90px)
-  eventContentContainer: {
-    minHeight: SCREEN_HEIGHT - 420 - 90,
-    backgroundColor: MibuBrand.warmWhite,
+  // 公告卡片
+  announcementSection: {
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
     borderWidth: 1,
-    borderTopWidth: 0,
     borderColor: MibuBrand.tanLight,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    padding: 16,
-    paddingBottom: 100, // 底部 Tab Bar 間距
   },
+  announcementItem: {
+    fontSize: 14,
+    color: MibuBrand.brownDark,
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+
+  // 快閃活動卡片（棕色深底）
+  flashSection: {
+    backgroundColor: MibuBrand.brown,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  flashSectionHeaderText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: MibuBrand.cream,
+  },
+  flashItem: {
+    fontSize: 14,
+    color: MibuBrand.cream,
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+
+  // 在地活動卡片
+  localSection: {
+    backgroundColor: SemanticColors.infoLight,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: SemanticColors.infoLight,
+  },
+  localSectionHeaderText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: SemanticColors.infoDark,
+  },
+  localItem: {
+    fontSize: 14,
+    color: MibuBrand.brownDark,
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+
+  // 空狀態
   tabEmptyState: {
     alignItems: 'center',
     paddingVertical: 32,
@@ -846,55 +759,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: MibuBrand.tan,
     marginTop: 4,
-  },
-  section: {
-    marginBottom: 0,
-  },
-  // 公告/活動卡片
-  announcementCard: {
-    backgroundColor: MibuBrand.creamLight,
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: MibuBrand.tanLight,
-    shadowColor: MibuBrand.brown,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  flashEventCard: {
-    borderColor: SemanticColors.warningLight,
-  },
-  localActivityCard: {
-    borderColor: SemanticColors.infoLight,
-  },
-  announcementIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: MibuBrand.creamLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  announcementContent: {},
-  announcementTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
-    marginBottom: 6,
-  },
-  announcementDesc: {
-    fontSize: 13,
-    color: MibuBrand.copper,
-    lineHeight: 18,
-    marginBottom: 8,
-  },
-  announcementDate: {
-    fontSize: 12,
-    color: MibuBrand.tan,
   },
 
 });
