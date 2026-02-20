@@ -6,6 +6,46 @@
 
 ## 最新回報
 
+### 2026-02-20 #053：自己人 + 商家申請系統（specialist→partner 改名 + 新申請流程）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #053 |
+| 狀態 | ✅ 完成 |
+
+**Breaking Change — specialist→partner 改名**
+- [x] `UserPerksResponse`：`canApplySpecialist` → `canApplyPartner`、`specialistInvitedAt` → `partnerInvited`
+- [x] `SpecialistEligibilityResponse` → `PartnerEligibilityResponse`（新欄位：isEligible/hasApplied/isPartner）
+- [x] 新增 `PartnerApplicationStatusResponse`（status + application 詳情）
+- [x] API 路徑：4 條 `/api/user/specialist/*` → `/api/partner/*`
+
+**自己人申請**
+- [x] `economyApi.ts`：getPartnerEligibility / applyPartner / getPartnerApplicationStatus / markPartnerInvited
+- [x] `useEconomyQueries.ts`：usePartnerEligibility / usePartnerApplicationStatus / useApplyPartner hooks
+- [x] `PartnerApplyScreen.tsx`（新檔）：4 狀態頁面（none/pending/approved/rejected）+ 問卷式表單
+
+**商家申請**
+- [x] `MerchantApplyParams` 改為 businessName + email + surveyResponses（JSONB）
+- [x] `merchantApi.ts`：新增 getMerchantApplicationStatus
+- [x] `useMerchantQueries.ts`：useMerchantApplicationStatus / useApplyMerchant hooks
+- [x] `MerchantApplyScreen.tsx`（新檔）：4 狀態頁面 + 商家名/email/問卷表單
+
+**UI 整合**
+- [x] `SettingsScreen.tsx`：新增自己人/商家申請入口（依狀態顯示 badge）
+- [x] `ProfileResponse`：新增 partner/merchant 狀態區塊
+- [x] `HomeScreen.tsx`、`EconomyScreen.tsx`：canApplySpecialist → canApplyPartner
+- [x] `login.tsx`、`PlannerScreen.tsx`：策劃師/Specialist → 自己人/Partner
+
+**翻譯**
+- [x] 4 語系共 38+ 新 keys（partner_*、merchant_*、settings_*）
+- [x] 全面 策劃師→自己人 文字替換
+
+**路由**
+- [x] `app/partner-apply.tsx` + `app/merchant-apply.tsx` 新增
+- [x] `_layout.tsx` Stack.Screen 註冊
+
+---
+
 ### 2026-02-15 #051：訪客升級提醒（關鍵功能觸發提示）
 
 | 項目 | 內容 |
@@ -1092,6 +1132,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 053 | 02-20 | specialist→partner 改名 + 自己人/商家申請系統 | ✅ |
 | 050 | 02-15 | APP 金流頁面處理 E1016 錯誤（訪客金流限制攔截器） | ✅ |
 | 049 | 02-15 | 訪客登入改為呼叫後端 API（後端建帳 + 發 JWT） | ✅ |
 | 048 | 02-13 | 商城商品管理（管理員 CRUD）型別 + API + Hooks + UI | ✅ |
