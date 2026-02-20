@@ -27,15 +27,16 @@ export interface UserCoinsResponse {
 /**
  * 用戶權益資訊
  * GET /api/user/perks
+ * #053: specialist→partner 改名
  */
 export interface UserPerksResponse {
   dailyPullLimit: number;       // 每日扭蛋上限
   inventorySlots: number;       // 背包格數
   dailyPullBonus: number;       // 每日扭蛋加成
   inventoryBonus: number;       // 背包加成格數
-  canApplySpecialist: boolean;  // 是否可申請策劃師
-  specialistInvitedAt: string | null;  // 受邀成為策劃師時間
-  loginStreak?: number;                // 連續登入天數（後端可能回傳）
+  canApplyPartner: boolean;     // 是否可申請自己人（#053 改名）
+  partnerInvited: boolean;      // 是否已收到自己人邀請
+  loginStreak?: number;         // 連續登入天數（後端可能回傳）
 }
 
 /**
@@ -66,15 +67,30 @@ export interface CoinHistoryResponse {
 }
 
 /**
- * 策劃師申請資格
- * GET /api/user/specialist/eligibility
- * #039: 改用 hasInvitation 取代 currentLevel/requiredLevel
+ * 自己人申請資格
+ * GET /api/partner/eligibility
+ * #053: specialist→partner 改名 + 移除邀請制
  */
-export interface SpecialistEligibilityResponse {
-  hasInvitation: boolean;              // 是否有邀請資格
-  canApply: boolean;                   // 是否可申請
-  reason?: string;                     // 不可申請原因
-  invitedAt?: string;                  // 邀請時間
+export interface PartnerEligibilityResponse {
+  isEligible: boolean;   // 是否可申請（所有登入用戶皆可）
+  hasApplied: boolean;   // 是否已提交申請
+  isPartner: boolean;    // 是否已是自己人
+}
+
+/**
+ * 自己人申請狀態
+ * GET /api/partner/application-status
+ * #053: 新增
+ */
+export interface PartnerApplicationStatusResponse {
+  status: 'none' | 'pending' | 'approved' | 'rejected';
+  application: {
+    id: number;
+    surveyResponses: Record<string, unknown>;
+    createdAt: string;
+    reviewedAt: string | null;
+    rejectionReason: string | null;
+  } | null;
 }
 
 // ============ 等級系統已廢除，改用金幣系統 ============

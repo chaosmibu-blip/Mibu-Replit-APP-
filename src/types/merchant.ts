@@ -129,27 +129,27 @@ export interface MerchantCredits {
 /**
  * 商家申請參數
  * POST /api/merchant/apply
+ * #053: 改為 businessName + email + surveyResponses 格式
  */
 export interface MerchantApplyParams {
-  ownerName: string;        // 負責人姓名
-  businessName: string;     // 店家名稱
-  taxId?: string;           // 統一編號（可選）
-  businessCategory: string; // 商業類別
-  address: string;          // 地址
-  phone?: string;           // 電話（可選）
-  mobile: string;           // 手機
-  email: string;            // 電子郵件
+  businessName: string;                       // 商家名稱（必填）
+  email: string;                              // Email（必填）
+  surveyResponses?: Record<string, unknown>;  // 問卷回答（選填）
 }
 
 /**
  * 商家申請回應
  * POST /api/merchant/apply
+ * #053: 更新為新版回應格式
  */
 export interface MerchantApplyResponse {
-  success: boolean;       // 是否成功
-  merchant: MerchantMe;   // 商家資訊
-  isNew: boolean;         // 是否為新申請
-  message: string;        // 回應訊息
+  success: boolean;
+  application: {
+    id: number;
+    status: 'pending';
+    businessName: string;
+    createdAt: string;
+  };
 }
 
 // ============ 數據分析 ============
@@ -444,4 +444,50 @@ export interface RegionPoolCoupon {
   merchantName: string;        // 商家名稱
   discount: string | null;     // 折扣內容
   merchantId: number;          // 商家 ID
+}
+
+// ============ 商家申請系統（#053 新增） ============
+
+/**
+ * 商家申請狀態
+ * #053: 新增商家申請 API
+ */
+export type MerchantApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
+
+/**
+ * 商家申請狀態回應
+ * GET /api/merchant/application-status
+ */
+export interface MerchantApplicationStatusResponse {
+  status: MerchantApplicationStatus;
+  application: {
+    id: number;
+    businessName: string;
+    email: string;
+    surveyResponses: Record<string, unknown> | null;
+    createdAt: string;
+    approvedAt: string | null;
+    rejectionReason: string | null;
+  } | null;
+}
+
+/**
+ * Profile 中的商家區塊
+ * GET /api/account/profile → merchant
+ * #053: 新增
+ */
+export interface ProfileMerchantBlock {
+  isMerchant: boolean;
+  applicationStatus: MerchantApplicationStatus;
+  merchantId: number | null;
+}
+
+/**
+ * Profile 中的自己人區塊
+ * GET /api/account/profile → partner
+ * #053: specialist→partner 改名
+ */
+export interface ProfilePartnerBlock {
+  isPartner: boolean;
+  applicationStatus: 'none' | 'pending' | 'approved' | 'rejected';
 }

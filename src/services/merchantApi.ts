@@ -52,6 +52,7 @@ import {
   PlaceSearchResult,
   MerchantApplyParams,
   MerchantApplyResponse,
+  MerchantApplicationStatusResponse,
   MerchantAnalytics,
   MerchantCoupon,
   MerchantCouponsResponse,
@@ -119,6 +120,19 @@ class MerchantApiService extends ApiBase {
       method: 'POST',
       headers: this.authHeaders(token),
       body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * 查詢商家申請狀態
+   * #053: 新增端點
+   *
+   * @param token - JWT Token
+   * @returns 申請狀態與詳情
+   */
+  async getMerchantApplicationStatus(token: string): Promise<MerchantApplicationStatusResponse> {
+    return this.request<MerchantApplicationStatusResponse>('/api/merchant/application-status', {
+      headers: this.authHeaders(token),
     });
   }
 

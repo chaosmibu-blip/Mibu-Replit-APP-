@@ -64,13 +64,13 @@ const PORTAL_CONFIGS: Record<string, PortalConfig[]> = {
   'zh-TW': [
     { type: 'traveler', label: '旅客', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: '探索台灣各地精彩景點', guestAllowed: true },
     { type: 'merchant', label: '商家', color: RoleColors.merchant.main, bgColor: RoleColors.merchant.light, subtitle: '管理優惠券與店家資訊', guestAllowed: false },
-    { type: 'specialist', label: '專員', color: RoleColors.specialist.main, bgColor: RoleColors.specialist.light, subtitle: '協助旅客規劃行程', guestAllowed: false },
+    { type: 'specialist', label: '自己人', color: RoleColors.specialist.main, bgColor: RoleColors.specialist.light, subtitle: '在地夥伴協助旅客', guestAllowed: false },
     { type: 'admin', label: '管理端', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: '系統管理員專用入口', guestAllowed: false },
   ],
   'en': [
     { type: 'traveler', label: 'Traveler', color: MibuBrand.brown, bgColor: MibuBrand.highlight, subtitle: 'Explore amazing destinations', guestAllowed: true },
     { type: 'merchant', label: 'Merchant', color: RoleColors.merchant.main, bgColor: RoleColors.merchant.light, subtitle: 'Manage coupons and store info', guestAllowed: false },
-    { type: 'specialist', label: 'Specialist', color: RoleColors.specialist.main, bgColor: RoleColors.specialist.light, subtitle: 'Help travelers plan trips', guestAllowed: false },
+    { type: 'specialist', label: 'Partner', color: RoleColors.specialist.main, bgColor: RoleColors.specialist.light, subtitle: 'Help travelers plan trips', guestAllowed: false },
     { type: 'admin', label: 'Admin', color: MibuBrand.warning, bgColor: MibuBrand.highlight, subtitle: 'System administrator portal', guestAllowed: false },
   ],
   'ja': [

@@ -536,6 +536,50 @@ const ko: Record<string, string> = {
     specialist_serviceRegion: 'Service Region', /* TODO: ko */
     specialist_people: '', /* TODO: ko */
 
+    // ========== Partner Apply (#053) ==========
+    partner_applyTitle: 'Apply to Become a Partner', /* TODO: ko */
+    partner_applyDesc: 'Become a Mibu local partner and help travelers plan authentic trips', /* TODO: ko */
+    partner_applyButton: 'Submit Application', /* TODO: ko */
+    partner_applySuccess: 'Application Submitted!', /* TODO: ko */
+    partner_applySuccessDesc: 'We will review your application as soon as possible', /* TODO: ko */
+    partner_statusPending: 'Under Review', /* TODO: ko */
+    partner_statusPendingDesc: 'Your partner application is being reviewed', /* TODO: ko */
+    partner_statusApproved: 'Approved', /* TODO: ko */
+    partner_statusRejected: 'Rejected', /* TODO: ko */
+    partner_statusRejectedDesc: 'Sorry, your application was not approved', /* TODO: ko */
+    partner_reapply: 'Reapply', /* TODO: ko */
+    partner_alreadyPartner: 'You are already a partner', /* TODO: ko */
+    partner_surveyIntro: 'Please introduce yourself', /* TODO: ko */
+    partner_surveyName: 'Your real name', /* TODO: ko */
+    partner_surveyRegion: 'Travel regions you are familiar with', /* TODO: ko */
+    partner_surveyMotivation: 'Why do you want to become a partner?', /* TODO: ko */
+    partner_surveyExperience: 'Relevant experience or expertise', /* TODO: ko */
+
+    // ========== Merchant Apply (#053) ==========
+    merchant_applyTitle: 'Apply to Become a Merchant', /* TODO: ko */
+    merchant_applyDesc: 'Join Mibu merchant partners and let more travelers discover your shop', /* TODO: ko */
+    merchant_applyButton: 'Submit Application', /* TODO: ko */
+    merchant_applySuccess: 'Application Submitted!', /* TODO: ko */
+    merchant_applySuccessDesc: 'We will review your merchant application shortly', /* TODO: ko */
+    merchant_statusNone: 'Not Applied', /* TODO: ko */
+    merchant_statusPending: 'Under Review', /* TODO: ko */
+    merchant_statusPendingDesc: 'Your merchant application is being reviewed', /* TODO: ko */
+    merchant_statusApproved: 'Approved', /* TODO: ko */
+    merchant_statusRejected: 'Rejected', /* TODO: ko */
+    merchant_statusRejectedDesc: 'Sorry, your merchant application was not approved', /* TODO: ko */
+    merchant_reapply: 'Reapply', /* TODO: ko */
+    merchant_businessName: 'Business Name', /* TODO: ko */
+    merchant_businessNamePlaceholder: 'Enter your business name', /* TODO: ko */
+    merchant_email: 'Contact Email', /* TODO: ko */
+    merchant_emailPlaceholder: 'Enter your email', /* TODO: ko */
+    merchant_surveyExtra: 'Anything else you want us to know (optional)', /* TODO: ko */
+
+    // ========== Settings Apply Entries (#053) ==========
+    settings_partnerApply: 'Apply to Become a Partner', /* TODO: ko */
+    settings_merchantApply: 'Apply to Become a Merchant', /* TODO: ko */
+    settings_applicationPending: 'Under Review', /* TODO: ko */
+    settings_applicationRejected: 'Application rejected, you can reapply', /* TODO: ko */
+
     // ========== Merchant ==========
     merchant_productMgmt: 'Product Management', /* TODO: ko */
     merchant_myProducts: 'My Products', /* TODO: ko */
@@ -900,9 +944,9 @@ const ko: Record<string, string> = {
     economy_pullsPerDay: 'Number of pulls per day', /* TODO: ko */
     economy_inventorySlots: 'Inventory Slots', /* TODO: ko */
     economy_itemsCanHold: 'Number of items you can hold', /* TODO: ko */
-    economy_specialistEligibility: 'Specialist Eligibility', /* TODO: ko */
+    economy_partnerEligibility: 'Partner Eligibility', /* TODO: ko */
     economy_canApplyNow: 'You can apply now!', /* TODO: ko */
-    economy_unlockRequirement: 'Unlock by earning 1,500 coins and "Veteran Traveler" achievement', /* TODO: ko */
+    economy_unlockRequirement: 'All logged-in users can apply', /* TODO: ko */
     economy_aboutCoins: 'About Coins', /* TODO: ko */
     economy_coinsInfo: 'Earn coins by completing tasks and unlocking achievements. Accumulate coins to unlock more perks!', /* TODO: ko */
     economy_statAchievements: 'Achievements', /* TODO: ko */
@@ -1194,7 +1238,7 @@ const ko: Record<string, string> = {
     home_limitedOffersSoon: 'Limited offers coming soon!', /* TODO: ko */
     home_loginStreak: '연속 로그인',
     home_days: '일',
-    home_specialistReady: 'Specialist Ready', /* TODO: ko */
+    home_partnerReady: 'Partner Ready', /* TODO: ko */
     home_dailyTasks: '일일 과제',
     home_done: '완료',
     home_earned: '획득',

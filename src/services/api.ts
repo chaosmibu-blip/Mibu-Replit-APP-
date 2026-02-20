@@ -355,8 +355,14 @@ class ApiService {
   // ============ Economy 經濟系統 (Phase 5) ============
 
   // #043: getAchievements / claimAchievement 已遷移到 rulesApi
-  /** 申請成為策劃師 */
-  applySpecialist = economyApi.applySpecialist.bind(economyApi);
+  /** 申請成為自己人（#053 specialist→partner） */
+  applyPartner = economyApi.applyPartner.bind(economyApi);
+  /** 取得自己人申請資格 */
+  getPartnerEligibility = economyApi.getPartnerEligibility.bind(economyApi);
+  /** 查詢自己人申請狀態 */
+  getPartnerApplicationStatus = economyApi.getPartnerApplicationStatus.bind(economyApi);
+  /** 標記已顯示自己人邀請 */
+  markPartnerInvited = economyApi.markPartnerInvited.bind(economyApi);
 
   // ============ Crowdfunding 募資系統 (Phase 5) ============
 

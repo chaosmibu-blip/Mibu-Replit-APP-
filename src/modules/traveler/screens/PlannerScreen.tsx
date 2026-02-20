@@ -64,7 +64,7 @@ export function PlannerScreen() {
           <View style={styles.featureText}>
             <Text style={styles.featureTitle}>{t.navChat}</Text>
             <Text style={styles.featureDesc}>
-              {language === 'zh-TW' ? '與策劃師即時聊天' : 'Chat with planners'}
+              {language === 'zh-TW' ? '與自己人即時聊天' : 'Chat with partners'}
             </Text>
           </View>
         </View>

@@ -33,6 +33,8 @@ import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
 import { Language } from '../../../types';
 import { apiService } from '../../../services/api';
 import { pushNotificationService } from '../../../services/pushNotificationService';
+import { usePartnerApplicationStatus } from '../../../hooks/useEconomyQueries';
+import { useMerchantApplicationStatus } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
 
@@ -105,6 +107,12 @@ export function SettingsScreen() {
   const [notifications, setNotifications] = useState(true);
   // 切換中鎖（防重複觸發）
   const [isTogglingPush, setIsTogglingPush] = useState(false);
+
+  // #053: 自己人/商家申請狀態
+  const partnerStatusQuery = usePartnerApplicationStatus();
+  const merchantStatusQuery = useMerchantApplicationStatus();
+  const partnerStatus = partnerStatusQuery.data?.status ?? 'none';
+  const merchantStatus = merchantStatusQuery.data?.status ?? 'none';
 
   // 讀取通知偏好設定（同步檢查系統權限）
   useEffect(() => {
@@ -342,6 +350,32 @@ export function SettingsScreen() {
           iconColor: '#6366f1',
         },
       ],
+    },
+    // #053: 申請入口（自己人 + 商家）
+    {
+      title: t.explore,
+      items: [
+        // 自己人申請：根據狀態顯示不同內容
+        ...(partnerStatus !== 'approved' ? [{
+          icon: 'people-outline' as keyof typeof Ionicons.glyphMap,
+          label: t.settings_partnerApply,
+          action: () => router.push('/partner-apply' as any),
+          hasArrow: true,
+          badge: partnerStatus === 'pending' ? t.settings_applicationPending : undefined,
+          iconBg: '#F0FDF4',
+          iconColor: MibuBrand.success,
+        }] : []),
+        // 商家申請：根據狀態顯示不同內容
+        ...(merchantStatus !== 'approved' ? [{
+          icon: 'storefront-outline' as keyof typeof Ionicons.glyphMap,
+          label: t.settings_merchantApply,
+          action: () => router.push('/merchant-apply' as any),
+          hasArrow: true,
+          badge: merchantStatus === 'pending' ? t.settings_applicationPending : undefined,
+          iconBg: '#FFF7ED',
+          iconColor: '#EA580C',
+        }] : []),
+      ].filter(Boolean),
     },
     // 偏好設定群組（推播通知開關）
     {

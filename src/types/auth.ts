@@ -125,12 +125,22 @@ export interface UpdateProfileParams {
 
 /**
  * 個人資料 API 回應
+ * #053: 新增 partner + merchant 區塊
  */
 export interface ProfileResponse {
   success: boolean;      // 是否成功
   message: string;       // 回應訊息
   profile: UserProfile;  // 用戶資料
   token?: string;        // 更新 firstName/lastName/email 時回傳新 token（#040 補齊）
+  partner?: {            // #053: 自己人狀態
+    isPartner: boolean;
+    applicationStatus: 'none' | 'pending' | 'approved' | 'rejected';
+  };
+  merchant?: {           // #053: 商家狀態
+    isMerchant: boolean;
+    applicationStatus: 'none' | 'pending' | 'approved' | 'rejected';
+    merchantId: number | null;
+  };
 }
 
 // ============ 訪客登入 ============
