@@ -65,6 +65,39 @@ export function useClaimReward() {
   );
 }
 
+// ============ 自己人申請 Hooks（#053 新增） ============
+
+/** 取得自己人申請資格 */
+export function usePartnerEligibility() {
+  return useAuthQuery(
+    ['partner', 'eligibility'],
+    (token) => economyApi.getPartnerEligibility(token),
+  );
+}
+
+/** 查詢自己人申請狀態 */
+export function usePartnerApplicationStatus() {
+  return useAuthQuery(
+    ['partner', 'applicationStatus'],
+    (token) => economyApi.getPartnerApplicationStatus(token),
+  );
+}
+
+/** 提交自己人申請 */
+export function useApplyPartner() {
+  const queryClient = useQueryClient();
+  return useAuthMutation(
+    (token, surveyResponses: Record<string, unknown>) =>
+      economyApi.applyPartner(token, surveyResponses),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['partner'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.perks });
+      },
+    },
+  );
+}
+
 // ============ 複合 Hook ============
 
 /** 刷新所有經濟系統查詢 */

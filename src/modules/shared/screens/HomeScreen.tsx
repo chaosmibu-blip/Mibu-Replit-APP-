@@ -72,7 +72,7 @@ interface UserCoinsData {
 interface UserPerksData {
   dailyPullLimit: number;    // 每日扭蛋上限
   inventorySlots: number;    // 背包格數
-  canApplySpecialist: boolean; // 是否可申請策劃師
+  canApplyPartner: boolean; // 是否可申請自己人（#053 改名）
 }
 
 /**
@@ -266,7 +266,7 @@ export function HomeScreen() {
   const userPerks: UserPerksData = {
     dailyPullLimit: perksData?.dailyPullLimit ?? 36,
     inventorySlots: perksData?.inventorySlots ?? 30,
-    canApplySpecialist: perksData?.canApplySpecialist ?? false,
+    canApplyPartner: perksData?.canApplyPartner ?? false,
   };
 
   // ============================================================
@@ -450,12 +450,12 @@ export function HomeScreen() {
             </View>
           </View>
         </View>
-        {userPerks.canApplySpecialist && (
+        {userPerks.canApplyPartner && (
           <View style={styles.perksSection}>
             <View style={styles.perkItem}>
               <Ionicons name="ribbon-outline" size={16} color={MibuBrand.success} />
               <Text style={[styles.perkText, { color: MibuBrand.success }]}>
-                {t.home_specialistReady}
+                {t.home_partnerReady}
               </Text>
             </View>
           </View>

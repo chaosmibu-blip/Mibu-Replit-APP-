@@ -6,6 +6,77 @@
 
 ## 最新回報
 
+### 2026-02-20 #052：推播通知完整串接
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #052 |
+| 狀態 | ✅ 完成 |
+
+**偵察結果：80% 已完成**
+先前 #020/#025/#042 已建立完整推播通知基礎建設：
+- [x] Push 服務（pushNotificationService.ts）：Token 註冊/取消、監聽、Badge 管理
+- [x] 型別定義（notifications.ts）：完整 NotificationItem/Preferences/RegisterToken
+- [x] API 層（commonApi.ts）：9 個端點全部串接
+- [x] React Query Hooks（useNotificationQueries.ts）：5 個 hooks
+- [x] 全域監聽（useNotificationHandler.ts）：前景/點擊/冷啟動導航
+- [x] UI 頁面：NotificationListScreen（分頁歷史）+ NotificationPreferencesScreen（偏好設定）
+- [x] 路由：/notifications + /notification-preferences
+- [x] 登入/登出整合：registerTokenWithBackend / unregisterToken
+- [x] 翻譯：4 語系 notifPref_* + notifList_* 完整
+
+**本次補完**
+- [x] NotificationPreferencesScreen：勿擾時段時間改為可編輯
+  - 點擊時間 → TimePickerModal（小時 0-23 + 分鐘 15 分鐘為單位）
+  - 樂觀 UI 更新 + API 儲存 + 失敗回滾
+  - 純 RN 實作，無額外套件依賴
+
+**注意事項**
+- app.config.js 是禁止修改檔案，通知權限（POST_NOTIFICATIONS）需在下次 build 設定時處理
+- expo-notifications 在 managed workflow 下會自動處理權限請求
+
+---
+
+### 2026-02-20 #053：自己人 + 商家申請系統（specialist→partner 改名 + 新申請流程）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #053 |
+| 狀態 | ✅ 完成 |
+
+**Breaking Change — specialist→partner 改名**
+- [x] `UserPerksResponse`：`canApplySpecialist` → `canApplyPartner`、`specialistInvitedAt` → `partnerInvited`
+- [x] `SpecialistEligibilityResponse` → `PartnerEligibilityResponse`（新欄位：isEligible/hasApplied/isPartner）
+- [x] 新增 `PartnerApplicationStatusResponse`（status + application 詳情）
+- [x] API 路徑：4 條 `/api/user/specialist/*` → `/api/partner/*`
+
+**自己人申請**
+- [x] `economyApi.ts`：getPartnerEligibility / applyPartner / getPartnerApplicationStatus / markPartnerInvited
+- [x] `useEconomyQueries.ts`：usePartnerEligibility / usePartnerApplicationStatus / useApplyPartner hooks
+- [x] `PartnerApplyScreen.tsx`（新檔）：4 狀態頁面（none/pending/approved/rejected）+ 問卷式表單
+
+**商家申請**
+- [x] `MerchantApplyParams` 改為 businessName + email + surveyResponses（JSONB）
+- [x] `merchantApi.ts`：新增 getMerchantApplicationStatus
+- [x] `useMerchantQueries.ts`：useMerchantApplicationStatus / useApplyMerchant hooks
+- [x] `MerchantApplyScreen.tsx`（新檔）：4 狀態頁面 + 商家名/email/問卷表單
+
+**UI 整合**
+- [x] `SettingsScreen.tsx`：新增自己人/商家申請入口（依狀態顯示 badge）
+- [x] `ProfileResponse`：新增 partner/merchant 狀態區塊
+- [x] `HomeScreen.tsx`、`EconomyScreen.tsx`：canApplySpecialist → canApplyPartner
+- [x] `login.tsx`、`PlannerScreen.tsx`：策劃師/Specialist → 自己人/Partner
+
+**翻譯**
+- [x] 4 語系共 38+ 新 keys（partner_*、merchant_*、settings_*）
+- [x] 全面 策劃師→自己人 文字替換
+
+**路由**
+- [x] `app/partner-apply.tsx` + `app/merchant-apply.tsx` 新增
+- [x] `_layout.tsx` Stack.Screen 註冊
+
+---
+
 ### 2026-02-15 #051：訪客升級提醒（關鍵功能觸發提示）
 
 | 項目 | 內容 |
@@ -1092,6 +1163,8 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 053 | 02-20 | specialist→partner 改名 + 自己人/商家申請系統 | ✅ |
+| 052 | 02-20 | 推播通知完整串接（補完勿擾時段時間編輯） | ✅ |
 | 050 | 02-15 | APP 金流頁面處理 E1016 錯誤（訪客金流限制攔截器） | ✅ |
 | 049 | 02-15 | 訪客登入改為呼叫後端 API（後端建帳 + 發 JWT） | ✅ |
 | 048 | 02-13 | 商城商品管理（管理員 CRUD）型別 + API + Hooks + UI | ✅ |

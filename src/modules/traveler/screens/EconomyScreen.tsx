@@ -402,22 +402,22 @@ export function EconomyScreen() {
               </View>
               <View style={styles.taskDivider} />
 
-              {/* 策劃師資格 */}
+              {/* 自己人資格（#053 改名） */}
               <View style={styles.perkDetailItem}>
                 <View style={styles.perkDetailIcon}>
                   <Ionicons
-                    name={perksInfo?.canApplySpecialist ? 'ribbon' : 'ribbon-outline'}
+                    name={perksInfo?.canApplyPartner ? 'ribbon' : 'ribbon-outline'}
                     size={20}
-                    color={perksInfo?.canApplySpecialist ? MibuBrand.success : MibuBrand.copper}
+                    color={perksInfo?.canApplyPartner ? MibuBrand.success : MibuBrand.copper}
                   />
                 </View>
                 <View style={styles.perkDetailContent}>
-                  <Text style={styles.perkDetailTitle}>{t.economy_specialistEligibility}</Text>
+                  <Text style={styles.perkDetailTitle}>{t.economy_partnerEligibility}</Text>
                   <Text style={styles.perkDetailDesc}>
-                    {perksInfo?.canApplySpecialist ? t.economy_canApplyNow : t.economy_unlockRequirement}
+                    {perksInfo?.canApplyPartner ? t.economy_canApplyNow : t.economy_unlockRequirement}
                   </Text>
                 </View>
-                {perksInfo?.canApplySpecialist && (
+                {perksInfo?.canApplyPartner && (
                   <Ionicons name="checkmark-circle" size={24} color={MibuBrand.success} />
                 )}
               </View>

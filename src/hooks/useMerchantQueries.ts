@@ -217,3 +217,27 @@ export function useVerifyMerchantCode() {
       merchantApi.verifyMerchantCode(token, params.merchantId, params.code),
   );
 }
+
+// ============ 商家申請（#053 新增） ============
+
+/** 查詢商家申請狀態 */
+export function useMerchantApplicationStatus() {
+  return useAuthQuery(
+    ['merchant', 'applicationStatus'],
+    (token) => merchantApi.getMerchantApplicationStatus(token),
+  );
+}
+
+/** 提交商家申請 */
+export function useApplyMerchant() {
+  const queryClient = useQueryClient();
+  return useAuthMutation(
+    (token, params: { businessName: string; email: string; surveyResponses?: Record<string, unknown> }) =>
+      merchantApi.applyMerchant(token, params),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['merchant', 'applicationStatus'] });
+      },
+    },
+  );
+}

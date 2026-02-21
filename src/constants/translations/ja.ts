@@ -464,6 +464,50 @@ const ja: Record<string, string> = {
     specialist_serviceRegion: 'Service Region', /* TODO: ja */
     specialist_people: '', /* TODO: ja */
 
+    // ========== Partner Apply (#053) ==========
+    partner_applyTitle: 'Apply to Become a Partner', /* TODO: ja */
+    partner_applyDesc: 'Become a Mibu local partner and help travelers plan authentic trips', /* TODO: ja */
+    partner_applyButton: 'Submit Application', /* TODO: ja */
+    partner_applySuccess: 'Application Submitted!', /* TODO: ja */
+    partner_applySuccessDesc: 'We will review your application as soon as possible', /* TODO: ja */
+    partner_statusPending: 'Under Review', /* TODO: ja */
+    partner_statusPendingDesc: 'Your partner application is being reviewed', /* TODO: ja */
+    partner_statusApproved: 'Approved', /* TODO: ja */
+    partner_statusRejected: 'Rejected', /* TODO: ja */
+    partner_statusRejectedDesc: 'Sorry, your application was not approved', /* TODO: ja */
+    partner_reapply: 'Reapply', /* TODO: ja */
+    partner_alreadyPartner: 'You are already a partner', /* TODO: ja */
+    partner_surveyIntro: 'Please introduce yourself', /* TODO: ja */
+    partner_surveyName: 'Your real name', /* TODO: ja */
+    partner_surveyRegion: 'Travel regions you are familiar with', /* TODO: ja */
+    partner_surveyMotivation: 'Why do you want to become a partner?', /* TODO: ja */
+    partner_surveyExperience: 'Relevant experience or expertise', /* TODO: ja */
+
+    // ========== Merchant Apply (#053) ==========
+    merchant_applyTitle: 'Apply to Become a Merchant', /* TODO: ja */
+    merchant_applyDesc: 'Join Mibu merchant partners and let more travelers discover your shop', /* TODO: ja */
+    merchant_applyButton: 'Submit Application', /* TODO: ja */
+    merchant_applySuccess: 'Application Submitted!', /* TODO: ja */
+    merchant_applySuccessDesc: 'We will review your merchant application shortly', /* TODO: ja */
+    merchant_statusNone: 'Not Applied', /* TODO: ja */
+    merchant_statusPending: 'Under Review', /* TODO: ja */
+    merchant_statusPendingDesc: 'Your merchant application is being reviewed', /* TODO: ja */
+    merchant_statusApproved: 'Approved', /* TODO: ja */
+    merchant_statusRejected: 'Rejected', /* TODO: ja */
+    merchant_statusRejectedDesc: 'Sorry, your merchant application was not approved', /* TODO: ja */
+    merchant_reapply: 'Reapply', /* TODO: ja */
+    merchant_businessName: 'Business Name', /* TODO: ja */
+    merchant_businessNamePlaceholder: 'Enter your business name', /* TODO: ja */
+    merchant_email: 'Contact Email', /* TODO: ja */
+    merchant_emailPlaceholder: 'Enter your email', /* TODO: ja */
+    merchant_surveyExtra: 'Anything else you want us to know (optional)', /* TODO: ja */
+
+    // ========== Settings Apply Entries (#053) ==========
+    settings_partnerApply: 'Apply to Become a Partner', /* TODO: ja */
+    settings_merchantApply: 'Apply to Become a Merchant', /* TODO: ja */
+    settings_applicationPending: 'Under Review', /* TODO: ja */
+    settings_applicationRejected: 'Application rejected, you can reapply', /* TODO: ja */
+
     // ========== SOS 緊急連絡先 ==========
     sos_emergencyContacts: '緊急連絡先',
     sos_limitReached: '上限に達しました',
@@ -900,9 +944,9 @@ const ja: Record<string, string> = {
     economy_pullsPerDay: 'Number of pulls per day', /* TODO: ja */
     economy_inventorySlots: 'Inventory Slots', /* TODO: ja */
     economy_itemsCanHold: 'Number of items you can hold', /* TODO: ja */
-    economy_specialistEligibility: 'Specialist Eligibility', /* TODO: ja */
+    economy_partnerEligibility: 'Partner Eligibility', /* TODO: ja */
     economy_canApplyNow: 'You can apply now!', /* TODO: ja */
-    economy_unlockRequirement: 'Unlock by earning 1,500 coins and "Veteran Traveler" achievement', /* TODO: ja */
+    economy_unlockRequirement: 'All logged-in users can apply', /* TODO: ja */
     economy_aboutCoins: 'About Coins', /* TODO: ja */
     economy_coinsInfo: 'Earn coins by completing tasks and unlocking achievements. Accumulate coins to unlock more perks!', /* TODO: ja */
     economy_statAchievements: 'Achievements', /* TODO: ja */
@@ -1194,7 +1238,7 @@ const ja: Record<string, string> = {
     home_limitedOffersSoon: 'Limited offers coming soon!', /* TODO: ja */
     home_loginStreak: '連続ログイン',
     home_days: '日',
-    home_specialistReady: 'Specialist Ready', /* TODO: ja */
+    home_partnerReady: 'Partner Ready', /* TODO: ja */
     home_dailyTasks: 'デイリータスク',
     home_done: '完了',
     home_earned: '獲得',

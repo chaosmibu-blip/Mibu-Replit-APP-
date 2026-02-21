@@ -13,7 +13,7 @@
  * - GET /api/notifications/preferences
  * - PUT /api/notifications/preferences
  *
- * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
+ * 更新日期：2026-02-20（#052 新增勿擾時段時間編輯）
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -27,6 +27,8 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -152,6 +154,40 @@ export function NotificationPreferencesScreen() {
     });
   }, [preferences, saving, updateMutation, t]);
 
+  // ========== 勿擾時段時間編輯 ==========
+
+  const [timePickerTarget, setTimePickerTarget] = useState<'start' | 'end' | null>(null);
+  const [pendingHour, setPendingHour] = useState(22);
+  const [pendingMinute, setPendingMinute] = useState(0);
+
+  const openTimePicker = useCallback((target: 'start' | 'end') => {
+    if (!preferences) return;
+    const timeStr = target === 'start'
+      ? (preferences.quietHoursStart || '22:00')
+      : (preferences.quietHoursEnd || '08:00');
+    const [h, m] = timeStr.split(':').map(Number);
+    setPendingHour(h);
+    setPendingMinute(m);
+    setTimePickerTarget(target);
+  }, [preferences]);
+
+  const confirmTimePicker = useCallback(() => {
+    if (!preferences || !timePickerTarget || saving) return;
+    const timeStr = `${String(pendingHour).padStart(2, '0')}:${String(pendingMinute).padStart(2, '0')}`;
+    const key = timePickerTarget === 'start' ? 'quietHoursStart' : 'quietHoursEnd';
+    const oldValue = preferences[key];
+
+    setLocalPrefs(prev => prev ? { ...prev, [key]: timeStr } : prev);
+    setTimePickerTarget(null);
+
+    updateMutation.mutate({ [key]: timeStr } as any, {
+      onError: () => {
+        setLocalPrefs(prev => prev ? { ...prev, [key]: oldValue } : prev);
+        Alert.alert(t.notifPref_saveFailed);
+      },
+    });
+  }, [preferences, timePickerTarget, pendingHour, pendingMinute, saving, updateMutation, t]);
+
   // ========== 渲染 ==========
 
   if (loading) {
@@ -232,35 +268,140 @@ export function NotificationPreferencesScreen() {
             />
           </View>
 
-          {/* 勿擾時段顯示（開啟時才顯示） */}
+          {/* 勿擾時段時間選擇（開啟時才顯示） */}
           {preferences?.quietHoursEnabled && (
             <>
               <View style={styles.divider} />
               <View style={styles.quietHoursRow}>
-                <View style={styles.quietHoursItem}>
+                <TouchableOpacity
+                  style={styles.quietHoursItem}
+                  onPress={() => openTimePicker('start')}
+                  activeOpacity={0.7}
+                >
                   <Text style={styles.quietHoursLabel}>{t.notifPref_quietHoursStart}</Text>
                   <View style={styles.timeDisplay}>
                     <Ionicons name="time-outline" size={16} color={MibuBrand.copper} />
                     <Text style={styles.timeText}>
                       {preferences.quietHoursStart || '22:00'}
                     </Text>
+                    <Ionicons name="chevron-down" size={14} color={UIColors.textSecondary} />
                   </View>
-                </View>
+                </TouchableOpacity>
                 <Ionicons name="arrow-forward" size={16} color={UIColors.textSecondary} />
-                <View style={styles.quietHoursItem}>
+                <TouchableOpacity
+                  style={styles.quietHoursItem}
+                  onPress={() => openTimePicker('end')}
+                  activeOpacity={0.7}
+                >
                   <Text style={styles.quietHoursLabel}>{t.notifPref_quietHoursEnd}</Text>
                   <View style={styles.timeDisplay}>
                     <Ionicons name="time-outline" size={16} color={MibuBrand.copper} />
                     <Text style={styles.timeText}>
                       {preferences.quietHoursEnd || '08:00'}
                     </Text>
+                    <Ionicons name="chevron-down" size={14} color={UIColors.textSecondary} />
                   </View>
-                </View>
+                </TouchableOpacity>
               </View>
             </>
           )}
         </View>
       </ScrollView>
+
+      {/* 時間選擇器 Modal */}
+      <Modal
+        visible={timePickerTarget !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setTimePickerTarget(null)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setTimePickerTarget(null)}
+        >
+          <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {timePickerTarget === 'start' ? t.notifPref_quietHoursStart : t.notifPref_quietHoursEnd}
+            </Text>
+
+            <View style={styles.pickerRow}>
+              {/* 小時 */}
+              <View style={styles.pickerColumn}>
+                <FlatList
+                  data={Array.from({ length: 24 }, (_, i) => i)}
+                  keyExtractor={(item) => `h-${item}`}
+                  showsVerticalScrollIndicator={false}
+                  style={styles.pickerList}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[
+                        styles.pickerItem,
+                        item === pendingHour && styles.pickerItemSelected,
+                      ]}
+                      onPress={() => setPendingHour(item)}
+                    >
+                      <Text style={[
+                        styles.pickerItemText,
+                        item === pendingHour && styles.pickerItemTextSelected,
+                      ]}>
+                        {String(item).padStart(2, '0')}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  getItemLayout={(_, index) => ({ length: 44, offset: 44 * index, index })}
+                  initialScrollIndex={Math.max(0, pendingHour - 2)}
+                />
+                <Text style={styles.pickerUnitLabel}>時</Text>
+              </View>
+
+              <Text style={styles.pickerColon}>:</Text>
+
+              {/* 分鐘（15 分鐘為單位） */}
+              <View style={styles.pickerColumn}>
+                <FlatList
+                  data={[0, 15, 30, 45]}
+                  keyExtractor={(item) => `m-${item}`}
+                  showsVerticalScrollIndicator={false}
+                  style={styles.pickerListMinute}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[
+                        styles.pickerItem,
+                        item === pendingMinute && styles.pickerItemSelected,
+                      ]}
+                      onPress={() => setPendingMinute(item)}
+                    >
+                      <Text style={[
+                        styles.pickerItemText,
+                        item === pendingMinute && styles.pickerItemTextSelected,
+                      ]}>
+                        {String(item).padStart(2, '0')}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                />
+                <Text style={styles.pickerUnitLabel}>分</Text>
+              </View>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => setTimePickerTarget(null)}
+              >
+                <Text style={styles.modalCancelText}>{t.cancel}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirmBtn}
+                onPress={confirmTimePicker}
+              >
+                <Text style={styles.modalConfirmText}>{t.common_confirm}</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -380,5 +521,97 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: '600',
     color: MibuBrand.brownDark,
+  },
+  // ========== 時間選擇器 Modal ==========
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: UIColors.white,
+    borderRadius: Radius.xl,
+    padding: Spacing.xl,
+    width: 280,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: FontSize.xl,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+    marginBottom: Spacing.lg,
+  },
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
+  pickerColumn: {
+    alignItems: 'center',
+  },
+  pickerList: {
+    height: 220,
+    width: 80,
+  },
+  pickerListMinute: {
+    height: 176,
+    width: 80,
+  },
+  pickerColon: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+    marginHorizontal: Spacing.sm,
+  },
+  pickerItem: {
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: Radius.md,
+  },
+  pickerItemSelected: {
+    backgroundColor: MibuBrand.creamLight,
+  },
+  pickerItemText: {
+    fontSize: 22,
+    color: UIColors.textSecondary,
+  },
+  pickerItemTextSelected: {
+    color: MibuBrand.brown,
+    fontWeight: '700',
+  },
+  pickerUnitLabel: {
+    fontSize: FontSize.sm,
+    color: UIColors.textSecondary,
+    marginTop: Spacing.xs,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.lg,
+    backgroundColor: MibuBrand.creamLight,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: FontSize.lg,
+    fontWeight: '600',
+    color: UIColors.textSecondary,
+  },
+  modalConfirmBtn: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.lg,
+    backgroundColor: MibuBrand.brown,
+    alignItems: 'center',
+  },
+  modalConfirmText: {
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    color: UIColors.white,
   },
 });

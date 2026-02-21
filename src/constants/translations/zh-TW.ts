@@ -34,7 +34,7 @@ const zhTW: Record<string, string> = {
     navHome: '首頁',
     navGacha: '扭蛋',
     navGachaModule: '行程扭蛋',
-    navPlanner: '策劃師',
+    navPlanner: '自己人',
     navPlannerModule: '旅程策劃',
     navCollection: '圖鑑',
     navMyBox: '道具箱',
@@ -88,9 +88,9 @@ const zhTW: Record<string, string> = {
     explore: '探索',
 
     // 位置相關
-    shareLocationToPlanner: '分享位置給策劃師',
+    shareLocationToPlanner: '分享位置給自己人',
     yourLocation: '你的位置',
-    planner: '策劃師',
+    planner: '自己人',
 
     // 安全中心
     safetyCenter: '安全中心',
@@ -359,6 +359,50 @@ const zhTW: Record<string, string> = {
     specialist_serviceRegion: '服務地區',
     specialist_people: '人',
 
+    // ========== 自己人申請（#053） ==========
+    partner_applyTitle: '申請成為自己人',
+    partner_applyDesc: '成為 Mibu 的在地夥伴，協助旅客規劃最道地的行程',
+    partner_applyButton: '提交申請',
+    partner_applySuccess: '申請已送出！',
+    partner_applySuccessDesc: '我們會盡快審核您的申請',
+    partner_statusPending: '審核中',
+    partner_statusPendingDesc: '您的自己人申請正在審核中，請耐心等待',
+    partner_statusApproved: '已通過',
+    partner_statusRejected: '未通過',
+    partner_statusRejectedDesc: '很抱歉，您的申請未通過',
+    partner_reapply: '重新申請',
+    partner_alreadyPartner: '您已是自己人',
+    partner_surveyIntro: '請簡單介紹一下自己',
+    partner_surveyName: '您的真實姓名',
+    partner_surveyRegion: '您熟悉的旅遊地區',
+    partner_surveyMotivation: '為什麼想成為自己人？',
+    partner_surveyExperience: '相關經驗或專長',
+
+    // ========== 商家申請（#053） ==========
+    merchant_applyTitle: '申請成為商家',
+    merchant_applyDesc: '加入 Mibu 商家夥伴，讓更多旅客認識您的店',
+    merchant_applyButton: '提交申請',
+    merchant_applySuccess: '申請已送出！',
+    merchant_applySuccessDesc: '我們會盡快審核您的商家申請',
+    merchant_statusNone: '尚未申請',
+    merchant_statusPending: '審核中',
+    merchant_statusPendingDesc: '您的商家申請正在審核中',
+    merchant_statusApproved: '已通過',
+    merchant_statusRejected: '未通過',
+    merchant_statusRejectedDesc: '很抱歉，您的商家申請未通過',
+    merchant_reapply: '重新申請',
+    merchant_businessName: '商家名稱',
+    merchant_businessNamePlaceholder: '輸入您的店名',
+    merchant_email: '聯絡 Email',
+    merchant_emailPlaceholder: '輸入您的 Email',
+    merchant_surveyExtra: '其他想讓我們知道的（選填）',
+
+    // ========== 設定頁申請入口（#053） ==========
+    settings_partnerApply: '申請成為自己人',
+    settings_merchantApply: '申請成為商家',
+    settings_applicationPending: '審核中',
+    settings_applicationRejected: '申請未通過，可重新申請',
+
     // ========== SOS 緊急聯絡人 ==========
     sos_emergencyContacts: '緊急聯絡人',
     sos_limitReached: '已達上限',
@@ -384,7 +428,7 @@ const zhTW: Record<string, string> = {
 
     // ========== SOS 求救畫面 ==========
     sos_emergencySOS: '緊急求救',
-    sos_holdToSend: '長按下方按鈕 3 秒發送求救訊號，我們會立即通知您的旅程策畫師',
+    sos_holdToSend: '長按下方按鈕 3 秒發送求救訊號，我們會立即通知您的自己人夥伴',
     sos_hold3sec: '長按 3 秒',
     sos_alertHistory: '求救記錄',
     sos_alertSent: '求救訊號已發送',
@@ -753,9 +797,9 @@ const zhTW: Record<string, string> = {
     economy_pullsPerDay: '每天可以扭蛋的次數',
     economy_inventorySlots: '背包容量',
     economy_itemsCanHold: '可存放的道具數量',
-    economy_specialistEligibility: '策劃師資格',
+    economy_partnerEligibility: '自己人資格',
     economy_canApplyNow: '已獲得申請資格！',
-    economy_unlockRequirement: '達成「資深旅人」成就並累計 1,500 金幣後解鎖',
+    economy_unlockRequirement: '所有登入用戶皆可申請',
     economy_aboutCoins: '金幣說明',
     economy_coinsInfo: '金幣可透過完成任務、解鎖成就獲得。累積金幣可解鎖更多權益！',
     economy_statAchievements: '成就',
@@ -1251,7 +1295,7 @@ const zhTW: Record<string, string> = {
     home_limitedOffersSoon: '限時優惠即將到來！',
     home_loginStreak: '連續登入',
     home_days: '天',
-    home_specialistReady: '可申請策劃師',
+    home_partnerReady: '可申請自己人',
     home_dailyTasks: '每日任務',
     home_done: '完成',
     home_earned: '已獲得',
