@@ -19,7 +19,7 @@
  */
 import "../global.css";
 import { useEffect, useState } from 'react';
-import { Image } from 'react-native';
+import { Image, View, useWindowDimensions } from 'react-native';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -32,6 +32,14 @@ import { AppProvider } from '../src/context/AppContext';
 import { NetworkBanner } from '../src/modules/shared/components/ui/NetworkBanner';
 import { useNotificationHandler } from '../hooks/useNotificationHandler';
 import { MibuBrand } from '../constants/Colors';
+
+// iPad 適配：螢幕寬度 > 600pt 視為平板，內容寬度取螢幕 85% 但最大 750pt
+// iPad 13"(1024pt) → 750pt 內容 + 137pt×2 邊距
+// iPad Air(834pt)  → 709pt 內容 + 62pt×2 邊距
+// iPad Mini(744pt) → 632pt 內容 + 56pt×2 邊距
+const TABLET_MAX_CONTENT_WIDTH = 750;
+const TABLET_CONTENT_RATIO = 0.85;
+const TABLET_BREAKPOINT = 600;
 
 // 覆蓋 React Navigation 預設背景色，統一使用 Mibu warmWhite
 const MibuLightTheme = {
@@ -78,6 +86,8 @@ function NotificationListener() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const { width: screenWidth } = useWindowDimensions();
+  const isTablet = screenWidth > TABLET_BREAKPOINT;
   const [assetsReady, setAssetsReady] = useState(false);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -95,35 +105,55 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={[
+      { flex: 1 },
+      isTablet && { backgroundColor: MibuBrand.creamLight },
+    ]}>
       <AppProvider>
         <NotificationListener />
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : MibuLightTheme}>
-          <Stack>
-            <Stack.Screen name="login" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="economy" options={{ headerShown: false }} />
-            <Stack.Screen name="profile" options={{ headerShown: false }} />
-            <Stack.Screen name="referral" options={{ headerShown: false }} />
-            <Stack.Screen name="crowdfunding" options={{ headerShown: false }} />
-            <Stack.Screen name="contribution" options={{ headerShown: false }} />
-            <Stack.Screen name="favorites" options={{ headerShown: false }} />
-            <Stack.Screen name="sos-contacts" options={{ headerShown: false }} />
-            <Stack.Screen name="merchant-dashboard" options={{ headerShown: false }} />
-            <Stack.Screen name="specialist-dashboard" options={{ headerShown: false }} />
-            <Stack.Screen name="pending-approval" options={{ headerShown: false }} />
-            <Stack.Screen name="admin-exclusions" options={{ headerShown: false }} />
-            <Stack.Screen name="sos" options={{ headerShown: false }} />
-            <Stack.Screen name="favorites-management" options={{ headerShown: false }} />
-            <Stack.Screen name="partner-apply" options={{ headerShown: false }} />
-            <Stack.Screen name="merchant-apply" options={{ headerShown: false }} />
-            <Stack.Screen name="mailbox" options={{ headerShown: false }} />
-            <Stack.Screen name="mailbox/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="notifications" options={{ headerShown: false }} />
-            <Stack.Screen name="notification-preferences" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <NetworkBanner />
+          <View style={[
+            { flex: 1 },
+            isTablet && {
+              maxWidth: Math.min(screenWidth * TABLET_CONTENT_RATIO, TABLET_MAX_CONTENT_WIDTH),
+              width: '100%',
+              alignSelf: 'center',
+              backgroundColor: MibuBrand.warmWhite,
+              overflow: 'hidden',
+              // 兩側陰影讓內容區有浮起感
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.08,
+              shadowRadius: 12,
+              elevation: 8,
+            },
+          ]}>
+            <Stack>
+              <Stack.Screen name="login" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="economy" options={{ headerShown: false }} />
+              <Stack.Screen name="profile" options={{ headerShown: false }} />
+              <Stack.Screen name="referral" options={{ headerShown: false }} />
+              <Stack.Screen name="crowdfunding" options={{ headerShown: false }} />
+              <Stack.Screen name="contribution" options={{ headerShown: false }} />
+              <Stack.Screen name="favorites" options={{ headerShown: false }} />
+              <Stack.Screen name="sos-contacts" options={{ headerShown: false }} />
+              <Stack.Screen name="merchant-dashboard" options={{ headerShown: false }} />
+              <Stack.Screen name="specialist-dashboard" options={{ headerShown: false }} />
+              <Stack.Screen name="pending-approval" options={{ headerShown: false }} />
+              <Stack.Screen name="admin-exclusions" options={{ headerShown: false }} />
+              <Stack.Screen name="sos" options={{ headerShown: false }} />
+              <Stack.Screen name="favorites-management" options={{ headerShown: false }} />
+              <Stack.Screen name="partner-apply" options={{ headerShown: false }} />
+              <Stack.Screen name="merchant-apply" options={{ headerShown: false }} />
+              <Stack.Screen name="mailbox" options={{ headerShown: false }} />
+              <Stack.Screen name="mailbox/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="notifications" options={{ headerShown: false }} />
+              <Stack.Screen name="notification-preferences" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <NetworkBanner />
+          </View>
           <StatusBar style="auto" />
         </ThemeProvider>
       </AppProvider>
