@@ -14,7 +14,7 @@
  *
  * @updated 2026-02-12 Phase 3 遷移至 React Query
  */
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -90,6 +90,11 @@ interface DailyTaskSummary {
 // ============================================================
 
 const now = new Date().toISOString();
+
+// 在地活動每頁最多顯示幾則，超過則自動輪播
+const MAX_VISIBLE_FESTIVALS = 8;
+// 輪播間隔（毫秒）
+const FESTIVAL_ROTATE_INTERVAL = 5000;
 
 const DEFAULT_ANNOUNCEMENTS: Event[] = [
   {
@@ -273,7 +278,9 @@ export function HomeScreen() {
   // 本地狀態（非 API 資料）
   // ============================================================
 
-  // 活動 Tab 當前選中項（公告/在地/限時）
+  // 在地活動輪播頁碼
+  const [festivalPage, setFestivalPage] = useState(0);
+  const festivalTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // 用戶頭像設定（從 AsyncStorage 讀取）
   const [userAvatar, setUserAvatar] = useState<string>('default');
@@ -281,6 +288,35 @@ export function HomeScreen() {
   const [customAvatarUrl, setCustomAvatarUrl] = useState<string | null>(null);
   // 頭像預設列表（從 avatarService 動態載入）
   const [avatarPresets, setAvatarPresets] = useState<AvatarPreset[]>([]);
+
+  // 在地活動分頁與自動輪播
+  const festivalTotalPages = Math.ceil(events.festivals.length / MAX_VISIBLE_FESTIVALS);
+  const visibleFestivals = events.festivals.slice(
+    festivalPage * MAX_VISIBLE_FESTIVALS,
+    (festivalPage + 1) * MAX_VISIBLE_FESTIVALS,
+  );
+
+  useEffect(() => {
+    if (festivalTotalPages <= 1) return;
+
+    festivalTimerRef.current = setInterval(() => {
+      setFestivalPage(prev => (prev + 1) % festivalTotalPages);
+    }, FESTIVAL_ROTATE_INTERVAL);
+
+    return () => {
+      if (festivalTimerRef.current) {
+        clearInterval(festivalTimerRef.current);
+        festivalTimerRef.current = null;
+      }
+    };
+  }, [festivalTotalPages]);
+
+  // 資料變動時重置頁碼（避免超出範圍）
+  useEffect(() => {
+    if (festivalPage >= festivalTotalPages && festivalTotalPages > 0) {
+      setFestivalPage(0);
+    }
+  }, [festivalTotalPages, festivalPage]);
 
   /**
    * 載入用戶頭像設定
@@ -535,14 +571,14 @@ export function HomeScreen() {
         </View>
       )}
 
-      {/* ========== 在地活動卡片 ========== */}
+      {/* ========== 在地活動卡片（最多 8 則，超過自動輪播）========== */}
       {events.festivals.length > 0 && (
         <View style={styles.localSection}>
           <View style={styles.sectionHeader}>
             <Ionicons name="location-outline" size={20} color={MibuBrand.copper} />
             <Text style={styles.localSectionHeaderText}>{t.home_localTab}</Text>
           </View>
-          {events.festivals.map(event => (
+          {visibleFestivals.map(event => (
             <TouchableOpacity
               key={event.id}
               onPress={event.id > 0 ? () => router.push(`/event/${event.id}`) : undefined}
@@ -553,6 +589,19 @@ export function HomeScreen() {
               </Text>
             </TouchableOpacity>
           ))}
+          {festivalTotalPages > 1 && (
+            <View style={styles.festivalPagination}>
+              {Array.from({ length: festivalTotalPages }, (_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.festivalDot,
+                    i === festivalPage && styles.festivalDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+          )}
         </View>
       )}
 
@@ -849,6 +898,25 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
     lineHeight: 22,
     marginBottom: 4,
+  },
+  festivalPagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+  },
+  festivalDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: MibuBrand.tanLight,
+  },
+  festivalDotActive: {
+    backgroundColor: MibuBrand.copper,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 
   // 空狀態
