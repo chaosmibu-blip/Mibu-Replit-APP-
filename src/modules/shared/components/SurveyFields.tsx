@@ -317,8 +317,11 @@ const styles = StyleSheet.create({
   sectionTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: Spacing.xl,
+    marginTop: Spacing.xxl,
     marginBottom: Spacing.lg,
+    paddingBottom: Spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: MibuBrand.tanLight,
   },
   sectionStepBadge: {
     width: 28,
@@ -342,13 +345,14 @@ const styles = StyleSheet.create({
 
   // ========== 欄位容器 ==========
   fieldContainer: {
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
   fieldLabel: {
     fontSize: FontSize.md,
     fontWeight: '600',
     color: MibuBrand.brownDark,
-    marginBottom: Spacing.sm,
+    lineHeight: 22,
+    marginBottom: Spacing.md,
   },
   requiredMark: {
     color: MibuBrand.error,

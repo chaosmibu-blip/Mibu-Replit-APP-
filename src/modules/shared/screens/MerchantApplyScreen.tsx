@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
 
   introCard: {
     backgroundColor: MibuBrand.creamLight, borderRadius: Radius.xl, padding: Spacing.xl,
-    alignItems: 'center', marginBottom: Spacing.sm,
+    alignItems: 'center', marginBottom: Spacing.md,
   },
   introIcon: { marginBottom: Spacing.md },
   introTitle: {
