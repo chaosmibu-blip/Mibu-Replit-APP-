@@ -1,26 +1,27 @@
 /**
  * ============================================================
- * 商家申請頁面 (MerchantApplyScreen.tsx)
+ * 商家申請畫面 (MerchantApplyScreen.tsx)
  * ============================================================
- * 此模組提供: 一般用戶申請成為商家的完整流程
+ * 此模組提供: 用戶申請成為 Mibu 合作商家的完整流程
  *
  * 主要功能:
- * - 依據申請狀態顯示不同內容（無申請 / 審核中 / 已通過 / 被拒絕）
- * - 申請表單：商家名稱、Email、額外資訊
- * - 送出申請後自動刷新狀態
+ * - 依申請狀態顯示不同畫面（none/pending/approved/rejected）
+ * - 12 題問卷表單（基本資料、經營現況、合作意願、聯絡方式）
+ * - 填寫問卷並提交申請
+ * - 被拒絕後可重新申請
  *
- * 串接 API:
- * - GET  /api/merchant/application-status（查詢申請狀態）
- * - POST /api/merchant/apply（提交商家申請）
+ * 串接的 API:
+ * - GET /api/merchant/application-status — 查詢申請狀態
+ * - POST /api/merchant/apply — 提交商家申請（businessName, email, surveyResponses: JSONB）
  *
- * 更新日期：2026-02-20
+ * 更新日期：2026-02-22（問卷改版：3 題 → 12 題）
+ * @see 後端合約: contracts/APP.md
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
@@ -32,227 +33,328 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useMerchantApplicationStatus, useApplyMerchant } from '../../../hooks/useMerchantQueries';
 import { useAuth, useI18n } from '../../../context/AppContext';
+import { useMerchantApplicationStatus, useApplyMerchant } from '../../../hooks/useMerchantQueries';
 import { MibuBrand } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
+import {
+  SurveySectionTitle,
+  TextInputField,
+  SingleSelectField,
+  MultiSelectField,
+  RegionPickerField,
+} from '../components/SurveyFields';
 
-// ============ 型別定義 ============
+// ============ 常數定義 ============
 
-type ApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
+const HEADER_ICON_SIZE = 24;
+const STATUS_ICON_SIZE = 64;
+const MAX_CHALLENGES = 3;
 
-// ============ 元件 ============
+// ============ 元件本體 ============
 
 export function MerchantApplyScreen() {
   const router = useRouter();
   const { t } = useI18n();
   const { user } = useAuth();
-
-  // ========== React Query 資料查詢 ==========
-
-  const statusQuery = useMerchantApplicationStatus();
+  const { data: statusData, isLoading: isLoadingStatus, refetch: refetchStatus } = useMerchantApplicationStatus();
   const applyMutation = useApplyMerchant();
 
-  // ========== 本地 UI 狀態 ==========
+  // ========== 表單狀態 ==========
 
+  // 第一段：基本資料
+  const [contactName, setContactName] = useState('');
   const [businessName, setBusinessName] = useState('');
+  const [businessCategory, setBusinessCategory] = useState('');
+  const [businessRegion, setBusinessRegion] = useState('');
+
+  // 第二段：經營現況
+  const [customerSources, setCustomerSources] = useState<string[]>([]);
+  const [challenges, setChallenges] = useState<string[]>([]);
+  const [monthlyMarketingBudget, setMonthlyMarketingBudget] = useState('');
+  const [onlineChannels, setOnlineChannels] = useState<string[]>([]);
+
+  // 第三段：合作意願
+  const [desiredOutcome, setDesiredOutcome] = useState('');
+  const [gamificationInterest, setGamificationInterest] = useState('');
+
+  // 第四段：聯絡方式
+  const [contactMethod, setContactMethod] = useState('');
   const [email, setEmail] = useState(user?.email ?? '');
-  const [surveyExtra, setSurveyExtra] = useState('');
 
   // ========== 衍生狀態 ==========
+  const applicationStatus = statusData?.status ?? 'none';
+  const rejectionReason = statusData?.application?.rejectionReason ?? null;
 
-  const applicationStatus: ApplicationStatus = statusQuery.data?.status ?? 'none';
-  const rejectionReason: string = statusQuery.data?.rejectionReason ?? '';
-  const isLoading = statusQuery.isLoading;
-  const isSubmitting = applyMutation.isPending;
-  const isFormValid = businessName.trim().length > 0 && email.trim().length > 0;
+  const isFormValid =
+    contactName.trim().length > 0 &&
+    businessName.trim().length > 0 &&
+    businessCategory.length > 0 &&
+    businessRegion.length > 0 &&
+    customerSources.length > 0 &&
+    challenges.length > 0 &&
+    monthlyMarketingBudget.length > 0 &&
+    onlineChannels.length > 0 &&
+    desiredOutcome.length > 0 &&
+    gamificationInterest.length > 0 &&
+    contactMethod.trim().length > 0 &&
+    email.trim().length > 0;
+
+  // ========== 選項定義 ==========
+
+  const categoryOptions = [
+    { value: 'restaurant', label: t.merchant_catRestaurant },
+    { value: 'hotel', label: t.merchant_catHotel },
+    { value: 'attraction', label: t.merchant_catAttraction },
+    { value: 'souvenir', label: t.merchant_surveyCatSouvenir },
+    { value: 'experience', label: t.merchant_catExperience },
+    { value: 'transport', label: t.merchant_catTransportation },
+    { value: 'other', label: t.merchant_catOther },
+  ];
+
+  const customerSourceOptions = [
+    { value: 'walk_in', label: t.merchant_srcWalkIn },
+    { value: 'online_search', label: t.merchant_srcOnlineSearch },
+    { value: 'social_media', label: t.merchant_srcSocialMedia },
+    { value: 'travel_platform', label: t.merchant_srcTravelPlatform },
+    { value: 'word_of_mouth', label: t.merchant_srcWordOfMouth },
+    { value: 'other', label: t.merchant_srcOther },
+  ];
+
+  const challengeOptions = [
+    { value: 'attract_tourists', label: t.merchant_chalAttract },
+    { value: 'online_presence', label: t.merchant_chalOnline },
+    { value: 'repeat_customers', label: t.merchant_chalRepeat },
+    { value: 'competition', label: t.merchant_chalCompetition },
+    { value: 'marketing_cost', label: t.merchant_chalCost },
+    { value: 'language_barrier', label: t.merchant_chalLanguage },
+    { value: 'other', label: t.merchant_chalOther },
+  ];
+
+  const budgetOptions = [
+    { value: 'none', label: t.merchant_budgetNone },
+    { value: 'under5k', label: t.merchant_budgetUnder5k },
+    { value: '5k-20k', label: t.merchant_budget5to20k },
+    { value: 'over20k', label: t.merchant_budgetOver20k },
+  ];
+
+  const onlineChannelOptions = [
+    { value: 'google_maps', label: t.merchant_chanGoogleMaps },
+    { value: 'facebook', label: t.merchant_chanFacebook },
+    { value: 'instagram', label: t.merchant_chanInstagram },
+    { value: 'line_oa', label: t.merchant_chanLineOA },
+    { value: 'own_website', label: t.merchant_chanWebsite },
+    { value: 'none', label: t.merchant_chanNone },
+  ];
+
+  const outcomeOptions = [
+    { value: 'more_tourists', label: t.merchant_outMoreTourists },
+    { value: 'brand_awareness', label: t.merchant_outBrand },
+    { value: 'higher_revenue', label: t.merchant_outRevenue },
+    { value: 'repeat_visit', label: t.merchant_outRepeat },
+    { value: 'other', label: t.merchant_outOther },
+  ];
+
+  const gamificationOptions = [
+    { value: 'very_interested', label: t.merchant_gamVeryInterested },
+    { value: 'willing_to_try', label: t.merchant_gamWillingToTry },
+    { value: 'need_more_info', label: t.merchant_gamNeedInfo },
+    { value: 'not_interested', label: t.merchant_gamNotInterested },
+  ];
 
   // ========== 事件處理 ==========
 
-  const handleSubmit = () => {
-    if (!isFormValid || isSubmitting) return;
+  const handleGoBack = () => router.back();
 
-    const params: { businessName: string; email: string; surveyResponses?: Record<string, unknown> } = {
-      businessName: businessName.trim(),
-      email: email.trim(),
+  const handleToggleCustomerSource = useCallback((value: string) => {
+    setCustomerSources(prev =>
+      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+    );
+  }, []);
+
+  const handleToggleChallenge = useCallback((value: string) => {
+    setChallenges(prev =>
+      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+    );
+  }, []);
+
+  const handleToggleOnlineChannel = useCallback((value: string) => {
+    setOnlineChannels(prev =>
+      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+    );
+  }, []);
+
+  const handleSubmit = () => {
+    if (!isFormValid) return;
+
+    const surveyResponses: Record<string, unknown> = {
+      contactName: contactName.trim(),
+      businessCategory,
+      businessRegion,
+      customerSources,
+      challenges,
+      monthlyMarketingBudget,
+      onlineChannels,
+      desiredOutcome,
+      gamificationInterest,
+      contactMethod: contactMethod.trim(),
     };
 
-    if (surveyExtra.trim()) {
-      params.surveyResponses = { extra: surveyExtra.trim() };
-    }
-
-    applyMutation.mutate(params, {
-      onSuccess: () => {
-        Alert.alert(
-          t.merchant_applySuccessTitle,
-          t.merchant_applySuccessMessage,
-          [{ text: t.common_ok }],
-        );
+    applyMutation.mutate(
+      {
+        businessName: businessName.trim(),
+        email: email.trim(),
+        surveyResponses,
       },
-      onError: () => {
-        Alert.alert(
-          t.merchant_applyErrorTitle,
-          t.merchant_applyErrorMessage,
-          [{ text: t.common_ok }],
-        );
+      {
+        onSuccess: () => {
+          Alert.alert(
+            t.merchant_applySuccess,
+            t.merchant_applySuccessDesc,
+            [{ text: 'OK', onPress: () => refetchStatus() }],
+          );
+        },
+        onError: (error: Error) => {
+          Alert.alert('Error', error.message);
+        },
       },
-    });
-  };
-
-  const handleReapply = () => {
-    setBusinessName('');
-    setEmail(user?.email ?? '');
-    setSurveyExtra('');
-    statusQuery.refetch();
-  };
-
-  // ========== 渲染：載入中 ==========
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <Ionicons name="chevron-back" size={24} color={MibuBrand.brownDark} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t.merchant_applyTitle}</Text>
-          <View style={styles.headerSpacer} />
-        </View>
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={MibuBrand.brown} />
-        </View>
-      </SafeAreaView>
     );
-  }
+  };
 
-  // ========== 渲染：審核中狀態 ==========
+  const handleReapply = () => refetchStatus();
+
+  // ========== 渲染子函數 ==========
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+        <Ionicons name="chevron-back" size={HEADER_ICON_SIZE} color={MibuBrand.brownDark} />
+      </TouchableOpacity>
+      <Text style={styles.headerTitle}>{t.merchant_applyTitle}</Text>
+      <View style={styles.headerSpacer} />
+    </View>
+  );
+
+  const renderLoading = () => (
+    <View style={styles.centerContainer}>
+      <ActivityIndicator size="large" color={MibuBrand.brown} />
+    </View>
+  );
 
   const renderPendingStatus = () => (
-    <View style={styles.statusCard}>
+    <View style={styles.centerContainer}>
       <View style={styles.statusIconContainer}>
-        <Ionicons name="hourglass-outline" size={48} color={MibuBrand.warning} />
+        <Ionicons name="hourglass-outline" size={STATUS_ICON_SIZE} color={MibuBrand.copper} />
       </View>
-      <Text style={styles.statusTitle}>{t.merchant_pendingTitle}</Text>
-      <Text style={styles.statusDescription}>{t.merchant_pendingDescription}</Text>
+      <Text style={styles.statusTitle}>{t.merchant_statusPending}</Text>
+      <Text style={styles.statusDescription}>{t.merchant_statusPendingDesc}</Text>
     </View>
   );
-
-  // ========== 渲染：已通過狀態 ==========
 
   const renderApprovedStatus = () => (
-    <View style={styles.statusCard}>
-      <View style={[styles.statusIconContainer, { backgroundColor: '#DCFCE7' }]}>
-        <Ionicons name="checkmark-circle" size={48} color={MibuBrand.success} />
+    <View style={styles.centerContainer}>
+      <View style={[styles.statusIconContainer, styles.statusIconApproved]}>
+        <Ionicons name="checkmark-circle-outline" size={STATUS_ICON_SIZE} color={MibuBrand.success} />
       </View>
-      <Text style={styles.statusTitle}>{t.merchant_approvedTitle}</Text>
-      <Text style={styles.statusDescription}>{t.merchant_approvedDescription}</Text>
+      <Text style={styles.statusTitle}>{t.merchant_statusApproved}</Text>
+      <Text style={styles.statusDescription}>{t.merchant_applyDesc}</Text>
     </View>
   );
 
-  // ========== 渲染：被拒絕狀態 ==========
-
   const renderRejectedStatus = () => (
-    <View style={styles.statusCard}>
-      <View style={[styles.statusIconContainer, { backgroundColor: '#FEE2E2' }]}>
-        <Ionicons name="close-circle" size={48} color={MibuBrand.error} />
+    <View style={styles.centerContainer}>
+      <View style={[styles.statusIconContainer, styles.statusIconRejected]}>
+        <Ionicons name="close-circle-outline" size={STATUS_ICON_SIZE} color={MibuBrand.error} />
       </View>
-      <Text style={styles.statusTitle}>{t.merchant_rejectedTitle}</Text>
-      <Text style={styles.statusDescription}>{t.merchant_rejectedDescription}</Text>
-      {rejectionReason ? (
+      <Text style={styles.statusTitle}>{t.merchant_statusRejected}</Text>
+      <Text style={styles.statusDescription}>{t.merchant_statusRejectedDesc}</Text>
+      {rejectionReason && (
         <View style={styles.rejectionReasonCard}>
-          <Text style={styles.rejectionReasonLabel}>{t.merchant_rejectionReason}</Text>
           <Text style={styles.rejectionReasonText}>{rejectionReason}</Text>
         </View>
-      ) : null}
-      <TouchableOpacity
-        style={styles.submitButton}
-        onPress={handleReapply}
-        activeOpacity={0.7}
-      >
+      )}
+      <TouchableOpacity style={styles.submitButton} onPress={handleReapply}>
         <Text style={styles.submitButtonText}>{t.merchant_reapply}</Text>
       </TouchableOpacity>
     </View>
   );
 
-  // ========== 渲染：申請表單 ==========
-
   const renderApplicationForm = () => (
-    <View style={styles.formCard}>
-      <Text style={styles.formTitle}>{t.merchant_formTitle}</Text>
-      <Text style={styles.formSubtitle}>{t.merchant_formSubtitle}</Text>
-
-      {/* 商家名稱 */}
-      <View style={styles.fieldContainer}>
-        <Text style={styles.fieldLabel}>{t.merchant_businessName}</Text>
-        <TextInput
-          style={styles.textInput}
-          value={businessName}
-          onChangeText={setBusinessName}
-          placeholder={t.merchant_businessNamePlaceholder}
-          placeholderTextColor={MibuBrand.tanLight}
-          autoCapitalize="none"
-          returnKeyType="next"
-        />
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      {/* ===== 介紹卡片 ===== */}
+      <View style={styles.introCard}>
+        <Ionicons name="storefront-outline" size={32} color={MibuBrand.copper} style={styles.introIcon} />
+        <Text style={styles.introTitle}>{t.merchant_applyTitle}</Text>
+        <Text style={styles.introDescription}>{t.merchant_applyDesc}</Text>
       </View>
 
-      {/* Email */}
-      <View style={styles.fieldContainer}>
-        <Text style={styles.fieldLabel}>{t.merchant_email}</Text>
-        <TextInput
-          style={styles.textInput}
-          value={email}
-          onChangeText={setEmail}
-          placeholder={t.merchant_emailPlaceholder}
-          placeholderTextColor={MibuBrand.tanLight}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="next"
-        />
-      </View>
+      {/* ===== 第一段：基本資料 ===== */}
+      <SurveySectionTitle step={1} title={t.merchant_surveySection1} />
+      <TextInputField label={t.merchant_surveyQ1Contact} value={contactName} onChangeText={setContactName} required />
+      <TextInputField label={t.merchant_surveyQ2Business} value={businessName} onChangeText={setBusinessName} required />
+      <SingleSelectField label={t.merchant_surveyQ3Category} options={categoryOptions} selected={businessCategory} onSelect={setBusinessCategory} required />
+      <RegionPickerField label={t.merchant_surveyQ4Region} value={businessRegion} onSelect={setBusinessRegion} required placeholder={t.merchant_surveyQ4Placeholder} />
 
-      {/* 額外資訊 */}
-      <View style={styles.fieldContainer}>
-        <Text style={styles.fieldLabel}>
-          {t.merchant_surveyExtra}
-          <Text style={styles.optionalLabel}> ({t.merchant_optional})</Text>
-        </Text>
-        <TextInput
-          style={[styles.textInput, styles.textArea]}
-          value={surveyExtra}
-          onChangeText={setSurveyExtra}
-          placeholder={t.merchant_surveyExtraPlaceholder}
-          placeholderTextColor={MibuBrand.tanLight}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-          returnKeyType="done"
-        />
-      </View>
+      {/* ===== 第二段：經營現況 ===== */}
+      <SurveySectionTitle step={2} title={t.merchant_surveySection2} />
+      <MultiSelectField
+        label={t.merchant_surveyQ5Sources}
+        options={customerSourceOptions}
+        selected={customerSources}
+        onToggle={handleToggleCustomerSource}
+        required
+      />
+      <MultiSelectField
+        label={t.merchant_surveyQ6Challenges}
+        options={challengeOptions}
+        selected={challenges}
+        onToggle={handleToggleChallenge}
+        required
+        maxSelect={MAX_CHALLENGES}
+        maxSelectHint={t.merchant_surveyQ6Hint}
+      />
+      <SingleSelectField label={t.merchant_surveyQ7Budget} options={budgetOptions} selected={monthlyMarketingBudget} onSelect={setMonthlyMarketingBudget} required />
+      <MultiSelectField
+        label={t.merchant_surveyQ8Channels}
+        options={onlineChannelOptions}
+        selected={onlineChannels}
+        onToggle={handleToggleOnlineChannel}
+        required
+      />
 
-      {/* 送出按鈕 */}
+      {/* ===== 第三段：合作意願 ===== */}
+      <SurveySectionTitle step={3} title={t.merchant_surveySection3} />
+      <SingleSelectField label={t.merchant_surveyQ9Outcome} options={outcomeOptions} selected={desiredOutcome} onSelect={setDesiredOutcome} required />
+      <SingleSelectField label={t.merchant_surveyQ10Gamification} options={gamificationOptions} selected={gamificationInterest} onSelect={setGamificationInterest} required />
+
+      {/* ===== 第四段：聯絡方式 ===== */}
+      <SurveySectionTitle step={4} title={t.merchant_surveySection4} />
+      <TextInputField label={t.merchant_surveyQ11ContactMethod} value={contactMethod} onChangeText={setContactMethod} required placeholder={t.merchant_surveyQ11Placeholder} />
+      <TextInputField label={t.merchant_surveyQ12Email} value={email} onChangeText={setEmail} required keyboardType="email-address" />
+
+      {/* ===== 提交按鈕 ===== */}
       <TouchableOpacity
         style={[styles.submitButton, !isFormValid && styles.submitButtonDisabled]}
         onPress={handleSubmit}
-        activeOpacity={0.7}
-        disabled={!isFormValid || isSubmitting}
+        disabled={!isFormValid || applyMutation.isPending}
       >
-        {isSubmitting ? (
-          <ActivityIndicator size="small" color="#ffffff" />
+        {applyMutation.isPending ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
-          <Text style={styles.submitButtonText}>{t.merchant_submit}</Text>
+          <Text style={styles.submitButtonText}>{t.merchant_applyButton}</Text>
         )}
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 
-  // ========== 主渲染 ==========
-
   const renderContent = () => {
+    if (isLoadingStatus) return renderLoading();
+
     switch (applicationStatus) {
       case 'pending':
         return renderPendingStatus();
@@ -266,203 +368,80 @@ export function MerchantApplyScreen() {
     }
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Ionicons name="chevron-back" size={24} color={MibuBrand.brownDark} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t.merchant_applyTitle}</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+  // ========== 主要渲染 ==========
 
+  return (
+    <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
-        style={styles.keyboardAvoid}
+        style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {renderContent()}
-        </ScrollView>
+        {renderHeader()}
+        {renderContent()}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-// ============ 樣式 ============
+// ============ 樣式定義 ============
 
 const styles = StyleSheet.create({
-  // ========== 容器 ==========
-  container: {
-    flex: 1,
-    backgroundColor: MibuBrand.warmWhite,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  keyboardAvoid: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: Spacing.xl,
-    paddingBottom: 100,
-  },
+  safeArea: { flex: 1, backgroundColor: MibuBrand.warmWhite },
+  keyboardAvoidingView: { flex: 1 },
+  scrollView: { flex: 1 },
+  scrollContent: { padding: Spacing.xl, paddingBottom: Spacing.xxxl },
+  centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.xxl },
 
-  // ========== Header ==========
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    paddingTop: Platform.OS === 'android' ? Spacing.xl : Spacing.md,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md,
   },
   backButton: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 40, height: 40, borderRadius: Radius.full,
+    backgroundColor: MibuBrand.creamLight, alignItems: 'center', justifyContent: 'center',
   },
-  headerTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: MibuBrand.brownDark,
+  headerTitle: { fontSize: FontSize.xl, fontWeight: '700', color: MibuBrand.brownDark },
+  headerSpacer: { width: 40 },
+
+  introCard: {
+    backgroundColor: MibuBrand.creamLight, borderRadius: Radius.xl, padding: Spacing.xl,
+    alignItems: 'center', marginBottom: Spacing.sm,
   },
-  headerSpacer: {
-    width: 44,
+  introIcon: { marginBottom: Spacing.md },
+  introTitle: {
+    fontSize: FontSize.xxl, fontWeight: '800', color: MibuBrand.brownDark,
+    marginBottom: Spacing.sm, textAlign: 'center',
+  },
+  introDescription: {
+    fontSize: FontSize.md, color: MibuBrand.brownLight, textAlign: 'center', lineHeight: 22,
   },
 
-  // ========== 狀態卡片 ==========
-  statusCard: {
-    backgroundColor: MibuBrand.creamLight,
-    borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
+  submitButton: {
+    backgroundColor: MibuBrand.brown, borderRadius: Radius.lg, paddingVertical: Spacing.lg,
+    alignItems: 'center', justifyContent: 'center', marginTop: Spacing.xl,
   },
+  submitButtonDisabled: { opacity: 0.5 },
+  submitButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: '#FFFFFF' },
+
   statusIconContainer: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: '#FEF3C7',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.xl,
+    width: 120, height: 120, borderRadius: 60, backgroundColor: MibuBrand.creamLight,
+    alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xl,
   },
+  statusIconApproved: { backgroundColor: '#DCFCE7' },
+  statusIconRejected: { backgroundColor: '#FEE2E2' },
   statusTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: MibuBrand.brownDark,
-    textAlign: 'center',
-    marginBottom: Spacing.md,
+    fontSize: FontSize.xxl, fontWeight: '800', color: MibuBrand.brownDark,
+    marginBottom: Spacing.md, textAlign: 'center',
   },
   statusDescription: {
-    fontSize: FontSize.md,
-    color: MibuBrand.brownLight,
-    textAlign: 'center',
-    lineHeight: 22,
+    fontSize: FontSize.md, color: MibuBrand.brownLight, textAlign: 'center',
+    lineHeight: 22, marginBottom: Spacing.xl,
   },
-
-  // ========== 拒絕原因 ==========
   rejectionReasonCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: Radius.md,
-    padding: Spacing.lg,
-    marginTop: Spacing.xl,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: MibuBrand.error,
-  },
-  rejectionReasonLabel: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: MibuBrand.error,
-    marginBottom: Spacing.sm,
+    backgroundColor: '#FEE2E2', borderRadius: Radius.md, padding: Spacing.lg,
+    marginBottom: Spacing.xl, width: '100%',
   },
   rejectionReasonText: {
-    fontSize: FontSize.md,
-    color: MibuBrand.brownDark,
-    lineHeight: 20,
-  },
-
-  // ========== 表單卡片 ==========
-  formCard: {
-    backgroundColor: MibuBrand.creamLight,
-    borderRadius: 20,
-    padding: 20,
-  },
-  formTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: MibuBrand.brownDark,
-    marginBottom: Spacing.sm,
-  },
-  formSubtitle: {
-    fontSize: FontSize.md,
-    color: MibuBrand.brownLight,
-    marginBottom: Spacing.xl,
-    lineHeight: 20,
-  },
-
-  // ========== 表單欄位 ==========
-  fieldContainer: {
-    marginBottom: Spacing.lg,
-  },
-  fieldLabel: {
-    fontSize: FontSize.md,
-    fontWeight: '600',
-    color: MibuBrand.brownDark,
-    marginBottom: Spacing.sm,
-  },
-  optionalLabel: {
-    fontSize: FontSize.sm,
-    fontWeight: '400',
-    color: MibuBrand.brownLight,
-  },
-  textInput: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E8DCC8',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    fontSize: FontSize.md,
-    color: MibuBrand.brownDark,
-  },
-  textArea: {
-    minHeight: 100,
-    paddingTop: Spacing.md,
-  },
-
-  // ========== 送出按鈕 ==========
-  submitButton: {
-    backgroundColor: MibuBrand.brown,
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: Spacing.xl,
-  },
-  submitButtonDisabled: {
-    opacity: 0.5,
-  },
-  submitButtonText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: '#ffffff',
+    fontSize: FontSize.md, color: MibuBrand.error, lineHeight: 22, textAlign: 'center',
   },
 });

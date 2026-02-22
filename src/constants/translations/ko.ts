@@ -549,11 +549,62 @@ const ko: Record<string, string> = {
     partner_statusRejectedDesc: '죄송합니다, 신청이 승인되지 않았습니다',
     partner_reapply: '재신청',
     partner_alreadyPartner: '이미 파트너입니다',
-    partner_surveyIntro: '자기소개를 해주세요',
-    partner_surveyName: '실명',
-    partner_surveyRegion: '잘 아는 여행 지역',
-    partner_surveyMotivation: '파트너가 되고 싶은 이유는?',
-    partner_surveyExperience: '관련 경험 또는 전문 분야',
+    // 설문 섹션 제목
+    partner_section1: '기본 정보',
+    partner_section2: '현지 전문성',
+    partner_section3: '동기 및 가용 시간',
+    partner_section4: '마무리',
+
+    // Q1-Q4 기본 정보
+    partner_q1Name: '이름',
+    partner_q2Region: '거주 지역',
+    partner_q2Placeholder: '시/군/구를 선택하세요',
+    partner_q3Email: '이메일',
+    partner_q4Contact: '전화번호 또는 LINE ID',
+    partner_q4Placeholder: '예: 0912345678 또는 LINE ID',
+
+    // Q5-Q7 현지 능력
+    partner_q5Local: '당신 지역의 숨은 맛집이나 명소를 추천하고 이유를 설명해 주세요',
+    partner_q6Scenario: '홍콩에서 온 여행자가 당신 지역에서 하루 여행을 원합니다. 어떻게 계획하시겠습니까?',
+    partner_q7Languages: '사용 가능한 언어',
+
+    // Q7 언어 옵션
+    partner_langZh: '중국어',
+    partner_langEn: '영어',
+    partner_langJa: '일본어',
+    partner_langKo: '한국어',
+    partner_langTw: '대만어',
+    partner_langOther: '기타',
+
+    // Q8-Q11 동기 및 가용성
+    partner_q8Expectations: 'Mibu와의 협력에서 무엇을 얻고 싶으신가요?',
+    partner_expectIncome: '추가 수입',
+    partner_expectPeople: '새로운 만남',
+    partner_expectTourism: '지역 관광 홍보',
+    partner_expectExperience: '경험 쌓기',
+    partner_expectOther: '기타',
+
+    partner_q9Income: '기대하는 월 추가 수입',
+    partner_incomeUnder5k: 'NT$5,000 미만',
+    partner_income5to10k: 'NT$5,000~10,000',
+    partner_income10to30k: 'NT$10,000~30,000',
+    partner_incomeOver30k: 'NT$30,000 이상',
+    partner_incomeNone: '수입은 신경 쓰지 않음',
+
+    partner_q10Availability: '하루 서비스 가능 시간',
+    partner_availUnder1h: '1시간 미만',
+    partner_avail1to3h: '1~3시간',
+    partner_avail3to5h: '3~5시간',
+    partner_availOver5h: '5시간 이상',
+    partner_availFlexible: '유연하게 조절 가능',
+
+    partner_q11OnSite: '긴급 시 현장 지원 의향',
+    partner_onSiteWilling: '가능',
+    partner_onSiteDepends: '상황에 따라',
+    partner_onSiteOnlineOnly: '온라인만 가능',
+
+    // Q12 마무리
+    partner_q12Notes: 'Mibu에 전하고 싶은 말이 있나요? (선택사항)',
 
     // ========== Merchant Apply (#053) ==========
     merchant_applyTitle: '가맹점 신청',
@@ -573,6 +624,68 @@ const ko: Record<string, string> = {
     merchant_email: '연락처 이메일',
     merchant_emailPlaceholder: '이메일을 입력하세요',
     merchant_surveyExtra: '추가로 알려주실 사항 (선택)',
+
+    // ========== 가맹점 설문 12문항 ==========
+    merchant_surveySection1: '기본 정보',
+    merchant_surveySection2: '경영 현황',
+    merchant_surveySection3: '협력 의향',
+    merchant_surveySection4: '연락처',
+
+    merchant_surveyQ1Contact: '담당자 이름',
+    merchant_surveyQ2Business: '매장/회사 이름',
+    merchant_surveyQ3Category: '업종',
+    merchant_surveyCatSouvenir: '기념품/소매',
+    merchant_surveyQ4Region: '매장 소재지',
+    merchant_surveyQ4Placeholder: '시/군/구를 선택하세요',
+
+    merchant_surveyQ5Sources: '고객은 주로 어디서 오나요?',
+    merchant_srcWalkIn: '도보 유입',
+    merchant_srcOnlineSearch: '온라인 검색',
+    merchant_srcSocialMedia: 'SNS',
+    merchant_srcTravelPlatform: '여행 플랫폼',
+    merchant_srcWordOfMouth: '구전',
+    merchant_srcOther: '기타',
+
+    merchant_surveyQ6Challenges: '가장 큰 경영 과제는?',
+    merchant_surveyQ6Hint: '최대 3개까지 선택',
+    merchant_chalAttract: '관광객 유치',
+    merchant_chalOnline: '온라인 노출 부족',
+    merchant_chalRepeat: '재방문 고객 확보',
+    merchant_chalCompetition: '경쟁',
+    merchant_chalCost: '높은 마케팅 비용',
+    merchant_chalLanguage: '언어 장벽',
+    merchant_chalOther: '기타',
+
+    merchant_surveyQ7Budget: '월 마케팅 예산',
+    merchant_budgetNone: '거의 없음',
+    merchant_budgetUnder5k: 'NT$5,000 미만',
+    merchant_budget5to20k: 'NT$5,000~20,000',
+    merchant_budgetOver20k: 'NT$20,000 이상',
+
+    merchant_surveyQ8Channels: '현재 사용 중인 온라인 마케팅 채널',
+    merchant_chanGoogleMaps: 'Google Maps',
+    merchant_chanFacebook: 'Facebook',
+    merchant_chanInstagram: 'Instagram',
+    merchant_chanLineOA: 'LINE 공식 계정',
+    merchant_chanWebsite: '자체 웹사이트',
+    merchant_chanNone: '현재 없음',
+
+    merchant_surveyQ9Outcome: 'Mibu와 협력에서 가장 기대하는 효과',
+    merchant_outMoreTourists: '관광객 증가',
+    merchant_outBrand: '브랜드 인지도 향상',
+    merchant_outRevenue: '매출 증가',
+    merchant_outRepeat: '재방문율 향상',
+    merchant_outOther: '기타',
+
+    merchant_surveyQ10Gamification: '게이미피케이션 마케팅(가챠, 스탬프 등)에 대한 관심도',
+    merchant_gamVeryInterested: '매우 관심 있음',
+    merchant_gamWillingToTry: '시도해 볼 의향 있음',
+    merchant_gamNeedInfo: '더 알고 싶음',
+    merchant_gamNotInterested: '관심 없음',
+
+    merchant_surveyQ11ContactMethod: '전화 / LINE / IG',
+    merchant_surveyQ11Placeholder: '예: 0912345678 또는 LINE ID',
+    merchant_surveyQ12Email: '이메일',
 
     // ========== Settings Apply Entries (#053) ==========
     settings_partnerApply: '파트너 신청',

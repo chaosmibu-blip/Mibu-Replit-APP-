@@ -465,23 +465,75 @@ const ja: Record<string, string> = {
     specialist_people: '', /* TODO: ja */
 
     // ========== Partner Apply (#053) ==========
-    partner_applyTitle: 'Apply to Become a Partner', /* TODO: ja */
-    partner_applyDesc: 'Become a Mibu local partner and help travelers plan authentic trips', /* TODO: ja */
-    partner_applyButton: 'Submit Application', /* TODO: ja */
-    partner_applySuccess: 'Application Submitted!', /* TODO: ja */
-    partner_applySuccessDesc: 'We will review your application as soon as possible', /* TODO: ja */
-    partner_statusPending: 'Under Review', /* TODO: ja */
-    partner_statusPendingDesc: 'Your partner application is being reviewed', /* TODO: ja */
-    partner_statusApproved: 'Approved', /* TODO: ja */
-    partner_statusRejected: 'Rejected', /* TODO: ja */
-    partner_statusRejectedDesc: 'Sorry, your application was not approved', /* TODO: ja */
-    partner_reapply: 'Reapply', /* TODO: ja */
-    partner_alreadyPartner: 'You are already a partner', /* TODO: ja */
-    partner_surveyIntro: 'Please introduce yourself', /* TODO: ja */
-    partner_surveyName: 'Your real name', /* TODO: ja */
-    partner_surveyRegion: 'Travel regions you are familiar with', /* TODO: ja */
-    partner_surveyMotivation: 'Why do you want to become a partner?', /* TODO: ja */
-    partner_surveyExperience: 'Relevant experience or expertise', /* TODO: ja */
+    partner_applyTitle: 'パートナー申請',
+    partner_applyDesc: 'Mibuのローカルパートナーになって、旅行者の本格的な旅をサポートしましょう',
+    partner_applyButton: '申請を送信',
+    partner_applySuccess: '申請完了！',
+    partner_applySuccessDesc: 'できるだけ早く審査いたします',
+    partner_statusPending: '審査中',
+    partner_statusPendingDesc: 'パートナー申請を審査中です',
+    partner_statusApproved: '承認済み',
+    partner_statusRejected: '不承認',
+    partner_statusRejectedDesc: '申し訳ありませんが、申請は承認されませんでした',
+    partner_reapply: '再申請',
+    partner_alreadyPartner: 'すでにパートナーです',
+
+    // 問卷分段標題
+    partner_section1: '基本情報',
+    partner_section2: 'ローカル知識',
+    partner_section3: '動機と対応可能時間',
+    partner_section4: '最後に',
+
+    // Q1-Q4 基本資料
+    partner_q1Name: 'お名前',
+    partner_q2Region: 'お住まいの地域',
+    partner_q2Placeholder: '市区町村を選択',
+    partner_q3Email: 'メールアドレス',
+    partner_q4Contact: '電話番号またはLINE ID',
+    partner_q4Placeholder: '例：0912345678 または LINE ID',
+
+    // Q5-Q7 在地能力
+    partner_q5Local: 'あなたの地域の穴場スポットやレストランを紹介し、その理由を教えてください',
+    partner_q6Scenario: '香港からの旅行者があなたの地域で1日観光したいと言っています。どう計画しますか？',
+    partner_q7Languages: '話せる言語',
+
+    // Q7 語言選項
+    partner_langZh: '中国語',
+    partner_langEn: '英語',
+    partner_langJa: '日本語',
+    partner_langKo: '韓国語',
+    partner_langTw: '台湾語',
+    partner_langOther: 'その他',
+
+    // Q8-Q11 動機與可用性
+    partner_q8Expectations: 'Mibuとの提携で何を得たいですか？',
+    partner_expectIncome: '副収入',
+    partner_expectPeople: '新しい出会い',
+    partner_expectTourism: '地元観光の促進',
+    partner_expectExperience: '経験を積む',
+    partner_expectOther: 'その他',
+
+    partner_q9Income: '期待する月額副収入',
+    partner_incomeUnder5k: 'NT$5,000未満',
+    partner_income5to10k: 'NT$5,000〜10,000',
+    partner_income10to30k: 'NT$10,000〜30,000',
+    partner_incomeOver30k: 'NT$30,000以上',
+    partner_incomeNone: '収入は気にしない',
+
+    partner_q10Availability: '1日のサービス可能時間',
+    partner_availUnder1h: '1時間未満',
+    partner_avail1to3h: '1〜3時間',
+    partner_avail3to5h: '3〜5時間',
+    partner_availOver5h: '5時間以上',
+    partner_availFlexible: 'フレキシブル',
+
+    partner_q11OnSite: '緊急時の現地対応の意欲',
+    partner_onSiteWilling: '対応可能',
+    partner_onSiteDepends: '状況による',
+    partner_onSiteOnlineOnly: 'オンラインのみ',
+
+    // Q12 收尾
+    partner_q12Notes: 'Mibuに伝えたいことはありますか？（任意）',
 
     // ========== Merchant Apply (#053) ==========
     merchant_applyTitle: 'Apply to Become a Merchant', /* TODO: ja */
@@ -496,11 +548,73 @@ const ja: Record<string, string> = {
     merchant_statusRejected: 'Rejected', /* TODO: ja */
     merchant_statusRejectedDesc: 'Sorry, your merchant application was not approved', /* TODO: ja */
     merchant_reapply: 'Reapply', /* TODO: ja */
-    merchant_businessName: 'Business Name', /* TODO: ja */
-    merchant_businessNamePlaceholder: 'Enter your business name', /* TODO: ja */
-    merchant_email: 'Contact Email', /* TODO: ja */
-    merchant_emailPlaceholder: 'Enter your email', /* TODO: ja */
-    merchant_surveyExtra: 'Anything else you want us to know (optional)', /* TODO: ja */
+    merchant_businessName: '店舗名',
+    merchant_businessNamePlaceholder: '店舗名を入力',
+    merchant_email: '連絡先メール',
+    merchant_emailPlaceholder: 'メールアドレスを入力',
+    merchant_surveyExtra: 'その他お伝えしたいこと（任意）',
+
+    // ========== 加盟店アンケート 12問 ==========
+    merchant_surveySection1: '基本情報',
+    merchant_surveySection2: '経営状況',
+    merchant_surveySection3: '提携意向',
+    merchant_surveySection4: '連絡先',
+
+    merchant_surveyQ1Contact: 'お名前',
+    merchant_surveyQ2Business: '店舗・会社名',
+    merchant_surveyQ3Category: '業種',
+    merchant_surveyCatSouvenir: 'お土産・小売',
+    merchant_surveyQ4Region: '店舗所在地',
+    merchant_surveyQ4Placeholder: '都道府県を選択',
+
+    merchant_surveyQ5Sources: 'お客様はどこから来ますか？',
+    merchant_srcWalkIn: '通りがかり',
+    merchant_srcOnlineSearch: 'ネット検索',
+    merchant_srcSocialMedia: 'SNS',
+    merchant_srcTravelPlatform: '旅行プラットフォーム',
+    merchant_srcWordOfMouth: '口コミ',
+    merchant_srcOther: 'その他',
+
+    merchant_surveyQ6Challenges: '最大の経営課題は？',
+    merchant_surveyQ6Hint: '最大3つまで選択',
+    merchant_chalAttract: '観光客の誘致',
+    merchant_chalOnline: 'オンライン露出不足',
+    merchant_chalRepeat: 'リピーター獲得',
+    merchant_chalCompetition: '競合との差別化',
+    merchant_chalCost: 'マーケティング費用',
+    merchant_chalLanguage: '言語の壁',
+    merchant_chalOther: 'その他',
+
+    merchant_surveyQ7Budget: '月間マーケティング予算',
+    merchant_budgetNone: 'ほぼなし',
+    merchant_budgetUnder5k: 'NT$5,000未満',
+    merchant_budget5to20k: 'NT$5,000〜20,000',
+    merchant_budgetOver20k: 'NT$20,000以上',
+
+    merchant_surveyQ8Channels: '現在利用中のオンラインチャネル',
+    merchant_chanGoogleMaps: 'Google Maps',
+    merchant_chanFacebook: 'Facebook',
+    merchant_chanInstagram: 'Instagram',
+    merchant_chanLineOA: 'LINE公式アカウント',
+    merchant_chanWebsite: '自社サイト',
+    merchant_chanNone: 'なし',
+
+    merchant_surveyQ9Outcome: 'Mibuとの提携で最も期待する効果',
+    merchant_outMoreTourists: '観光客の増加',
+    merchant_outBrand: 'ブランド認知度の向上',
+    merchant_outRevenue: '売上の向上',
+    merchant_outRepeat: 'リピート率の向上',
+    merchant_outOther: 'その他',
+
+    merchant_surveyQ10Gamification: 'ゲーミフィケーション（ガチャ・スタンプなど）への関心',
+    merchant_gamVeryInterested: '非常に興味あり',
+    merchant_gamWillingToTry: '試してみたい',
+    merchant_gamNeedInfo: '詳しく知りたい',
+    merchant_gamNotInterested: '興味なし',
+
+    merchant_surveyQ11ContactMethod: '電話 / LINE / IG',
+    merchant_surveyQ11Placeholder: '例：0912345678 または LINE ID',
+    merchant_surveyQ12Email: 'メールアドレス',
 
     // ========== Settings Apply Entries (#053) ==========
     settings_partnerApply: 'Apply to Become a Partner', /* TODO: ja */

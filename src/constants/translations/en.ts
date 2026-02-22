@@ -323,11 +323,62 @@ const en: Record<string, string> = {
     partner_statusRejectedDesc: 'Sorry, your application was not approved',
     partner_reapply: 'Reapply',
     partner_alreadyPartner: 'You are already a partner',
-    partner_surveyIntro: 'Please introduce yourself',
-    partner_surveyName: 'Your real name',
-    partner_surveyRegion: 'Travel regions you are familiar with',
-    partner_surveyMotivation: 'Why do you want to become a partner?',
-    partner_surveyExperience: 'Relevant experience or expertise',
+    // 問卷分段標題
+    partner_section1: 'Basic Info',
+    partner_section2: 'Local Expertise',
+    partner_section3: 'Motivation & Availability',
+    partner_section4: 'Final Notes',
+
+    // Q1-Q4 基本資料
+    partner_q1Name: 'Your Name',
+    partner_q2Region: 'Where do you live?',
+    partner_q2Placeholder: 'Select your city/county',
+    partner_q3Email: 'Email',
+    partner_q4Contact: 'Phone or LINE ID',
+    partner_q4Placeholder: 'e.g. 0912345678 or LINE ID',
+
+    // Q5-Q7 在地能力
+    partner_q5Local: 'Recommend a hidden gem restaurant or spot in your area and explain why',
+    partner_q6Scenario: 'A traveler from Hong Kong wants a one-day trip to your area. How would you plan it?',
+    partner_q7Languages: 'Languages you speak',
+
+    // Q7 語言選項
+    partner_langZh: 'Mandarin',
+    partner_langEn: 'English',
+    partner_langJa: 'Japanese',
+    partner_langKo: 'Korean',
+    partner_langTw: 'Taiwanese',
+    partner_langOther: 'Other',
+
+    // Q8-Q11 動機與可用性
+    partner_q8Expectations: 'What do you hope to gain from partnering with Mibu?',
+    partner_expectIncome: 'Extra income',
+    partner_expectPeople: 'Meet new people',
+    partner_expectTourism: 'Promote local tourism',
+    partner_expectExperience: 'Gain experience',
+    partner_expectOther: 'Other',
+
+    partner_q9Income: 'Expected monthly extra income',
+    partner_incomeUnder5k: 'Under NT$5,000',
+    partner_income5to10k: 'NT$5,000–10,000',
+    partner_income10to30k: 'NT$10,000–30,000',
+    partner_incomeOver30k: 'Over NT$30,000',
+    partner_incomeNone: 'Not concerned about income',
+
+    partner_q10Availability: 'Daily available hours for service',
+    partner_availUnder1h: 'Under 1 hour',
+    partner_avail1to3h: '1–3 hours',
+    partner_avail3to5h: '3–5 hours',
+    partner_availOver5h: 'Over 5 hours',
+    partner_availFlexible: 'Flexible',
+
+    partner_q11OnSite: 'Willingness to assist on-site in emergencies',
+    partner_onSiteWilling: 'Willing',
+    partner_onSiteDepends: 'Depends on the situation',
+    partner_onSiteOnlineOnly: 'Online only',
+
+    // Q12 收尾
+    partner_q12Notes: 'Anything else you want to tell Mibu? (optional)',
 
     // ========== Merchant Apply (#053) ==========
     merchant_applyTitle: 'Apply to Become a Merchant',
@@ -347,6 +398,68 @@ const en: Record<string, string> = {
     merchant_email: 'Contact Email',
     merchant_emailPlaceholder: 'Enter your email',
     merchant_surveyExtra: 'Anything else you want us to know (optional)',
+
+    // ========== Merchant Survey 12 Questions ==========
+    merchant_surveySection1: 'Basic Info',
+    merchant_surveySection2: 'Business Status',
+    merchant_surveySection3: 'Partnership Interest',
+    merchant_surveySection4: 'Contact Info',
+
+    merchant_surveyQ1Contact: 'Your Name',
+    merchant_surveyQ2Business: 'Business / Company Name',
+    merchant_surveyQ3Category: 'Industry Category',
+    merchant_surveyCatSouvenir: 'Souvenir & Retail',
+    merchant_surveyQ4Region: 'Business Location',
+    merchant_surveyQ4Placeholder: 'Select your city/county',
+
+    merchant_surveyQ5Sources: 'Where do most of your customers come from?',
+    merchant_srcWalkIn: 'Walk-in',
+    merchant_srcOnlineSearch: 'Online search',
+    merchant_srcSocialMedia: 'Social media',
+    merchant_srcTravelPlatform: 'Travel platforms',
+    merchant_srcWordOfMouth: 'Word of mouth',
+    merchant_srcOther: 'Other',
+
+    merchant_surveyQ6Challenges: 'Your biggest business challenges?',
+    merchant_surveyQ6Hint: 'Select up to 3',
+    merchant_chalAttract: 'Attracting tourists',
+    merchant_chalOnline: 'Lack of online presence',
+    merchant_chalRepeat: 'Building repeat customers',
+    merchant_chalCompetition: 'Competition',
+    merchant_chalCost: 'High marketing costs',
+    merchant_chalLanguage: 'Language barrier',
+    merchant_chalOther: 'Other',
+
+    merchant_surveyQ7Budget: 'Monthly marketing budget',
+    merchant_budgetNone: 'Almost none',
+    merchant_budgetUnder5k: 'Under NT$5,000',
+    merchant_budget5to20k: 'NT$5,000–20,000',
+    merchant_budgetOver20k: 'Over NT$20,000',
+
+    merchant_surveyQ8Channels: 'Current online marketing channels',
+    merchant_chanGoogleMaps: 'Google Maps',
+    merchant_chanFacebook: 'Facebook',
+    merchant_chanInstagram: 'Instagram',
+    merchant_chanLineOA: 'LINE Official Account',
+    merchant_chanWebsite: 'Own website',
+    merchant_chanNone: 'None currently',
+
+    merchant_surveyQ9Outcome: 'What outcome matters most from partnering with Mibu?',
+    merchant_outMoreTourists: 'More tourists',
+    merchant_outBrand: 'Brand awareness',
+    merchant_outRevenue: 'Higher revenue',
+    merchant_outRepeat: 'More repeat visits',
+    merchant_outOther: 'Other',
+
+    merchant_surveyQ10Gamification: 'Your view on gamified marketing (e.g. gacha, stamp cards)',
+    merchant_gamVeryInterested: 'Very interested',
+    merchant_gamWillingToTry: 'Willing to try',
+    merchant_gamNeedInfo: 'Need more info',
+    merchant_gamNotInterested: 'Not interested',
+
+    merchant_surveyQ11ContactMethod: 'Phone / LINE / IG',
+    merchant_surveyQ11Placeholder: 'e.g. 0912345678 or LINE ID',
+    merchant_surveyQ12Email: 'Email',
 
     // ========== Settings Apply Entries (#053) ==========
     settings_partnerApply: 'Apply to Become a Partner',

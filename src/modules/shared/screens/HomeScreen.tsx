@@ -91,8 +91,8 @@ interface DailyTaskSummary {
 
 const now = new Date().toISOString();
 
-// 在地活動每頁最多顯示幾則，超過則自動輪播
-const MAX_VISIBLE_FESTIVALS = 8;
+// 在地活動每頁最多顯示幾則，超過則左右滑切換 + 無操作時自動輪播
+const MAX_VISIBLE_FESTIVALS = 6;
 // 輪播間隔（毫秒）
 const FESTIVAL_ROTATE_INTERVAL = 5000;
 
@@ -278,9 +278,11 @@ export function HomeScreen() {
   // 本地狀態（非 API 資料）
   // ============================================================
 
-  // 在地活動輪播頁碼
+  // 在地活動輪播頁碼與滑動控制
   const [festivalPage, setFestivalPage] = useState(0);
   const festivalTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const festivalScrollRef = useRef<ScrollView>(null);
+  const [festivalContainerWidth, setFestivalContainerWidth] = useState(0);
 
   // 用戶頭像設定（從 AsyncStorage 讀取）
   const [userAvatar, setUserAvatar] = useState<string>('default');
@@ -296,25 +298,58 @@ export function HomeScreen() {
     (festivalPage + 1) * MAX_VISIBLE_FESTIVALS,
   );
 
-  useEffect(() => {
+  // 啟動自動輪播 timer
+  const startFestivalTimer = useCallback(() => {
+    if (festivalTimerRef.current) {
+      clearInterval(festivalTimerRef.current);
+      festivalTimerRef.current = null;
+    }
     if (festivalTotalPages <= 1) return;
 
     festivalTimerRef.current = setInterval(() => {
-      setFestivalPage(prev => (prev + 1) % festivalTotalPages);
+      setFestivalPage(prev => {
+        const next = (prev + 1) % festivalTotalPages;
+        if (festivalContainerWidth > 0) {
+          festivalScrollRef.current?.scrollTo({ x: next * festivalContainerWidth, animated: true });
+        }
+        return next;
+      });
     }, FESTIVAL_ROTATE_INTERVAL);
+  }, [festivalTotalPages, festivalContainerWidth]);
 
+  // 頁數或寬度改變時啟動 timer
+  useEffect(() => {
+    startFestivalTimer();
     return () => {
       if (festivalTimerRef.current) {
         clearInterval(festivalTimerRef.current);
         festivalTimerRef.current = null;
       }
     };
-  }, [festivalTotalPages]);
+  }, [startFestivalTimer]);
+
+  // 用戶滑動結束 → 更新頁碼 + 重啟 timer
+  const handleFestivalScrollEnd = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
+    if (festivalContainerWidth <= 0) return;
+    const page = Math.round(e.nativeEvent.contentOffset.x / festivalContainerWidth);
+    setFestivalPage(page);
+    startFestivalTimer();
+  }, [festivalContainerWidth, startFestivalTimer]);
+
+  // 點擊指示點切換頁面
+  const handleFestivalDotPress = useCallback((page: number) => {
+    setFestivalPage(page);
+    if (festivalContainerWidth > 0) {
+      festivalScrollRef.current?.scrollTo({ x: page * festivalContainerWidth, animated: true });
+    }
+    startFestivalTimer();
+  }, [festivalContainerWidth, startFestivalTimer]);
 
   // 資料變動時重置頁碼（避免超出範圍）
   useEffect(() => {
     if (festivalPage >= festivalTotalPages && festivalTotalPages > 0) {
       setFestivalPage(0);
+      festivalScrollRef.current?.scrollTo({ x: 0, animated: false });
     }
   }, [festivalTotalPages, festivalPage]);
 
@@ -571,34 +606,76 @@ export function HomeScreen() {
         </View>
       )}
 
-      {/* ========== 在地活動卡片（最多 8 則，超過自動輪播）========== */}
+      {/* ========== 在地活動卡片（最多 6 則/頁，左右滑 + 自動輪播）========== */}
       {events.festivals.length > 0 && (
-        <View style={styles.localSection}>
+        <View
+          style={styles.localSection}
+          onLayout={(e) => setFestivalContainerWidth(e.nativeEvent.layout.width)}
+        >
           <View style={styles.sectionHeader}>
             <Ionicons name="location-outline" size={20} color={MibuBrand.copper} />
             <Text style={styles.localSectionHeaderText}>{t.home_localTab}</Text>
           </View>
-          {visibleFestivals.map(event => (
-            <TouchableOpacity
-              key={event.id}
-              onPress={event.id > 0 ? () => router.push(`/event/${event.id}`) : undefined}
-              activeOpacity={event.id > 0 ? 0.8 : 1}
+          {festivalTotalPages > 1 && festivalContainerWidth > 0 ? (
+            <ScrollView
+              ref={festivalScrollRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={handleFestivalScrollEnd}
+              scrollEventThrottle={16}
             >
-              <Text style={styles.localItem}>
-                ・{getLocalizedTitle(event)}
-              </Text>
-            </TouchableOpacity>
-          ))}
+              {Array.from({ length: festivalTotalPages }, (_, pageIdx) => {
+                const pageItems = events.festivals.slice(
+                  pageIdx * MAX_VISIBLE_FESTIVALS,
+                  (pageIdx + 1) * MAX_VISIBLE_FESTIVALS,
+                );
+                return (
+                  <View key={pageIdx} style={{ width: festivalContainerWidth }}>
+                    {pageItems.map(event => (
+                      <TouchableOpacity
+                        key={event.id}
+                        onPress={event.id > 0 ? () => router.push(`/event/${event.id}`) : undefined}
+                        activeOpacity={event.id > 0 ? 0.8 : 1}
+                      >
+                        <Text style={styles.localItem}>
+                          ・{getLocalizedTitle(event)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                );
+              })}
+            </ScrollView>
+          ) : (
+            // 只有一頁時不需要 ScrollView
+            visibleFestivals.map(event => (
+              <TouchableOpacity
+                key={event.id}
+                onPress={event.id > 0 ? () => router.push(`/event/${event.id}`) : undefined}
+                activeOpacity={event.id > 0 ? 0.8 : 1}
+              >
+                <Text style={styles.localItem}>
+                  ・{getLocalizedTitle(event)}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
           {festivalTotalPages > 1 && (
             <View style={styles.festivalPagination}>
               {Array.from({ length: festivalTotalPages }, (_, i) => (
-                <View
+                <TouchableOpacity
                   key={i}
-                  style={[
-                    styles.festivalDot,
-                    i === festivalPage && styles.festivalDotActive,
-                  ]}
-                />
+                  onPress={() => handleFestivalDotPress(i)}
+                  hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+                >
+                  <View
+                    style={[
+                      styles.festivalDot,
+                      i === festivalPage && styles.festivalDotActive,
+                    ]}
+                  />
+                </TouchableOpacity>
               ))}
             </View>
           )}
