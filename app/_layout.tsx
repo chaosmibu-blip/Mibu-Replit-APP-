@@ -20,14 +20,14 @@
 import "../global.css";
 import { useEffect, useState } from 'react';
 import { Image, View, useWindowDimensions } from 'react-native';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+// App 全程使用 MibuLightTheme，不支援 dark mode（所有元件顏色皆為品牌暖色系硬編碼）
 import { AppProvider } from '../src/context/AppContext';
 import { NetworkBanner } from '../src/modules/shared/components/ui/NetworkBanner';
 import { useNotificationHandler } from '../hooks/useNotificationHandler';
@@ -85,7 +85,6 @@ function NotificationListener() {
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const { width: screenWidth } = useWindowDimensions();
   const isTablet = screenWidth > TABLET_BREAKPOINT;
   const [assetsReady, setAssetsReady] = useState(false);
@@ -111,7 +110,7 @@ export default function RootLayout() {
     ]}>
       <AppProvider>
         <NotificationListener />
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : MibuLightTheme}>
+        <ThemeProvider value={MibuLightTheme}>
           <View style={[
             { flex: 1 },
             isTablet && {
@@ -154,7 +153,7 @@ export default function RootLayout() {
             </Stack>
             <NetworkBanner />
           </View>
-          <StatusBar style="auto" />
+          <StatusBar style="dark" />
         </ThemeProvider>
       </AppProvider>
     </GestureHandlerRootView>
