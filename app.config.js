@@ -54,8 +54,8 @@ const baseConfig = {
     [
       'expo-media-library',              // 相簿存取（儲存 Mini 頭像）
       {
-        photosPermission: '允許 Mibu 儲存圖片到您的相簿',
-        savePhotosPermission: '允許 Mibu 儲存圖片到您的相簿',
+        photosPermission: 'Mibu 需要存取您的相簿，以便將 AI 旅伴「Mini」的頭像圖片儲存到您的相簿中',
+        savePhotosPermission: 'Mibu 需要存取您的相簿，以便將 AI 旅伴「Mini」的頭像圖片儲存到您的相簿中',
       },
     ],
   ],
@@ -117,7 +117,7 @@ const productionConfig = {
       NSLocationWhenInUseUsageDescription: '我們需要您的位置來提供附近的旅遊景點推薦',
       NSLocationAlwaysAndWhenInUseUsageDescription: '我們需要您的位置來提供即時旅遊導航服務',
       NSCameraUsageDescription: '用於掃描 QR Code 兌換優惠券',
-      NSPhotoLibraryUsageDescription: '用於儲存旅遊照片',
+      NSPhotoLibraryUsageDescription: 'Mibu 需要存取您的相簿，以便您選擇照片作為自訂個人頭像，以及將 AI 旅伴「Mini」的頭像圖片儲存到您的相簿中',
     },
   },
   android: {
