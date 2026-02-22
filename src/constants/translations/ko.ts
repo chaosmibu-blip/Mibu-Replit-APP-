@@ -188,20 +188,20 @@ const ko: Record<string, string> = {
     auth_appliedRole: '신청한 역할',
 
     // ========== 로그인 페이지 (OAuth) ==========
-    auth_notMerchant: 'Not a Merchant', /* TODO: ko */
-    auth_notMerchantDesc: 'Please register as a merchant first', /* TODO: ko */
-    auth_notSpecialist: 'Not a Specialist', /* TODO: ko */
-    auth_notSpecialistDesc: 'Please register as a specialist first', /* TODO: ko */
-    auth_wrongPortal: 'Wrong Portal', /* TODO: ko */
-    auth_wrongPortalDesc: 'Please switch to the correct portal', /* TODO: ko */
-    auth_permissionDenied: 'Permission Denied', /* TODO: ko */
-    auth_permissionDeniedDesc: 'You do not have permission', /* TODO: ko */
+    auth_notMerchant: '가맹점이 아닙니다',
+    auth_notMerchantDesc: '먼저 가맹점으로 등록해 주세요',
+    auth_notSpecialist: '전문가가 아닙니다',
+    auth_notSpecialistDesc: '먼저 전문가로 등록해 주세요',
+    auth_wrongPortal: '잘못된 포털',
+    auth_wrongPortalDesc: '올바른 포털로 전환해 주세요',
+    auth_permissionDenied: '권한 없음',
+    auth_permissionDeniedDesc: '접근 권한이 없습니다',
     auth_oauthLoginFailed: '로그인 실패',
     auth_loginError: '로그인 오류',
     auth_tryAgainLater: '나중에 다시 시도해주세요',
-    auth_googleSignInFailed: 'Google 로그인을 완료할 수 없습니다', /* TODO: ko */
-    auth_appleSignInFailed: 'Apple 로그인을 완료할 수 없습니다', /* TODO: ko */
-    auth_cannotConnectServer: '서버에 연결할 수 없습니다', /* TODO: ko */
+    auth_googleSignInFailed: 'Google 로그인을 완료할 수 없습니다',
+    auth_appleSignInFailed: 'Apple 로그인을 완료할 수 없습니다',
+    auth_cannotConnectServer: '서버에 연결할 수 없습니다',
     auth_networkError: '네트워크 오류',
     auth_switchPortal: '포털 전환',
     auth_googleLogin: 'Google 로그인',
@@ -211,8 +211,8 @@ const ko: Record<string, string> = {
     auth_applicationReceivedMsg: '신청서를 접수했습니다. 곧 처리하겠습니다',
     auth_applicationApprovalNote: '승인 후 알림을 받으시면 계정으로 로그인하실 수 있습니다',
     auth_backToLogin: '로그인 페이지로 돌아가기',
-    auth_registrationFailed: 'Registration Failed', /* TODO: ko */
-    auth_registrationError: 'Registration failed. Please try again.', /* TODO: ko */
+    auth_registrationFailed: '회원가입 실패',
+    auth_registrationError: '회원가입에 실패했습니다. 다시 시도해 주세요.',
     auth_suggestMergeTitle: '기존 계정 감지',
     auth_suggestMergeHasAccount: '이 기기에서 계정 "{name}"이(가) 발견되었습니다.',
     auth_suggestMergeHint: '계정을 병합하려면 설정 > 계정 병합으로 이동하세요.',
@@ -238,107 +238,107 @@ const ko: Record<string, string> = {
     guestPrompt_bindAccount: '연동하기',
 
     // ========== 가맹점 등록 (양식) ==========
-    merchant_registration: 'Merchant Registration', /* TODO: ko */
-    merchant_registrationSubtitle: 'Fill in your details to apply', /* TODO: ko */
-    merchant_regOwnerName: 'Owner Name', /* TODO: ko */
-    merchant_regOwnerNamePlaceholder: 'Enter owner name', /* TODO: ko */
-    merchant_regBusinessName: 'Business Name', /* TODO: ko */
-    merchant_regBusinessNamePlaceholder: 'Enter business name', /* TODO: ko */
-    merchant_regTaxId: 'Tax ID (Optional)', /* TODO: ko */
-    merchant_regTaxIdPlaceholder: 'Enter tax ID', /* TODO: ko */
-    merchant_regBusinessCategory: 'Business Category', /* TODO: ko */
-    merchant_regBusinessCategoryPlaceholder: 'Select business category', /* TODO: ko */
-    merchant_regAddress: 'Business Address', /* TODO: ko */
-    merchant_regAddressPlaceholder: 'Enter business address', /* TODO: ko */
-    merchant_regPhone: 'Phone (Optional)', /* TODO: ko */
-    merchant_regPhonePlaceholder: 'Enter phone number', /* TODO: ko */
-    merchant_regMobile: 'Mobile', /* TODO: ko */
-    merchant_regMobilePlaceholder: 'Enter mobile number', /* TODO: ko */
-    merchant_regEmailPlaceholder: 'Enter email', /* TODO: ko */
-    merchant_regSubmitReview: 'Submit for Review', /* TODO: ko */
-    merchant_regSubmitting: 'Submitting...', /* TODO: ko */
-    merchant_regSubmitSuccess: 'Submitted Successfully', /* TODO: ko */
-    merchant_regSubmitSuccessMsg: 'Your application has been submitted.', /* TODO: ko */
-    merchant_regSubmitFailed: 'Submission failed.', /* TODO: ko */
-    merchant_regFillRequired: 'Please fill in all required fields', /* TODO: ko */
-    merchant_regInvalidEmail: 'Please enter a valid email', /* TODO: ko */
-    merchant_regCatRestaurant: 'Restaurant', /* TODO: ko */
-    merchant_regCatHotel: 'Hotel', /* TODO: ko */
-    merchant_regCatAttraction: 'Attraction', /* TODO: ko */
-    merchant_regCatShopping: 'Shopping', /* TODO: ko */
-    merchant_regCatTransportation: 'Transportation', /* TODO: ko */
-    merchant_regCatExperience: 'Experience', /* TODO: ko */
-    merchant_regCatCulture: 'Culture/Art', /* TODO: ko */
-    merchant_regCatOther: 'Other', /* TODO: ko */
-    merchant_regEmail: 'Email (Account)', /* TODO: ko */
-    merchant_regPassword: 'Password (min 6 chars)', /* TODO: ko */
-    merchant_regConfirmPassword: 'Confirm Password', /* TODO: ko */
-    merchant_regContactName: 'Contact Name', /* TODO: ko */
-    merchant_regIndustryCategory: 'Business Category', /* TODO: ko */
-    merchant_regBusinessAddress: 'Business Address', /* TODO: ko */
-    merchant_regOtherContact: 'Other Contact (Optional)', /* TODO: ko */
-    merchant_regBackToLogin: 'Back to Login', /* TODO: ko */
-    merchant_regSelectCategory: 'Select Category', /* TODO: ko */
-    merchant_regEnterEmail: 'Please enter email', /* TODO: ko */
-    merchant_regInvalidEmailFormat: 'Invalid email format', /* TODO: ko */
-    merchant_regPasswordMinLength: 'Password must be at least 6 characters', /* TODO: ko */
-    merchant_regPasswordMismatch: 'Passwords do not match', /* TODO: ko */
-    merchant_regEnterBusinessName: 'Please enter business name', /* TODO: ko */
-    merchant_regEnterContactName: 'Please enter contact name', /* TODO: ko */
-    merchant_regSelectIndustry: 'Please select category', /* TODO: ko */
-    merchant_regEnterAddress: 'Please enter address', /* TODO: ko */
-    merchant_regContactNamePlaceholder: 'Enter contact name', /* TODO: ko */
-    merchant_regTaxIdShort: 'Tax ID', /* TODO: ko */
-    merchant_regLineOrPhone: 'LINE ID or Phone', /* TODO: ko */
-    merchant_regCatRestaurantShort: 'Restaurant', /* TODO: ko */
-    merchant_regCatHotelShort: 'Hotel', /* TODO: ko */
-    merchant_regCatAttractionShort: 'Attraction', /* TODO: ko */
-    merchant_regCatShoppingShort: 'Shopping', /* TODO: ko */
-    merchant_regCatActivityShort: 'Activity', /* TODO: ko */
-    merchant_regCatOtherShort: 'Other', /* TODO: ko */
+    merchant_registration: '가맹점 등록',
+    merchant_registrationSubtitle: '신청 정보를 입력해 주세요',
+    merchant_regOwnerName: '대표자 이름',
+    merchant_regOwnerNamePlaceholder: '대표자 이름 입력',
+    merchant_regBusinessName: '상호명',
+    merchant_regBusinessNamePlaceholder: '상호명 입력',
+    merchant_regTaxId: '사업자등록번호 (선택)',
+    merchant_regTaxIdPlaceholder: '사업자등록번호 입력',
+    merchant_regBusinessCategory: '업종',
+    merchant_regBusinessCategoryPlaceholder: '업종 선택',
+    merchant_regAddress: '사업장 주소',
+    merchant_regAddressPlaceholder: '사업장 주소 입력',
+    merchant_regPhone: '전화번호 (선택)',
+    merchant_regPhonePlaceholder: '전화번호 입력',
+    merchant_regMobile: '휴대폰',
+    merchant_regMobilePlaceholder: '휴대폰 번호 입력',
+    merchant_regEmailPlaceholder: '이메일 입력',
+    merchant_regSubmitReview: '심사 신청',
+    merchant_regSubmitting: '제출 중...',
+    merchant_regSubmitSuccess: '제출 완료',
+    merchant_regSubmitSuccessMsg: '신청서가 제출되었습니다.',
+    merchant_regSubmitFailed: '제출 실패.',
+    merchant_regFillRequired: '필수 항목을 모두 입력해 주세요',
+    merchant_regInvalidEmail: '올바른 이메일을 입력해 주세요',
+    merchant_regCatRestaurant: '음식점',
+    merchant_regCatHotel: '숙박',
+    merchant_regCatAttraction: '관광지',
+    merchant_regCatShopping: '쇼핑',
+    merchant_regCatTransportation: '교통',
+    merchant_regCatExperience: '체험',
+    merchant_regCatCulture: '문화/예술',
+    merchant_regCatOther: '기타',
+    merchant_regEmail: '이메일 (계정)',
+    merchant_regPassword: '비밀번호 (6자 이상)',
+    merchant_regConfirmPassword: '비밀번호 확인',
+    merchant_regContactName: '담당자 이름',
+    merchant_regIndustryCategory: '업종',
+    merchant_regBusinessAddress: '사업장 주소',
+    merchant_regOtherContact: '기타 연락처 (선택)',
+    merchant_regBackToLogin: '로그인으로 돌아가기',
+    merchant_regSelectCategory: '카테고리 선택',
+    merchant_regEnterEmail: '이메일을 입력해 주세요',
+    merchant_regInvalidEmailFormat: '이메일 형식이 올바르지 않습니다',
+    merchant_regPasswordMinLength: '비밀번호는 6자 이상이어야 합니다',
+    merchant_regPasswordMismatch: '비밀번호가 일치하지 않습니다',
+    merchant_regEnterBusinessName: '상호명을 입력해 주세요',
+    merchant_regEnterContactName: '담당자 이름을 입력해 주세요',
+    merchant_regSelectIndustry: '카테고리를 선택해 주세요',
+    merchant_regEnterAddress: '주소를 입력해 주세요',
+    merchant_regContactNamePlaceholder: '담당자 이름 입력',
+    merchant_regTaxIdShort: '사업자등록번호',
+    merchant_regLineOrPhone: 'LINE ID 또는 전화번호',
+    merchant_regCatRestaurantShort: '음식점',
+    merchant_regCatHotelShort: '숙박',
+    merchant_regCatAttractionShort: '관광지',
+    merchant_regCatShoppingShort: '쇼핑',
+    merchant_regCatActivityShort: '액티비티',
+    merchant_regCatOtherShort: '기타',
 
     // ========== 전문가 등록 ==========
-    specialist_registration: 'Specialist Registration', /* TODO: ko */
-    specialist_emailAccount: 'Email (Account)', /* TODO: ko */
-    specialist_passwordMin: 'Password (min 6 chars)', /* TODO: ko */
-    specialist_confirmPassword: 'Confirm Password', /* TODO: ko */
-    specialist_nameLabel: 'Name', /* TODO: ko */
-    specialist_otherContact: 'Other Contact (Optional)', /* TODO: ko */
-    specialist_serviceRegionOptional: 'Service Region (Optional)', /* TODO: ko */
-    specialist_submitApplication: 'Submit Application', /* TODO: ko */
-    specialist_backToLogin: 'Back to Login', /* TODO: ko */
-    specialist_enterEmail: 'Please enter email', /* TODO: ko */
-    specialist_invalidEmailFormat: 'Invalid email format', /* TODO: ko */
-    specialist_passwordMinLength: 'Password must be at least 6 characters', /* TODO: ko */
-    specialist_passwordMismatch: 'Passwords do not match', /* TODO: ko */
-    specialist_enterName: 'Please enter name', /* TODO: ko */
-    specialist_namePlaceholder: 'Enter your name', /* TODO: ko */
-    specialist_regionPlaceholder: 'e.g., Taipei, Yilan', /* TODO: ko */
-    specialist_lineOrPhone: 'LINE ID or Phone', /* TODO: ko */
+    specialist_registration: '전문가 등록',
+    specialist_emailAccount: '이메일 (계정)',
+    specialist_passwordMin: '비밀번호 (6자 이상)',
+    specialist_confirmPassword: '비밀번호 확인',
+    specialist_nameLabel: '이름',
+    specialist_otherContact: '기타 연락처 (선택)',
+    specialist_serviceRegionOptional: '서비스 지역 (선택)',
+    specialist_submitApplication: '신청서 제출',
+    specialist_backToLogin: '로그인으로 돌아가기',
+    specialist_enterEmail: '이메일을 입력해 주세요',
+    specialist_invalidEmailFormat: '이메일 형식이 올바르지 않습니다',
+    specialist_passwordMinLength: '비밀번호는 6자 이상이어야 합니다',
+    specialist_passwordMismatch: '비밀번호가 일치하지 않습니다',
+    specialist_enterName: '이름을 입력해 주세요',
+    specialist_namePlaceholder: '이름을 입력하세요',
+    specialist_regionPlaceholder: '예: 서울, 부산',
+    specialist_lineOrPhone: 'LINE ID 또는 전화번호',
 
     // ========== 즐겨찾기/블랙리스트 ==========
-    itinerary_favoritesAndBlacklist: 'Favorites & Blacklist', /* TODO: ko */
+    itinerary_favoritesAndBlacklist: '즐겨찾기 및 블랙리스트',
     itinerary_favorites: '즐겨찾기',
     itinerary_blacklist: '블랙리스트',
-    itinerary_removeFavorite: '즐겨찾기 삭제', /* TODO: ko */
-    itinerary_removeFavoriteConfirm: '즐겨찾기에서 삭제하시겠습니까?', /* TODO: ko */
-    itinerary_removeBlacklist: '블랙리스트에서 삭제', /* TODO: ko */
-    itinerary_removeBlacklistConfirm: '블랙리스트에서 삭제하시겠습니까?', /* TODO: ko */
-    itinerary_noFavorites: '즐겨찾기가 없습니다', /* TODO: ko */
-    itinerary_addFavoritesHint: 'Add favorites from collection', /* TODO: ko */
-    itinerary_noBlacklist: '블랙리스트가 없습니다', /* TODO: ko */
-    itinerary_addBlacklistHint: 'Add items to blacklist', /* TODO: ko */
-    itinerary_favoritesGachaHint: 'Favorite places appear more often in gacha', /* TODO: ko */
-    itinerary_blacklistGachaHint: 'Blacklisted items will not appear in gacha', /* TODO: ko */
+    itinerary_removeFavorite: '즐겨찾기 삭제',
+    itinerary_removeFavoriteConfirm: '즐겨찾기에서 삭제하시겠습니까?',
+    itinerary_removeBlacklist: '블랙리스트에서 삭제',
+    itinerary_removeBlacklistConfirm: '블랙리스트에서 삭제하시겠습니까?',
+    itinerary_noFavorites: '즐겨찾기가 없습니다',
+    itinerary_addFavoritesHint: '도감에서 즐겨찾기를 추가하세요',
+    itinerary_noBlacklist: '블랙리스트가 없습니다',
+    itinerary_addBlacklistHint: '블랙리스트에 항목을 추가하세요',
+    itinerary_favoritesGachaHint: '즐겨찾기 장소는 가챠에서 더 자주 나옵니다',
+    itinerary_blacklistGachaHint: '블랙리스트 항목은 가챠에서 나오지 않습니다',
 
     // ========== 이벤트 상세 ==========
-    common_eventNotFound: '이벤트를 찾을 수 없습니다', /* TODO: ko */
+    common_eventNotFound: '이벤트를 찾을 수 없습니다',
     common_goBack: '돌아가기',
     common_description: '설명',
     common_learnMore: '자세히 보기',
-    event_announcement: '공지', /* TODO: ko */
-    event_festival: '축제', /* TODO: ko */
-    event_limited: '기간 한정 이벤트', /* TODO: ko */
+    event_announcement: '공지',
+    event_festival: '축제',
+    event_limited: '기간 한정 이벤트',
 
     noResults: '아직 결과가 없습니다',
     tryGachaFirst: '먼저 가챠를 뽑아보세요!',
@@ -412,8 +412,8 @@ const ko: Record<string, string> = {
     admin_reject: '거부',
     admin_publish: '게시',
     admin_noPending: '승인 대기 중인 사용자가 없습니다',
-    admin_merchant: '가맹점', /* TODO: ko */
-    admin_specialist: 'Specialist', /* TODO: ko */
+    admin_merchant: '가맹점',
+    admin_specialist: '전문가',
     admin_traveler: '여행자',
     admin_admin: '관리자',
     admin_confirmApprove: '이 사용자를 승인하시겠습니까?',
@@ -496,521 +496,521 @@ const ko: Record<string, string> = {
     admin_shopItemFillRequired: '코드, 이름, 가격을 입력하세요',
 
     // ========== 스페셜리스트 모듈 ==========
-    specialist_dashboard: 'Specialist Dashboard', /* TODO: ko */
-    specialist_online: 'Online', /* TODO: ko */
-    specialist_offline: 'Offline', /* TODO: ko */
-    specialist_onlineStatus: 'Online Status', /* TODO: ko */
-    specialist_activeServices: 'Active Services', /* TODO: ko */
-    specialist_noServices: 'No active services', /* TODO: ko */
-    specialist_since: 'Since', /* TODO: ko */
-    specialist_region: 'Region', /* TODO: ko */
-    specialist_activeTravelers: 'Active Travelers', /* TODO: ko */
-    specialist_viewTravelers: 'View travelers being served', /* TODO: ko */
-    specialist_liveTracking: 'Live Tracking', /* TODO: ko */
-    specialist_viewTravelersOnMap: 'View travelers on map', /* TODO: ko */
-    specialist_serviceHistory: 'Service History', /* TODO: ko */
-    specialist_viewPastRecords: 'View past service records', /* TODO: ko */
-    specialist_profile: 'Specialist Profile', /* TODO: ko */
-    specialist_viewEditProfile: 'View and edit profile', /* TODO: ko */
-    specialist_filterAll: 'All', /* TODO: ko */
-    specialist_completed: 'Completed', /* TODO: ko */
-    specialist_cancelled: 'Cancelled', /* TODO: ko */
-    specialist_noHistory: 'No service history', /* TODO: ko */
-    specialist_traveler: 'Traveler', /* TODO: ko */
-    specialist_noActiveTravelers: 'No active travelers', /* TODO: ko */
-    specialist_viewLocation: 'View Location', /* TODO: ko */
-    specialist_connecting: 'Connecting...', /* TODO: ko */
-    specialist_connected: 'Connected', /* TODO: ko */
-    specialist_disconnected: 'Disconnected', /* TODO: ko */
-    specialist_noLocations: 'No traveler locations yet', /* TODO: ko */
-    specialist_lastUpdate: 'Last update', /* TODO: ko */
-    specialist_travelers: 'travelers', /* TODO: ko */
-    specialist_mapNotAvailableWeb: 'Map not available on web', /* TODO: ko */
-    specialist_mapRequiresNative: 'Map Area - requires react-native-maps', /* TODO: ko */
-    specialist_travelerLocations: 'Traveler Locations', /* TODO: ko */
-    specialist_accountStatus: 'Account Status', /* TODO: ko */
-    specialist_available: 'Available', /* TODO: ko */
-    specialist_unavailable: 'Unavailable', /* TODO: ko */
-    specialist_currentlyServing: 'Currently Serving', /* TODO: ko */
-    specialist_maxTravelers: 'Max Travelers', /* TODO: ko */
-    specialist_serviceRegion: 'Service Region', /* TODO: ko */
-    specialist_people: '', /* TODO: ko */
+    specialist_dashboard: '전문가 대시보드',
+    specialist_online: '온라인',
+    specialist_offline: '오프라인',
+    specialist_onlineStatus: '온라인 상태',
+    specialist_activeServices: '진행 중인 서비스',
+    specialist_noServices: '진행 중인 서비스 없음',
+    specialist_since: '가입일',
+    specialist_region: '지역',
+    specialist_activeTravelers: '활동 중인 여행자',
+    specialist_viewTravelers: '서비스 중인 여행자 보기',
+    specialist_liveTracking: '실시간 추적',
+    specialist_viewTravelersOnMap: '지도에서 여행자 보기',
+    specialist_serviceHistory: '서비스 이력',
+    specialist_viewPastRecords: '과거 서비스 기록 보기',
+    specialist_profile: '전문가 프로필',
+    specialist_viewEditProfile: '프로필 보기 및 편집',
+    specialist_filterAll: '전체',
+    specialist_completed: '완료',
+    specialist_cancelled: '취소됨',
+    specialist_noHistory: '서비스 이력이 없습니다',
+    specialist_traveler: '여행자',
+    specialist_noActiveTravelers: '활동 중인 여행자가 없습니다',
+    specialist_viewLocation: '위치 보기',
+    specialist_connecting: '연결 중...',
+    specialist_connected: '연결됨',
+    specialist_disconnected: '연결 끊김',
+    specialist_noLocations: '아직 여행자 위치 정보가 없습니다',
+    specialist_lastUpdate: '마지막 업데이트',
+    specialist_travelers: '명',
+    specialist_mapNotAvailableWeb: '웹에서는 지도를 사용할 수 없습니다',
+    specialist_mapRequiresNative: '지도 영역 - react-native-maps 필요',
+    specialist_travelerLocations: '여행자 위치',
+    specialist_accountStatus: '계정 상태',
+    specialist_available: '가능',
+    specialist_unavailable: '불가',
+    specialist_currentlyServing: '현재 서비스 중',
+    specialist_maxTravelers: '최대 여행자 수',
+    specialist_serviceRegion: '서비스 지역',
+    specialist_people: '명',
 
     // ========== Partner Apply (#053) ==========
-    partner_applyTitle: 'Apply to Become a Partner', /* TODO: ko */
-    partner_applyDesc: 'Become a Mibu local partner and help travelers plan authentic trips', /* TODO: ko */
-    partner_applyButton: 'Submit Application', /* TODO: ko */
-    partner_applySuccess: 'Application Submitted!', /* TODO: ko */
-    partner_applySuccessDesc: 'We will review your application as soon as possible', /* TODO: ko */
-    partner_statusPending: 'Under Review', /* TODO: ko */
-    partner_statusPendingDesc: 'Your partner application is being reviewed', /* TODO: ko */
-    partner_statusApproved: 'Approved', /* TODO: ko */
-    partner_statusRejected: 'Rejected', /* TODO: ko */
-    partner_statusRejectedDesc: 'Sorry, your application was not approved', /* TODO: ko */
-    partner_reapply: 'Reapply', /* TODO: ko */
-    partner_alreadyPartner: 'You are already a partner', /* TODO: ko */
-    partner_surveyIntro: 'Please introduce yourself', /* TODO: ko */
-    partner_surveyName: 'Your real name', /* TODO: ko */
-    partner_surveyRegion: 'Travel regions you are familiar with', /* TODO: ko */
-    partner_surveyMotivation: 'Why do you want to become a partner?', /* TODO: ko */
-    partner_surveyExperience: 'Relevant experience or expertise', /* TODO: ko */
+    partner_applyTitle: '파트너 신청',
+    partner_applyDesc: 'Mibu 현지 파트너가 되어 여행자들의 진정한 여행을 도와주세요',
+    partner_applyButton: '신청서 제출',
+    partner_applySuccess: '신청 완료!',
+    partner_applySuccessDesc: '최대한 빨리 검토하겠습니다',
+    partner_statusPending: '심사 중',
+    partner_statusPendingDesc: '파트너 신청서를 심사 중입니다',
+    partner_statusApproved: '승인됨',
+    partner_statusRejected: '거부됨',
+    partner_statusRejectedDesc: '죄송합니다, 신청이 승인되지 않았습니다',
+    partner_reapply: '재신청',
+    partner_alreadyPartner: '이미 파트너입니다',
+    partner_surveyIntro: '자기소개를 해주세요',
+    partner_surveyName: '실명',
+    partner_surveyRegion: '잘 아는 여행 지역',
+    partner_surveyMotivation: '파트너가 되고 싶은 이유는?',
+    partner_surveyExperience: '관련 경험 또는 전문 분야',
 
     // ========== Merchant Apply (#053) ==========
-    merchant_applyTitle: 'Apply to Become a Merchant', /* TODO: ko */
-    merchant_applyDesc: 'Join Mibu merchant partners and let more travelers discover your shop', /* TODO: ko */
-    merchant_applyButton: 'Submit Application', /* TODO: ko */
-    merchant_applySuccess: 'Application Submitted!', /* TODO: ko */
-    merchant_applySuccessDesc: 'We will review your merchant application shortly', /* TODO: ko */
-    merchant_statusNone: 'Not Applied', /* TODO: ko */
-    merchant_statusPending: 'Under Review', /* TODO: ko */
-    merchant_statusPendingDesc: 'Your merchant application is being reviewed', /* TODO: ko */
-    merchant_statusApproved: 'Approved', /* TODO: ko */
-    merchant_statusRejected: 'Rejected', /* TODO: ko */
-    merchant_statusRejectedDesc: 'Sorry, your merchant application was not approved', /* TODO: ko */
-    merchant_reapply: 'Reapply', /* TODO: ko */
-    merchant_businessName: 'Business Name', /* TODO: ko */
-    merchant_businessNamePlaceholder: 'Enter your business name', /* TODO: ko */
-    merchant_email: 'Contact Email', /* TODO: ko */
-    merchant_emailPlaceholder: 'Enter your email', /* TODO: ko */
-    merchant_surveyExtra: 'Anything else you want us to know (optional)', /* TODO: ko */
+    merchant_applyTitle: '가맹점 신청',
+    merchant_applyDesc: 'Mibu 가맹점 파트너가 되어 더 많은 여행자에게 매장을 알리세요',
+    merchant_applyButton: '신청서 제출',
+    merchant_applySuccess: '신청 완료!',
+    merchant_applySuccessDesc: '가맹점 신청서를 곧 검토하겠습니다',
+    merchant_statusNone: '미신청',
+    merchant_statusPending: '심사 중',
+    merchant_statusPendingDesc: '가맹점 신청서를 심사 중입니다',
+    merchant_statusApproved: '승인됨',
+    merchant_statusRejected: '거부됨',
+    merchant_statusRejectedDesc: '죄송합니다, 가맹점 신청이 승인되지 않았습니다',
+    merchant_reapply: '재신청',
+    merchant_businessName: '상호명',
+    merchant_businessNamePlaceholder: '상호명을 입력하세요',
+    merchant_email: '연락처 이메일',
+    merchant_emailPlaceholder: '이메일을 입력하세요',
+    merchant_surveyExtra: '추가로 알려주실 사항 (선택)',
 
     // ========== Settings Apply Entries (#053) ==========
-    settings_partnerApply: 'Apply to Become a Partner', /* TODO: ko */
-    settings_merchantApply: 'Apply to Become a Merchant', /* TODO: ko */
-    settings_applicationPending: 'Under Review', /* TODO: ko */
-    settings_applicationRejected: 'Application rejected, you can reapply', /* TODO: ko */
+    settings_partnerApply: '파트너 신청',
+    settings_merchantApply: '가맹점 신청',
+    settings_applicationPending: '심사 중',
+    settings_applicationRejected: '신청이 거부되었습니다. 재신청 가능합니다',
 
     // ========== Merchant ==========
-    merchant_productMgmt: 'Product Management', /* TODO: ko */
-    merchant_myProducts: 'My Products', /* TODO: ko */
-    merchant_noProducts: 'No products yet', /* TODO: ko */
-    merchant_addProduct: 'Add Product', /* TODO: ko */
-    merchant_productName: 'Product Name', /* TODO: ko */
-    merchant_productDesc: 'Description', /* TODO: ko */
-    merchant_price: 'Price', /* TODO: ko */
-    merchant_discountPrice: 'Discount Price', /* TODO: ko */
-    merchant_activeStatus: 'Active', /* TODO: ko */
-    merchant_inactiveStatus: 'Inactive', /* TODO: ko */
-    merchant_deleteProductConfirm: 'Delete this product?', /* TODO: ko */
-    merchant_deleted: 'Deleted', /* TODO: ko */
-    merchant_saved: 'Saved', /* TODO: ko */
-    merchant_couponAddTitle: 'Add Coupon', /* TODO: ko */
-    merchant_couponEditTitle: 'Edit Coupon', /* TODO: ko */
-    merchant_couponName: 'Coupon Name', /* TODO: ko */
-    merchant_couponNamePlaceholder: 'e.g. 10% Off', /* TODO: ko */
-    merchant_rarityTier: 'Rarity Tier', /* TODO: ko */
-    merchant_tierHint: 'Higher tier = lower draw rate', /* TODO: ko */
-    merchant_discountContent: 'Discount Content', /* TODO: ko */
-    merchant_discountContentPlaceholder: 'Describe the discount...', /* TODO: ko */
-    merchant_terms: 'Terms & Conditions', /* TODO: ko */
-    merchant_termsPlaceholder: 'Usage restrictions (optional)', /* TODO: ko */
-    merchant_quantity: 'Quantity', /* TODO: ko */
-    merchant_quantityHint: 'Total coupons to distribute', /* TODO: ko */
-    merchant_validUntil: 'Valid Until', /* TODO: ko */
-    merchant_validUntilHint: 'Leave empty for no expiration', /* TODO: ko */
-    merchant_activateNow: 'Activate Now', /* TODO: ko */
-    merchant_saveSuccess: 'Saved successfully', /* TODO: ko */
-    merchant_notice: 'Notice', /* TODO: ko */
-    merchant_addPlace: 'Add New Place', /* TODO: ko */
-    merchant_addPlaceSubtitle: 'Fill in your place information', /* TODO: ko */
-    merchant_placeName: 'Place Name', /* TODO: ko */
-    merchant_placeNamePlaceholder: 'Enter place name', /* TODO: ko */
-    merchant_category: 'Category', /* TODO: ko */
-    merchant_selectCategory: 'Select category', /* TODO: ko */
-    merchant_district: 'District', /* TODO: ko */
-    merchant_districtPlaceholder: "e.g. Da'an District", /* TODO: ko */
-    merchant_city: 'City', /* TODO: ko */
-    merchant_cityPlaceholder: 'e.g. Taipei', /* TODO: ko */
-    merchant_placeAddress: 'Address', /* TODO: ko */
-    merchant_addressPlaceholder: 'Full address', /* TODO: ko */
-    merchant_placeDesc: 'Description', /* TODO: ko */
-    merchant_placeDescPlaceholder: 'Brief introduction of your place...', /* TODO: ko */
-    merchant_submitApplication: 'Submit', /* TODO: ko */
-    merchant_applicationSubmitted: 'Application submitted! We will review it soon.', /* TODO: ko */
-    merchant_submitError: 'Submit failed, please try again', /* TODO: ko */
-    merchant_catFood: 'Food', /* TODO: ko */
-    merchant_catStay: 'Stay', /* TODO: ko */
-    merchant_catScenery: 'Scenery', /* TODO: ko */
-    merchant_catShopping: 'Shopping', /* TODO: ko */
-    merchant_catEntertainment: 'Entertainment', /* TODO: ko */
-    merchant_catEducation: 'Education', /* TODO: ko */
-    merchant_analytics: 'Analytics', /* TODO: ko */
-    merchant_overview: 'Overview', /* TODO: ko */
-    merchant_totalExposures: 'Total Exposures', /* TODO: ko */
-    merchant_totalCollectors: 'Total Collectors', /* TODO: ko */
-    merchant_couponIssued: 'Coupons Issued', /* TODO: ko */
-    merchant_couponRedeemed: 'Coupons Redeemed', /* TODO: ko */
-    merchant_redemptionRate: 'Redemption Rate', /* TODO: ko */
-    merchant_topCoupons: 'Top Coupons', /* TODO: ko */
-    merchant_placeBreakdown: 'Place Breakdown', /* TODO: ko */
-    merchant_allPlaces: 'All Places', /* TODO: ko */
-    merchant_selectPlace: 'Select Place', /* TODO: ko */
-    merchant_noDataYet: 'No data', /* TODO: ko */
-    merchant_times: 'times', /* TODO: ko */
-    merchant_people: 'people', /* TODO: ko */
-    merchant_issued: 'Issued', /* TODO: ko */
-    merchant_redeemed: 'Redeemed', /* TODO: ko */
-    merchant_collectionCount: 'Collections', /* TODO: ko */
-    merchant_7days: '7 Days', /* TODO: ko */
-    merchant_30days: '30 Days', /* TODO: ko */
-    merchant_90days: '90 Days', /* TODO: ko */
-    merchant_allPeriod: 'All', /* TODO: ko */
-    merchant_couponMgmt: 'Coupon Management', /* TODO: ko */
-    merchant_couponMgmtSubtitle: 'Create and manage your coupons', /* TODO: ko */
-    merchant_addCoupon: 'Add Coupon', /* TODO: ko */
-    merchant_noCoupons: 'No coupons yet', /* TODO: ko */
-    merchant_noCouponsHint: 'Start creating your first coupon', /* TODO: ko */
-    merchant_remaining: 'Remaining', /* TODO: ko */
-    merchant_couponActive: 'Active', /* TODO: ko */
-    merchant_couponInactive: 'Inactive', /* TODO: ko */
-    merchant_couponExpired: 'Expired', /* TODO: ko */
-    merchant_confirmDeleteCoupon: 'Delete this coupon?', /* TODO: ko */
-    merchant_deleteSuccess: 'Deleted successfully', /* TODO: ko */
-    merchant_drawRate: 'Draw rate', /* TODO: ko */
-    merchant_couponValidUntil: 'Valid until', /* TODO: ko */
-    merchant_couponLoadFailed: 'Failed to load coupons', /* TODO: ko */
-    merchant_couponLoadFailedDetail: 'Please check your connection and try again', /* TODO: ko */
-    merchant_verifyTitle: 'Verify Code', /* TODO: ko */
-    merchant_merchantIdLabel: 'Merchant ID', /* TODO: ko */
-    merchant_merchantIdPlaceholder: 'Enter Merchant ID', /* TODO: ko */
-    merchant_codeLabel: 'Verification Code', /* TODO: ko */
-    merchant_codePlaceholder: 'Enter code', /* TODO: ko */
-    merchant_verify: 'Verify', /* TODO: ko */
-    merchant_verifying: 'Verifying...', /* TODO: ko */
-    merchant_verifyValid: 'Valid', /* TODO: ko */
-    merchant_verifyInvalid: 'Invalid', /* TODO: ko */
-    merchant_errorEmpty: 'Please enter merchant ID and code', /* TODO: ko */
-    merchant_tryAgain: 'Try Again', /* TODO: ko */
-    merchant_merchantIdMustBeNumber: 'Merchant ID must be a number', /* TODO: ko */
-    merchant_codeValid: 'Code is valid', /* TODO: ko */
-    merchant_codeInvalid: 'Code is invalid', /* TODO: ko */
-    merchant_verifyFailed: 'Verification failed', /* TODO: ko */
-    merchant_claimTitle: 'Claim Place', /* TODO: ko */
-    merchant_claimSubtitle: 'Search and claim your place', /* TODO: ko */
-    merchant_searchPlaceholder: 'Enter place name...', /* TODO: ko */
-    merchant_claim: 'Claim', /* TODO: ko */
-    merchant_claimed: 'Claimed', /* TODO: ko */
-    merchant_noSearchResults: 'No matching places found', /* TODO: ko */
-    merchant_noResultsHint: 'Try other keywords, or add your own place', /* TODO: ko */
-    merchant_addNewPlace: 'Add New Place', /* TODO: ko */
-    merchant_claimSuccess: 'Claimed successfully!', /* TODO: ko */
-    merchant_claimFailed: 'Claim failed', /* TODO: ko */
-    merchant_searchHint: 'Enter place name to search', /* TODO: ko */
-    merchant_searchFailed: 'Search failed', /* TODO: ko */
-    merchant_myPlaces: 'My Places', /* TODO: ko */
-    merchant_myPlacesSubtitle: 'Manage your claimed places', /* TODO: ko */
-    merchant_noPlaces: 'No places claimed yet', /* TODO: ko */
-    merchant_noPlacesHint: 'Start claiming or adding your places', /* TODO: ko */
-    merchant_claimExisting: 'Claim Existing Place', /* TODO: ko */
-    merchant_placesCount: '{n} place(s)', /* TODO: ko */
-    merchant_transactionHistory: 'Transaction History', /* TODO: ko */
-    merchant_noTransactions: 'No transactions yet', /* TODO: ko */
-    merchant_purchase: 'Purchase', /* TODO: ko */
-    merchant_usage: 'Usage', /* TODO: ko */
-    merchant_refund: 'Refund', /* TODO: ko */
-    merchant_appFormTitle: 'Merchant Application', /* TODO: ko */
-    merchant_appFormSubtitle: 'Fill in the details below. Review takes 1-3 business days.', /* TODO: ko */
-    merchant_ownerName: 'Owner Name *', /* TODO: ko */
-    merchant_businessName: 'Business Name *', /* TODO: ko */
-    merchant_taxId: 'Tax ID', /* TODO: ko */
-    merchant_businessCategoryLabel: 'Business Category *', /* TODO: ko */
-    merchant_merchantPhone: 'Phone', /* TODO: ko */
-    merchant_merchantMobile: 'Mobile *', /* TODO: ko */
-    merchant_contactEmail: 'Contact Email *', /* TODO: ko */
-    merchant_submitAppForm: 'Submit Application', /* TODO: ko */
-    merchant_requiredFields: 'Please fill all required fields', /* TODO: ko */
-    merchant_submitSuccess: 'Application submitted. Awaiting review.', /* TODO: ko */
-    merchant_submitFailed: 'Submission failed. Please try again.', /* TODO: ko */
-    merchant_enterOwnerName: 'Enter owner name', /* TODO: ko */
-    merchant_enterBusinessName: 'Enter business name', /* TODO: ko */
-    merchant_enterAddress: 'Enter business address', /* TODO: ko */
-    merchant_optional: 'Optional', /* TODO: ko */
-    merchant_catRestaurant: 'Restaurant', /* TODO: ko */
-    merchant_catRetail: 'Retail', /* TODO: ko */
-    merchant_catHotel: 'Hotel', /* TODO: ko */
-    merchant_catService: 'Service', /* TODO: ko */
-    merchant_catOther: 'Other', /* TODO: ko */
-    merchant_catAttraction: 'Attraction/Entertainment', /* TODO: ko */
-    merchant_catTransportation: 'Transportation', /* TODO: ko */
-    merchant_catExperience: 'Experience/Activity', /* TODO: ko */
-    merchant_catCulture: 'Culture/Art', /* TODO: ko */
+    merchant_productMgmt: '상품 관리',
+    merchant_myProducts: '내 상품',
+    merchant_noProducts: '아직 상품이 없습니다',
+    merchant_addProduct: '상품 추가',
+    merchant_productName: '상품명',
+    merchant_productDesc: '설명',
+    merchant_price: '가격',
+    merchant_discountPrice: '할인 가격',
+    merchant_activeStatus: '활성',
+    merchant_inactiveStatus: '비활성',
+    merchant_deleteProductConfirm: '이 상품을 삭제하시겠습니까?',
+    merchant_deleted: '삭제됨',
+    merchant_saved: '저장됨',
+    merchant_couponAddTitle: '쿠폰 추가',
+    merchant_couponEditTitle: '쿠폰 편집',
+    merchant_couponName: '쿠폰 이름',
+    merchant_couponNamePlaceholder: '예: 10% 할인',
+    merchant_rarityTier: '희귀도 등급',
+    merchant_tierHint: '등급이 높을수록 뽑기 확률이 낮아집니다',
+    merchant_discountContent: '할인 내용',
+    merchant_discountContentPlaceholder: '할인 내용을 설명해 주세요...',
+    merchant_terms: '이용 약관',
+    merchant_termsPlaceholder: '사용 제한 사항 (선택)',
+    merchant_quantity: '수량',
+    merchant_quantityHint: '배포할 쿠폰 총 수량',
+    merchant_validUntil: '유효 기간',
+    merchant_validUntilHint: '미입력 시 무기한',
+    merchant_activateNow: '지금 활성화',
+    merchant_saveSuccess: '저장되었습니다',
+    merchant_notice: '알림',
+    merchant_addPlace: '새 장소 추가',
+    merchant_addPlaceSubtitle: '장소 정보를 입력해 주세요',
+    merchant_placeName: '장소 이름',
+    merchant_placeNamePlaceholder: '장소 이름 입력',
+    merchant_category: '카테고리',
+    merchant_selectCategory: '카테고리 선택',
+    merchant_district: '지역구',
+    merchant_districtPlaceholder: '예: 강남구',
+    merchant_city: '도시',
+    merchant_cityPlaceholder: '예: 서울',
+    merchant_placeAddress: '주소',
+    merchant_addressPlaceholder: '전체 주소',
+    merchant_placeDesc: '설명',
+    merchant_placeDescPlaceholder: '장소에 대한 간단한 소개...',
+    merchant_submitApplication: '제출',
+    merchant_applicationSubmitted: '신청이 제출되었습니다! 곧 검토하겠습니다.',
+    merchant_submitError: '제출 실패, 다시 시도해 주세요',
+    merchant_catFood: '맛집',
+    merchant_catStay: '숙박',
+    merchant_catScenery: '관광',
+    merchant_catShopping: '쇼핑',
+    merchant_catEntertainment: '엔터테인먼트',
+    merchant_catEducation: '교육',
+    merchant_analytics: '분석',
+    merchant_overview: '개요',
+    merchant_totalExposures: '총 노출 수',
+    merchant_totalCollectors: '총 수집자 수',
+    merchant_couponIssued: '발행된 쿠폰',
+    merchant_couponRedeemed: '사용된 쿠폰',
+    merchant_redemptionRate: '사용률',
+    merchant_topCoupons: '인기 쿠폰',
+    merchant_placeBreakdown: '장소별 분석',
+    merchant_allPlaces: '전체 장소',
+    merchant_selectPlace: '장소 선택',
+    merchant_noDataYet: '데이터 없음',
+    merchant_times: '회',
+    merchant_people: '명',
+    merchant_issued: '발행',
+    merchant_redeemed: '사용됨',
+    merchant_collectionCount: '수집 수',
+    merchant_7days: '7일',
+    merchant_30days: '30일',
+    merchant_90days: '90일',
+    merchant_allPeriod: '전체',
+    merchant_couponMgmt: '쿠폰 관리',
+    merchant_couponMgmtSubtitle: '쿠폰을 생성하고 관리하세요',
+    merchant_addCoupon: '쿠폰 추가',
+    merchant_noCoupons: '아직 쿠폰이 없습니다',
+    merchant_noCouponsHint: '첫 번째 쿠폰을 만들어 보세요',
+    merchant_remaining: '잔여',
+    merchant_couponActive: '활성',
+    merchant_couponInactive: '비활성',
+    merchant_couponExpired: '만료',
+    merchant_confirmDeleteCoupon: '이 쿠폰을 삭제하시겠습니까?',
+    merchant_deleteSuccess: '삭제되었습니다',
+    merchant_drawRate: '뽑기 확률',
+    merchant_couponValidUntil: '유효 기한',
+    merchant_couponLoadFailed: '쿠폰을 불러오지 못했습니다',
+    merchant_couponLoadFailedDetail: '연결 상태를 확인하고 다시 시도해 주세요',
+    merchant_verifyTitle: '코드 인증',
+    merchant_merchantIdLabel: '가맹점 ID',
+    merchant_merchantIdPlaceholder: '가맹점 ID 입력',
+    merchant_codeLabel: '인증 코드',
+    merchant_codePlaceholder: '코드 입력',
+    merchant_verify: '인증',
+    merchant_verifying: '인증 중...',
+    merchant_verifyValid: '유효',
+    merchant_verifyInvalid: '무효',
+    merchant_errorEmpty: '가맹점 ID와 코드를 입력해 주세요',
+    merchant_tryAgain: '다시 시도',
+    merchant_merchantIdMustBeNumber: '가맹점 ID는 숫자여야 합니다',
+    merchant_codeValid: '코드가 유효합니다',
+    merchant_codeInvalid: '코드가 유효하지 않습니다',
+    merchant_verifyFailed: '인증 실패',
+    merchant_claimTitle: '장소 등록',
+    merchant_claimSubtitle: '장소를 검색하고 등록하세요',
+    merchant_searchPlaceholder: '장소 이름 입력...',
+    merchant_claim: '등록',
+    merchant_claimed: '등록됨',
+    merchant_noSearchResults: '일치하는 장소가 없습니다',
+    merchant_noResultsHint: '다른 키워드를 사용하거나 직접 장소를 추가하세요',
+    merchant_addNewPlace: '새 장소 추가',
+    merchant_claimSuccess: '등록 완료!',
+    merchant_claimFailed: '등록 실패',
+    merchant_searchHint: '장소 이름을 입력하여 검색',
+    merchant_searchFailed: '검색 실패',
+    merchant_myPlaces: '내 장소',
+    merchant_myPlacesSubtitle: '등록한 장소를 관리하세요',
+    merchant_noPlaces: '아직 등록된 장소가 없습니다',
+    merchant_noPlacesHint: '장소를 등록하거나 추가해 보세요',
+    merchant_claimExisting: '기존 장소 등록',
+    merchant_placesCount: '{n}개 장소',
+    merchant_transactionHistory: '거래 내역',
+    merchant_noTransactions: '아직 거래가 없습니다',
+    merchant_purchase: '구매',
+    merchant_usage: '사용',
+    merchant_refund: '환불',
+    merchant_appFormTitle: '가맹점 신청',
+    merchant_appFormSubtitle: '아래 정보를 입력해 주세요. 심사에 1~3 영업일이 소요됩니다.',
+    merchant_ownerName: '대표자 이름 *',
+    merchant_businessName: '상호명 *',
+    merchant_taxId: '사업자등록번호',
+    merchant_businessCategoryLabel: '업종 *',
+    merchant_merchantPhone: '전화번호',
+    merchant_merchantMobile: '휴대폰 *',
+    merchant_contactEmail: '연락처 이메일 *',
+    merchant_submitAppForm: '신청서 제출',
+    merchant_requiredFields: '필수 항목을 모두 입력해 주세요',
+    merchant_submitSuccess: '신청이 제출되었습니다. 심사를 기다려 주세요.',
+    merchant_submitFailed: '제출 실패. 다시 시도해 주세요.',
+    merchant_enterOwnerName: '대표자 이름 입력',
+    merchant_enterBusinessName: '상호명 입력',
+    merchant_enterAddress: '사업장 주소 입력',
+    merchant_optional: '선택',
+    merchant_catRestaurant: '음식점',
+    merchant_catRetail: '소매',
+    merchant_catHotel: '숙박',
+    merchant_catService: '서비스',
+    merchant_catOther: '기타',
+    merchant_catAttraction: '관광/엔터테인먼트',
+    merchant_catTransportation: '교통',
+    merchant_catExperience: '체험/액티비티',
+    merchant_catCulture: '문화/예술',
 
     // ========== Crowdfunding ==========
-    crowdfunding_title: '세계 지도 잠금 해제', /* TODO: ko */
-    crowdfunding_loadFailed: '로드 실패', /* TODO: ko */
-    crowdfunding_loadFailedDesc: '크라우드펀딩을 불러오지 못했습니다', /* TODO: ko */
-    crowdfunding_statUnlocked: '잠금 해제', /* TODO: ko */
-    crowdfunding_statFundraising: '모금 중', /* TODO: ko */
-    crowdfunding_statComing: '곧 오픈', /* TODO: ko */
-    crowdfunding_availableRegions: '이용 가능 지역', /* TODO: ko */
-    crowdfunding_fundraising: '모금 중', /* TODO: ko */
-    crowdfunding_comingSoon: '곧 오픈', /* TODO: ko */
-    crowdfunding_stayTuned: '기대해 주세요', /* TODO: ko */
-    crowdfunding_noProjects: '진행 중인 프로젝트가 없습니다', /* TODO: ko */
-    crowdfunding_stayTunedDesc: '새로운 지역 오픈을 기대해 주세요', /* TODO: ko */
-    crowdfunding_myContributions: '후원 내역', /* TODO: ko */
-    crowdfunding_totalContributions: '총 후원액', /* TODO: ko */
-    crowdfunding_supportVision: '우리의 비전을 응원해주세요', /* TODO: ko */
-    crowdfunding_statusUnlocked: 'Unlocked', /* TODO: ko */
-    crowdfunding_statusFundraising: 'Fundraising', /* TODO: ko */
-    crowdfunding_statusComingSoon: 'Coming Soon', /* TODO: ko */
-    crowdfunding_statusStayTuned: 'Stay Tuned', /* TODO: ko */
-    crowdfunding_loadFailedDetail: 'Failed to load campaign details', /* TODO: ko */
-    crowdfunding_notFound: 'Campaign not found', /* TODO: ko */
-    crowdfunding_goBack: 'Go Back', /* TODO: ko */
-    crowdfunding_raised: 'Raised', /* TODO: ko */
-    crowdfunding_backers: 'Backers', /* TODO: ko */
-    crowdfunding_daysLeft: 'Days Left', /* TODO: ko */
-    crowdfunding_goal: 'Goal: ', /* TODO: ko */
-    crowdfunding_youBacked: 'You backed ', /* TODO: ko */
-    crowdfunding_about: 'About', /* TODO: ko */
-    crowdfunding_rewardTiers: 'Reward Tiers', /* TODO: ko */
-    crowdfunding_updates: 'Updates', /* TODO: ko */
-    crowdfunding_soldOut: 'Sold Out', /* TODO: ko */
-    crowdfunding_remaining: '{count} left', /* TODO: ko */
-    crowdfunding_selectTier: 'Select a Tier', /* TODO: ko */
-    crowdfunding_selectTierDesc: 'Please select a reward tier first', /* TODO: ko */
-    crowdfunding_testMode: 'Test Mode', /* TODO: ko */
-    crowdfunding_testModeDesc: 'You selected "{tier}" tier ({amount})\n\nReal purchase will be enabled after launch.', /* TODO: ko */
-    crowdfunding_simulateSuccess: 'Simulate Success', /* TODO: ko */
-    crowdfunding_thankYou: 'Thank you!', /* TODO: ko */
-    crowdfunding_thankYouDesc: 'Thank you for your support!', /* TODO: ko */
-    crowdfunding_thankYouDescFull: 'Thank you for your support! Your contribution has been processed.', /* TODO: ko */
-    crowdfunding_purchaseFailed: 'Purchase Failed', /* TODO: ko */
-    crowdfunding_purchaseFailedDesc: 'Could not complete purchase. Please try again.', /* TODO: ko */
-    crowdfunding_purchaseError: 'An error occurred during purchase. Please try again.', /* TODO: ko */
-    crowdfunding_processing: 'Processing...', /* TODO: ko */
-    crowdfunding_backAmount: 'Back {amount}', /* TODO: ko */
-    crowdfunding_selectATier: 'Select a Tier', /* TODO: ko */
+    crowdfunding_title: '세계 지도 잠금 해제',
+    crowdfunding_loadFailed: '로드 실패',
+    crowdfunding_loadFailedDesc: '크라우드펀딩을 불러오지 못했습니다',
+    crowdfunding_statUnlocked: '잠금 해제',
+    crowdfunding_statFundraising: '모금 중',
+    crowdfunding_statComing: '곧 오픈',
+    crowdfunding_availableRegions: '이용 가능 지역',
+    crowdfunding_fundraising: '모금 중',
+    crowdfunding_comingSoon: '곧 오픈',
+    crowdfunding_stayTuned: '기대해 주세요',
+    crowdfunding_noProjects: '진행 중인 프로젝트가 없습니다',
+    crowdfunding_stayTunedDesc: '새로운 지역 오픈을 기대해 주세요',
+    crowdfunding_myContributions: '후원 내역',
+    crowdfunding_totalContributions: '총 후원액',
+    crowdfunding_supportVision: '우리의 비전을 응원해주세요',
+    crowdfunding_statusUnlocked: '잠금 해제됨',
+    crowdfunding_statusFundraising: '모금 중',
+    crowdfunding_statusComingSoon: '곧 오픈',
+    crowdfunding_statusStayTuned: '기대해 주세요',
+    crowdfunding_loadFailedDetail: '캠페인 상세 정보를 불러오지 못했습니다',
+    crowdfunding_notFound: '캠페인을 찾을 수 없습니다',
+    crowdfunding_goBack: '돌아가기',
+    crowdfunding_raised: '모금액',
+    crowdfunding_backers: '후원자',
+    crowdfunding_daysLeft: '남은 일수',
+    crowdfunding_goal: '목표: ',
+    crowdfunding_youBacked: '후원 금액: ',
+    crowdfunding_about: '소개',
+    crowdfunding_rewardTiers: '리워드 등급',
+    crowdfunding_updates: '업데이트',
+    crowdfunding_soldOut: '매진',
+    crowdfunding_remaining: '{count}개 남음',
+    crowdfunding_selectTier: '등급 선택',
+    crowdfunding_selectTierDesc: '먼저 리워드 등급을 선택해 주세요',
+    crowdfunding_testMode: '테스트 모드',
+    crowdfunding_testModeDesc: '"{tier}" 등급 ({amount})을 선택하셨습니다\n\n정식 출시 후 실제 결제가 활성화됩니다.',
+    crowdfunding_simulateSuccess: '성공 시뮬레이션',
+    crowdfunding_thankYou: '감사합니다!',
+    crowdfunding_thankYouDesc: '후원해 주셔서 감사합니다!',
+    crowdfunding_thankYouDescFull: '후원해 주셔서 감사합니다! 후원 처리가 완료되었습니다.',
+    crowdfunding_purchaseFailed: '결제 실패',
+    crowdfunding_purchaseFailedDesc: '결제를 완료할 수 없습니다. 다시 시도해 주세요.',
+    crowdfunding_purchaseError: '결제 중 오류가 발생했습니다. 다시 시도해 주세요.',
+    crowdfunding_processing: '처리 중...',
+    crowdfunding_backAmount: '{amount} 후원하기',
+    crowdfunding_selectATier: '등급 선택',
 
     // ========== Referral ==========
-    referral_inviteFriends: 'Invite Friends', /* TODO: ko */
-    referral_myCode: 'My Referral Code', /* TODO: ko */
-    referral_copy: 'Copy', /* TODO: ko */
-    referral_share: 'Share', /* TODO: ko */
-    referral_generateTitle: 'Generate Your Code', /* TODO: ko */
-    referral_generateSubtitle: 'Share with friends and earn rewards together', /* TODO: ko */
-    referral_generateNow: 'Generate Now', /* TODO: ko */
-    referral_generateError: 'Failed to generate code', /* TODO: ko */
-    referral_copied: 'Copied!', /* TODO: ko */
-    referral_copiedDesc: 'Code copied to clipboard', /* TODO: ko */
-    referral_shareMessage: 'Use my code {code} to join Mibu and discover new travel experiences! Download: https://mibu.app', /* TODO: ko */
-    referral_invited: 'Invited', /* TODO: ko */
-    referral_successful: 'Successful', /* TODO: ko */
-    referral_xpEarned: 'XP Earned', /* TODO: ko */
-    referral_howItWorks: 'How It Works', /* TODO: ko */
-    referral_step1Title: 'Share Your Code', /* TODO: ko */
-    referral_step1Desc: 'Copy and share your unique referral code', /* TODO: ko */
-    referral_step2Title: 'Friend Signs Up', /* TODO: ko */
-    referral_step2Desc: 'Your friend registers using your code', /* TODO: ko */
-    referral_step3Title: 'Both Earn Rewards', /* TODO: ko */
-    referral_step3Desc: 'You and your friend each earn 50 XP', /* TODO: ko */
-    referral_weeklyLeaderboard: 'Weekly Leaderboard', /* TODO: ko */
-    referral_you: 'You', /* TODO: ko */
-    referral_noRanking: 'No ranking data yet', /* TODO: ko */
-    referral_beFirst: 'Be the first to invite friends!', /* TODO: ko */
-    referral_yourRank: 'Your current rank: #{rank}', /* TODO: ko */
-    referral_inviteRewards: 'Invite Rewards', /* TODO: ko */
-    referral_inviteCount: 'Invite {count} friends', /* TODO: ko */
-    referral_achieved: 'Done', /* TODO: ko */
-    referral_remaining: '{count} more', /* TODO: ko */
-    referral_enterCode: "Enter Friend's Code", /* TODO: ko */
-    referral_enterCodeHint: 'Have a referral code? Enter to earn rewards', /* TODO: ko */
-    referral_enterCodePlaceholder: 'Enter code', /* TODO: ko */
-    referral_invalidCode: 'Invalid Code', /* TODO: ko */
-    referral_invalidCodeDesc: 'This code is not valid', /* TODO: ko */
-    referral_applySuccess: 'Success!', /* TODO: ko */
-    referral_applySuccessDesc: 'Referral code applied! You earned {amount} coins', /* TODO: ko */
-    referral_applyError: 'Failed to apply code', /* TODO: ko */
-    referral_inviteHistory: 'Invite History', /* TODO: ko */
+    referral_inviteFriends: '친구 초대',
+    referral_myCode: '내 추천 코드',
+    referral_copy: '복사',
+    referral_share: '공유',
+    referral_generateTitle: '코드 생성하기',
+    referral_generateSubtitle: '친구와 공유하고 함께 보상을 받으세요',
+    referral_generateNow: '지금 생성',
+    referral_generateError: '코드 생성 실패',
+    referral_copied: '복사됨!',
+    referral_copiedDesc: '코드가 클립보드에 복사되었습니다',
+    referral_shareMessage: '내 코드 {code}를 사용해서 Mibu에 가입하고 새로운 여행을 경험하세요! 다운로드: https://mibu.app',
+    referral_invited: '초대',
+    referral_successful: '성공',
+    referral_xpEarned: '획득 XP',
+    referral_howItWorks: '이용 방법',
+    referral_step1Title: '코드 공유하기',
+    referral_step1Desc: '나만의 추천 코드를 복사해서 공유하세요',
+    referral_step2Title: '친구가 가입',
+    referral_step2Desc: '친구가 내 코드로 회원가입합니다',
+    referral_step3Title: '함께 보상 받기',
+    referral_step3Desc: '나와 친구 모두 50 XP를 받습니다',
+    referral_weeklyLeaderboard: '주간 리더보드',
+    referral_you: '나',
+    referral_noRanking: '아직 랭킹 데이터가 없습니다',
+    referral_beFirst: '먼저 친구를 초대해 보세요!',
+    referral_yourRank: '현재 순위: #{rank}',
+    referral_inviteRewards: '초대 보상',
+    referral_inviteCount: '친구 {count}명 초대',
+    referral_achieved: '완료',
+    referral_remaining: '{count}명 더',
+    referral_enterCode: '친구 코드 입력',
+    referral_enterCodeHint: '추천 코드가 있나요? 입력하면 보상을 받을 수 있어요',
+    referral_enterCodePlaceholder: '코드 입력',
+    referral_invalidCode: '유효하지 않은 코드',
+    referral_invalidCodeDesc: '이 코드는 유효하지 않습니다',
+    referral_applySuccess: '성공!',
+    referral_applySuccessDesc: '추천 코드가 적용되었습니다! {amount} 코인을 받았습니다',
+    referral_applyError: '코드 적용 실패',
+    referral_inviteHistory: '초대 내역',
 
     // ========== Contribution ==========
-    contribution_title: 'Contributions', /* TODO: ko */
-    contribution_tabReport: 'Report', /* TODO: ko */
-    contribution_tabSuggest: 'Suggest', /* TODO: ko */
-    contribution_tabVote: 'Vote', /* TODO: ko */
-    contribution_loadFailed: 'Load Failed', /* TODO: ko */
-    contribution_loadFailedDesc: 'Failed to load contribution data. Please try again later.', /* TODO: ko */
-    contribution_reportFeature: 'Report Feature', /* TODO: ko */
-    contribution_reportFeatureDesc: 'Please use the "Report" button on place cards in your collection', /* TODO: ko */
-    contribution_reportClosure: 'Report Closure', /* TODO: ko */
-    contribution_reportClosureDesc: 'Earn coins by helping update place info', /* TODO: ko */
-    contribution_myReports: 'My Reports', /* TODO: ko */
-    contribution_noReports: 'No reports yet', /* TODO: ko */
-    contribution_statusPending: 'Pending', /* TODO: ko */
-    contribution_statusVerified: 'Verified', /* TODO: ko */
-    contribution_statusRejected: 'Rejected', /* TODO: ko */
-    contribution_suggestFeature: 'Suggest Feature', /* TODO: ko */
-    contribution_suggestFeatureDesc: 'Place suggestion feature coming soon', /* TODO: ko */
-    contribution_suggestPlace: 'Suggest a Place', /* TODO: ko */
-    contribution_suggestPlaceDesc: 'Earn coins by recommending great places', /* TODO: ko */
-    contribution_mySuggestions: 'My Suggestions', /* TODO: ko */
-    contribution_noSuggestions: 'No suggestions yet', /* TODO: ko */
-    contribution_statusVoting: 'Voting', /* TODO: ko */
-    contribution_statusApproved: 'Approved', /* TODO: ko */
-    contribution_voteInfo: 'Reach Lv.7 to participate in community voting', /* TODO: ko */
-    contribution_exclusionVotes: 'Exclusion Votes', /* TODO: ko */
-    contribution_newPlaceReviews: 'New Place Reviews', /* TODO: ko */
-    contribution_exclude: 'Exclude', /* TODO: ko */
-    contribution_keep: 'Keep', /* TODO: ko */
-    contribution_approve: 'Approve', /* TODO: ko */
-    contribution_reject: 'Reject', /* TODO: ko */
-    contribution_voteSuccess: 'Vote Submitted', /* TODO: ko */
-    contribution_voteEarned: 'You earned {amount} coins', /* TODO: ko */
-    contribution_voteFailed: 'Vote Failed', /* TODO: ko */
-    contribution_voteTryAgain: 'Please try again', /* TODO: ko */
-    contribution_noPendingVotes: 'No pending votes', /* TODO: ko */
-    contribution_reasonClosed: 'Closed', /* TODO: ko */
-    contribution_reasonRelocated: 'Relocated', /* TODO: ko */
-    contribution_reasonWrongInfo: 'Wrong Info', /* TODO: ko */
-    contribution_reasonOther: 'Other', /* TODO: ko */
+    contribution_title: '커뮤니티 기여',
+    contribution_tabReport: '제보',
+    contribution_tabSuggest: '추천',
+    contribution_tabVote: '투표',
+    contribution_loadFailed: '로드 실패',
+    contribution_loadFailedDesc: '기여 데이터를 불러오지 못했습니다. 나중에 다시 시도해 주세요.',
+    contribution_reportFeature: '제보 기능',
+    contribution_reportFeatureDesc: '도감의 장소 카드에서 "제보" 버튼을 사용해 주세요',
+    contribution_reportClosure: '폐업 제보',
+    contribution_reportClosureDesc: '장소 정보 업데이트를 도와주고 코인을 받으세요',
+    contribution_myReports: '내 제보',
+    contribution_noReports: '아직 제보가 없습니다',
+    contribution_statusPending: '대기 중',
+    contribution_statusVerified: '확인됨',
+    contribution_statusRejected: '거부됨',
+    contribution_suggestFeature: '추천 기능',
+    contribution_suggestFeatureDesc: '장소 추천 기능이 곧 출시됩니다',
+    contribution_suggestPlace: '장소 추천',
+    contribution_suggestPlaceDesc: '좋은 장소를 추천하고 코인을 받으세요',
+    contribution_mySuggestions: '내 추천',
+    contribution_noSuggestions: '아직 추천이 없습니다',
+    contribution_statusVoting: '투표 중',
+    contribution_statusApproved: '승인됨',
+    contribution_voteInfo: 'Lv.7 이상이면 커뮤니티 투표에 참여할 수 있습니다',
+    contribution_exclusionVotes: '제외 투표',
+    contribution_newPlaceReviews: '신규 장소 검토',
+    contribution_exclude: '제외',
+    contribution_keep: '유지',
+    contribution_approve: '승인',
+    contribution_reject: '거부',
+    contribution_voteSuccess: '투표 완료',
+    contribution_voteEarned: '{amount} 코인을 받았습니다',
+    contribution_voteFailed: '투표 실패',
+    contribution_voteTryAgain: '다시 시도해 주세요',
+    contribution_noPendingVotes: '대기 중인 투표가 없습니다',
+    contribution_reasonClosed: '폐업',
+    contribution_reasonRelocated: '이전',
+    contribution_reasonWrongInfo: '정보 오류',
+    contribution_reasonOther: '기타',
 
     // ========== Itinerary ==========
-    itinerary_addedToItinerary: 'Added to itinerary', /* TODO: ko */
-    itinerary_removedFromItinerary: 'Removed from itinerary', /* TODO: ko */
-    itinerary_aiUnavailable: 'Sorry, I cannot respond right now. Please try again later.', /* TODO: ko */
-    itinerary_removed: 'Removed "{name}"', /* TODO: ko */
-    itinerary_removeFailed: 'Failed to remove, please try again', /* TODO: ko */
-    itinerary_addPlacesFailed: 'Failed to add places, please try again', /* TODO: ko */
-    itinerary_reorderFailed: 'Reorder failed, please try again', /* TODO: ko */
-    itinerary_incomplete: 'Incomplete', /* TODO: ko */
-    itinerary_selectCountryCity: 'Please select country and city', /* TODO: ko */
-    itinerary_createFailed: 'Create Failed', /* TODO: ko */
-    itinerary_tryAgainLater: 'Please try again later', /* TODO: ko */
-    itinerary_networkError: 'Network error, please try again later', /* TODO: ko */
-    itinerary_updateFailed: 'Update failed', /* TODO: ko */
-    itinerary_deleteItineraries: 'Delete Itineraries', /* TODO: ko */
-    itinerary_deleteItinerariesConfirm: 'Are you sure you want to delete {count} itineraries? This cannot be undone.', /* TODO: ko */
-    itinerary_deleteItinerary: 'Delete Itinerary', /* TODO: ko */
-    itinerary_deleteItineraryConfirm: 'Are you sure you want to delete this itinerary? This cannot be undone.', /* TODO: ko */
-    itinerary_deleted: 'Deleted {count} itineraries', /* TODO: ko */
-    itinerary_deletedSingle: 'Itinerary deleted', /* TODO: ko */
-    itinerary_deleteFailed: 'Delete failed', /* TODO: ko */
-    itinerary_loginRequired: 'Login to use Trip Assistant', /* TODO: ko */
-    itinerary_noItineraries: 'No itineraries yet', /* TODO: ko */
-    itinerary_noItinerariesDesc: 'Your next adventure starts here', /* TODO: ko */
-    itinerary_tipAi: 'AI recommends spots', /* TODO: ko */
-    itinerary_tipPlanning: 'Auto daily planning', /* TODO: ko */
-    itinerary_tipNav: 'Real-time navigation', /* TODO: ko */
-    itinerary_createFirst: 'Create First Itinerary', /* TODO: ko */
-    itinerary_openList: 'Open itinerary list', /* TODO: ko */
-    itinerary_tripAssistant: 'Trip Assistant', /* TODO: ko */
-    itinerary_viewDetails: 'View itinerary details', /* TODO: ko */
-    itinerary_welcomeSubtitle: 'Tell me where you want to go', /* TODO: ko */
-    itinerary_helpText: "Tell me your preferences, I'll recommend places\nTap top-left for trip list, top-right for itinerary", /* TODO: ko */
-    itinerary_inputPlaceholder: 'Where do you want to go?', /* TODO: ko */
-    itinerary_sendMessage: 'Send message', /* TODO: ko */
-    itinerary_unknownPlace: '알 수 없는 장소', /* TODO: ko */
-    itinerary_hereLocation: '여기', /* TODO: ko */
-    itinerary_aiWelcome: '안녕! {city} 여행 어떻게 즐기고 싶어? 취향을 알려주면 일정을 짜줄게 ✨', /* TODO: ko */
-    itinerary_myTrips: 'My Trips', /* TODO: ko */
-    itinerary_tripsCount: 'trips', /* TODO: ko */
-    itinerary_selectMode: 'Select', /* TODO: ko */
-    itinerary_cancelSelect: 'Cancel selection', /* TODO: ko */
-    itinerary_selectItineraries: 'Select itineraries', /* TODO: ko */
-    itinerary_deleteSelected: 'Delete selected itineraries', /* TODO: ko */
-    itinerary_deleteCount: 'Delete {count}', /* TODO: ko */
-    itinerary_places: 'places', /* TODO: ko */
-    itinerary_newTrip: 'New Trip', /* TODO: ko */
-    itinerary_itinerary: 'Itinerary', /* TODO: ko */
-    itinerary_viewOnGoogleMaps: 'View on Google Maps', /* TODO: ko */
-    itinerary_addFromCollection: 'Add from Collection', /* TODO: ko */
-    itinerary_noPlaces: 'No places yet\nChat with AI to add some!', /* TODO: ko */
-    itinerary_addCount: 'Add ({count})', /* TODO: ko */
-    itinerary_searchPlaces: 'Search places...', /* TODO: ko */
-    itinerary_noMatchingPlaces: 'No matching places found', /* TODO: ko */
-    itinerary_noCollectionPlaces: 'No places in collection\nGo gacha to collect some!', /* TODO: ko */
-    itinerary_morePlaces: '{count} more places...', /* TODO: ko */
-    itinerary_newItinerary: 'New Itinerary', /* TODO: ko */
-    itinerary_tripTitle: 'Trip Title', /* TODO: ko */
-    itinerary_tripTitlePlaceholder: 'Name your trip (optional)', /* TODO: ko */
-    itinerary_date: 'Date', /* TODO: ko */
-    itinerary_country: 'Country', /* TODO: ko */
-    itinerary_countryPlaceholder: 'Country', /* TODO: ko */
-    itinerary_city: 'City', /* TODO: ko */
-    itinerary_cityPlaceholder: 'City', /* TODO: ko */
-    itinerary_createItinerary: 'Create Itinerary', /* TODO: ko */
+    itinerary_addedToItinerary: '일정에 추가되었습니다',
+    itinerary_removedFromItinerary: '일정에서 삭제되었습니다',
+    itinerary_aiUnavailable: '죄송합니다, 지금은 응답할 수 없습니다. 나중에 다시 시도해 주세요.',
+    itinerary_removed: '"{name}" 삭제됨',
+    itinerary_removeFailed: '삭제 실패, 다시 시도해 주세요',
+    itinerary_addPlacesFailed: '장소 추가 실패, 다시 시도해 주세요',
+    itinerary_reorderFailed: '순서 변경 실패, 다시 시도해 주세요',
+    itinerary_incomplete: '미완성',
+    itinerary_selectCountryCity: '국가와 도시를 선택해 주세요',
+    itinerary_createFailed: '생성 실패',
+    itinerary_tryAgainLater: '나중에 다시 시도해 주세요',
+    itinerary_networkError: '네트워크 오류, 나중에 다시 시도해 주세요',
+    itinerary_updateFailed: '업데이트 실패',
+    itinerary_deleteItineraries: '일정 삭제',
+    itinerary_deleteItinerariesConfirm: '{count}개 일정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+    itinerary_deleteItinerary: '일정 삭제',
+    itinerary_deleteItineraryConfirm: '이 일정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+    itinerary_deleted: '{count}개 일정 삭제됨',
+    itinerary_deletedSingle: '일정이 삭제되었습니다',
+    itinerary_deleteFailed: '삭제 실패',
+    itinerary_loginRequired: '여행 어시스턴트를 이용하려면 로그인하세요',
+    itinerary_noItineraries: '아직 일정이 없습니다',
+    itinerary_noItinerariesDesc: '다음 모험이 여기서 시작됩니다',
+    itinerary_tipAi: 'AI가 장소를 추천해요',
+    itinerary_tipPlanning: '자동 일별 계획',
+    itinerary_tipNav: '실시간 내비게이션',
+    itinerary_createFirst: '첫 번째 일정 만들기',
+    itinerary_openList: '일정 목록 열기',
+    itinerary_tripAssistant: '여행 어시스턴트',
+    itinerary_viewDetails: '일정 상세 보기',
+    itinerary_welcomeSubtitle: '어디로 가고 싶은지 알려주세요',
+    itinerary_helpText: '취향을 알려주면 장소를 추천해 드릴게요\n왼쪽 상단은 여행 목록, 오른쪽 상단은 일정입니다',
+    itinerary_inputPlaceholder: '어디로 가고 싶으세요?',
+    itinerary_sendMessage: '메시지 보내기',
+    itinerary_unknownPlace: '알 수 없는 장소',
+    itinerary_hereLocation: '여기',
+    itinerary_aiWelcome: '안녕! {city} 여행 어떻게 즐기고 싶어? 취향을 알려주면 일정을 짜줄게 ✨',
+    itinerary_myTrips: '내 여행',
+    itinerary_tripsCount: '개',
+    itinerary_selectMode: '선택',
+    itinerary_cancelSelect: '선택 취소',
+    itinerary_selectItineraries: '일정 선택',
+    itinerary_deleteSelected: '선택한 일정 삭제',
+    itinerary_deleteCount: '{count}개 삭제',
+    itinerary_places: '장소',
+    itinerary_newTrip: '새 여행',
+    itinerary_itinerary: '일정',
+    itinerary_viewOnGoogleMaps: 'Google 지도에서 보기',
+    itinerary_addFromCollection: '도감에서 추가',
+    itinerary_noPlaces: '아직 장소가 없습니다\nAI와 대화해서 추가해 보세요!',
+    itinerary_addCount: '추가 ({count})',
+    itinerary_searchPlaces: '장소 검색...',
+    itinerary_noMatchingPlaces: '일치하는 장소가 없습니다',
+    itinerary_noCollectionPlaces: '도감에 장소가 없습니다\n가챠를 돌려서 수집해 보세요!',
+    itinerary_morePlaces: '{count}개 더 보기...',
+    itinerary_newItinerary: '새 일정',
+    itinerary_tripTitle: '여행 제목',
+    itinerary_tripTitlePlaceholder: '여행 이름 (선택)',
+    itinerary_date: '날짜',
+    itinerary_country: '국가',
+    itinerary_countryPlaceholder: '국가',
+    itinerary_city: '도시',
+    itinerary_cityPlaceholder: '도시',
+    itinerary_createItinerary: '일정 만들기',
     // ========== Economy ==========
-    economy_achievementsTitle: 'Achievements', /* TODO: ko */
-    economy_loadFailed: 'Load Failed', /* TODO: ko */
-    economy_loadFailedDesc: 'Unable to load economy data. Please try again later.', /* TODO: ko */
-    economy_beginnerTasks: 'Beginner Tasks', /* TODO: ko */
-    economy_done: 'done', /* TODO: ko */
-    economy_achievementProgress: 'Achievement Progress', /* TODO: ko */
-    economy_unlocked: 'unlocked', /* TODO: ko */
-    economy_noAchievements: 'No achievements yet', /* TODO: ko */
-    economy_myPerks: 'My Perks', /* TODO: ko */
-    economy_dailyPullLimit: 'Daily Pull Limit', /* TODO: ko */
-    economy_pullsPerDay: 'Number of pulls per day', /* TODO: ko */
-    economy_inventorySlots: 'Inventory Slots', /* TODO: ko */
-    economy_itemsCanHold: 'Number of items you can hold', /* TODO: ko */
-    economy_partnerEligibility: 'Partner Eligibility', /* TODO: ko */
-    economy_canApplyNow: 'You can apply now!', /* TODO: ko */
-    economy_unlockRequirement: 'All logged-in users can apply', /* TODO: ko */
-    economy_aboutCoins: 'About Coins', /* TODO: ko */
-    economy_coinsInfo: 'Earn coins by completing tasks and unlocking achievements. Accumulate coins to unlock more perks!', /* TODO: ko */
-    economy_statAchievements: 'Achievements', /* TODO: ko */
-    economy_tabDaily: 'Daily', /* TODO: ko */
-    economy_tabOnce: 'Once', /* TODO: ko */
-    economy_tabTotal: 'Total', /* TODO: ko */
-    economy_tabPerks: 'Perks', /* TODO: ko */
-    economy_congratsCoupon: 'Congratulations!', /* TODO: ko */
-    economy_shareTitle: 'Mibu Gacha Win!', /* TODO: ko */
-    economy_shareCopied: 'Copied', /* TODO: ko */
-    economy_share: 'Share', /* TODO: ko */
-    economy_collect: 'Collect', /* TODO: ko */
-    economy_claimed: 'Claimed', /* TODO: ko */
-    economy_goDoIt: 'Go', /* TODO: ko */
-    economy_locked: 'Locked', /* TODO: ko */
-    economy_pendingClaims: 'Pending', /* TODO: ko */
-    economy_claimSuccess: 'Reward claimed!', /* TODO: ko */
-    economy_claimFailed: 'Claim failed', /* TODO: ko */
-    economy_noQuests: 'No quests', /* TODO: ko */
-    economy_questProgress: 'Quest Progress', /* TODO: ko */
-    economy_couponExpiry: 'Exp: {month}/{day}', /* TODO: ko */
-    economy_shareTextTemplate: '🎰 I got a【{tier}】coupon from Mibu Gacha!\n🎁 {couponName}\n📍 {placeName}\n\nCome play ➜ https://mibu.app', /* TODO: ko */
-    favorites_title: 'My Favorites', /* TODO: ko */
-    favorites_removeFavorite: 'Remove Favorite', /* TODO: ko */
-    favorites_confirmRemove: 'Remove "{name}" from favorites?', /* TODO: ko */
-    favorites_remove: 'Remove', /* TODO: ko */
-    favorites_error: 'Error', /* TODO: ko */
-    favorites_removeFailed: 'Failed to remove favorite', /* TODO: ko */
-    favorites_addedAt: 'Added ', /* TODO: ko */
-    favorites_totalCount: '{count} favorites', /* TODO: ko */
-    favorites_noFavorites: 'No favorites yet', /* TODO: ko */
-    favorites_tapToAdd: 'Tap the heart icon in your collection to add favorites', /* TODO: ko */
-    collection_myCollection: 'My Collection', /* TODO: ko */
-    collection_newPlaces: '{count} new places', /* TODO: ko */
-    collection_collected: 'Collected', /* TODO: ko */
-    collection_cities: 'Cities', /* TODO: ko */
-    collection_categories: 'Categories', /* TODO: ko */
-    collection_searchPlaceholder: 'Search places...', /* TODO: ko */
-    collection_clearSearch: 'Clear search', /* TODO: ko */
-    collection_resultsFound: '{count} results found', /* TODO: ko */
-    collection_noMatching: 'No matching places', /* TODO: ko */
-    collection_all: 'All', /* TODO: ko */
-    collection_loadFailed: 'Failed to load collection', /* TODO: ko */
-    collection_loadFailedDetail: 'Please check your connection and try again', /* TODO: ko */
-    collection_pleaseLogin: 'Please Login', /* TODO: ko */
-    collection_loginForFavorite: 'Login to use favorites', /* TODO: ko */
-    collection_addedToFavorites: 'Added to Favorites', /* TODO: ko */
-    collection_addedToFavoritesDesc: '{name} has been added to favorites', /* TODO: ko */
-    collection_operationFailed: 'Failed', /* TODO: ko */
-    collection_tryAgainLater: 'Please try again later', /* TODO: ko */
-    collection_loginForBlacklist: 'Login to use blacklist', /* TODO: ko */
-    collection_addToBlacklist: 'Add to Blacklist', /* TODO: ko */
-    collection_confirmBlacklist: 'Are you sure you want to blacklist "{name}"?\nThis place will not appear in future gacha pulls.', /* TODO: ko */
-    collection_addedToBlacklist: 'Added to Blacklist', /* TODO: ko */
-    collection_addedToBlacklistDesc: '{name} has been blacklisted', /* TODO: ko */
-    collection_addToFavorites: 'Add to favorites', /* TODO: ko */
-    collection_closeDetails: 'Close details', /* TODO: ko */
-    collection_viewOnMap: 'View on map', /* TODO: ko */
-    gacha_startGachaExcl: 'Start Gacha!', /* TODO: ko */
-    gacha_tierSP: 'SUPER RARE', /* TODO: ko */
-    gacha_tierSSR: 'ULTRA RARE', /* TODO: ko */
-    gacha_tierSR: 'RARE', /* TODO: ko */
-    gacha_tierS: 'SPECIAL', /* TODO: ko */
-    gacha_tierR: 'REGULAR', /* TODO: ko */
+    economy_achievementsTitle: '업적',
+    economy_loadFailed: '로드 실패',
+    economy_loadFailedDesc: '경제 데이터를 불러올 수 없습니다. 나중에 다시 시도해 주세요.',
+    economy_beginnerTasks: '초보자 과제',
+    economy_done: '완료',
+    economy_achievementProgress: '업적 진행도',
+    economy_unlocked: '해제됨',
+    economy_noAchievements: '아직 업적이 없습니다',
+    economy_myPerks: '내 특전',
+    economy_dailyPullLimit: '일일 뽑기 한도',
+    economy_pullsPerDay: '하루 뽑기 횟수',
+    economy_inventorySlots: '인벤토리 슬롯',
+    economy_itemsCanHold: '보관 가능한 아이템 수',
+    economy_partnerEligibility: '파트너 자격',
+    economy_canApplyNow: '지금 신청 가능합니다!',
+    economy_unlockRequirement: '로그인한 모든 사용자가 신청할 수 있습니다',
+    economy_aboutCoins: '코인 안내',
+    economy_coinsInfo: '과제를 완료하고 업적을 달성하면 코인을 받을 수 있습니다. 코인을 모아 더 많은 특전을 해제하세요!',
+    economy_statAchievements: '업적',
+    economy_tabDaily: '일일',
+    economy_tabOnce: '일회성',
+    economy_tabTotal: '누적',
+    economy_tabPerks: '특전',
+    economy_congratsCoupon: '축하합니다!',
+    economy_shareTitle: 'Mibu 가챠 당첨!',
+    economy_shareCopied: '복사됨',
+    economy_share: '공유',
+    economy_collect: '수령',
+    economy_claimed: '수령됨',
+    economy_goDoIt: '이동',
+    economy_locked: '잠김',
+    economy_pendingClaims: '미수령',
+    economy_claimSuccess: '보상을 수령했습니다!',
+    economy_claimFailed: '수령 실패',
+    economy_noQuests: '퀘스트 없음',
+    economy_questProgress: '퀘스트 진행도',
+    economy_couponExpiry: '만료: {month}/{day}',
+    economy_shareTextTemplate: '🎰 Mibu 가챠에서【{tier}】쿠폰을 뽑았어요!\n🎁 {couponName}\n📍 {placeName}\n\n같이 해보세요 ➜ https://mibu.app',
+    favorites_title: '내 즐겨찾기',
+    favorites_removeFavorite: '즐겨찾기 삭제',
+    favorites_confirmRemove: '"{name}"을(를) 즐겨찾기에서 삭제하시겠습니까?',
+    favorites_remove: '삭제',
+    favorites_error: '오류',
+    favorites_removeFailed: '즐겨찾기 삭제 실패',
+    favorites_addedAt: '추가일 ',
+    favorites_totalCount: '즐겨찾기 {count}개',
+    favorites_noFavorites: '아직 즐겨찾기가 없습니다',
+    favorites_tapToAdd: '도감에서 하트 아이콘을 눌러 즐겨찾기에 추가하세요',
+    collection_myCollection: '내 도감',
+    collection_newPlaces: '신규 장소 {count}개',
+    collection_collected: '수집됨',
+    collection_cities: '도시',
+    collection_categories: '카테고리',
+    collection_searchPlaceholder: '장소 검색...',
+    collection_clearSearch: '검색 초기화',
+    collection_resultsFound: '{count}건 검색됨',
+    collection_noMatching: '일치하는 장소가 없습니다',
+    collection_all: '전체',
+    collection_loadFailed: '도감을 불러오지 못했습니다',
+    collection_loadFailedDetail: '연결 상태를 확인하고 다시 시도해 주세요',
+    collection_pleaseLogin: '로그인 필요',
+    collection_loginForFavorite: '즐겨찾기를 사용하려면 로그인하세요',
+    collection_addedToFavorites: '즐겨찾기에 추가됨',
+    collection_addedToFavoritesDesc: '{name}이(가) 즐겨찾기에 추가되었습니다',
+    collection_operationFailed: '실패',
+    collection_tryAgainLater: '나중에 다시 시도해 주세요',
+    collection_loginForBlacklist: '블랙리스트를 사용하려면 로그인하세요',
+    collection_addToBlacklist: '블랙리스트에 추가',
+    collection_confirmBlacklist: '"{name}"을(를) 블랙리스트에 추가하시겠습니까?\n이 장소는 앞으로 가챠에서 나오지 않습니다.',
+    collection_addedToBlacklist: '블랙리스트에 추가됨',
+    collection_addedToBlacklistDesc: '{name}이(가) 블랙리스트에 추가되었습니다',
+    collection_addToFavorites: '즐겨찾기에 추가',
+    collection_closeDetails: '상세 닫기',
+    collection_viewOnMap: '지도에서 보기',
+    gacha_startGachaExcl: '가챠 시작!',
+    gacha_tierSP: '슈퍼 레어',
+    gacha_tierSSR: '울트라 레어',
+    gacha_tierSR: '레어',
+    gacha_tierS: '스페셜',
+    gacha_tierR: '일반',
     gacha_rateLimited: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.',
     gacha_loginRequired: '로그인 필요',
     gacha_loginRequiredDesc: '가챠 기능을 사용하려면 로그인이 필요합니다',
@@ -1033,66 +1033,66 @@ const ko: Record<string, string> = {
     gacha_rareCoupons: 'SP/SSR 레어 쿠폰',
     gacha_noRareCoupons: '이 지역에는 레어 쿠폰이 없습니다',
     // ---- Merchant 五大畫面遷移用 ----
-    merchant_dashboard: 'Merchant Dashboard', /* TODO: ko */
-    merchant_editPlace: 'Edit Place', /* TODO: ko */
-    merchant_basicInfoReadonly: 'Basic Info (Read-only)', /* TODO: ko */
-    merchant_location: 'Location', /* TODO: ko */
-    merchant_editableInfo: 'Editable Info', /* TODO: ko */
-    merchant_description: 'Description', /* TODO: ko */
-    merchant_descriptionPlaceholder: 'Enter description...', /* TODO: ko */
-    merchant_googleMapUrl: 'Google Map URL', /* TODO: ko */
-    merchant_googleMapUrlPlaceholder: 'Paste Google Map URL', /* TODO: ko */
-    merchant_openingHours: 'Opening Hours', /* TODO: ko */
-    merchant_openingHoursPlaceholder: 'e.g., Mon-Fri 09:00-18:00', /* TODO: ko */
-    merchant_openingHoursHint: 'One time slot per line', /* TODO: ko */
-    merchant_promoSection: 'Promotion', /* TODO: ko */
-    merchant_promoTitle: 'Promo Title', /* TODO: ko */
-    merchant_promoTitlePlaceholder: 'e.g., 10% off for new customers', /* TODO: ko */
-    merchant_promoDescription: 'Promo Description', /* TODO: ko */
-    merchant_promoDescriptionPlaceholder: 'Enter promo details...', /* TODO: ko */
-    merchant_enablePromo: 'Enable Promotion', /* TODO: ko */
-    merchant_saving: 'Saving...', /* TODO: ko */
-    merchant_dailyCode: "Today's Verification Code", /* TODO: ko */
-    merchant_expiresAt: 'Valid until', /* TODO: ko */
-    merchant_creditBalance: 'Credit Balance', /* TODO: ko */
-    merchant_points: 'pts', /* TODO: ko */
-    merchant_topUp: 'Top Up', /* TODO: ko */
-    merchant_payStripe: 'Pay with Stripe', /* TODO: ko */
-    merchant_payRecur: 'Pay with Recur', /* TODO: ko */
-    merchant_purchaseCredits: 'Purchase Credits', /* TODO: ko */
-    merchant_min100: 'Minimum 100 points', /* TODO: ko */
-    merchant_demoCafe: 'Demo Cafe', /* TODO: ko */
-    merchant_transactionCreated: 'Transaction created', /* TODO: ko */
-    merchant_purchaseFailed: 'Purchase failed', /* TODO: ko */
-    merchant_analyticsDesc: 'View statistics and insights', /* TODO: ko */
-    merchant_storeManagement: 'Store Management', /* TODO: ko */
-    merchant_storeManagementDesc: 'Manage your store info', /* TODO: ko */
-    merchant_productManagementLabel: 'Product Management', /* TODO: ko */
-    merchant_productManagementDesc: 'Manage products and services', /* TODO: ko */
-    merchant_couponManagement: 'Coupon Management', /* TODO: ko */
-    merchant_couponManagementDesc: 'Create and manage coupons', /* TODO: ko */
-    merchant_merchantProfile: 'Merchant Profile', /* TODO: ko */
-    merchant_merchantProfileDesc: 'Edit basic merchant info', /* TODO: ko */
-    merchant_tierProbability: 'Draw Probability', /* TODO: ko */
-    merchant_claimNew: 'Claim New Place', /* TODO: ko */
-    merchant_loadPlacesFailed: 'Failed to load places', /* TODO: ko */
-    merchant_checkConnection: 'Please check your connection and try again', /* TODO: ko */
-    merchant_placeManagement: 'Place Management', /* TODO: ko */
-    merchant_accountStatus: 'Account Status', /* TODO: ko */
-    merchant_subscriptionPlan: 'Subscription Plan', /* TODO: ko */
-    merchant_freePlan: 'Free Plan', /* TODO: ko */
-    merchant_partnerPlan: 'Partner', /* TODO: ko */
-    merchant_premiumPlan: 'Premium', /* TODO: ko */
-    merchant_memberSince: 'Member Since', /* TODO: ko */
-    merchant_dangerZone: 'Danger Zone', /* TODO: ko */
-    merchant_confirmDeleteTitle: 'Confirm Delete Account', /* TODO: ko */
-    merchant_confirmDeleteMessage: 'This action cannot be undone. All your data will be permanently deleted.', /* TODO: ko */
-    merchant_confirmDeleteBtn: 'Confirm Delete', /* TODO: ko */
-    merchant_deleteFailed: 'Delete failed, please try again later', /* TODO: ko */
-    merchant_deleteAccount: 'Delete Account', /* TODO: ko */
-    merchant_accountDeleted: 'Account deleted', /* TODO: ko */
-    merchant_searchFailedRetry: 'Search failed, please try again', /* TODO: ko */
-    merchant_validUntilWithFormat: 'Valid Until (YYYY-MM-DD)', /* TODO: ko */
+    merchant_dashboard: '가맹점 대시보드',
+    merchant_editPlace: '장소 편집',
+    merchant_basicInfoReadonly: '기본 정보 (읽기 전용)',
+    merchant_location: '위치',
+    merchant_editableInfo: '수정 가능 정보',
+    merchant_description: '설명',
+    merchant_descriptionPlaceholder: '설명 입력...',
+    merchant_googleMapUrl: 'Google 지도 URL',
+    merchant_googleMapUrlPlaceholder: 'Google 지도 URL을 붙여넣기',
+    merchant_openingHours: '영업시간',
+    merchant_openingHoursPlaceholder: '예: 월~금 09:00-18:00',
+    merchant_openingHoursHint: '한 줄에 하나의 시간대',
+    merchant_promoSection: '프로모션',
+    merchant_promoTitle: '프로모션 제목',
+    merchant_promoTitlePlaceholder: '예: 신규 고객 10% 할인',
+    merchant_promoDescription: '프로모션 설명',
+    merchant_promoDescriptionPlaceholder: '프로모션 상세 내용 입력...',
+    merchant_enablePromo: '프로모션 활성화',
+    merchant_saving: '저장 중...',
+    merchant_dailyCode: '오늘의 인증 코드',
+    merchant_expiresAt: '유효 기한',
+    merchant_creditBalance: '크레딧 잔액',
+    merchant_points: '포인트',
+    merchant_topUp: '충전',
+    merchant_payStripe: 'Stripe로 결제',
+    merchant_payRecur: 'Recur로 결제',
+    merchant_purchaseCredits: '크레딧 구매',
+    merchant_min100: '최소 100포인트',
+    merchant_demoCafe: '데모 카페',
+    merchant_transactionCreated: '거래가 생성되었습니다',
+    merchant_purchaseFailed: '구매 실패',
+    merchant_analyticsDesc: '통계 및 인사이트 보기',
+    merchant_storeManagement: '매장 관리',
+    merchant_storeManagementDesc: '매장 정보 관리',
+    merchant_productManagementLabel: '상품 관리',
+    merchant_productManagementDesc: '상품 및 서비스 관리',
+    merchant_couponManagement: '쿠폰 관리',
+    merchant_couponManagementDesc: '쿠폰 생성 및 관리',
+    merchant_merchantProfile: '가맹점 프로필',
+    merchant_merchantProfileDesc: '가맹점 기본 정보 편집',
+    merchant_tierProbability: '뽑기 확률',
+    merchant_claimNew: '새 장소 등록',
+    merchant_loadPlacesFailed: '장소를 불러오지 못했습니다',
+    merchant_checkConnection: '연결 상태를 확인하고 다시 시도해 주세요',
+    merchant_placeManagement: '장소 관리',
+    merchant_accountStatus: '계정 상태',
+    merchant_subscriptionPlan: '구독 플랜',
+    merchant_freePlan: '무료 플랜',
+    merchant_partnerPlan: '파트너',
+    merchant_premiumPlan: '프리미엄',
+    merchant_memberSince: '가입일',
+    merchant_dangerZone: '위험 영역',
+    merchant_confirmDeleteTitle: '계정 삭제 확인',
+    merchant_confirmDeleteMessage: '이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로 삭제됩니다.',
+    merchant_confirmDeleteBtn: '삭제 확인',
+    merchant_deleteFailed: '삭제 실패, 나중에 다시 시도해 주세요',
+    merchant_deleteAccount: '계정 삭제',
+    merchant_accountDeleted: '계정이 삭제되었습니다',
+    merchant_searchFailedRetry: '검색 실패, 다시 시도해 주세요',
+    merchant_validUntilWithFormat: '유효 기한 (YYYY-MM-DD)',
 
     // ========== SettingsScreen ==========
     settings_title: '설정',
@@ -1104,30 +1104,30 @@ const ko: Record<string, string> = {
     settings_termsOfService: '이용약관',
     settings_helpCenter: '고객센터',
     settings_admin: '관리자',
-    settings_globalExclusions: 'Global Exclusions', /* TODO: ko */
-    settings_accountManagement: 'Account Management', /* TODO: ko */
+    settings_globalExclusions: '전역 제외 목록',
+    settings_accountManagement: '계정 관리',
     settings_logout: '로그아웃',
     settings_deleteAccount: '계정 삭제',
     settings_selectLanguage: '언어 선택',
     settings_confirmLogout: '로그아웃 확인',
     settings_confirmLogoutDesc: '로그아웃하시겠습니까?',
     settings_deleteAccountTitle: '계정 삭제',
-    settings_deleteAccountDesc: 'Delete your account? This cannot be undone.', /* TODO: ko */
-    settings_cannotDelete: 'Cannot Delete', /* TODO: ko */
-    settings_deleteFailed: 'Delete failed, please try again', /* TODO: ko */
-    settings_deactivateMerchantFirst: 'Please deactivate merchant account first', /* TODO: ko */
-    settings_mergeAccounts: 'Merge Accounts', /* TODO: ko */
-    settings_mergeAccountsDesc: 'Merge Accounts', /* TODO: ko */
+    settings_deleteAccountDesc: '계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+    settings_cannotDelete: '삭제 불가',
+    settings_deleteFailed: '삭제 실패, 다시 시도해 주세요',
+    settings_deactivateMerchantFirst: '먼저 가맹점 계정을 비활성화해 주세요',
+    settings_mergeAccounts: '계정 병합',
+    settings_mergeAccountsDesc: '계정 병합',
     settings_continue: '계속',
-    settings_loginSecondary: 'Login Secondary Account', /* TODO: ko */
-    settings_loginSecondaryDesc: 'Login Secondary Account', /* TODO: ko */
-    settings_loginToMerge: 'Login account to merge', /* TODO: ko */
-    settings_merging: 'Merging...', /* TODO: ko */
-    settings_mergingDesc: 'Please wait', /* TODO: ko */
-    settings_mergeSuccess: 'Merge Successful!', /* TODO: ko */
-    settings_mergeFailed: 'Merge Failed', /* TODO: ko */
-    settings_mergeFailedRetry: 'Merge failed', /* TODO: ko */
-    settings_mergedData: 'Merged data:', /* TODO: ko */
+    settings_loginSecondary: '보조 계정 로그인',
+    settings_loginSecondaryDesc: '보조 계정 로그인',
+    settings_loginToMerge: '병합할 계정으로 로그인',
+    settings_merging: '병합 중...',
+    settings_mergingDesc: '잠시만 기다려 주세요',
+    settings_mergeSuccess: '병합 완료!',
+    settings_mergeFailed: '병합 실패',
+    settings_mergeFailedRetry: '병합 실패',
+    settings_mergedData: '병합된 데이터:',
     settings_collections: '도감',
     settings_itineraries: '일정',
     settings_favorites: '즐겨찾기',
@@ -1140,8 +1140,8 @@ const ko: Record<string, string> = {
     settings_openSystemSettings: '설정 열기',
     settings_coins: '코인',
     settings_balance: '잔액',
-    settings_unknownError: 'An unknown error occurred', /* TODO: ko */
-    settings_pleaseLoginFirst: 'Please login first', /* TODO: ko */
+    settings_unknownError: '알 수 없는 오류가 발생했습니다',
+    settings_pleaseLoginFirst: '먼저 로그인해 주세요',
     settings_notificationPreferences: '알림 설정',
 
     // ========== NotificationPreferencesScreen ==========
@@ -1180,36 +1180,36 @@ const ko: Record<string, string> = {
     profile_uploading: '업로드 중...',
     profile_tapToChange: '탭하여 아바타 변경',
     profile_userId: '사용자 ID',
-    profile_enterEmail: 'Enter email', /* TODO: ko */
+    profile_enterEmail: '이메일 입력',
     profile_lastName: '성',
     profile_firstName: '이름',
-    profile_enterLastName: 'Enter last name', /* TODO: ko */
-    profile_enterFirstName: 'Enter first name', /* TODO: ko */
+    profile_enterLastName: '성 입력',
+    profile_enterFirstName: '이름 입력',
     profile_gender: '성별',
     profile_select: '선택',
     profile_birthDate: '생년월일',
     profile_phone: '전화번호',
-    profile_enterPhone: 'Enter phone number', /* TODO: ko */
+    profile_enterPhone: '전화번호 입력',
     profile_dietaryRestrictions: '식이 제한',
-    profile_dietaryPlaceholder: 'e.g., Vegetarian, Seafood allergy', /* TODO: ko */
+    profile_dietaryPlaceholder: '예: 채식주의, 해산물 알레르기',
     profile_medicalHistory: '병력',
-    profile_medicalPlaceholder: 'e.g., Diabetes, Hypertension', /* TODO: ko */
+    profile_medicalPlaceholder: '예: 당뇨, 고혈압',
     profile_emergencyContact: '긴급 연락처',
     profile_contactName: '이름',
-    profile_enterName: 'Enter name', /* TODO: ko */
+    profile_enterName: '이름 입력',
     profile_contactPhone: '전화',
-    profile_enterContactPhone: 'Enter phone', /* TODO: ko */
+    profile_enterContactPhone: '전화번호 입력',
     profile_relationship: '관계',
     profile_chooseAvatar: '아바타 선택',
-    profile_uploadAvatar: 'Upload Custom Avatar', /* TODO: ko */
-    profile_profileUpdated: 'Profile updated', /* TODO: ko */
-    profile_saveFailed: 'Failed to save', /* TODO: ko */
-    profile_loadFailed: 'Failed to load profile', /* TODO: ko */
-    profile_photoPermissionRequired: 'Photo library permission required', /* TODO: ko */
-    profile_cannotReadImage: 'Cannot read image data', /* TODO: ko */
-    profile_avatarUploaded: 'Avatar uploaded', /* TODO: ko */
-    profile_uploadFailed: 'Upload failed', /* TODO: ko */
-    profile_uploadFailedRetry: 'Upload failed, please try again', /* TODO: ko */
+    profile_uploadAvatar: '커스텀 아바타 업로드',
+    profile_profileUpdated: '프로필이 업데이트되었습니다',
+    profile_saveFailed: '저장 실패',
+    profile_loadFailed: '프로필을 불러오지 못했습니다',
+    profile_photoPermissionRequired: '사진 라이브러리 접근 권한이 필요합니다',
+    profile_cannotReadImage: '이미지 데이터를 읽을 수 없습니다',
+    profile_avatarUploaded: '아바타가 업로드되었습니다',
+    profile_uploadFailed: '업로드 실패',
+    profile_uploadFailedRetry: '업로드 실패, 다시 시도해 주세요',
     profile_previewAvatar: '아바타 미리보기',
     profile_previewConfirm: '사용하기',
     profile_previewCancel: '다시 선택',
@@ -1232,60 +1232,60 @@ const ko: Record<string, string> = {
     home_flashTab: '플래시',
     home_noAnnouncements: '공지사항이 없습니다',
     home_stayTuned: '새 소식을 기대해주세요!',
-    home_noLocalActivities: 'No local activities', /* TODO: ko */
-    home_discoverNearby: 'Discover events near you!', /* TODO: ko */
-    home_noFlashEvents: 'No flash events', /* TODO: ko */
-    home_limitedOffersSoon: 'Limited offers coming soon!', /* TODO: ko */
+    home_noLocalActivities: '현지 활동이 없습니다',
+    home_discoverNearby: '주변 이벤트를 발견해 보세요!',
+    home_noFlashEvents: '플래시 이벤트가 없습니다',
+    home_limitedOffersSoon: '한정 혜택이 곧 찾아옵니다!',
     home_loginStreak: '연속 로그인',
     home_days: '일',
-    home_partnerReady: 'Partner Ready', /* TODO: ko */
+    home_partnerReady: '파트너 준비 완료',
     home_dailyTasks: '일일 과제',
     home_done: '완료',
     home_earned: '획득',
     home_coinsUnit: '코인',
-    home_titleLegendary: 'Legendary', /* TODO: ko */
-    home_titleExpert: 'Expert', /* TODO: ko */
-    home_titleTraveler: 'Traveler', /* TODO: ko */
-    home_titleExplorer: 'Explorer', /* TODO: ko */
-    home_titleNewbie: 'Newbie', /* TODO: ko */
+    home_titleLegendary: '전설',
+    home_titleExpert: '전문가',
+    home_titleTraveler: '여행자',
+    home_titleExplorer: '탐험가',
+    home_titleNewbie: '초보자',
 
     // ========== Mailbox (#045) ==========
-    mailbox_title: 'Inbox', /* TODO: ko */
-    mailbox_empty: 'No mail yet', /* TODO: ko */
-    mailbox_emptyDesc: 'System rewards and promo code prizes will appear here', /* TODO: ko */
-    mailbox_tabUnclaimed: 'Unclaimed', /* TODO: ko */
-    mailbox_tabClaimed: 'Claimed', /* TODO: ko */
-    mailbox_tabExpired: 'Expired', /* TODO: ko */
-    mailbox_claim: 'Claim', /* TODO: ko */
-    mailbox_claimAll: 'Claim All', /* TODO: ko */
-    mailbox_claimSuccess: 'Claimed!', /* TODO: ko */
-    mailbox_claimFailed: 'Claim failed', /* TODO: ko */
-    mailbox_claimPartial: 'Some rewards failed to claim', /* TODO: ko */
-    mailbox_claimAllSuccess: 'Claimed {count} items', /* TODO: ko */
-    mailbox_claimAllFailed: 'Partial failure ({success} claimed, {failed} failed)', /* TODO: ko */
-    mailbox_loadFailed: 'Load failed', /* TODO: ko */
-    mailbox_loadFailedDesc: 'Unable to load inbox. Please try again later', /* TODO: ko */
-    mailbox_rewards: 'Rewards', /* TODO: ko */
-    mailbox_source: 'Source', /* TODO: ko */
-    mailbox_sourcePromo: 'Promo Code', /* TODO: ko */
-    mailbox_sourceAdmin: 'System Notice', /* TODO: ko */
-    mailbox_sourceSystem: 'System Reward', /* TODO: ko */
-    mailbox_sourceEvent: 'Event Reward', /* TODO: ko */
-    mailbox_expiresAt: 'Expires {date}', /* TODO: ko */
-    mailbox_expired: 'Expired', /* TODO: ko */
-    mailbox_claimed: 'Claimed', /* TODO: ko */
-    mailbox_promoCode: 'Promo Code', /* TODO: ko */
-    mailbox_promoPlaceholder: 'Enter promo code', /* TODO: ko */
-    mailbox_promoRedeem: 'Redeem', /* TODO: ko */
-    mailbox_promoSuccess: 'Redeemed! Rewards added to inbox', /* TODO: ko */
-    mailbox_promoFailed: 'Redeem failed', /* TODO: ko */
-    mailbox_promoEmpty: 'Please enter a promo code', /* TODO: ko */
-    mailbox_rewardCoins: '{amount} coins', /* TODO: ko */
-    mailbox_rewardItem: 'Shop item', /* TODO: ko */
-    mailbox_rewardCoupon: 'Coupon', /* TODO: ko */
-    mailbox_rewardPlacePack: 'Place pack', /* TODO: ko */
-    mailbox_rewardPerk: 'Perk', /* TODO: ko */
-    mailbox_unreadCount: '{count}개 읽지 않음', /* TODO: ko */
+    mailbox_title: '메일함',
+    mailbox_empty: '아직 메일이 없습니다',
+    mailbox_emptyDesc: '시스템 보상과 프로모션 코드 보상이 여기에 표시됩니다',
+    mailbox_tabUnclaimed: '미수령',
+    mailbox_tabClaimed: '수령됨',
+    mailbox_tabExpired: '만료됨',
+    mailbox_claim: '수령',
+    mailbox_claimAll: '전체 수령',
+    mailbox_claimSuccess: '수령 완료!',
+    mailbox_claimFailed: '수령 실패',
+    mailbox_claimPartial: '일부 보상 수령에 실패했습니다',
+    mailbox_claimAllSuccess: '{count}개 항목을 수령했습니다',
+    mailbox_claimAllFailed: '일부 실패 ({success}개 수령, {failed}개 실패)',
+    mailbox_loadFailed: '로드 실패',
+    mailbox_loadFailedDesc: '메일함을 불러올 수 없습니다. 나중에 다시 시도해 주세요',
+    mailbox_rewards: '보상',
+    mailbox_source: '출처',
+    mailbox_sourcePromo: '프로모션 코드',
+    mailbox_sourceAdmin: '시스템 공지',
+    mailbox_sourceSystem: '시스템 보상',
+    mailbox_sourceEvent: '이벤트 보상',
+    mailbox_expiresAt: '{date} 만료',
+    mailbox_expired: '만료됨',
+    mailbox_claimed: '수령됨',
+    mailbox_promoCode: '프로모션 코드',
+    mailbox_promoPlaceholder: '프로모션 코드 입력',
+    mailbox_promoRedeem: '사용',
+    mailbox_promoSuccess: '사용 완료! 보상이 메일함에 추가되었습니다',
+    mailbox_promoFailed: '사용 실패',
+    mailbox_promoEmpty: '프로모션 코드를 입력해 주세요',
+    mailbox_rewardCoins: '{amount} 코인',
+    mailbox_rewardItem: '상점 아이템',
+    mailbox_rewardCoupon: '쿠폰',
+    mailbox_rewardPlacePack: '장소 팩',
+    mailbox_rewardPerk: '특전',
+    mailbox_unreadCount: '{count}개 읽지 않음',
 
     // ========== ItemBox 아이템 상자 ==========
     itemBox_title: '아이템 상자',

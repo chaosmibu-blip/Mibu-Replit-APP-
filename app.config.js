@@ -54,8 +54,15 @@ const baseConfig = {
     [
       'expo-media-library',              // 相簿存取（儲存 Mini 頭像）
       {
-        photosPermission: '允許 Mibu 儲存圖片到您的相簿',
-        savePhotosPermission: '允許 Mibu 儲存圖片到您的相簿',
+        photosPermission: 'Mibu 需要存取您的相簿，以便將 AI 旅伴「Mini」的頭像圖片儲存到您的相簿中',
+        savePhotosPermission: 'Mibu 需要存取您的相簿，以便將 AI 旅伴「Mini」的頭像圖片儲存到您的相簿中',
+      },
+    ],
+    [
+      'expo-notifications',              // 推播通知（Android 通知列 icon）
+      {
+        icon: './assets/images/icon.png',
+        color: '#7A5230',                // MibuBrand.brown
       },
     ],
   ],
@@ -87,7 +94,8 @@ const baseConfig = {
 const developmentConfig = {
   ...baseConfig,
   ios: {
-    supportsTablet: true,                // 支援 iPad（但會以 2x 模式運行）
+    supportsTablet: true,                // 支援 iPad（已上架不可移除，以 2x 模式運行）
+    requireFullScreen: true,             // 禁用 iPad 多工（Split View / Slide Over），避免窄視窗跑版
     bundleIdentifier: 'com.chaos.mibu',  // iOS Bundle ID
     buildNumber: IOS_BUILD_NUMBER,
     usesAppleSignIn: true,               // 啟用 Apple 登入
@@ -108,16 +116,25 @@ const developmentConfig = {
 const productionConfig = {
   ...baseConfig,
   ios: {
-    supportsTablet: true,
+    supportsTablet: true,                // 已上架不可移除，iPad 以全螢幕模式運行
+    requireFullScreen: true,             // 禁用 iPad 多工（Split View / Slide Over），避免窄視窗跑版
     bundleIdentifier: 'com.chaos.mibu',
     buildNumber: IOS_BUILD_NUMBER,
     usesAppleSignIn: true,
     // iOS 權限說明文字（App Store 審核必填）
+    // 注意：只宣告實際有使用的權限，未使用的權限會被 Apple 退件（Guideline 5.1.1）
     infoPlist: {
-      NSLocationWhenInUseUsageDescription: '我們需要您的位置來提供附近的旅遊景點推薦',
-      NSLocationAlwaysAndWhenInUseUsageDescription: '我們需要您的位置來提供即時旅遊導航服務',
-      NSCameraUsageDescription: '用於掃描 QR Code 兌換優惠券',
-      NSPhotoLibraryUsageDescription: '用於儲存旅遊照片',
+      NSLocationWhenInUseUsageDescription: 'Mibu 需要您的位置，以便在扭蛋時自動鎖定您所在的縣市，並為您導航至景點',
+      NSPhotoLibraryUsageDescription: 'Mibu 需要存取您的相簿，以便您選擇照片作為自訂個人頭像，以及將 AI 旅伴「Mini」的頭像圖片儲存到您的相簿中',
+      ITSAppUsesNonExemptEncryption: false,  // App 未使用非豁免加密，避免每次提審手動確認
+      // Google OAuth redirect URI（expo-auth-session 回調用）
+      CFBundleURLTypes: [
+        {
+          CFBundleURLSchemes: [
+            'com.googleusercontent.apps.543517647590-3fpo4kl895apdp3tt2ditgj5leo034dv',
+          ],
+        },
+      ],
     },
   },
   android: {
@@ -128,11 +145,10 @@ const productionConfig = {
       backgroundColor: '#F5E6D3',
     },
     edgeToEdgeEnabled: true,
-    // Android 權限宣告
+    // Android 權限宣告（只宣告實際有使用的權限）
     permissions: [
       'ACCESS_FINE_LOCATION',            // 精確定位
       'ACCESS_COARSE_LOCATION',          // 粗略定位
-      'CAMERA',                          // 相機（掃 QR Code）
       'READ_EXTERNAL_STORAGE',           // 讀取相簿
       'WRITE_EXTERNAL_STORAGE',          // 寫入相簿
     ],
