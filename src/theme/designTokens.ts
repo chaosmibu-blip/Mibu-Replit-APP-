@@ -19,48 +19,59 @@
  * style={CommonStyles.card}
  */
 
+import { Dimensions } from 'react-native';
 import { MibuBrand } from '../../constants/Colors';
+
+// ========== iPad 等比縮放 ==========
+// iPad 內容寬度 ~750pt vs iPhone ~390pt，字體與間距需等比放大以維持視覺比例
+const TABLET_BREAKPOINT = 600;
+const { width: screenWidth } = Dimensions.get('window');
+const isTablet = screenWidth > TABLET_BREAKPOINT;
+const tabletScale = isTablet ? 1.2 : 1;
+const s = (value: number) => Math.round(value * tabletScale);
 
 // ========== 間距系統 (4px 基準) ==========
 /**
  * 間距系統
  * 基於 4px 的倍數設計，確保視覺一致性
+ * iPad 自動放大 1.2 倍
  */
 export const Spacing = {
   /** 極小間距 - 4px（元素內緊密間距） */
-  xs: 4,
+  xs: s(4),
   /** 小間距 - 8px（元素間小間距） */
-  sm: 8,
+  sm: s(8),
   /** 中間距 - 12px（一般元素間距） */
-  md: 12,
+  md: s(12),
   /** 大間距 - 16px（常用，區塊內間距） */
-  lg: 16,
+  lg: s(16),
   /** 超大間距 - 24px（區塊間間距） */
-  xl: 24,
+  xl: s(24),
   /** 特大間距 - 32px（大區塊間距） */
-  xxl: 32,
+  xxl: s(32),
   /** 巨大間距 - 48px（頁面級間距） */
-  xxxl: 48,
+  xxxl: s(48),
 } as const;
 
 // ========== 圓角系統 ==========
 /**
  * 圓角系統
  * 統一的圓角規範，從極小到全圓
+ * iPad 自動放大 1.2 倍
  */
 export const Radius = {
   /** 極小圓角 - 4px（tag、badge） */
-  xs: 4,
+  xs: s(4),
   /** 小圓角 - 8px（按鈕、輸入框） */
-  sm: 8,
+  sm: s(8),
   /** 中圓角 - 12px（卡片內元素） */
-  md: 12,
+  md: s(12),
   /** 大圓角 - 16px（小卡片） */
-  lg: 16,
+  lg: s(16),
   /** 超大圓角 - 20px（大卡片，最常用） */
-  xl: 20,
+  xl: s(20),
   /** 特大圓角 - 24px（特殊元素） */
-  xxl: 24,
+  xxl: s(24),
   /** 全圓 - 999px（頭像、圓形按鈕） */
   full: 999,
 } as const;
@@ -69,22 +80,23 @@ export const Radius = {
 /**
  * 字體大小系統
  * 從極小到巨大的字體尺寸規範
+ * iPad 自動放大 1.2 倍
  */
 export const FontSize = {
   /** 極小文字 - 10px（badge、輔助標記） */
-  xs: 10,
+  xs: s(10),
   /** 小文字 - 12px（輔助說明、註解） */
-  sm: 12,
+  sm: s(12),
   /** 中文字 - 14px（正文、一般內容） */
-  md: 14,
+  md: s(14),
   /** 大文字 - 16px（小標題） */
-  lg: 16,
+  lg: s(16),
   /** 超大文字 - 18px（大標題） */
-  xl: 18,
+  xl: s(18),
   /** 特大文字 - 22px（頁面標題） */
-  xxl: 22,
+  xxl: s(22),
   /** 巨大文字 - 28px（Hero 區塊標題） */
-  xxxl: 28,
+  xxxl: s(28),
 } as const;
 
 // ========== 字重 ==========
