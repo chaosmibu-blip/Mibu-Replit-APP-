@@ -57,6 +57,10 @@ export const STORAGE_KEYS = {
   /** 登入後目標入口（暫存用，登入完成後刪除） */
   POST_LOGIN_PORTAL: '@mibu_post_login_portal',
 
+  // --- 自動登入 ---
+  /** 自動登入提供者（訪客切換正式帳號時暫存，觸發後刪除） */
+  AUTO_LOGIN_PROVIDER: '@mibu_auto_login_provider',
+
   // --- 訪客升級提示（#051） ---
   /** 收集第 10 個景點時的升級提示 */
   GUEST_PROMPT_COLLECTION: '@mibu_guest_prompt_collection',

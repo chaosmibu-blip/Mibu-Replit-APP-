@@ -281,6 +281,27 @@ export default function LoginScreen() {
     };
   }, [handleDeepLink]);
 
+  // 自動觸發登入（訪客偵測既有帳號 → 按「前往登入」後自動觸發對應方式）
+  useEffect(() => {
+    const checkAutoLogin = async () => {
+      const provider = await AsyncStorage.getItem(STORAGE_KEYS.AUTO_LOGIN_PROVIDER);
+      if (!provider) return;
+
+      await AsyncStorage.removeItem(STORAGE_KEYS.AUTO_LOGIN_PROVIDER);
+
+      // 延遲確保畫面已渲染完成
+      setTimeout(() => {
+        if (provider === 'google') {
+          handleLogin();
+        } else if (provider === 'apple') {
+          handleAppleLogin();
+        }
+      }, 500);
+    };
+
+    checkAutoLogin();
+  }, []);
+
   // Google 原生登入（iOS/Android）
   const handleGoogleNativeLogin = async () => {
     try {
@@ -618,8 +639,12 @@ export default function LoginScreen() {
               {
                 text: t.guest_goToLogin,
                 onPress: async () => {
+                  // 記住上次登入方式，登入頁 mount 後自動觸發
+                  await AsyncStorage.setItem(
+                    STORAGE_KEYS.AUTO_LOGIN_PROVIDER,
+                    data.existingAccount!.provider,
+                  );
                   await setUser(null);
-                  // 不需要 router.replace — setUser(null) 會觸發 401 攔截器回登入頁
                 },
               },
             ]
