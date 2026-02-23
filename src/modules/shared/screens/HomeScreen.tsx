@@ -5,7 +5,7 @@
  * - 用戶問候（根據語言顯示不同文字）
  * - 用戶卡片（顯示金幣餘額、稱號、權益、連續登入）
  * - 每日任務卡片（點擊跳轉 /economy）
- * - 活動 Tab 切換（公告 / 在地活動 / 限時活動）
+ * - 活動 Tab 切換（公告 / 全台活動 / 限時活動）
  *
  * 資料來源（React Query hooks）：
  * - useHomeEvents() - 首頁活動（不需認證）
@@ -91,7 +91,7 @@ interface DailyTaskSummary {
 
 const now = new Date().toISOString();
 
-// 在地活動每頁最多顯示幾則，超過則左右滑切換 + 無操作時自動輪播
+// 全台活動每頁最多顯示幾則，超過則左右滑切換 + 無操作時自動輪播
 const MAX_VISIBLE_FESTIVALS = 6;
 // 輪播間隔（毫秒）
 const FESTIVAL_ROTATE_INTERVAL = 5000;
@@ -278,7 +278,7 @@ export function HomeScreen() {
   // 本地狀態（非 API 資料）
   // ============================================================
 
-  // 在地活動輪播頁碼與滑動控制
+  // 全台活動輪播頁碼與滑動控制
   const [festivalPage, setFestivalPage] = useState(0);
   const festivalTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const festivalScrollRef = useRef<ScrollView>(null);
@@ -291,7 +291,7 @@ export function HomeScreen() {
   // 頭像預設列表（從 avatarService 動態載入）
   const [avatarPresets, setAvatarPresets] = useState<AvatarPreset[]>([]);
 
-  // 在地活動分頁與自動輪播
+  // 全台活動分頁與自動輪播
   const festivalTotalPages = Math.ceil(events.festivals.length / MAX_VISIBLE_FESTIVALS);
   const visibleFestivals = events.festivals.slice(
     festivalPage * MAX_VISIBLE_FESTIVALS,
@@ -327,6 +327,14 @@ export function HomeScreen() {
       }
     };
   }, [startFestivalTimer]);
+
+  // 用戶開始手動滑動 → 暫停自動輪播（避免 timer 和手指同時搶控制 ScrollView 導致卡住）
+  const handleFestivalScrollBeginDrag = useCallback(() => {
+    if (festivalTimerRef.current) {
+      clearInterval(festivalTimerRef.current);
+      festivalTimerRef.current = null;
+    }
+  }, []);
 
   // 用戶滑動結束 → 更新頁碼 + 重啟 timer
   const handleFestivalScrollEnd = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
@@ -606,7 +614,7 @@ export function HomeScreen() {
         </View>
       )}
 
-      {/* ========== 在地活動卡片（最多 6 則/頁，左右滑 + 自動輪播）========== */}
+      {/* ========== 全台活動卡片（最多 6 則/頁，左右滑 + 自動輪播）========== */}
       {events.festivals.length > 0 && (
         <View
           style={styles.localSection}
@@ -622,8 +630,10 @@ export function HomeScreen() {
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
+              onScrollBeginDrag={handleFestivalScrollBeginDrag}
               onMomentumScrollEnd={handleFestivalScrollEnd}
               scrollEventThrottle={16}
+              nestedScrollEnabled
             >
               {Array.from({ length: festivalTotalPages }, (_, pageIdx) => {
                 const pageItems = events.festivals.slice(
@@ -956,7 +966,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
-  // 在地活動卡片
+  // 全台活動卡片
   localSection: {
     backgroundColor: MibuBrand.cream,
     borderRadius: 16,

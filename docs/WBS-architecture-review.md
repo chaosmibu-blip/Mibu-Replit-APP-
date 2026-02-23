@@ -138,7 +138,7 @@
 | 2.2.1 | 問候區 | 顯示「嗨，旅行者！」+ 頭像 | — | ✅ |
 | 2.2.2 | 等級卡片 | Lv、稱號、連續登入、XP 進度條 | useHomeQueries | ✅ React Query |
 | 2.2.3 | 每日任務卡 | 完成數/總數、已獲 XP、點擊→經濟 | useHomeQueries | ✅ React Query |
-| 2.2.4 | 活動 Tab | 公告 / 在地活動 / 限時活動 切換 | useHomeQueries | ✅ React Query |
+| 2.2.4 | 活動 Tab | 公告 / 全台活動 / 限時活動 切換 | useHomeQueries | ✅ React Query |
 
 **畫面**：HomeScreen — `src/modules/shared/screens/HomeScreen.tsx`
 **路由**：`/`（Tab 1）
