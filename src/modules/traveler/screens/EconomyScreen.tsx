@@ -39,6 +39,7 @@ import { SectionHeader } from '../../shared/components/ui/SectionHeader';
 import { MibuBrand } from '../../../../constants/Colors';
 import { RuleItem, NavigateTo, RuleStatus } from '../../../types/rules';
 import { useRules, usePerks, useClaimReward, useRefreshEconomyData } from '../../../hooks/useEconomyQueries';
+import { getUserFacingErrorMessage } from '../../../shared/errors';
 
 // ============================================================
 // 常數定義
@@ -167,8 +168,9 @@ export function EconomyScreen() {
         }).join('、');
         Alert.alert(t.economy_claimSuccess, rewardText);
       },
-      onError: () => {
-        Alert.alert(t.economy_claimFailed);
+      onError: (error: unknown) => {
+        const message = getUserFacingErrorMessage(error, t.economy_claimFailed);
+        Alert.alert(t.common_error, message);
       },
       onSettled: () => {
         setClaiming(null);

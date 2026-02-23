@@ -36,6 +36,9 @@ export {
 
 // ============ 內部 import（用於 helper functions）============
 import { ErrorCode as SharedErrorCode } from '@shared';
+import { ApiError } from '../services/base';
+import { getErrorMessage as getLocalizedErrorMessage } from '../types/errors';
+import type { ErrorMessage } from '../types/errors';
 
 // ============ 向後兼容的 Helper Functions ============
 // 這些函數接受 string | undefined，比 @shared 版本更寬鬆
@@ -192,6 +195,57 @@ export const LEGACY_ERROR_MAPPING: Record<string, SharedErrorCode> = {
  */
 export function normalizeErrorCode(code: string): SharedErrorCode | string {
   return LEGACY_ERROR_MAPPING[code] || code;
+}
+
+// ============ 錯誤訊息工具函數 ============
+
+/**
+ * 從 ApiError 取得最適合顯示給用戶的錯誤訊息
+ *
+ * 解析優先級：
+ * 1. error.code → 查本地翻譯表（70+ 本地化訊息，支援多語系）
+ * 2. error.serverMessage（後端回傳的可讀訊息）
+ * 3. fallbackMessage（呼叫端提供的預設文字）
+ *
+ * @param error - 捕獲到的錯誤（可能是 ApiError 或一般 Error）
+ * @param fallbackMessage - 查不到對應訊息時的預設文字
+ * @param language - 語言（預設中文）
+ */
+export function getUserFacingErrorMessage(
+  error: unknown,
+  fallbackMessage: string,
+  language: 'zh-TW' | 'en' = 'zh-TW',
+): string {
+  if (!(error instanceof ApiError)) return fallbackMessage;
+
+  if (error.code) {
+    // 用 error.code 查本地翻譯表（支援 legacy 英文碼如 'DAILY_LIMIT_EXCEEDED'）
+    const message = getLocalizedErrorMessage(error.code as ErrorMessage, language);
+    if (message !== error.code) return message;
+  }
+
+  // 後端回傳的可讀訊息
+  if (error.serverMessage) return error.serverMessage;
+
+  return fallbackMessage;
+}
+
+/**
+ * 檢查 ApiError 是否包含特定的錯誤碼
+ * 同時比對原始碼和正規化後的碼（相容 legacy + E-prefix）
+ *
+ * @param error - 捕獲到的錯誤
+ * @param codes - 要比對的錯誤碼（legacy 或 E-prefix 皆可）
+ *
+ * @example
+ * if (hasErrorCode(error, 'DAILY_LIMIT_EXCEEDED', 'EXCEEDS_REMAINING_QUOTA')) {
+ *   Alert.alert('今日額度已達上限');
+ * }
+ */
+export function hasErrorCode(error: unknown, ...codes: string[]): boolean {
+  if (!(error instanceof ApiError) || !error.code) return false;
+  const normalized = normalizeErrorCode(error.code);
+  return codes.some(code => error.code === code || normalized === code);
 }
 
 // ============ 已棄用的舊常數 ============

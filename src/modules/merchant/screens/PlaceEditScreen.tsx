@@ -30,6 +30,7 @@ import { useI18n } from '../../../context/I18nContext';
 import { useMerchantPlaces, useUpdateMerchantPlace } from '../../../hooks/useMerchantQueries';
 import { UpdateMerchantPlaceParams, MerchantPlaceOpeningHours } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { getUserFacingErrorMessage } from '../../../shared/errors';
 
 // ============ 主元件 ============
 export function PlaceEditScreen() {
@@ -149,9 +150,10 @@ export function PlaceEditScreen() {
             { text: 'OK', onPress: () => router.back() },
           ]);
         },
-        onError: (error) => {
+        onError: (error: unknown) => {
           console.error('Failed to save place:', error);
-          Alert.alert(t.common_error, translations.saveFailed);
+          const message = getUserFacingErrorMessage(error, translations.saveFailed);
+          Alert.alert(t.common_error, message);
         },
       },
     );

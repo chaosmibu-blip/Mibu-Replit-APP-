@@ -38,6 +38,7 @@ import {
 import { MerchantProduct } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
+import { getUserFacingErrorMessage } from '../../../shared/errors';
 
 // ============ 主元件 ============
 export function MerchantProductsScreen() {
@@ -122,9 +123,10 @@ export function MerchantProductsScreen() {
         // React Query 的 onSuccess 已自動 invalidate products
         Alert.alert(t.common_success, t.merchant_saved);
       },
-      onError: (error: Error) => {
+      onError: (error: unknown) => {
         console.error('Save failed:', error);
-        Alert.alert(t.common_error, t.common_saveFailed);
+        const message = getUserFacingErrorMessage(error, t.common_saveFailed);
+        Alert.alert(t.common_error, message);
       },
     };
 
@@ -156,8 +158,10 @@ export function MerchantProductsScreen() {
                 // React Query 的 onSuccess 已自動 invalidate products
                 Alert.alert(t.common_success, t.merchant_deleted);
               },
-              onError: (error) => {
+              onError: (error: unknown) => {
                 console.error('Delete failed:', error);
+                const message = getUserFacingErrorMessage(error, t.common_deleteFailed);
+                Alert.alert(t.common_error, message);
               },
             });
           },

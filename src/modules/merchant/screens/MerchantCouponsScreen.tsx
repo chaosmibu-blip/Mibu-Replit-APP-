@@ -43,6 +43,7 @@ import { TierBadge } from '../../shared/components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { LOCALE_MAP } from '../../../utils/i18n';
+import { getUserFacingErrorMessage } from '../../../shared/errors';
 
 // ============ 主元件 ============
 export function MerchantCouponsScreen() {
@@ -203,9 +204,10 @@ export function MerchantCouponsScreen() {
       }
 
       setShowModal(false);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Save failed:', error);
-      Alert.alert(t.common_error, t.common_saveFailed);
+      const message = getUserFacingErrorMessage(error, t.common_saveFailed);
+      Alert.alert(t.common_error, message);
     }
   };
 
@@ -225,8 +227,9 @@ export function MerchantCouponsScreen() {
           onPress: async () => {
             try {
               await deleteMutation.mutateAsync(couponId);
-            } catch (error) {
-              Alert.alert(t.common_error, t.common_deleteFailed);
+            } catch (error: unknown) {
+              const message = getUserFacingErrorMessage(error, t.common_deleteFailed);
+              Alert.alert(t.common_error, message);
             }
           },
         },

@@ -22,6 +22,7 @@ import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/I18nContext';
 import { useClaimMerchantPlace } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { getUserFacingErrorMessage } from '../../../shared/errors';
 
 // 分類選項定義：透過 t key 取得多語系標籤
 const CATEGORY_IDS = ['food', 'stay', 'scenery', 'shopping', 'entertainment', 'education'] as const;
@@ -85,9 +86,10 @@ export function NewPlaceScreen() {
             { text: 'OK', onPress: () => router.back() },
           ]);
         },
-        onError: (error) => {
+        onError: (error: unknown) => {
           console.error('Submit failed:', error);
-          Alert.alert(t.common_error, t.merchant_submitError);
+          const message = getUserFacingErrorMessage(error, t.merchant_submitError);
+          Alert.alert(t.common_error, message);
         },
       },
     );

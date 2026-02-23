@@ -52,7 +52,7 @@ import { Country, Region, GachaItem, GachaPoolItem, GachaPoolResponse, RegionPoo
 import { getCategoryColor } from '../../../constants/translations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
-import { ErrorCode, isAuthError } from '../../../shared/errors';
+import { ErrorCode, isAuthError, getUserFacingErrorMessage, hasErrorCode } from '../../../shared/errors';
 import { ApiError } from '../../../services/base';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import styles, { SCREEN_WIDTH } from './GachaScreen.styles';
@@ -621,18 +621,23 @@ export function GachaScreen() {
       console.error('Gacha failed:', error);
       setShowLoadingAd(false);
 
-      // 依據錯誤類型顯示對應訊息
-      if (error instanceof ApiError && error.status === 429) {
-        // 429 限速：操作太頻繁
-        Alert.alert(t.common_notice, t.gacha_rateLimited);
-      } else if (error instanceof ApiError && error.status === 401) {
+      // 依據錯誤類型顯示對應訊息（優先看 error.code，再看 status）
+      if (error instanceof ApiError && error.status === 401) {
         // 401 認證過期：導向重新登入
         Alert.alert(t.gacha_loginRequired, t.gacha_loginRequiredDesc, [
           { text: t.cancel, style: 'cancel' },
           { text: t.gacha_goToLogin, onPress: () => router.push('/login') },
         ]);
+      } else if (hasErrorCode(error, 'DAILY_LIMIT_EXCEEDED', 'EXCEEDS_REMAINING_QUOTA', 'DEVICE_LIMIT_EXCEEDED', 'DEVICE_DAILY_LIMIT')) {
+        // 額度用完（後端用 429 但 code 是額度相關）
+        Alert.alert(t.dailyLimitReached, t.dailyLimitReachedDesc);
+      } else if (error instanceof ApiError && error.status === 429) {
+        // 真正的頻率限制（無額度相關 code）
+        Alert.alert(t.common_notice, t.gacha_rateLimited);
       } else {
-        Alert.alert(t.common_error, t.gacha_generationFailed);
+        // 其他錯誤：嘗試取得 code 對應的具體訊息
+        const message = getUserFacingErrorMessage(error, t.gacha_generationFailed);
+        Alert.alert(t.common_error, message);
       }
     }
   };

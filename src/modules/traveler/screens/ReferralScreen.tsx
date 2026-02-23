@@ -36,6 +36,7 @@ import { useAuth, useI18n } from '../../../context/AppContext';
 import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 import { referralApi } from '../../../services/referralApi';
 import { MibuBrand } from '../../../../constants/Colors';
+import { getUserFacingErrorMessage } from '../../../shared/errors';
 import {
   LeaderboardPeriod,
 } from '../../../types/referral';
@@ -132,8 +133,9 @@ export function ReferralScreen() {
   const handleGenerateCode = () => {
     if (generateCodeMutation.isPending) return;
     generateCodeMutation.mutate(undefined as never, {
-      onError: () => {
-        Alert.alert(t.common_error, t.referral_generateError);
+      onError: (error: unknown) => {
+        const message = getUserFacingErrorMessage(error, t.referral_generateError);
+        Alert.alert(t.common_error, message);
       },
     });
   };
@@ -181,9 +183,10 @@ export function ReferralScreen() {
         );
         refreshAll(); // 刷新所有查詢
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Apply code failed:', error);
-      Alert.alert(t.common_error, error.message || t.referral_applyError);
+      const message = getUserFacingErrorMessage(error, t.referral_applyError);
+      Alert.alert(t.common_error, message);
     } finally {
       setApplyingCode(false);
     }
