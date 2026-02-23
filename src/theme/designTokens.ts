@@ -22,19 +22,24 @@
 import { Dimensions } from 'react-native';
 import { MibuBrand } from '../../constants/Colors';
 
-// ========== iPad 等比縮放 ==========
-// iPad 內容寬度 ~750pt vs iPhone ~390pt，字體與間距需等比放大以維持視覺比例
-const TABLET_BREAKPOINT = 600;
+// ========== iPad 各尺寸等比縮放 ==========
+// 根據螢幕寬度分級，字體與間距按比例放大以維持手機上的視覺比例
+// iPad Mini(744pt) → 1.1x | iPad Air/Pro 11"(820-834pt) → 1.15x | iPad Pro 13"(1024pt) → 1.2x
 const { width: screenWidth } = Dimensions.get('window');
-const isTablet = screenWidth > TABLET_BREAKPOINT;
-const tabletScale = isTablet ? 1.2 : 1;
+function getTabletScale(width: number): number {
+  if (width <= 600) return 1;       // iPhone
+  if (width <= 768) return 1.1;     // iPad Mini
+  if (width <= 850) return 1.15;    // iPad Air / iPad Pro 11"
+  return 1.2;                        // iPad Pro 13"
+}
+const tabletScale = getTabletScale(screenWidth);
 const s = (value: number) => Math.round(value * tabletScale);
 
 // ========== 間距系統 (4px 基準) ==========
 /**
  * 間距系統
  * 基於 4px 的倍數設計，確保視覺一致性
- * iPad 自動放大 1.2 倍
+ * iPad 依尺寸放大 1.1~1.2 倍
  */
 export const Spacing = {
   /** 極小間距 - 4px（元素內緊密間距） */
@@ -57,7 +62,7 @@ export const Spacing = {
 /**
  * 圓角系統
  * 統一的圓角規範，從極小到全圓
- * iPad 自動放大 1.2 倍
+ * iPad 依尺寸放大 1.1~1.2 倍
  */
 export const Radius = {
   /** 極小圓角 - 4px（tag、badge） */
@@ -80,7 +85,7 @@ export const Radius = {
 /**
  * 字體大小系統
  * 從極小到巨大的字體尺寸規範
- * iPad 自動放大 1.2 倍
+ * iPad 依尺寸放大 1.1~1.2 倍
  */
 export const FontSize = {
   /** 極小文字 - 10px（badge、輔助標記） */

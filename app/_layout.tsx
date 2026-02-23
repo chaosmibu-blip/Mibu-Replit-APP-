@@ -33,13 +33,18 @@ import { NetworkBanner } from '../src/modules/shared/components/ui/NetworkBanner
 import { useNotificationHandler } from '../hooks/useNotificationHandler';
 import { MibuBrand } from '../constants/Colors';
 
-// iPad 適配：螢幕寬度 > 600pt 視為平板，內容寬度取螢幕 85% 但最大 750pt
-// iPad 13"(1024pt) → 750pt 內容 + 137pt×2 邊距
-// iPad Air(834pt)  → 709pt 內容 + 62pt×2 邊距
-// iPad Mini(744pt) → 632pt 內容 + 56pt×2 邊距
+// iPad 各尺寸適配：根據螢幕寬度分級，調整內容區佔比
+// iPad Mini(744pt)        → 92% = 684pt 內容 + 30pt×2 邊距
+// iPad Air/Pro 11"(834pt) → 88% = 734pt 內容 + 50pt×2 邊距
+// iPad Pro 13"(1024pt)    → 85% = 750pt 內容（上限）+ 137pt×2 邊距
 const TABLET_MAX_CONTENT_WIDTH = 750;
-const TABLET_CONTENT_RATIO = 0.85;
 const TABLET_BREAKPOINT = 600;
+
+function getTabletContentRatio(width: number): number {
+  if (width <= 768) return 0.92;    // iPad Mini：螢幕較窄，內容佔多一點
+  if (width <= 850) return 0.88;    // iPad Air / Pro 11"
+  return 0.85;                       // iPad Pro 13"
+}
 
 // 覆蓋 React Navigation 預設背景色，統一使用 Mibu warmWhite
 const MibuLightTheme = {
@@ -114,7 +119,7 @@ export default function RootLayout() {
           <View style={[
             { flex: 1 },
             isTablet && {
-              maxWidth: Math.min(screenWidth * TABLET_CONTENT_RATIO, TABLET_MAX_CONTENT_WIDTH),
+              maxWidth: Math.min(screenWidth * getTabletContentRatio(screenWidth), TABLET_MAX_CONTENT_WIDTH),
               width: '100%',
               alignSelf: 'center',
               backgroundColor: MibuBrand.warmWhite,
