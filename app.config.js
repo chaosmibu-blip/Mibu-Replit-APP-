@@ -51,13 +51,8 @@ const baseConfig = {
         backgroundColor: '#F5E6D3',      // Mibu 品牌奶油色
       },
     ],
-    [
-      'expo-media-library',              // 相簿存取（儲存 Mini 頭像）
-      {
-        photosPermission: 'Mibu 需要存取您的相簿，以便將 AI 旅伴「Mini」的頭像圖片儲存到您的相簿中',
-        savePhotosPermission: 'Mibu 需要存取您的相簿，以便將 AI 旅伴「Mini」的頭像圖片儲存到您的相簿中',
-      },
-    ],
+    // expo-media-library：權限描述統一在 infoPlist 區段設定，避免 plugin 覆蓋
+    'expo-media-library',
     [
       'expo-notifications',              // 推播通知（Android 通知列 icon）
       {
@@ -124,8 +119,9 @@ const productionConfig = {
     // iOS 權限說明文字（App Store 審核必填）
     // 注意：只宣告實際有使用的權限，未使用的權限會被 Apple 退件（Guideline 5.1.1）
     infoPlist: {
-      NSLocationWhenInUseUsageDescription: 'Mibu 需要您的位置，以便在扭蛋時自動鎖定您所在的縣市，並為您導航至景點',
-      NSPhotoLibraryUsageDescription: 'Mibu 需要存取您的相簿，以便您選擇照片作為自訂個人頭像，以及將 AI 旅伴「Mini」的頭像圖片儲存到您的相簿中',
+      NSLocationWhenInUseUsageDescription: '允許 Mibu 取得您的位置，以便為您導航至想去的地點。例如：在圖鑑或行程頁面點擊景點的「導航」按鈕後，系統會根據您的所在位置開啟地圖並規劃前往該景點的路線。',
+      NSPhotoLibraryUsageDescription: '允許 Mibu 存取您的相簿，讓您可以從相簿中選擇一張照片作為個人頭像。例如：在「設定 > 個人資料」頁面，點擊頭像後選擇「從相簿選擇」上傳自訂照片。',
+      NSPhotoLibraryAddUsageDescription: '允許 Mibu 將圖片儲存到您的相簿。例如：在行程頁面中，您可以將 AI 旅伴 Mini 的頭像圖片儲存到相簿。',
       ITSAppUsesNonExemptEncryption: false,  // App 未使用非豁免加密，避免每次提審手動確認
       // Google OAuth redirect URI（expo-auth-session 回調用）
       CFBundleURLTypes: [
