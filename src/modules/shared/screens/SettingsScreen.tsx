@@ -351,32 +351,30 @@ export function SettingsScreen() {
         },
       ],
     },
-    // #053: 申請入口（自己人 + 商家）
-    {
-      title: t.explore,
-      items: [
-        // 自己人申請：根據狀態顯示不同內容
-        ...(partnerStatus !== 'approved' ? [{
-          icon: 'people-outline' as keyof typeof Ionicons.glyphMap,
-          label: t.settings_partnerApply,
-          action: () => router.push('/partner-apply' as any),
-          hasArrow: true,
-          badge: partnerStatus === 'pending' ? t.settings_applicationPending : undefined,
-          iconBg: '#F0FDF4',
-          iconColor: MibuBrand.success,
-        }] : []),
-        // 商家申請：根據狀態顯示不同內容
-        ...(merchantStatus !== 'approved' ? [{
-          icon: 'storefront-outline' as keyof typeof Ionicons.glyphMap,
-          label: t.settings_merchantApply,
-          action: () => router.push('/merchant-apply' as any),
-          hasArrow: true,
-          badge: merchantStatus === 'pending' ? t.settings_applicationPending : undefined,
-          iconBg: '#FFF7ED',
-          iconColor: '#EA580C',
-        }] : []),
-      ].filter(Boolean),
-    },
+    // [HIDDEN] 申請入口暫時隱藏（自己人 + 商家）
+    // {
+    //   title: t.explore,
+    //   items: [
+    //     ...(partnerStatus !== 'approved' ? [{
+    //       icon: 'people-outline' as keyof typeof Ionicons.glyphMap,
+    //       label: t.settings_partnerApply,
+    //       action: () => router.push('/partner-apply' as any),
+    //       hasArrow: true,
+    //       badge: partnerStatus === 'pending' ? t.settings_applicationPending : undefined,
+    //       iconBg: '#F0FDF4',
+    //       iconColor: MibuBrand.success,
+    //     }] : []),
+    //     ...(merchantStatus !== 'approved' ? [{
+    //       icon: 'storefront-outline' as keyof typeof Ionicons.glyphMap,
+    //       label: t.settings_merchantApply,
+    //       action: () => router.push('/merchant-apply' as any),
+    //       hasArrow: true,
+    //       badge: merchantStatus === 'pending' ? t.settings_applicationPending : undefined,
+    //       iconBg: '#FFF7ED',
+    //       iconColor: '#EA580C',
+    //     }] : []),
+    //   ].filter(Boolean),
+    // },
     // 偏好設定群組（推播通知開關）
     {
       title: t.settings_preferences,
