@@ -58,8 +58,8 @@ type EditMode = 'create' | 'edit' | null;
 /** 公告類型選項（翻譯 key 對應） */
 const TYPE_OPTIONS: { value: AnnouncementType; labelKey: string }[] = [
   { value: 'announcement', labelKey: 'admin_typeAnnouncement' },
-  { value: 'flash_event', labelKey: 'admin_typeFlashEvent' },
-  { value: 'holiday_event', labelKey: 'admin_typeHolidayEvent' },
+  { value: 'nationwide', labelKey: 'admin_typeNationwide' },
+  { value: 'limited', labelKey: 'admin_typeLimited' },
 ];
 
 // ============ 主元件 ============
@@ -268,8 +268,8 @@ export function AnnouncementManageScreen() {
   const getTypeColor = (type: AnnouncementType) => {
     switch (type) {
       case 'announcement': return MibuBrand.brown;         // 棕色 - 一般公告
-      case 'flash_event': return SemanticColors.starYellow; // 金色 - 快閃活動
-      case 'holiday_event': return '#ec4899';               // 粉色 - 節慶活動
+      case 'nationwide': return SemanticColors.starYellow; // 金色 - 全國活動
+      case 'limited': return '#ec4899';                  // 粉色 - 限定活動
       default: return MibuBrand.tan;
     }
   };

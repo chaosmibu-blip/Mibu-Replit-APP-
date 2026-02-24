@@ -68,10 +68,10 @@ export interface PlaceDraft {
 /**
  * 公告類型
  * - announcement: 一般公告
- * - flash_event: 快閃活動
- * - holiday_event: 節慶活動
+ * - nationwide: 全國活動（舊 flash_event）
+ * - limited: 限定活動（舊 holiday_event）
  */
-export type AnnouncementType = 'announcement' | 'flash_event' | 'holiday_event';
+export type AnnouncementType = 'announcement' | 'nationwide' | 'limited';
 
 /**
  * 公告

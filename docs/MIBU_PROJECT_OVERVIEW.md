@@ -310,7 +310,7 @@ SOS 功能 → 差異化賣點 → 「有 Mibu 更安心」
 |------|------|
 | **功能** | 自動輪播系統公告和活動 |
 | **為什麼** | 曝光重要資訊，為商家活動導流 |
-| **巧思** | 支援三種類型：announcement/flash_event/holiday_event |
+| **巧思** | 支援三種類型：announcement/nationwide/limited |
 
 ---
 

@@ -6,6 +6,31 @@
 
 ## 最新回報
 
+### 2026-02-24 #055：全域命名統一 — Events type 值變更
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #055 |
+| 狀態 | ✅ 完成 |
+
+**Events type 值變更**
+- [x] `AnnouncementType` 型別：`flash_event` → `nationwide`、`holiday_event` → `limited`
+- [x] `AnnouncementManageScreen.tsx`：TYPE_OPTIONS + getTypeColor
+- [x] `AdminAnnouncementsScreen.tsx`：typeLabels + typeColors + JSX array
+- [x] 4 語系翻譯 key 更新（admin_typeNationwide / admin_typeLimited）
+
+**用戶角色值 user → traveler**
+- [x] 不需修改 — 本專案 `UserRole` 已經是 `'traveler'`，無 `'user'` 角色值
+- [x] `msg.role === 'user'` 為 AI 聊天角色（user/assistant），非用戶身份，不動
+
+**共用套件**
+- [x] `@chaosmibu-blip/mibu-shared` 升級 1.0.7 → 1.0.9
+
+**文件更新**
+- [x] `docs/memory-screens.md`、`docs/MIBU_PROJECT_OVERVIEW.md`
+
+---
+
 ### 2026-02-20 #052：推播通知完整串接
 
 | 項目 | 內容 |
@@ -1163,6 +1188,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 055 | 02-24 | 全域命名統一 — Events type 值變更 + 共用套件升級 | ✅ |
 | 053 | 02-20 | specialist→partner 改名 + 自己人/商家申請系統 | ✅ |
 | 052 | 02-20 | 推播通知完整串接（補完勿擾時段時間編輯） | ✅ |
 | 050 | 02-15 | APP 金流頁面處理 E1016 錯誤（訪客金流限制攔截器） | ✅ |

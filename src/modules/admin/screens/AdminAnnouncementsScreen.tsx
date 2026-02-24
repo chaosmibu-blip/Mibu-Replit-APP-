@@ -92,15 +92,15 @@ export function AdminAnnouncementsScreen() {
   /** 公告類型標籤對照表 */
   const typeLabels: Record<AnnouncementType, string> = {
     announcement: t.admin_typeAnnouncement,
-    flash_event: t.admin_typeFlashEvent,
-    holiday_event: t.admin_typeHolidayEvent,
+    nationwide: t.admin_typeNationwide,
+    limited: t.admin_typeLimited,
   };
 
   /** 公告類型顏色對照表 */
   const typeColors: Record<AnnouncementType, string> = {
     announcement: MibuBrand.info,      // 藍色 - 一般公告
-    flash_event: MibuBrand.warning,    // 橘色 - 快閃活動
-    holiday_event: MibuBrand.error,    // 紅色 - 節日限定
+    nationwide: MibuBrand.warning,    // 橘色 - 全國活動
+    limited: MibuBrand.error,        // 紅色 - 限定活動
   };
 
   // （React Query 自動載入，不需要 useEffect + loadData）
@@ -339,7 +339,7 @@ export function AdminAnnouncementsScreen() {
             {/* 類型選擇 */}
             <Text style={styles.inputLabel}>{t.admin_type}</Text>
             <View style={styles.typeButtons}>
-              {(['announcement', 'flash_event', 'holiday_event'] as AnnouncementType[]).map((type) => (
+              {(['announcement', 'nationwide', 'limited'] as AnnouncementType[]).map((type) => (
                 <TouchableOpacity
                   key={type}
                   style={[
