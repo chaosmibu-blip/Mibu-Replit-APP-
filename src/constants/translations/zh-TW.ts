@@ -1497,6 +1497,54 @@ const zhTW: Record<string, string> = {
     aiDisclosure_decline: '不同意',
     settings_aiDataSharing: 'AI 資料分享',
 
+    // ============ MINI 貓咪系統（#056-#059）============
+
+    // #056 MINI Profile
+    mini_title: 'MINI',
+    mini_profileTitle: 'MINI 貓咪',
+    mini_mood: '心情',
+    mini_satiety: '飽食度',
+    mini_bondLevel: '羈絆等級',
+    mini_growthStage: '成長階段',
+    mini_editName: '修改名字',
+    mini_namePlaceholder: '輸入 MINI 的名字',
+    mini_nameUpdated: '名字更新成功',
+    mini_nameEmpty: '名字不能為空',
+    mini_stage_kitten: '幼貓',
+    mini_stage_young: '少年貓',
+    mini_stage_adult: '成年貓',
+    mini_stage_elder: '長老貓',
+    mini_mood_happy: '開心',
+    mini_mood_hungry: '飢餓',
+    mini_mood_bored: '無聊',
+    mini_mood_excited: '興奮',
+    mini_mood_proud: '驕傲',
+    mini_mood_sad: '難過',
+    mini_mood_missing_you: '想你了',
+
+    // #058 塗鴉牆
+    mini_graffitiTab: '塗鴉牆',
+    mini_graffitiEmpty: '還沒有留言，成為第一個！',
+    mini_graffitiPlaceholder: '留下你的塗鴉...',
+    mini_graffitiSend: '發送',
+    mini_graffitiDelete: '刪除',
+    mini_graffitiDeleteConfirm: '確定要刪除這則留言嗎？',
+
+    // #059 筆記
+    mini_notesTab: '筆記',
+    mini_notesEmpty: '還沒有筆記，記錄你的想法！',
+    mini_notesPlaceholder: '寫下你的筆記...',
+    mini_notesSave: '儲存',
+    mini_notesEdit: '編輯',
+    mini_notesDelete: '刪除',
+    mini_notesDeleteConfirm: '確定要刪除這則筆記嗎？',
+    mini_notesCreated: '筆記已新增',
+    mini_notesUpdated: '筆記已更新',
+    mini_notesDeleted: '筆記已刪除',
+
+    // 景點詳情 Tab
+    mini_infoTab: '詳情',
+
     itemBox_packOpenSuccess: '開啟成功',
     itemBox_packOpenResult: '景點已加入到圖鑑中',
     itemBox_packOpenFailed: '開啟失敗，請稍後再試',

@@ -6,6 +6,45 @@
 
 ## 最新回報
 
+### 2026-02-25 #056/#058/#059：MINI 貓咪系統（Profile + 塗鴉牆 + 筆記）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #056, #058, #059 |
+| 狀態 | ✅ 完成（前端已串接，待後端部署 API 後驗證） |
+
+**#056 MINI Profile**
+- [x] 型別定義 `src/types/mini.ts`（涵蓋 #056-#061 全部型別）
+- [x] API 服務 `src/services/miniApi.ts`（GET /api/mini/profile、PATCH /api/mini/profile/name）
+- [x] React Query hooks `src/hooks/useMiniQueries.ts`（useMiniProfile、useUpdateMiniName）
+- [x] 畫面 `src/modules/traveler/screens/MiniProfileScreen.tsx`（名字編輯、心情、飽食度、羈絆、成長階段）
+- [x] 路由 `app/mini-profile.tsx`
+
+**#058 景點塗鴉牆**
+- [x] API：GET/POST /api/mini/graffiti/:placeId、DELETE /api/mini/graffiti/:id
+- [x] Hooks：useGraffiti、useCreateGraffiti、useDeleteGraffiti
+- [x] UI：PlaceDetailModal 內新增「塗鴉牆」Tab（SegmentedControl 切換）
+- [x] 功能：查看留言列表、發送留言、刪除自己的留言（含確認彈窗）
+
+**#059 景點筆記**
+- [x] API：GET/POST /api/mini/notes/:placeId、PATCH/DELETE /api/mini/notes/:id
+- [x] Hooks：useNotes、useCreateNote、useUpdateNote、useDeleteNote
+- [x] UI：PlaceDetailModal 內新增「筆記」Tab
+- [x] 功能：查看筆記列表（含 tags pill）、新增/行內編輯/刪除筆記（含確認彈窗）
+
+**翻譯**（四語系 zh-TW / en / ja / ko）
+- [x] mini_* 共 40+ 個翻譯 key（Profile、塗鴉牆、筆記、心情、成長階段）
+
+**共用建設**
+- [x] `src/types/index.ts` 註冊 mini 型別
+- [x] `src/services/api.ts` 註冊 miniApi + ApiService proxy
+- [x] `src/hooks/useAuthQuery.ts` 新增 MINI query keys
+- [x] `src/modules/traveler/index.ts` 匯出 MiniProfileScreen
+
+**注意**：後端 API 尚未確認是否已部署，hooks 層已完成但 UI 有 loading/error fallback 處理。
+
+---
+
 ### 2026-02-25 #062：Apple 審查要求 — AI 功能同意彈窗（Guideline 5.1.2(i)）
 
 | 項目 | 內容 |

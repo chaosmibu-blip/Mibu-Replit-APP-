@@ -1450,6 +1450,54 @@ const ja: Record<string, string> = {
     aiDisclosure_decline: '同意しない',
     settings_aiDataSharing: 'AI データ共有',
 
+    // ============ MINI 猫システム（#056-#059）============
+
+    // #056 MINI プロフィール
+    mini_title: 'MINI',
+    mini_profileTitle: 'MINI ねこ',
+    mini_mood: '気分',
+    mini_satiety: '満腹度',
+    mini_bondLevel: '絆レベル',
+    mini_growthStage: '成長段階',
+    mini_editName: '名前を変更',
+    mini_namePlaceholder: 'MINI の名前を入力',
+    mini_nameUpdated: '名前を更新しました',
+    mini_nameEmpty: '名前を入力してください',
+    mini_stage_kitten: '子猫',
+    mini_stage_young: '若猫',
+    mini_stage_adult: '成猫',
+    mini_stage_elder: '長老猫',
+    mini_mood_happy: '嬉しい',
+    mini_mood_hungry: 'お腹すいた',
+    mini_mood_bored: '退屈',
+    mini_mood_excited: 'ワクワク',
+    mini_mood_proud: '誇らしい',
+    mini_mood_sad: '悲しい',
+    mini_mood_missing_you: '会いたい',
+
+    // #058 落書きウォール
+    mini_graffitiTab: '落書き',
+    mini_graffitiEmpty: 'まだメッセージがありません。最初に書いてみましょう！',
+    mini_graffitiPlaceholder: '落書きを残す...',
+    mini_graffitiSend: '送信',
+    mini_graffitiDelete: '削除',
+    mini_graffitiDeleteConfirm: 'このメッセージを削除しますか？',
+
+    // #059 メモ
+    mini_notesTab: 'メモ',
+    mini_notesEmpty: 'まだメモがありません。あなたの感想を書いてみましょう！',
+    mini_notesPlaceholder: 'メモを書く...',
+    mini_notesSave: '保存',
+    mini_notesEdit: '編集',
+    mini_notesDelete: '削除',
+    mini_notesDeleteConfirm: 'このメモを削除しますか？',
+    mini_notesCreated: 'メモを追加しました',
+    mini_notesUpdated: 'メモを更新しました',
+    mini_notesDeleted: 'メモを削除しました',
+
+    // スポット詳細タブ
+    mini_infoTab: '詳細',
+
     itemBox_packOpenSuccess: '開封完了',
     itemBox_packOpenResult: 'スポットが図鑑に追加されました',
     itemBox_packOpenFailed: '開封に失敗しました。後でもう一度お試しください',

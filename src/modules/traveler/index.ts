@@ -18,6 +18,7 @@ export { ContributionScreen } from './screens/ContributionScreen';
 export { FavoritesScreen } from './screens/FavoritesScreen';
 export { MailboxScreen } from './screens/MailboxScreen';
 export { MailboxDetailScreen } from './screens/MailboxDetailScreen';
+export { MiniProfileScreen } from './screens/MiniProfileScreen';
 
 // Components - 元件
 export { CouponWinAnimation, CouponPreviewCard } from './components';

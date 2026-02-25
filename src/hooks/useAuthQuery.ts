@@ -189,5 +189,11 @@ export const queryKeys = {
   // 用戶
   profile: ['user', 'profile'] as const,
   notifications: ['user', 'notifications'] as const,
+
+  // MINI 貓咪系統
+  miniProfile: ['mini', 'profile'] as const,
+  explorationStatus: ['mini', 'exploration', 'status'] as const,
+  graffiti: (placeId: number) => ['mini', 'graffiti', placeId] as const,
+  notes: (placeId: number) => ['mini', 'notes', placeId] as const,
 } as const;
 

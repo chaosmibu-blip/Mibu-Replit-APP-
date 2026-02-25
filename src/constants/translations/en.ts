@@ -1457,6 +1457,54 @@ const en: Record<string, string> = {
     aiDisclosure_decline: 'Decline',
     settings_aiDataSharing: 'AI Data Sharing',
 
+    // ============ MINI Cat System (#056-#059) ============
+
+    // #056 MINI Profile
+    mini_title: 'MINI',
+    mini_profileTitle: 'MINI Cat',
+    mini_mood: 'Mood',
+    mini_satiety: 'Satiety',
+    mini_bondLevel: 'Bond Level',
+    mini_growthStage: 'Growth Stage',
+    mini_editName: 'Edit Name',
+    mini_namePlaceholder: "Enter MINI's name",
+    mini_nameUpdated: 'Name updated successfully',
+    mini_nameEmpty: 'Name cannot be empty',
+    mini_stage_kitten: 'Kitten',
+    mini_stage_young: 'Young',
+    mini_stage_adult: 'Adult',
+    mini_stage_elder: 'Elder',
+    mini_mood_happy: 'Happy',
+    mini_mood_hungry: 'Hungry',
+    mini_mood_bored: 'Bored',
+    mini_mood_excited: 'Excited',
+    mini_mood_proud: 'Proud',
+    mini_mood_sad: 'Sad',
+    mini_mood_missing_you: 'Missing You',
+
+    // #058 Graffiti Wall
+    mini_graffitiTab: 'Graffiti',
+    mini_graffitiEmpty: 'No messages yet, be the first!',
+    mini_graffitiPlaceholder: 'Leave your graffiti...',
+    mini_graffitiSend: 'Send',
+    mini_graffitiDelete: 'Delete',
+    mini_graffitiDeleteConfirm: 'Are you sure you want to delete this message?',
+
+    // #059 Notes
+    mini_notesTab: 'Notes',
+    mini_notesEmpty: 'No notes yet, write down your thoughts!',
+    mini_notesPlaceholder: 'Write your note...',
+    mini_notesSave: 'Save',
+    mini_notesEdit: 'Edit',
+    mini_notesDelete: 'Delete',
+    mini_notesDeleteConfirm: 'Are you sure you want to delete this note?',
+    mini_notesCreated: 'Note created',
+    mini_notesUpdated: 'Note updated',
+    mini_notesDeleted: 'Note deleted',
+
+    // Place Detail Tabs
+    mini_infoTab: 'Info',
+
     itemBox_packOpenSuccess: 'Opened Successfully',
     itemBox_packOpenResult: 'Places have been added to your collection',
     itemBox_packOpenFailed: 'Failed to open, please try again later',

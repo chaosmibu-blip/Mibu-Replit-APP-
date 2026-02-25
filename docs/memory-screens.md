@@ -149,6 +149,12 @@ app/
 | `ReferralScreen.tsx` | `/referral` | 推薦好友、推薦碼 |
 | `ContributionScreen.tsx` | `/contribution` | 回報、建議、投票 |
 
+### MINI 貓咪模組 (#056-#059)
+| Screen 元件 | 對應路由 | 說明 |
+|-------------|----------|------|
+| `MiniProfileScreen.tsx` | `/mini-profile` | #056 MINI 基本資料 + 改名 |
+| `CollectionScreen.tsx`（PlaceDetailModal 內） | - | #058 塗鴉牆 + #059 筆記（Tab 切換） |
+
 ### 行程規劃模組 (Planner)
 | Screen 元件 | 對應路由 | 說明 |
 |-------------|----------|------|

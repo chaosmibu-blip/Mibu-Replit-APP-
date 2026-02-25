@@ -37,6 +37,7 @@ import { eventApi } from './eventApi';
 import { itineraryApi } from './itineraryApi';
 import { rulesApi } from './rulesApi';
 import { mailboxApi } from './mailboxApi';
+import { miniApi } from './miniApi';
 
 // ============ Re-export 模組化 API ============
 
@@ -100,6 +101,9 @@ export { rulesApi } from './rulesApi';
 
 // 信箱系統（#045 統一收件箱 + 優惠碼）
 export { mailboxApi } from './mailboxApi';
+
+// MINI 貓咪系統（#056-#061）
+export { miniApi } from './miniApi';
 
 // ============ 統一 API Service（向後兼容） ============
 
@@ -484,6 +488,33 @@ class ApiService {
   redeemPromoCode = mailboxApi.redeemPromoCode.bind(mailboxApi);
   /** 驗證優惠碼 */
   validatePromoCode = mailboxApi.validatePromoCode.bind(mailboxApi);
+
+  // ============ MINI 貓咪系統 (#056-#061) ============
+
+  /** 取得 MINI Profile */
+  getMiniProfile = miniApi.getProfile.bind(miniApi);
+  /** 更改 MINI 名字 */
+  updateMiniName = miniApi.updateName.bind(miniApi);
+  /** 開始探索 */
+  startExploration = miniApi.startExploration.bind(miniApi);
+  /** 查詢探索狀態 */
+  getExplorationStatus = miniApi.getExplorationStatus.bind(miniApi);
+  /** 領取探索結果 */
+  claimExploration = miniApi.claimExploration.bind(miniApi);
+  /** 取得景點塗鴉牆 */
+  getGraffiti = miniApi.getGraffiti.bind(miniApi);
+  /** 新增塗鴉留言 */
+  createGraffiti = miniApi.createGraffiti.bind(miniApi);
+  /** 刪除塗鴉留言 */
+  deleteGraffiti = miniApi.deleteGraffiti.bind(miniApi);
+  /** 取得景點筆記 */
+  getNotes = miniApi.getNotes.bind(miniApi);
+  /** 新增筆記 */
+  createNote = miniApi.createNote.bind(miniApi);
+  /** 更新筆記 */
+  updateNote = miniApi.updateNote.bind(miniApi);
+  /** 刪除筆記 */
+  deleteNote = miniApi.deleteNote.bind(miniApi);
 }
 
 // ============ 匯出 ============

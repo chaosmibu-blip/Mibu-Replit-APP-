@@ -683,6 +683,211 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xs,
     color: MibuBrand.brownLight,
   },
+
+  // ========== #058 塗鴉牆 + #059 筆記（PlaceDetailModal Tab）==========
+
+  /** 空狀態提示文字 */
+  miniEmptyText: {
+    fontSize: FontSize.md,
+    color: MibuBrand.brownLight,
+    textAlign: 'center',
+    marginVertical: Spacing.xl,
+  },
+
+  /** 輸入列（TextInput + 發送按鈕） */
+  miniInputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: Spacing.sm,
+    marginTop: Spacing.lg,
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: MibuBrand.tanLight,
+  },
+
+  /** 輸入框 */
+  miniInput: {
+    flex: 1,
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: FontSize.md,
+    color: MibuBrand.brownDark,
+    maxHeight: 100,
+  },
+
+  /** 發送/新增按鈕 */
+  miniSendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.full,
+    backgroundColor: MibuBrand.brown,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  /** 發送按鈕禁用狀態 */
+  miniSendButtonDisabled: {
+    opacity: 0.4,
+  },
+
+  // ---- 塗鴉牆項目 ----
+
+  /** 塗鴉留言卡片 */
+  graffitiItem: {
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+
+  /** 塗鴉留言頭部（名稱 + 日期） */
+  graffitiHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
+
+  /** 塗鴉留言者名稱 */
+  graffitiName: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: MibuBrand.brown,
+  },
+
+  /** 塗鴉留言日期 */
+  graffitiDate: {
+    fontSize: FontSize.xs,
+    color: MibuBrand.brownLight,
+  },
+
+  /** 塗鴉留言內容 */
+  graffitiContent: {
+    fontSize: FontSize.md,
+    color: MibuBrand.brownDark,
+    lineHeight: 22,
+  },
+
+  /** 塗鴉刪除按鈕 */
+  graffitiDeleteButton: {
+    alignSelf: 'flex-end',
+    marginTop: Spacing.xs,
+    padding: Spacing.xs,
+  },
+
+  // ---- 筆記項目 ----
+
+  /** 筆記卡片 */
+  noteItem: {
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+
+  /** 筆記內容文字 */
+  noteContent: {
+    fontSize: FontSize.md,
+    color: MibuBrand.brownDark,
+    lineHeight: 22,
+  },
+
+  /** 標籤列 */
+  noteTagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.xs,
+    marginTop: Spacing.sm,
+  },
+
+  /** 單一標籤 */
+  noteTag: {
+    backgroundColor: MibuBrand.cream,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
+  },
+
+  /** 標籤文字 */
+  noteTagText: {
+    fontSize: FontSize.xs,
+    color: MibuBrand.copper,
+    fontWeight: '500',
+  },
+
+  /** 筆記底部列（日期 + 操作） */
+  noteFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+  },
+
+  /** 筆記日期 */
+  noteDate: {
+    fontSize: FontSize.xs,
+    color: MibuBrand.brownLight,
+  },
+
+  /** 筆記操作按鈕列 */
+  noteActions: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+
+  /** 筆記編輯輸入框 */
+  noteEditInput: {
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: Radius.sm,
+    borderWidth: 1,
+    borderColor: MibuBrand.brown,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: FontSize.md,
+    color: MibuBrand.brownDark,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+
+  /** 筆記編輯操作列 */
+  noteEditActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+
+  /** 取消按鈕 */
+  noteCancelButton: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.sm,
+    borderWidth: 1,
+    borderColor: MibuBrand.tanLight,
+  },
+
+  /** 取消按鈕文字 */
+  noteCancelText: {
+    fontSize: FontSize.md,
+    color: MibuBrand.brownLight,
+  },
+
+  /** 儲存按鈕 */
+  noteSaveButton: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.sm,
+    backgroundColor: MibuBrand.brown,
+  },
+
+  /** 儲存按鈕文字 */
+  noteSaveText: {
+    fontSize: FontSize.md,
+    color: UIColors.white,
+    fontWeight: '600',
+  },
 });
 
 export default styles;

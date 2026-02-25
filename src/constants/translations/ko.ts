@@ -1439,6 +1439,54 @@ const ko: Record<string, string> = {
     itemBox_packOpenTitle: '장소 팩 열기',
     itemBox_packOpenConfirm: '"{name}"을(를) 여시겠습니까?\n{city}의 장소 {count}개를 획득합니다',
     itemBox_packOpen: '열기',
+    // ============ MINI 고양이 시스템 (#056-#059) ============
+
+    // #056 MINI 프로필
+    mini_title: 'MINI',
+    mini_profileTitle: 'MINI 고양이',
+    mini_mood: '기분',
+    mini_satiety: '포만감',
+    mini_bondLevel: '유대 레벨',
+    mini_growthStage: '성장 단계',
+    mini_editName: '이름 변경',
+    mini_namePlaceholder: 'MINI의 이름을 입력하세요',
+    mini_nameUpdated: '이름이 업데이트되었습니다',
+    mini_nameEmpty: '이름을 입력해주세요',
+    mini_stage_kitten: '아기 고양이',
+    mini_stage_young: '어린 고양이',
+    mini_stage_adult: '성인 고양이',
+    mini_stage_elder: '장로 고양이',
+    mini_mood_happy: '행복',
+    mini_mood_hungry: '배고픔',
+    mini_mood_bored: '지루함',
+    mini_mood_excited: '신남',
+    mini_mood_proud: '자랑스러움',
+    mini_mood_sad: '슬픔',
+    mini_mood_missing_you: '보고 싶어',
+
+    // #058 낙서 벽
+    mini_graffitiTab: '낙서',
+    mini_graffitiEmpty: '아직 메시지가 없습니다. 첫 번째가 되어보세요!',
+    mini_graffitiPlaceholder: '낙서를 남겨보세요...',
+    mini_graffitiSend: '보내기',
+    mini_graffitiDelete: '삭제',
+    mini_graffitiDeleteConfirm: '이 메시지를 삭제하시겠습니까?',
+
+    // #059 메모
+    mini_notesTab: '메모',
+    mini_notesEmpty: '아직 메모가 없습니다. 생각을 적어보세요!',
+    mini_notesPlaceholder: '메모를 작성하세요...',
+    mini_notesSave: '저장',
+    mini_notesEdit: '편집',
+    mini_notesDelete: '삭제',
+    mini_notesDeleteConfirm: '이 메모를 삭제하시겠습니까?',
+    mini_notesCreated: '메모가 추가되었습니다',
+    mini_notesUpdated: '메모가 업데이트되었습니다',
+    mini_notesDeleted: '메모가 삭제되었습니다',
+
+    // 장소 상세 탭
+    mini_infoTab: '정보',
+
     itemBox_packOpenSuccess: '열기 완료',
     // AI 데이터 공유 동의 (Apple Guideline 5.1.2(i) #062)
     aiDisclosure_title: 'AI 데이터 공유',

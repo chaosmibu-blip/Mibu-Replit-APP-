@@ -50,7 +50,14 @@ import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme, UIColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
+import { SegmentedControl } from '../../shared/components/ui/SegmentedControl';
+import {
+  useGraffiti, useCreateGraffiti, useDeleteGraffiti,
+  useNotes, useCreateNote, useUpdateNote, useDeleteNote,
+} from '../../../hooks/useMiniQueries';
+import type { NoteItem } from '../../../types/mini';
 import { tFormat } from '../../../utils/i18n';
+import { Spacing } from '../../../theme/designTokens';
 import styles from './CollectionScreen.styles';
 
 // ============================================================
@@ -116,12 +123,33 @@ interface PlaceDetailModalProps {
 /**
  * PlaceDetailModal - 景點詳情彈窗
  * 顯示景點完整資訊，可導航、收藏、加入黑名單
- *
- * 【截圖 6-8】實作收藏/黑名單功能
+ * #058 塗鴉牆 + #059 筆記（Tab 切換）
  */
+type PlaceDetailTab = 'info' | 'graffiti' | 'notes';
+
 function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: PlaceDetailModalProps) {
-  const [showActionMenu, setShowActionMenu] = useState(false);
   const { t } = useI18n();
+  const placeId = item.id;
+
+  // UI 狀態
+  const [showActionMenu, setShowActionMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState<PlaceDetailTab>('info');
+  const [graffitiInput, setGraffitiInput] = useState('');
+  const [noteInput, setNoteInput] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+
+  // #058 塗鴉牆
+  const graffitiQuery = useGraffiti(placeId);
+  const createGraffitiMutation = useCreateGraffiti();
+  const deleteGraffitiMutation = useDeleteGraffiti();
+
+  // #059 筆記
+  const notesQuery = useNotes(placeId);
+  const createNoteMutation = useCreateNote();
+  const updateNoteMutation = useUpdateNote();
+  const deleteNoteMutation = useDeleteNote();
+
+  // 衍生資料
   const placeName = getPlaceName(item);
   const description = getDescription(item);
   const category = typeof item.category === 'string' ? item.category.toLowerCase() : '';
@@ -129,9 +157,11 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
   const date = formatDate(item.collectedAt);
   const cityDisplay = item.cityDisplay || item.city || '';
   const districtDisplay = item.districtDisplay || item.district || '';
+  const locationText = [districtDisplay, cityDisplay].filter(Boolean).join(' • ') || cityDisplay;
+
+  // ========== 共用事件 ==========
 
   const handleNavigate = () => {
-    // 使用 Google Search 搜尋店名，與扭蛋卡片行為一致
     const query = [placeName, districtDisplay, cityDisplay].filter(Boolean).join(' ');
     const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     Linking.openURL(url);
@@ -153,49 +183,259 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
     setShowActionMenu(true);
   };
 
-  const locationText = [districtDisplay, cityDisplay].filter(Boolean).join(' • ') || cityDisplay;
+  // ========== #058 塗鴉牆操作 ==========
+
+  const handleSendGraffiti = () => {
+    const content = graffitiInput.trim();
+    if (!content) return;
+    createGraffitiMutation.mutate(
+      { placeId, params: { content } },
+      { onSuccess: () => setGraffitiInput('') },
+    );
+  };
+
+  const handleDeleteGraffiti = (graffitiId: number) => {
+    Alert.alert(t.mini_graffitiDelete, t.mini_graffitiDeleteConfirm, [
+      { text: t.cancel, style: 'cancel' },
+      {
+        text: t.mini_graffitiDelete,
+        style: 'destructive',
+        onPress: () => deleteGraffitiMutation.mutate({ graffitiId, placeId }),
+      },
+    ]);
+  };
+
+  // ========== #059 筆記操作 ==========
+
+  const handleSaveNote = () => {
+    const content = noteInput.trim();
+    if (!content) return;
+    if (editingNoteId) {
+      updateNoteMutation.mutate(
+        { noteId: editingNoteId, placeId, params: { content } },
+        { onSuccess: () => { setNoteInput(''); setEditingNoteId(null); } },
+      );
+    } else {
+      createNoteMutation.mutate(
+        { placeId, params: { content } },
+        { onSuccess: () => setNoteInput('') },
+      );
+    }
+  };
+
+  const handleEditNote = (note: NoteItem) => {
+    setEditingNoteId(note.id);
+    setNoteInput(note.content);
+  };
+
+  const handleDeleteNote = (noteId: number) => {
+    Alert.alert(t.mini_notesDelete, t.mini_notesDeleteConfirm, [
+      { text: t.cancel, style: 'cancel' },
+      {
+        text: t.mini_notesDelete,
+        style: 'destructive',
+        onPress: () => deleteNoteMutation.mutate({ noteId, placeId }),
+      },
+    ]);
+  };
+
+  const handleCancelEditNote = () => {
+    setEditingNoteId(null);
+    setNoteInput('');
+  };
+
+  // ========== Render: 詳情 Tab ==========
+
+  const renderInfoTab = () => (
+    <>
+      <Text style={styles.modalPlaceName}>{placeName}</Text>
+      <View style={styles.modalMetaRow}>
+        <Text style={styles.modalMetaText}>{date}</Text>
+        {locationText ? (
+          <>
+            <Text style={styles.modalMetaDot}>&bull;</Text>
+            <Text style={styles.modalMetaText}>{locationText}</Text>
+          </>
+        ) : null}
+      </View>
+      {description ? <Text style={styles.modalDescription}>{description}</Text> : null}
+      <TouchableOpacity
+        style={styles.modalNavigateButton}
+        onPress={handleNavigate}
+        accessibilityLabel={t.collection_viewOnMap}
+      >
+        <Ionicons name="search" size={20} color={UIColors.white} />
+        <Text style={styles.modalNavigateText}>在 Google 中查看</Text>
+      </TouchableOpacity>
+    </>
+  );
+
+  // ========== Render: #058 塗鴉牆 Tab ==========
+
+  const renderGraffitiTab = () => {
+    const graffiti = graffitiQuery.data?.graffiti ?? [];
+    return (
+      <>
+        {graffitiQuery.isLoading && (
+          <ActivityIndicator color={MibuBrand.brown} style={{ marginVertical: Spacing.xl }} />
+        )}
+        {!graffitiQuery.isLoading && graffiti.length === 0 && (
+          <Text style={styles.miniEmptyText}>{t.mini_graffitiEmpty}</Text>
+        )}
+        {graffiti.map((g) => (
+          <View key={g.id} style={styles.graffitiItem}>
+            <View style={styles.graffitiHeader}>
+              <Text style={styles.graffitiName}>{g.displayName}</Text>
+              <Text style={styles.graffitiDate}>{formatDate(g.createdAt)}</Text>
+            </View>
+            <Text style={styles.graffitiContent}>{g.content}</Text>
+            {g.isOwn && (
+              <TouchableOpacity
+                style={styles.graffitiDeleteButton}
+                onPress={() => handleDeleteGraffiti(g.id)}
+              >
+                <Ionicons name="trash-outline" size={16} color={MibuBrand.error} />
+              </TouchableOpacity>
+            )}
+          </View>
+        ))}
+        <View style={styles.miniInputRow}>
+          <TextInput
+            style={styles.miniInput}
+            value={graffitiInput}
+            onChangeText={setGraffitiInput}
+            placeholder={t.mini_graffitiPlaceholder}
+            placeholderTextColor={MibuBrand.brownLight}
+            maxLength={200}
+            multiline
+          />
+          <TouchableOpacity
+            style={[styles.miniSendButton, !graffitiInput.trim() && styles.miniSendButtonDisabled]}
+            onPress={handleSendGraffiti}
+            disabled={!graffitiInput.trim() || createGraffitiMutation.isPending}
+          >
+            <Ionicons name="send" size={18} color={UIColors.white} />
+          </TouchableOpacity>
+        </View>
+      </>
+    );
+  };
+
+  // ========== Render: #059 筆記 Tab ==========
+
+  const renderNotesTab = () => {
+    const notes = notesQuery.data?.notes ?? [];
+    return (
+      <>
+        {notesQuery.isLoading && (
+          <ActivityIndicator color={MibuBrand.brown} style={{ marginVertical: Spacing.xl }} />
+        )}
+        {!notesQuery.isLoading && notes.length === 0 && !noteInput && (
+          <Text style={styles.miniEmptyText}>{t.mini_notesEmpty}</Text>
+        )}
+        {notes.map((note) => (
+          <View key={note.id} style={styles.noteItem}>
+            {editingNoteId === note.id ? (
+              <View>
+                <TextInput
+                  style={styles.noteEditInput}
+                  value={noteInput}
+                  onChangeText={setNoteInput}
+                  multiline
+                  maxLength={2000}
+                  autoFocus
+                />
+                <View style={styles.noteEditActions}>
+                  <TouchableOpacity style={styles.noteCancelButton} onPress={handleCancelEditNote}>
+                    <Text style={styles.noteCancelText}>{t.cancel}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.noteSaveButton, !noteInput.trim() && styles.miniSendButtonDisabled]}
+                    onPress={handleSaveNote}
+                    disabled={!noteInput.trim() || updateNoteMutation.isPending}
+                  >
+                    <Text style={styles.noteSaveText}>{t.mini_notesSave}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <>
+                <Text style={styles.noteContent}>{note.content}</Text>
+                {note.tags.length > 0 && (
+                  <View style={styles.noteTagsRow}>
+                    {note.tags.map((tag, idx) => (
+                      <View key={idx} style={styles.noteTag}>
+                        <Text style={styles.noteTagText}>#{tag}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                <View style={styles.noteFooter}>
+                  <Text style={styles.noteDate}>{formatDate(note.updatedAt)}</Text>
+                  <View style={styles.noteActions}>
+                    <TouchableOpacity onPress={() => handleEditNote(note)}>
+                      <Ionicons name="pencil-outline" size={18} color={MibuBrand.copper} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDeleteNote(note.id)}>
+                      <Ionicons name="trash-outline" size={18} color={MibuBrand.error} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </>
+            )}
+          </View>
+        ))}
+        {!editingNoteId && (
+          <View style={styles.miniInputRow}>
+            <TextInput
+              style={styles.miniInput}
+              value={noteInput}
+              onChangeText={setNoteInput}
+              placeholder={t.mini_notesPlaceholder}
+              placeholderTextColor={MibuBrand.brownLight}
+              maxLength={2000}
+              multiline
+            />
+            <TouchableOpacity
+              style={[styles.miniSendButton, !noteInput.trim() && styles.miniSendButtonDisabled]}
+              onPress={handleSaveNote}
+              disabled={!noteInput.trim() || createNoteMutation.isPending}
+            >
+              <Ionicons name="add" size={20} color={UIColors.white} />
+            </TouchableOpacity>
+          </View>
+        )}
+      </>
+    );
+  };
+
+  // ========== Tab 定義 ==========
+
+  const tabSegments = [
+    { key: 'info', label: t.mini_infoTab },
+    { key: 'graffiti', label: t.mini_graffitiTab },
+    { key: 'notes', label: t.mini_notesTab },
+  ];
 
   return (
     <Modal visible transparent animationType="slide">
-      <TouchableOpacity
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <View
-          style={styles.modalContent}
-          onStartShouldSetResponder={() => true}
-        >
+      <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose}>
+        <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
           <View style={[styles.modalHeader, { backgroundColor: categoryToken.badge }]}>
-            {/* X 按鈕 / 彈出按鈕組 */}
             <View style={styles.modalTopRight}>
               {!showActionMenu ? (
-                <TouchableOpacity
-                  style={styles.modalCircleButton}
-                  onPress={handleClosePress}
-                >
+                <TouchableOpacity style={styles.modalCircleButton} onPress={handleClosePress}>
                   <Ionicons name="close" size={20} color={MibuBrand.dark} />
                 </TouchableOpacity>
               ) : (
                 <View style={styles.modalActionRow}>
-                  <TouchableOpacity
-                    style={styles.modalCircleButton}
-                    onPress={handleFavorite}
-                    accessibilityLabel={t.collection_addToFavorites}
-                  >
+                  <TouchableOpacity style={styles.modalCircleButton} onPress={handleFavorite} accessibilityLabel={t.collection_addToFavorites}>
                     <Ionicons name="heart-outline" size={20} color={MibuBrand.tierSP} />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.modalCircleButton}
-                    onPress={onClose}
-                    accessibilityLabel={t.collection_closeDetails}
-                  >
+                  <TouchableOpacity style={styles.modalCircleButton} onPress={onClose} accessibilityLabel={t.collection_closeDetails}>
                     <Ionicons name="close" size={20} color={MibuBrand.dark} />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.modalCircleButton}
-                    onPress={handleBlacklist}
-                  >
+                  <TouchableOpacity style={styles.modalCircleButton} onPress={handleBlacklist}>
                     <Ionicons name="ban-outline" size={20} color={MibuBrand.copper} />
                   </TouchableOpacity>
                 </View>
@@ -208,30 +448,17 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
             </View>
           </View>
 
-          <ScrollView style={styles.modalScrollContent}>
-            <Text style={styles.modalPlaceName}>{placeName}</Text>
-            <View style={styles.modalMetaRow}>
-              <Text style={styles.modalMetaText}>{date}</Text>
-              {locationText && (
-                <>
-                  <Text style={styles.modalMetaDot}>&bull;</Text>
-                  <Text style={styles.modalMetaText}>{locationText}</Text>
-                </>
-              )}
-            </View>
+          {/* #058/#059 Tab 切換 */}
+          <SegmentedControl
+            segments={tabSegments}
+            selectedKey={activeTab}
+            onSelect={(key) => setActiveTab(key as PlaceDetailTab)}
+          />
 
-            {description && (
-              <Text style={styles.modalDescription}>{description}</Text>
-            )}
-
-            <TouchableOpacity
-              style={styles.modalNavigateButton}
-              onPress={handleNavigate}
-              accessibilityLabel={t.collection_viewOnMap}
-            >
-              <Ionicons name="search" size={20} color={UIColors.white} />
-              <Text style={styles.modalNavigateText}>在 Google 中查看</Text>
-            </TouchableOpacity>
+          <ScrollView style={styles.modalScrollContent} keyboardShouldPersistTaps="handled">
+            {activeTab === 'info' && renderInfoTab()}
+            {activeTab === 'graffiti' && renderGraffitiTab()}
+            {activeTab === 'notes' && renderNotesTab()}
           </ScrollView>
         </View>
       </TouchableOpacity>
