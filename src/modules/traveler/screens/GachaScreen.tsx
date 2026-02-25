@@ -55,6 +55,7 @@ import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Color
 import { ErrorCode, isAuthError, getUserFacingErrorMessage, hasErrorCode } from '../../../shared/errors';
 import { ApiError } from '../../../services/base';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
+import AiDisclosureModal, { hasAcceptedAiDisclosure } from '../../shared/components/AiDisclosureModal';
 import styles, { SCREEN_WIDTH } from './GachaScreen.styles';
 
 // ============================================================
@@ -152,6 +153,14 @@ export function GachaScreen() {
 
   // 暫存扭蛋結果（等待載入動畫結束後顯示）
   const pendingResultRef = useRef<{ items: GachaItem[]; meta: GachaMeta; couponsWon: CouponWon[] } | null>(null);
+
+  // ============================================================
+  // 狀態管理 - AI 揭露彈窗（Apple Guideline 2.1）
+  // ============================================================
+
+  const [showAiDisclosure, setShowAiDisclosure] = useState(false);
+  // 暫存待執行的扭蛋動作（用戶確認 AI 揭露後繼續執行）
+  const pendingGachaRef = useRef(false);
 
   // ============================================================
   // 狀態管理 - 機率說明 Modal（目前隱藏）
@@ -470,6 +479,14 @@ export function GachaScreen() {
     // 檢查是否已選擇國家和城市
     if (!selectedCountryId || !selectedRegionId) return;
 
+    // AI 揭露檢查（Apple Guideline 2.1）：首次使用 AI 功能前揭露
+    const aiAccepted = await hasAcceptedAiDisclosure();
+    if (!aiAccepted) {
+      pendingGachaRef.current = true;
+      setShowAiDisclosure(true);
+      return;
+    }
+
     // 檢查是否有 Token（訪客登入沒有 Token）
     const token = await getToken();
     if (!token) {
@@ -666,6 +683,16 @@ export function GachaScreen() {
       router.push('/(tabs)/gacha/items');
     }
   }, [addToCollection, setResult, router]);
+
+  /** AI 揭露確認後，繼續執行暫停的扭蛋動作 */
+  const handleAiDisclosureAccept = useCallback(() => {
+    setShowAiDisclosure(false);
+    if (pendingGachaRef.current) {
+      pendingGachaRef.current = false;
+      // 延遲一幀讓 Modal 關閉動畫完成
+      setTimeout(() => handleGacha(), 100);
+    }
+  }, []);
 
   // ============================================================
   // 下拉選單選項
@@ -1216,6 +1243,12 @@ export function GachaScreen() {
         storageKey="gacha_tutorial"
         steps={GACHA_TUTORIAL_STEPS}
         language={language as 'zh-TW' | 'en'}
+      />
+
+      {/* ========== AI 揭露彈窗（Apple Guideline 2.1）========== */}
+      <AiDisclosureModal
+        visible={showAiDisclosure}
+        onAccept={handleAiDisclosureAccept}
       />
     </ScrollView>
   );

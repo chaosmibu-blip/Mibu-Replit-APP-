@@ -1440,6 +1440,13 @@ const ja: Record<string, string> = {
     itemBox_packOpenTitle: 'スポットパックを開く',
     itemBox_packOpenConfirm: '「{name}」を開きますか？\n{city}のスポットが{count}件獲得できます',
     itemBox_packOpen: '開く',
+    // AI 開示（Apple Guideline 2.1）
+    aiDisclosure_title: 'この機能はAI技術を使用しています',
+    aiDisclosure_message: '本アプリはサードパーティのAIサービスを使用して：',
+    aiDisclosure_feature1: 'パーソナライズされた旅行プランを生成',
+    aiDisclosure_feature2: 'スマートなスポット推薦と会話を提供',
+    aiDisclosure_accept: '了解しました',
+
     itemBox_packOpenSuccess: '開封完了',
     itemBox_packOpenResult: 'スポットが図鑑に追加されました',
     itemBox_packOpenFailed: '開封に失敗しました。後でもう一度お試しください',

@@ -96,6 +96,7 @@ import { CreateItineraryModal } from './CreateItineraryModal';
 import { AddPlacesModal } from './AddPlacesModal';
 import { useGuestUpgradePrompt } from '../../../hooks/useGuestUpgradePrompt';
 import { UpgradePromptToast } from '../../shared/components/UpgradePromptToast';
+import AiDisclosureModal, { hasAcceptedAiDisclosure } from '../../shared/components/AiDisclosureModal';
 
 // 常數、TypewriterText、輔助函數已拆至獨立檔案
 // → ItineraryScreenV2.styles.ts / TypewriterText.tsx / itineraryHelpers.ts
@@ -162,6 +163,9 @@ export function ItineraryScreenV2() {
 
   // 建立行程 Modal 狀態（表單邏輯已抽至 CreateItineraryModal）
   const [createModalVisible, setCreateModalVisible] = useState(false);
+
+  // AI 揭露彈窗狀態（Apple Guideline 2.1）
+  const [showAiDisclosure, setShowAiDisclosure] = useState(false);
 
   // 【截圖 9-15 #12】編輯標題狀態
   const [editingTitle, setEditingTitle] = useState(false);
@@ -318,6 +322,13 @@ export function ItineraryScreenV2() {
     if (!currentItinerary || !inputText.trim()) return;
     const token = await getToken();
     if (!token) return;
+
+    // AI 揭露檢查（Apple Guideline 2.1）：首次使用 AI 功能前揭露
+    const aiAccepted = await hasAcceptedAiDisclosure();
+    if (!aiAccepted) {
+      setShowAiDisclosure(true);
+      return;
+    }
 
     Keyboard.dismiss();
     const userMessage: AiChatMessage = { role: 'user', content: inputText.trim() };
@@ -1862,6 +1873,16 @@ export function ItineraryScreenV2() {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
+
+      {/* ========== AI 揭露彈窗（Apple Guideline 2.1）========== */}
+      <AiDisclosureModal
+        visible={showAiDisclosure}
+        onAccept={() => {
+          setShowAiDisclosure(false);
+          // 揭露確認後自動重新觸發發送
+          setTimeout(() => sendAiMessage(), 100);
+        }}
+      />
     </View>
   );
 }

@@ -1447,6 +1447,13 @@ const en: Record<string, string> = {
     itemBox_packOpenTitle: 'Open Place Pack',
     itemBox_packOpenConfirm: 'Open "{name}"?\nYou will receive {count} places in {city}',
     itemBox_packOpen: 'Open',
+    // AI Disclosure (Apple Guideline 2.1)
+    aiDisclosure_title: 'This Feature Uses AI',
+    aiDisclosure_message: 'This app uses third-party AI services to:',
+    aiDisclosure_feature1: 'Generate personalized travel itineraries',
+    aiDisclosure_feature2: 'Provide smart recommendations and chat',
+    aiDisclosure_accept: 'I Understand',
+
     itemBox_packOpenSuccess: 'Opened Successfully',
     itemBox_packOpenResult: 'Places have been added to your collection',
     itemBox_packOpenFailed: 'Failed to open, please try again later',

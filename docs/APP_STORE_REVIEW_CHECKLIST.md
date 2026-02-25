@@ -16,17 +16,21 @@
 
 1. 本 App 設計為 iPhone 專用。在 iPad 上會以 2x 縮放模式運行。
 
-2. 「開始扭蛋」功能使用 AI 生成行程，處理時間約需 1-2 分鐘，請耐心等候。畫面上會顯示進度提示和預估時間。
+2. 本 App 使用第三方 AI 服務（用於行程生成與智慧推薦）。首次使用 AI 功能時，App 會顯示 AI 使用揭露彈窗，告知用戶此功能使用 AI 技術。
 
-3. 測試方式：請使用 Apple 登入進行測試，無需測試帳號。
+3. 「開始扭蛋」功能使用 AI 生成行程，處理時間約需 1-2 分鐘，請耐心等候。畫面上會顯示進度提示和預估時間。
+
+4. 測試方式：請使用 Apple 登入進行測試，無需測試帳號。
 
 ---
 
 1. This app is designed for iPhone. It runs in 2x compatibility mode on iPad.
 
-2. The "Start Gacha" feature uses AI to generate itineraries and may take 1-2 minutes. Progress indicators and estimated time are displayed on screen.
+2. This app uses third-party AI services (for itinerary generation and smart recommendations). An AI disclosure popup is displayed when users first access any AI-powered feature, informing them that the feature uses AI technology.
 
-3. Testing: Please use Apple Sign In to test. No test account required.
+3. The "Start Gacha" feature uses AI to generate itineraries and may take 1-2 minutes. Progress indicators and estimated time are displayed on screen.
+
+4. Testing: Please use Apple Sign In to test. No test account required.
 ```
 
 ---
@@ -197,7 +201,19 @@
   - 加入取消按鈕
   - 準備審查備註說明 AI 處理時間
 
-### 第三次提交 (待進行)
-- **待辦**: 
+### 第三次提交 (2026-02-XX)
+- **結果**: 拒絕
+- **原因**: Guideline 2.1 - Information Needed「Does your app use third party AI service to function?」
+- **審查設備**: iPad Air 11-inch (M3)
+- **版本**: 1.1
+
+### 第四次提交 (待進行)
+- **修復**:
+  - 回覆 Apple 說明 AI 服務使用方式（App Store Connect）
+  - 新增 AI 使用揭露彈窗（首次使用 AI 功能時顯示）
+  - 揭露涵蓋扭蛋生成 + AI 行程對話
+  - 支援四語系（zh-TW / en / ja / ko）
+  - 用戶確認後存 AsyncStorage，不再重複顯示
+- **待辦**:
   - 在 iPad 2x 模式下完整測試
-  - 提交時填入審查備註
+  - 提交時填入審查備註（含 AI disclosure 說明）

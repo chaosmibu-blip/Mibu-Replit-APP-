@@ -1487,6 +1487,13 @@ const zhTW: Record<string, string> = {
     itemBox_packOpenTitle: '開啟景點包',
     itemBox_packOpenConfirm: '確定要開啟「{name}」嗎？\n將獲得 {count} 個{city}的景點',
     itemBox_packOpen: '開啟',
+    // AI 揭露（Apple Guideline 2.1）
+    aiDisclosure_title: '本功能使用 AI 技術',
+    aiDisclosure_message: '此應用程式使用第三方 AI 服務來：',
+    aiDisclosure_feature1: '生成個人化旅遊行程',
+    aiDisclosure_feature2: '提供智慧景點推薦與對話',
+    aiDisclosure_accept: '我了解了',
+
     itemBox_packOpenSuccess: '開啟成功',
     itemBox_packOpenResult: '景點已加入到圖鑑中',
     itemBox_packOpenFailed: '開啟失敗，請稍後再試',

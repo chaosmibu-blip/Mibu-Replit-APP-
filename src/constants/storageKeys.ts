@@ -61,6 +61,10 @@ export const STORAGE_KEYS = {
   /** 自動登入提供者（訪客切換正式帳號時暫存，觸發後刪除） */
   AUTO_LOGIN_PROVIDER: '@mibu_auto_login_provider',
 
+  // --- AI 揭露 ---
+  /** 用戶已確認 AI 使用揭露（Apple Guideline 2.1） */
+  AI_DISCLOSURE_ACCEPTED: '@mibu_ai_disclosure_accepted',
+
   // --- 訪客升級提示（#051） ---
   /** 收集第 10 個景點時的升級提示 */
   GUEST_PROMPT_COLLECTION: '@mibu_guest_prompt_collection',

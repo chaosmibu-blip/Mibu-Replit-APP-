@@ -1440,6 +1440,13 @@ const ko: Record<string, string> = {
     itemBox_packOpenConfirm: '"{name}"을(를) 여시겠습니까?\n{city}의 장소 {count}개를 획득합니다',
     itemBox_packOpen: '열기',
     itemBox_packOpenSuccess: '열기 완료',
+    // AI 공개 (Apple Guideline 2.1)
+    aiDisclosure_title: '이 기능은 AI 기술을 사용합니다',
+    aiDisclosure_message: '이 앱은 타사 AI 서비스를 사용하여:',
+    aiDisclosure_feature1: '맞춤형 여행 일정 생성',
+    aiDisclosure_feature2: '스마트 관광지 추천 및 대화 제공',
+    aiDisclosure_accept: '확인했습니다',
+
     itemBox_packOpenResult: '장소가 도감에 추가되었습니다',
     itemBox_packOpenFailed: '열기 실패, 나중에 다시 시도해주세요',
     itemBox_packSelectCity: '도시 선택',
