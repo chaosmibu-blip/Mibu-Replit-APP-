@@ -18,7 +18,7 @@ const IS_EAS_UPDATE = process.env.EAS_UPDATE === 'true';
 const IS_PRODUCTION = IS_EAS_BUILD || IS_EAS_UPDATE || process.env.APP_ENV === 'production';
 
 // ============ 版本常數（統一管理，避免兩邊不同步） ============
-const IOS_BUILD_NUMBER = '3';            // iOS Build 號（每次提審要遞增）
+const IOS_BUILD_NUMBER = '4';            // iOS Build 號（每次提審要遞增）
 const ANDROID_VERSION_CODE = 1;          // Android 版本碼（每次上架要遞增）
 
 // ============ 基礎設定（開發/正式共用） ============
