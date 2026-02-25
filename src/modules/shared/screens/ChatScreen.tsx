@@ -27,6 +27,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
@@ -141,6 +142,7 @@ const translations = {
 
 export function ChatScreen() {
   const { language } = useI18n();
+  const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
 
   // ============ 狀態管理 ============
@@ -267,9 +269,13 @@ export function ChatScreen() {
     >
       {/* ===== 頂部導航列 ===== */}
       <View style={styles.header}>
-        <View style={styles.headerIcon}>
+        <TouchableOpacity
+          style={styles.headerIcon}
+          onPress={() => router.push('/mini-profile')}
+          activeOpacity={0.7}
+        >
           <Ionicons name="chatbubbles" size={24} color={UIColors.white} />
-        </View>
+        </TouchableOpacity>
         <View style={styles.headerInfo}>
           <Text style={styles.headerTitle}>{texts.assistantName}</Text>
           <Text style={styles.headerStatus}>
@@ -293,13 +299,17 @@ export function ChatScreen() {
               message.sender === 'user' ? styles.userBubble : styles.assistantBubble
             ]}
           >
-            {/* AI 頭像（僅 AI 訊息顯示） */}
+            {/* AI 頭像（僅 AI 訊息顯示，點擊跳到 MINI Profile） */}
             {message.sender === 'assistant' && (
-              <View style={styles.avatarContainer}>
+              <TouchableOpacity
+                style={styles.avatarContainer}
+                onPress={() => router.push('/mini-profile')}
+                activeOpacity={0.7}
+              >
                 <View style={styles.avatar}>
                   <Ionicons name="sparkles" size={16} color={MibuBrand.brown} />
                 </View>
-              </View>
+              </TouchableOpacity>
             )}
             {/* 訊息內容 */}
             <View style={[
