@@ -1440,12 +1440,15 @@ const ja: Record<string, string> = {
     itemBox_packOpenTitle: 'スポットパックを開く',
     itemBox_packOpenConfirm: '「{name}」を開きますか？\n{city}のスポットが{count}件獲得できます',
     itemBox_packOpen: '開く',
-    // AI 開示（Apple Guideline 2.1）
-    aiDisclosure_title: 'この機能はAI技術を使用しています',
-    aiDisclosure_message: '本アプリはサードパーティのAIサービスを使用して：',
-    aiDisclosure_feature1: 'パーソナライズされた旅行プランを生成',
-    aiDisclosure_feature2: 'スマートなスポット推薦と会話を提供',
-    aiDisclosure_accept: '了解しました',
+    // AI データ共有同意（Apple Guideline 5.1.2(i) #062）
+    aiDisclosure_title: 'AI データ共有',
+    aiDisclosure_message: 'この機能は Google Gemini AI サービスを使用しています。続行すると、以下のデータ処理に同意したことになります：',
+    aiDisclosure_feature1: '会話内容が Google サーバーに送信され処理されます',
+    aiDisclosure_feature2: 'パーソナライズされた旅行プランの生成とスマートな会話に使用',
+    aiDisclosure_dataNote: 'Google はあなたのデータを AI モデルのトレーニングに使用しません',
+    aiDisclosure_accept: '同意して続行',
+    aiDisclosure_decline: '同意しない',
+    settings_aiDataSharing: 'AI データ共有',
 
     itemBox_packOpenSuccess: '開封完了',
     itemBox_packOpenResult: 'スポットが図鑑に追加されました',

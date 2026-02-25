@@ -155,7 +155,7 @@ export function GachaScreen() {
   const pendingResultRef = useRef<{ items: GachaItem[]; meta: GachaMeta; couponsWon: CouponWon[] } | null>(null);
 
   // ============================================================
-  // 狀態管理 - AI 揭露彈窗（Apple Guideline 2.1）
+  // 狀態管理 - AI 資料分享同意彈窗（Apple Guideline 5.1.2(i) #062）
   // ============================================================
 
   const [showAiDisclosure, setShowAiDisclosure] = useState(false);
@@ -479,7 +479,7 @@ export function GachaScreen() {
     // 檢查是否已選擇國家和城市
     if (!selectedCountryId || !selectedRegionId) return;
 
-    // AI 揭露檢查（Apple Guideline 2.1）：首次使用 AI 功能前揭露
+    // AI 資料分享同意檢查（Apple Guideline 5.1.2(i) #062）
     const aiAccepted = await hasAcceptedAiDisclosure();
     if (!aiAccepted) {
       pendingGachaRef.current = true;
@@ -684,7 +684,7 @@ export function GachaScreen() {
     }
   }, [addToCollection, setResult, router]);
 
-  /** AI 揭露確認後，繼續執行暫停的扭蛋動作 */
+  /** AI 資料分享同意後，繼續執行暫停的扭蛋動作 */
   const handleAiDisclosureAccept = useCallback(() => {
     setShowAiDisclosure(false);
     if (pendingGachaRef.current) {
@@ -1245,10 +1245,14 @@ export function GachaScreen() {
         language={language as 'zh-TW' | 'en'}
       />
 
-      {/* ========== AI 揭露彈窗（Apple Guideline 2.1）========== */}
+      {/* ========== AI 資料分享同意彈窗（Apple Guideline 5.1.2(i) #062）========== */}
       <AiDisclosureModal
         visible={showAiDisclosure}
         onAccept={handleAiDisclosureAccept}
+        onDecline={() => {
+          setShowAiDisclosure(false);
+          pendingGachaRef.current = false;
+        }}
       />
     </ScrollView>
   );

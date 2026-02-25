@@ -37,6 +37,7 @@ import { usePartnerApplicationStatus } from '../../../hooks/useEconomyQueries';
 import { useMerchantApplicationStatus } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
+import { hasAcceptedAiDisclosure, revokeAiConsent, grantAiConsent } from '../components/AiDisclosureModal';
 
 // ============================================================
 // 常數定義
@@ -108,6 +109,9 @@ export function SettingsScreen() {
   // 切換中鎖（防重複觸發）
   const [isTogglingPush, setIsTogglingPush] = useState(false);
 
+  // AI 資料分享開關狀態（#062 Apple Guideline 5.1.2(i)）
+  const [aiDataSharing, setAiDataSharing] = useState(false);
+
   // #053: 自己人/商家申請狀態
   const partnerStatusQuery = usePartnerApplicationStatus();
   const merchantStatusQuery = useMerchantApplicationStatus();
@@ -134,6 +138,24 @@ export function SettingsScreen() {
       }
     };
     checkStatus();
+  }, []);
+
+  // 讀取 AI 資料分享同意狀態（#062）
+  useEffect(() => {
+    hasAcceptedAiDisclosure().then(setAiDataSharing);
+  }, []);
+
+  /**
+   * 切換 AI 資料分享同意
+   * 撤回後，下次使用 AI 功能會重新顯示同意彈窗
+   */
+  const handleToggleAiDataSharing = useCallback(async (enabled: boolean) => {
+    setAiDataSharing(enabled);
+    if (enabled) {
+      await grantAiConsent();
+    } else {
+      await revokeAiConsent();
+    }
   }, []);
 
   /**
@@ -397,6 +419,16 @@ export function SettingsScreen() {
           toggleDisabled: isTogglingPush,
           iconBg: '#FFF7ED',
           iconColor: '#EA580C',
+        },
+        // AI 資料分享開關（#062 Apple Guideline 5.1.2(i)）
+        {
+          icon: 'sparkles-outline',
+          label: t.settings_aiDataSharing,
+          toggle: true,
+          checked: aiDataSharing,
+          onChange: handleToggleAiDataSharing,
+          iconBg: '#EEF2FF',
+          iconColor: '#6366f1',
         },
         // [HIDDEN] 送審隱藏 — 通知偏好（功能未完成）
         // {

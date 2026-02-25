@@ -1447,12 +1447,15 @@ const en: Record<string, string> = {
     itemBox_packOpenTitle: 'Open Place Pack',
     itemBox_packOpenConfirm: 'Open "{name}"?\nYou will receive {count} places in {city}',
     itemBox_packOpen: 'Open',
-    // AI Disclosure (Apple Guideline 2.1)
-    aiDisclosure_title: 'This Feature Uses AI',
-    aiDisclosure_message: 'This app uses third-party AI services to:',
-    aiDisclosure_feature1: 'Generate personalized travel itineraries',
-    aiDisclosure_feature2: 'Provide smart recommendations and chat',
-    aiDisclosure_accept: 'I Understand',
+    // AI Data Sharing Consent (Apple Guideline 5.1.2(i) #062)
+    aiDisclosure_title: 'AI Data Sharing',
+    aiDisclosure_message: 'This feature uses Google Gemini AI. By continuing, you agree to the following data processing:',
+    aiDisclosure_feature1: 'Your conversation content will be sent to Google servers for processing',
+    aiDisclosure_feature2: 'Used to generate personalized itinerary recommendations and smart chat',
+    aiDisclosure_dataNote: 'Google will not use your data for AI model training',
+    aiDisclosure_accept: 'Agree & Continue',
+    aiDisclosure_decline: 'Decline',
+    settings_aiDataSharing: 'AI Data Sharing',
 
     itemBox_packOpenSuccess: 'Opened Successfully',
     itemBox_packOpenResult: 'Places have been added to your collection',

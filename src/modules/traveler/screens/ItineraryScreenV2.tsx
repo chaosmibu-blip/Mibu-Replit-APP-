@@ -164,7 +164,7 @@ export function ItineraryScreenV2() {
   // 建立行程 Modal 狀態（表單邏輯已抽至 CreateItineraryModal）
   const [createModalVisible, setCreateModalVisible] = useState(false);
 
-  // AI 揭露彈窗狀態（Apple Guideline 2.1）
+  // AI 資料分享同意彈窗狀態（Apple Guideline 5.1.2(i) #062）
   const [showAiDisclosure, setShowAiDisclosure] = useState(false);
 
   // 【截圖 9-15 #12】編輯標題狀態
@@ -323,7 +323,7 @@ export function ItineraryScreenV2() {
     const token = await getToken();
     if (!token) return;
 
-    // AI 揭露檢查（Apple Guideline 2.1）：首次使用 AI 功能前揭露
+    // AI 資料分享同意檢查（Apple Guideline 5.1.2(i) #062）
     const aiAccepted = await hasAcceptedAiDisclosure();
     if (!aiAccepted) {
       setShowAiDisclosure(true);
@@ -1874,14 +1874,15 @@ export function ItineraryScreenV2() {
         </TouchableOpacity>
       </Modal>
 
-      {/* ========== AI 揭露彈窗（Apple Guideline 2.1）========== */}
+      {/* ========== AI 資料分享同意彈窗（Apple Guideline 5.1.2(i) #062）========== */}
       <AiDisclosureModal
         visible={showAiDisclosure}
         onAccept={() => {
           setShowAiDisclosure(false);
-          // 揭露確認後自動重新觸發發送
+          // 同意後自動重新觸發發送
           setTimeout(() => sendAiMessage(), 100);
         }}
+        onDecline={() => setShowAiDisclosure(false)}
       />
     </View>
   );

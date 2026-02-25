@@ -1,15 +1,17 @@
 /**
  * ============================================================
- * AI 使用揭露彈窗 (AiDisclosureModal.tsx)
+ * AI 資料分享同意彈窗 (AiDisclosureModal.tsx)
  * ============================================================
- * 此模組提供: Apple Guideline 2.1 要求的 AI 服務使用揭露
+ * 此模組提供: Apple Guideline 5.1.2(i) 要求的第三方 AI 資料分享同意
  *
  * 主要功能:
- * - 首次使用 AI 功能時彈出揭露訊息
- * - 用戶確認後存 AsyncStorage，不再重複顯示
+ * - 首次使用 AI 功能時彈出同意彈窗
+ * - 明確揭露：服務商名稱、傳送資料類型、用途說明
+ * - 用戶可同意或拒絕，拒絕後 AI 功能不可用但核心功能不受影響
+ * - 設定頁可隨時撤回同意（透過 revokeAiConsent）
  * - 支援四語系（zh-TW / en / ja / ko）
  *
- * 更新日期：2026-02-25（Apple 審查退件 #048）
+ * 更新日期：2026-02-25（#062 Apple Guideline 5.1.2(i)）
  */
 
 import React from 'react';
@@ -30,9 +32,10 @@ import { useI18n } from '@/src/context/I18nContext';
 interface AiDisclosureModalProps {
   visible: boolean;
   onAccept: () => void;
+  onDecline: () => void;
 }
 
-/** 檢查用戶是否已接受 AI 揭露 */
+/** 檢查用戶是否已同意 AI 資料分享 */
 export async function hasAcceptedAiDisclosure(): Promise<boolean> {
   try {
     const value = await AsyncStorage.getItem(STORAGE_KEYS.AI_DISCLOSURE_ACCEPTED);
@@ -42,7 +45,7 @@ export async function hasAcceptedAiDisclosure(): Promise<boolean> {
   }
 }
 
-/** 儲存用戶已接受 AI 揭露 */
+/** 儲存用戶已同意 AI 資料分享 */
 async function saveAiDisclosureAccepted(): Promise<void> {
   try {
     await AsyncStorage.setItem(STORAGE_KEYS.AI_DISCLOSURE_ACCEPTED, 'true');
@@ -51,7 +54,21 @@ async function saveAiDisclosureAccepted(): Promise<void> {
   }
 }
 
-export default function AiDisclosureModal({ visible, onAccept }: AiDisclosureModalProps) {
+/** 撤回 AI 資料分享同意（設定頁使用） */
+export async function revokeAiConsent(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEYS.AI_DISCLOSURE_ACCEPTED);
+  } catch {
+    // 靜默處理
+  }
+}
+
+/** 授予 AI 資料分享同意（設定頁使用） */
+export async function grantAiConsent(): Promise<void> {
+  await saveAiDisclosureAccepted();
+}
+
+export default function AiDisclosureModal({ visible, onAccept, onDecline }: AiDisclosureModalProps) {
   const { t } = useI18n();
 
   const handleAccept = async () => {
@@ -64,13 +81,13 @@ export default function AiDisclosureModal({ visible, onAccept }: AiDisclosureMod
       visible={visible}
       animationType="fade"
       transparent
-      onRequestClose={handleAccept}
+      onRequestClose={onDecline}
     >
       <View style={styles.overlay}>
         <View style={styles.container}>
           {/* 圖示 */}
           <View style={styles.iconCircle}>
-            <Ionicons name="sparkles" size={28} color={MibuBrand.brown} />
+            <Ionicons name="shield-checkmark-outline" size={28} color={MibuBrand.brown} />
           </View>
 
           {/* 標題 */}
@@ -79,25 +96,38 @@ export default function AiDisclosureModal({ visible, onAccept }: AiDisclosureMod
           {/* 說明 */}
           <Text style={styles.message}>{t.aiDisclosure_message}</Text>
 
-          {/* 功能列表 */}
+          {/* 資料處理說明列表 */}
           <View style={styles.featureList}>
             <View style={styles.featureRow}>
-              <Ionicons name="map-outline" size={16} color={MibuBrand.copper} />
+              <Ionicons name="cloud-upload-outline" size={16} color={MibuBrand.copper} />
               <Text style={styles.featureText}>{t.aiDisclosure_feature1}</Text>
             </View>
             <View style={styles.featureRow}>
-              <Ionicons name="chatbubble-outline" size={16} color={MibuBrand.copper} />
+              <Ionicons name="map-outline" size={16} color={MibuBrand.copper} />
               <Text style={styles.featureText}>{t.aiDisclosure_feature2}</Text>
+            </View>
+            <View style={styles.featureRow}>
+              <Ionicons name="lock-closed-outline" size={16} color={MibuBrand.success} />
+              <Text style={styles.featureText}>{t.aiDisclosure_dataNote}</Text>
             </View>
           </View>
 
-          {/* 確認按鈕 */}
+          {/* 同意按鈕 */}
           <TouchableOpacity
             style={styles.button}
             onPress={handleAccept}
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>{t.aiDisclosure_accept}</Text>
+          </TouchableOpacity>
+
+          {/* 不同意按鈕 */}
+          <TouchableOpacity
+            style={styles.declineButton}
+            onPress={onDecline}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.declineButtonText}>{t.aiDisclosure_decline}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -175,5 +205,17 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: FontWeight.semibold,
     color: MibuBrand.warmWhite,
+  },
+  declineButton: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.xxl,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+  },
+  declineButtonText: {
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.medium,
+    color: MibuBrand.brownLight,
   },
 });

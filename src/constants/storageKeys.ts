@@ -61,8 +61,8 @@ export const STORAGE_KEYS = {
   /** 自動登入提供者（訪客切換正式帳號時暫存，觸發後刪除） */
   AUTO_LOGIN_PROVIDER: '@mibu_auto_login_provider',
 
-  // --- AI 揭露 ---
-  /** 用戶已確認 AI 使用揭露（Apple Guideline 2.1） */
+  // --- AI 資料分享同意 ---
+  /** 用戶已同意 AI 資料分享（Apple Guideline 5.1.2(i) #062） */
   AI_DISCLOSURE_ACCEPTED: '@mibu_ai_disclosure_accepted',
 
   // --- 訪客升級提示（#051） ---

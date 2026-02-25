@@ -16,7 +16,7 @@
 
 1. 本 App 設計為 iPhone 專用。在 iPad 上會以 2x 縮放模式運行。
 
-2. 本 App 使用第三方 AI 服務（用於行程生成與智慧推薦）。首次使用 AI 功能時，App 會顯示 AI 使用揭露彈窗，告知用戶此功能使用 AI 技術。
+2. 本 App 使用 Google Gemini AI 服務（用於行程生成與智慧推薦）。首次使用 AI 功能時，App 會顯示資料分享同意彈窗，明確告知用戶：服務商名稱（Google Gemini）、傳送的資料類型（對話內容）、用途（行程推薦），並提供同意/不同意選項。用戶可在「設定 > 偏好設定 > AI 資料分享」隨時撤回同意。
 
 3. 「開始扭蛋」功能使用 AI 生成行程，處理時間約需 1-2 分鐘，請耐心等候。畫面上會顯示進度提示和預估時間。
 
@@ -26,7 +26,7 @@
 
 1. This app is designed for iPhone. It runs in 2x compatibility mode on iPad.
 
-2. This app uses third-party AI services (for itinerary generation and smart recommendations). An AI disclosure popup is displayed when users first access any AI-powered feature, informing them that the feature uses AI technology.
+2. This app uses Google Gemini AI services (for itinerary generation and smart recommendations). A data sharing consent dialog is displayed when users first access any AI-powered feature, clearly disclosing: the service provider (Google Gemini), data types sent (conversation content), purpose (itinerary recommendations), and providing Accept/Decline options. Users can revoke consent anytime in Settings > Preferences > AI Data Sharing.
 
 3. The "Start Gacha" feature uses AI to generate itineraries and may take 1-2 minutes. Progress indicators and estimated time are displayed on screen.
 

@@ -6,6 +6,53 @@
 
 ## 最新回報
 
+### 2026-02-25 #062：Apple 審查要求 — AI 功能同意彈窗（Guideline 5.1.2(i)）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | 後端 sync-app.md #062 |
+| 狀態 | ✅ 完成 |
+
+**彈窗內容升級（AiDisclosureModal.tsx）**
+- [x] 明確揭露服務商名稱：Google Gemini
+- [x] 明確列出傳送資料類型：對話內容傳送至 Google 伺服器
+- [x] 明確說明用途：生成個人化行程推薦與智慧對話
+- [x] 明確說明隱私保證：Google 不會將資料用於 AI 模型訓練
+- [x] 新增「不同意」按鈕（onDecline prop）
+- [x] 拒絕後 AI 功能不可用，核心功能（行程管理、圖鑑、設定等）不受影響
+- [x] 圖示從 sparkles → shield-checkmark-outline（更符合隱私主題）
+
+**設定頁 AI 資料分享開關（SettingsScreen.tsx）**
+- [x] 偏好設定群組新增「AI 資料分享」toggle
+- [x] 讀取 AsyncStorage 同意狀態
+- [x] 關閉 → 撤回同意（revokeAiConsent），下次使用 AI 會重新彈窗
+- [x] 開啟 → 授予同意（grantAiConsent）
+
+**整合點更新**
+- [x] GachaScreen：handleGacha 前檢查 + onDecline 回調
+- [x] ItineraryScreenV2：sendAiMessage 前檢查 + onDecline 回調
+
+**翻譯**
+- [x] 4 語系更新 5 個既有 key + 新增 3 個 key（dataNote、decline、settings_aiDataSharing）
+
+**文件更新**
+- [x] APP_STORE_REVIEW_CHECKLIST.md 審查備註更新（中/英雙語）
+- [x] storageKeys.ts 註解更新
+
+**修改檔案清單**
+- `src/modules/shared/components/AiDisclosureModal.tsx`
+- `src/modules/shared/screens/SettingsScreen.tsx`
+- `src/modules/traveler/screens/GachaScreen.tsx`
+- `src/modules/traveler/screens/ItineraryScreenV2.tsx`
+- `src/constants/translations/zh-TW.ts`
+- `src/constants/translations/en.ts`
+- `src/constants/translations/ja.ts`
+- `src/constants/translations/ko.ts`
+- `src/constants/storageKeys.ts`
+- `docs/APP_STORE_REVIEW_CHECKLIST.md`
+
+---
+
 ### 2026-02-24 #055：全域命名統一 — Events type 值變更
 
 | 項目 | 內容 |
@@ -1188,6 +1235,7 @@ const cityCondition = sql`${collections.city} ILIKE ${'%' + baseCity + '%'}`;
 
 | # | 日期 | 主題 | 狀態 |
 |---|------|------|------|
+| 062 | 02-25 | Apple Guideline 5.1.2(i) AI 資料分享同意彈窗 + 設定頁開關 | ✅ |
 | 055 | 02-24 | 全域命名統一 — Events type 值變更 + 共用套件升級 | ✅ |
 | 053 | 02-20 | specialist→partner 改名 + 自己人/商家申請系統 | ✅ |
 | 052 | 02-20 | 推播通知完整串接（補完勿擾時段時間編輯） | ✅ |
