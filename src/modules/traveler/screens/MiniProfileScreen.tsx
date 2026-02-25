@@ -100,6 +100,7 @@ export function MiniProfileScreen() {
       },
       onError: () => {
         savingRef.current = false;
+        Alert.alert(t.mini_error, t.mini_nameUpdateFail);
       },
     });
   }, [nameInput, profile?.name, updateNameMutation, t]);

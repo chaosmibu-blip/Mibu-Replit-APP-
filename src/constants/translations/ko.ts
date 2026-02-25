@@ -1484,6 +1484,17 @@ const ko: Record<string, string> = {
     mini_notesUpdated: '메모가 업데이트되었습니다',
     mini_notesDeleted: '메모가 삭제되었습니다',
 
+    // 오류 메시지
+    mini_error: '작업 실패',
+    mini_graffitiCreateFail: '메시지 전송에 실패했습니다. 다시 시도해주세요',
+    mini_graffitiDeleteFail: '메시지 삭제에 실패했습니다. 다시 시도해주세요',
+    mini_graffitiLimitTitle: '메시지 한도 초과',
+    mini_graffitiLimitMessage: '각 장소에 최대 3개의 메시지만 남길 수 있습니다',
+    mini_notesCreateFail: '노트 생성에 실패했습니다. 다시 시도해주세요',
+    mini_notesUpdateFail: '노트 수정에 실패했습니다. 다시 시도해주세요',
+    mini_notesDeleteFail: '노트 삭제에 실패했습니다. 다시 시도해주세요',
+    mini_nameUpdateFail: '이름 변경에 실패했습니다. 다시 시도해주세요',
+
     // 장소 상세 탭
     mini_infoTab: '정보',
 

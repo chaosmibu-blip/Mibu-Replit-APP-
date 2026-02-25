@@ -135,7 +135,8 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<PlaceDetailTab>('info');
   const [graffitiInput, setGraffitiInput] = useState('');
-  const [noteInput, setNoteInput] = useState('');
+  const [newNoteInput, setNewNoteInput] = useState('');
+  const [editNoteInput, setEditNoteInput] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
 
   // #058 塗鴉牆
@@ -188,9 +189,18 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
   const handleSendGraffiti = () => {
     const content = graffitiInput.trim();
     if (!content) return;
+    // 每人每景點最多 3 則
+    const ownCount = (graffitiQuery.data?.graffiti ?? []).filter(g => g.isOwn).length;
+    if (ownCount >= 3) {
+      Alert.alert(t.mini_graffitiLimitTitle, t.mini_graffitiLimitMessage);
+      return;
+    }
     createGraffitiMutation.mutate(
       { placeId, params: { content } },
-      { onSuccess: () => setGraffitiInput('') },
+      {
+        onSuccess: () => setGraffitiInput(''),
+        onError: () => Alert.alert(t.mini_error, t.mini_graffitiCreateFail),
+      },
     );
   };
 
@@ -200,7 +210,10 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
       {
         text: t.mini_graffitiDelete,
         style: 'destructive',
-        onPress: () => deleteGraffitiMutation.mutate({ graffitiId, placeId }),
+        onPress: () => deleteGraffitiMutation.mutate(
+          { graffitiId, placeId },
+          { onError: () => Alert.alert(t.mini_error, t.mini_graffitiDeleteFail) },
+        ),
       },
     ]);
   };
@@ -208,24 +221,32 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
   // ========== #059 筆記操作 ==========
 
   const handleSaveNote = () => {
-    const content = noteInput.trim();
-    if (!content) return;
     if (editingNoteId) {
+      const content = editNoteInput.trim();
+      if (!content) return;
       updateNoteMutation.mutate(
         { noteId: editingNoteId, placeId, params: { content } },
-        { onSuccess: () => { setNoteInput(''); setEditingNoteId(null); } },
+        {
+          onSuccess: () => { setEditNoteInput(''); setEditingNoteId(null); },
+          onError: () => Alert.alert(t.mini_error, t.mini_notesUpdateFail),
+        },
       );
     } else {
+      const content = newNoteInput.trim();
+      if (!content) return;
       createNoteMutation.mutate(
         { placeId, params: { content } },
-        { onSuccess: () => setNoteInput('') },
+        {
+          onSuccess: () => setNewNoteInput(''),
+          onError: () => Alert.alert(t.mini_error, t.mini_notesCreateFail),
+        },
       );
     }
   };
 
   const handleEditNote = (note: NoteItem) => {
     setEditingNoteId(note.id);
-    setNoteInput(note.content);
+    setEditNoteInput(note.content);
   };
 
   const handleDeleteNote = (noteId: number) => {
@@ -234,14 +255,17 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
       {
         text: t.mini_notesDelete,
         style: 'destructive',
-        onPress: () => deleteNoteMutation.mutate({ noteId, placeId }),
+        onPress: () => deleteNoteMutation.mutate(
+          { noteId, placeId },
+          { onError: () => Alert.alert(t.mini_error, t.mini_notesDeleteFail) },
+        ),
       },
     ]);
   };
 
   const handleCancelEditNote = () => {
     setEditingNoteId(null);
-    setNoteInput('');
+    setEditNoteInput('');
   };
 
   // ========== Render: 詳情 Tab ==========
@@ -265,7 +289,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
         accessibilityLabel={t.collection_viewOnMap}
       >
         <Ionicons name="search" size={20} color={UIColors.white} />
-        <Text style={styles.modalNavigateText}>在 Google 中查看</Text>
+        <Text style={styles.modalNavigateText}>{t.collection_viewOnMap}</Text>
       </TouchableOpacity>
     </>
   );
@@ -310,7 +334,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
             multiline
           />
           <TouchableOpacity
-            style={[styles.miniSendButton, !graffitiInput.trim() && styles.miniSendButtonDisabled]}
+            style={[styles.miniSendButton, (!graffitiInput.trim() || createGraffitiMutation.isPending) && styles.miniSendButtonDisabled]}
             onPress={handleSendGraffiti}
             disabled={!graffitiInput.trim() || createGraffitiMutation.isPending}
           >
@@ -330,7 +354,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
         {notesQuery.isLoading && (
           <ActivityIndicator color={MibuBrand.brown} style={{ marginVertical: Spacing.xl }} />
         )}
-        {!notesQuery.isLoading && notes.length === 0 && !noteInput && (
+        {!notesQuery.isLoading && notes.length === 0 && !newNoteInput && (
           <Text style={styles.miniEmptyText}>{t.mini_notesEmpty}</Text>
         )}
         {notes.map((note) => (
@@ -339,8 +363,8 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
               <View>
                 <TextInput
                   style={styles.noteEditInput}
-                  value={noteInput}
-                  onChangeText={setNoteInput}
+                  value={editNoteInput}
+                  onChangeText={setEditNoteInput}
                   multiline
                   maxLength={2000}
                   autoFocus
@@ -350,9 +374,9 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
                     <Text style={styles.noteCancelText}>{t.cancel}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.noteSaveButton, !noteInput.trim() && styles.miniSendButtonDisabled]}
+                    style={[styles.noteSaveButton, !editNoteInput.trim() && styles.miniSendButtonDisabled]}
                     onPress={handleSaveNote}
-                    disabled={!noteInput.trim() || updateNoteMutation.isPending}
+                    disabled={!editNoteInput.trim() || updateNoteMutation.isPending}
                   >
                     <Text style={styles.noteSaveText}>{t.mini_notesSave}</Text>
                   </TouchableOpacity>
@@ -361,7 +385,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
             ) : (
               <>
                 <Text style={styles.noteContent}>{note.content}</Text>
-                {note.tags.length > 0 && (
+                {(note.tags?.length ?? 0) > 0 && (
                   <View style={styles.noteTagsRow}>
                     {note.tags.map((tag, idx) => (
                       <View key={idx} style={styles.noteTag}>
@@ -389,17 +413,17 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
           <View style={styles.miniInputRow}>
             <TextInput
               style={styles.miniInput}
-              value={noteInput}
-              onChangeText={setNoteInput}
+              value={newNoteInput}
+              onChangeText={setNewNoteInput}
               placeholder={t.mini_notesPlaceholder}
               placeholderTextColor={MibuBrand.brownLight}
               maxLength={2000}
               multiline
             />
             <TouchableOpacity
-              style={[styles.miniSendButton, !noteInput.trim() && styles.miniSendButtonDisabled]}
+              style={[styles.miniSendButton, (!newNoteInput.trim() || createNoteMutation.isPending) && styles.miniSendButtonDisabled]}
               onPress={handleSaveNote}
-              disabled={!noteInput.trim() || createNoteMutation.isPending}
+              disabled={!newNoteInput.trim() || createNoteMutation.isPending}
             >
               <Ionicons name="add" size={20} color={UIColors.white} />
             </TouchableOpacity>
@@ -452,10 +476,17 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
           <SegmentedControl
             segments={tabSegments}
             selectedKey={activeTab}
-            onSelect={(key) => setActiveTab(key as PlaceDetailTab)}
+            onSelect={(key) => {
+              setActiveTab(key as PlaceDetailTab);
+              // 切換 tab 時重設編輯狀態
+              if (editingNoteId) {
+                setEditingNoteId(null);
+                setEditNoteInput('');
+              }
+            }}
           />
 
-          <ScrollView style={styles.modalScrollContent} keyboardShouldPersistTaps="handled">
+          <ScrollView style={styles.modalScrollView} contentContainerStyle={styles.modalScrollContent} keyboardShouldPersistTaps="handled">
             {activeTab === 'info' && renderInfoTab()}
             {activeTab === 'graffiti' && renderGraffitiTab()}
             {activeTab === 'notes' && renderNotesTab()}

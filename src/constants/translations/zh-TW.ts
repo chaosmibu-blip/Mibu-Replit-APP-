@@ -1542,6 +1542,17 @@ const zhTW: Record<string, string> = {
     mini_notesUpdated: '筆記已更新',
     mini_notesDeleted: '筆記已刪除',
 
+    // 錯誤提示
+    mini_error: '操作失敗',
+    mini_graffitiCreateFail: '留言發送失敗，請稍後再試',
+    mini_graffitiDeleteFail: '留言刪除失敗，請稍後再試',
+    mini_graffitiLimitTitle: '留言數量已滿',
+    mini_graffitiLimitMessage: '每個景點最多只能留 3 則留言',
+    mini_notesCreateFail: '筆記新增失敗，請稍後再試',
+    mini_notesUpdateFail: '筆記更新失敗，請稍後再試',
+    mini_notesDeleteFail: '筆記刪除失敗，請稍後再試',
+    mini_nameUpdateFail: '名字更新失敗，請稍後再試',
+
     // 景點詳情 Tab
     mini_infoTab: '詳情',
 

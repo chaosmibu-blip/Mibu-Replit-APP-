@@ -1495,6 +1495,17 @@ const ja: Record<string, string> = {
     mini_notesUpdated: 'メモを更新しました',
     mini_notesDeleted: 'メモを削除しました',
 
+    // エラーメッセージ
+    mini_error: '操作に失敗しました',
+    mini_graffitiCreateFail: 'メッセージの送信に失敗しました。もう一度お試しください',
+    mini_graffitiDeleteFail: 'メッセージの削除に失敗しました。もう一度お試しください',
+    mini_graffitiLimitTitle: 'メッセージ上限に達しました',
+    mini_graffitiLimitMessage: '1つのスポットにつき最大3件のメッセージまでです',
+    mini_notesCreateFail: 'ノートの作成に失敗しました。もう一度お試しください',
+    mini_notesUpdateFail: 'ノートの更新に失敗しました。もう一度お試しください',
+    mini_notesDeleteFail: 'ノートの削除に失敗しました。もう一度お試しください',
+    mini_nameUpdateFail: '名前の更新に失敗しました。もう一度お試しください',
+
     // スポット詳細タブ
     mini_infoTab: '詳細',
 

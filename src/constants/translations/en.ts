@@ -1502,6 +1502,17 @@ const en: Record<string, string> = {
     mini_notesUpdated: 'Note updated',
     mini_notesDeleted: 'Note deleted',
 
+    // Error messages
+    mini_error: 'Action Failed',
+    mini_graffitiCreateFail: 'Failed to post message, please try again',
+    mini_graffitiDeleteFail: 'Failed to delete message, please try again',
+    mini_graffitiLimitTitle: 'Message Limit Reached',
+    mini_graffitiLimitMessage: 'You can only leave up to 3 messages per spot',
+    mini_notesCreateFail: 'Failed to create note, please try again',
+    mini_notesUpdateFail: 'Failed to update note, please try again',
+    mini_notesDeleteFail: 'Failed to delete note, please try again',
+    mini_nameUpdateFail: 'Failed to update name, please try again',
+
     // Place Detail Tabs
     mini_infoTab: 'Info',
 
