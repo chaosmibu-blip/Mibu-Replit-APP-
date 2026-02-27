@@ -24,7 +24,7 @@
  *
  * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
  */
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -39,6 +39,8 @@ import {
   TextInput,
   FlatList,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -150,6 +152,9 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
   const { t } = useI18n();
   const officialPlaceId = item.officialPlaceId ?? 0;
   console.log('[PlaceDetailModal] officialPlaceId:', officialPlaceId, '| placeId:', item.placeId, '| collectionId:', item.collectionId);
+
+  // ScrollView ref — 鍵盤彈出時自動滾到輸入框
+  const scrollRef = useRef<ScrollView>(null);
 
   // UI 狀態
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -371,6 +376,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
             placeholderTextColor={MibuBrand.brownLight}
             maxLength={200}
             multiline
+            onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)}
           />
           <TouchableOpacity
             style={[styles.miniSendButton, (!graffitiInput.trim() || createGraffitiMutation.isPending) && styles.miniSendButtonDisabled]}
@@ -458,6 +464,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
               placeholderTextColor={MibuBrand.brownLight}
               maxLength={2000}
               multiline
+              onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)}
             />
             <TouchableOpacity
               style={[styles.miniSendButton, (!newNoteInput.trim() || createNoteMutation.isPending) && styles.miniSendButtonDisabled]}
@@ -482,7 +489,10 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
 
   return (
     <Modal visible transparent animationType="fade">
-      <View style={styles.modalOverlay}>
+      <KeyboardAvoidingView
+        style={styles.modalOverlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         {/* 背景層：點擊關閉（獨立 Pressable，不包住內容，避免手勢衝突） */}
         <Pressable style={styles.modalBackdrop} onPress={onClose} />
         {/* 內容層：不在任何 Touchable 裡面，ScrollView 可自由滾動 */}
@@ -528,13 +538,18 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
             }}
           />
 
-          <ScrollView style={styles.modalScrollView} contentContainerStyle={styles.modalScrollContent} keyboardShouldPersistTaps="handled">
+          <ScrollView
+            ref={scrollRef}
+            style={styles.modalScrollView}
+            contentContainerStyle={styles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
             {activeTab === 'info' && renderInfoTab()}
             {activeTab === 'graffiti' && renderGraffitiTab()}
             {activeTab === 'notes' && renderNotesTab()}
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
