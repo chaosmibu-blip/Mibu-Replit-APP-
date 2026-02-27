@@ -11,35 +11,33 @@
 | 項目 | 內容 |
 |------|------|
 | 來源 | APP 端實機測試 |
-| 狀態 | 🟡 等後端確認 |
+| 狀態 | 🔴 確認為後端 500 錯誤 |
 | 嚴重度 | 高（三個功能完全無法使用） |
+
+**APP 端已排查完畢**：
+- ✅ placeId 傳的是 places 表 ID（不是 collections 表 ID）
+- ✅ Content-Type: application/json header 有設（base.ts 統一設定）
+- ✅ 補齊 error handler 後，實機測試三個 API 均回傳 **HTTP 500（伺服器錯誤）**
 
 **問題 1：塗鴉牆留言失敗**
 - API：`POST /api/mini/graffiti/:placeId`
-- 錯誤訊息：「留言發送失敗，請稍後再試」
-- 前端已確認：URL、token、body 參數（`{ content }`) 均正確
+- 實際回傳：**HTTP 500**
+- 前端已確認：URL、token、body 參數（`{ content }`）、Content-Type 均正確
 
 **問題 2：筆記新增失敗**
 - API：`POST /api/mini/notes/:placeId`
-- 錯誤訊息：「筆記新增失敗，請稍後再試」
-- 前端已確認：URL、token、body 參數（`{ content }`) 均正確
+- 實際回傳：**HTTP 500**
+- 前端已確認：URL、token、body 參數（`{ content }`）、Content-Type 均正確
 
 **問題 3：加入我的最愛失敗**
 - API：`POST /api/collections/:placeId/favorite`
-- 錯誤訊息：`Failed to add favorite: ApiError: API Error: ...`
-- 前端已確認：URL、token 均正確
+- 實際回傳：**HTTP 500**
+- 前端已確認：URL、token、Content-Type 均正確
 
-**共同特徵**
-- 三個 API 都是 POST 請求
-- 三個 API 的 GET 請求（讀取資料）正常
-- 前端呼叫邏輯、參數格式均與契約一致
-- 推測後端 POST 端點可能尚未部署或有 bug
+**結論：三個 POST API 在正式環境對 APP 用戶回傳 500，問題在後端。**
 
-**請後端確認**
-1. `/api/mini/graffiti/:placeId` POST 端點是否已部署？
-2. `/api/mini/notes/:placeId` POST 端點是否已部署？
-3. `/api/collections/:placeId/favorite` POST 端點是否正常？
-4. 以上端點是否需要特殊權限或參數？
+後端提到用 placeId=6 測試成功（201/200），但 APP 用戶的實際 placeId 可能觸發了後端未處理的邊界條件。
+請後端檢查 server log，確認這三個端點在哪些 placeId 或條件下會 500。
 
 ---
 
