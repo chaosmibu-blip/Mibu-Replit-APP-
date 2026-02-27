@@ -139,13 +139,13 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
   const [editNoteInput, setEditNoteInput] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
 
-  // #058 塗鴉牆
-  const graffitiQuery = useGraffiti(placeId);
+  // #058 塗鴉牆（切到該 tab 才載入，避免 Modal 動畫期間搶 JS 線程）
+  const graffitiQuery = useGraffiti(placeId, activeTab === 'graffiti');
   const createGraffitiMutation = useCreateGraffiti();
   const deleteGraffitiMutation = useDeleteGraffiti();
 
-  // #059 筆記
-  const notesQuery = useNotes(placeId);
+  // #059 筆記（同上，懶載入）
+  const notesQuery = useNotes(placeId, activeTab === 'notes');
   const createNoteMutation = useCreateNote();
   const updateNoteMutation = useUpdateNote();
   const deleteNoteMutation = useDeleteNote();
@@ -442,7 +442,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
   ];
 
   return (
-    <Modal visible transparent animationType="slide">
+    <Modal visible transparent animationType="fade">
       <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose}>
         <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
           <View style={[styles.modalHeader, { backgroundColor: categoryToken.badge }]}>
@@ -579,16 +579,11 @@ export function CollectionScreen() {
     loadPromoUpdates();
   }, [queryClient, loadPromoUpdates]);
 
-  // 點擊項目時標記為已讀
-  const handleItemPress = useCallback(async (item: GachaItemWithRead) => {
+  // 點擊項目：先開 Modal，標記已讀在背景非阻塞執行（避免 await 搶 JS 線程卡動畫）
+  const handleItemPress = useCallback((item: GachaItemWithRead) => {
     setSelectedItem(item);
 
-    const token = await getToken();
-    if (!token || !item.collectionId) return;
-
-    // 如果是未讀項目，樂觀更新 React Query 快取
-    // 注意：後端尚未實作 PATCH /api/collections/:id/read（契約無此端點）
-    // 目前僅前端標記，下次 query refetch 會以後端 isRead 為準
+    // 樂觀更新（同步，不阻塞）
     if (item.isRead === false) {
       queryClient.setQueryData(
         ['collection', { sort: 'unread' }],
@@ -604,18 +599,20 @@ export function CollectionScreen() {
       );
     }
 
-    // #028 如果有優惠更新，標記優惠已讀
-    if (promoUpdateIds.has(item.collectionId)) {
-      try {
-        await collectionApi.markPromoRead(token, item.collectionId);
-        setPromoUpdateIds(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(item.collectionId!);
-          return newSet;
+    // #028 優惠已讀：背景執行，不阻塞 Modal 開啟
+    if (item.collectionId && promoUpdateIds.has(item.collectionId)) {
+      getToken().then(token => {
+        if (!token || !item.collectionId) return;
+        collectionApi.markPromoRead(token, item.collectionId).then(() => {
+          setPromoUpdateIds(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(item.collectionId!);
+            return newSet;
+          });
+        }).catch(error => {
+          console.error('Failed to mark promo as read:', error);
         });
-      } catch (error) {
-        console.error('Failed to mark promo as read:', error);
-      }
+      });
     }
   }, [getToken, promoUpdateIds, queryClient]);
 

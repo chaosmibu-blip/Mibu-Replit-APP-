@@ -121,12 +121,12 @@ export function useClaimExploration() {
 
 // ============ #058 塗鴉牆 Hooks ============
 
-/** 景點塗鴉牆查詢 */
-export function useGraffiti(placeId: number) {
+/** 景點塗鴉牆查詢（支援懶載入，Modal 動畫完成後再觸發） */
+export function useGraffiti(placeId: number, isActive = true) {
   return useAuthQuery<GraffitiListResponse>(
     miniQueryKeys.graffiti(placeId),
     (token) => miniApi.getGraffiti(token, placeId),
-    { enabled: placeId > 0 },
+    { enabled: placeId > 0 && isActive },
   );
 }
 
@@ -160,12 +160,12 @@ export function useDeleteGraffiti() {
 
 // ============ #059 筆記 Hooks ============
 
-/** 景點筆記查詢 */
-export function useNotes(placeId: number) {
+/** 景點筆記查詢（支援懶載入，Modal 動畫完成後再觸發） */
+export function useNotes(placeId: number, isActive = true) {
   return useAuthQuery<NotesListResponse>(
     miniQueryKeys.notes(placeId),
     (token) => miniApi.getNotes(token, placeId),
-    { enabled: placeId > 0 },
+    { enabled: placeId > 0 && isActive },
   );
 }
 
