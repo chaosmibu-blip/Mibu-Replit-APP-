@@ -46,6 +46,7 @@ import { useAuth, useI18n, useGacha } from '../../../context/AppContext';
 import { useCollectionList, useMarkCollectionRead } from '../../../hooks/useCollectionQueries';
 import { collectionApi } from '../../../services/collectionApi';
 import { contributionApi } from '../../../services/contributionApi';
+import { ApiError } from '../../../services/base';
 import { GachaItem, Language } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme, UIColors } from '../../../../constants/Colors';
@@ -79,6 +80,22 @@ type GachaItemWithRead = GachaItem & {
 // ============================================================
 // 輔助函數
 // ============================================================
+
+/**
+ * 從 API 錯誤中提取可讀訊息（用於 console.error + Alert）
+ * @param error - catch 到的錯誤物件
+ * @param fallback - 無法解析時的預設訊息
+ */
+const extractApiError = (error: unknown, fallback: string): string => {
+  if (error instanceof ApiError) {
+    const parts = [`HTTP ${error.status}`];
+    if (error.code) parts.push(error.code);
+    if (error.serverMessage) parts.push(error.serverMessage);
+    return parts.join(' | ');
+  }
+  if (error instanceof Error) return error.message;
+  return fallback;
+};
 
 /**
  * 取得景點名稱
@@ -200,7 +217,10 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
       { placeId, params: { content } },
       {
         onSuccess: () => setGraffitiInput(''),
-        onError: () => Alert.alert(t.mini_error, t.mini_graffitiCreateFail),
+        onError: (error) => {
+          console.error('createGraffiti failed:', extractApiError(error, 'unknown'));
+          Alert.alert(t.mini_error, t.mini_graffitiCreateFail);
+        },
       },
     );
   };
@@ -213,7 +233,12 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
         style: 'destructive',
         onPress: () => deleteGraffitiMutation.mutate(
           { graffitiId, placeId },
-          { onError: () => Alert.alert(t.mini_error, t.mini_graffitiDeleteFail) },
+          {
+            onError: (error) => {
+              console.error('deleteGraffiti failed:', extractApiError(error, 'unknown'));
+              Alert.alert(t.mini_error, t.mini_graffitiDeleteFail);
+            },
+          },
         ),
       },
     ]);
@@ -229,7 +254,10 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
         { noteId: editingNoteId, placeId, params: { content } },
         {
           onSuccess: () => { setEditNoteInput(''); setEditingNoteId(null); },
-          onError: () => Alert.alert(t.mini_error, t.mini_notesUpdateFail),
+          onError: (error) => {
+            console.error('updateNote failed:', extractApiError(error, 'unknown'));
+            Alert.alert(t.mini_error, t.mini_notesUpdateFail);
+          },
         },
       );
     } else {
@@ -239,7 +267,10 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
         { placeId, params: { content } },
         {
           onSuccess: () => setNewNoteInput(''),
-          onError: () => Alert.alert(t.mini_error, t.mini_notesCreateFail),
+          onError: (error) => {
+            console.error('createNote failed:', extractApiError(error, 'unknown'));
+            Alert.alert(t.mini_error, t.mini_notesCreateFail);
+          },
         },
       );
     }
@@ -258,7 +289,12 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
         style: 'destructive',
         onPress: () => deleteNoteMutation.mutate(
           { noteId, placeId },
-          { onError: () => Alert.alert(t.mini_error, t.mini_notesDeleteFail) },
+          {
+            onError: (error) => {
+              console.error('deleteNote failed:', extractApiError(error, 'unknown'));
+              Alert.alert(t.mini_error, t.mini_notesDeleteFail);
+            },
+          },
         ),
       },
     ]);
@@ -675,10 +711,11 @@ export function CollectionScreen() {
         );
       }
     } catch (error) {
-      console.error('Failed to add favorite:', error);
+      const detail = extractApiError(error, 'unknown');
+      console.error('addFavorite failed:', detail);
       Alert.alert(
         language === 'zh-TW' ? '操作失敗' : 'Failed',
-        language === 'zh-TW' ? '請稍後再試' : 'Please try again later'
+        language === 'zh-TW' ? `收藏失敗（${detail}）` : `Failed to add favorite (${detail})`
       );
     }
   }, [getToken, language]);
@@ -721,10 +758,11 @@ export function CollectionScreen() {
                 );
               }
             } catch (error) {
-              console.error('Failed to add to blacklist:', error);
+              const detail = extractApiError(error, 'unknown');
+              console.error('addToBlacklist failed:', detail);
               Alert.alert(
                 language === 'zh-TW' ? '操作失敗' : 'Failed',
-                language === 'zh-TW' ? '請稍後再試' : 'Please try again later'
+                language === 'zh-TW' ? `加入黑名單失敗（${detail}）` : `Failed to blacklist (${detail})`
               );
             }
           },
