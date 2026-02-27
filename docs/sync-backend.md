@@ -6,33 +6,46 @@
 
 ## 最新回報
 
-### 2026-02-27 🐛 BUG：塗鴉牆/筆記寫入失敗（前端已修復）+ 收藏功能失敗（待後端確認）
+### 2026-02-27 ✅ #063 修復：所有 placeId 路徑參數改用 officialPlaceId（前端已完成）
 
 | 項目 | 內容 |
 |------|------|
-| 來源 | APP 端實機測試 + 根因分析 |
-| 狀態 | 🟡 塗鴉牆/筆記已修（前端 bug），收藏待後端確認 |
-| 嚴重度 | 中（收藏功能仍無法使用） |
+| 來源 | sync-app.md #063 + APP 端根因分析 |
+| 狀態 | ✅ 前端已完成修復 |
+| 嚴重度 | 高（塗鴉牆/筆記/收藏/黑名單全部受影響） |
 
-**根因分析（前端 bug 已修復）**：
+**根因**：前端送錯 placeId 格式
+- 原始 bug：`parseInt(googlePlaceId)` → `NaN` → fallback `0` → 所有 API 送 placeId=0
+- 第一輪修復（已被覆蓋）：改用 Google Places ID 字串 → 收藏 400「無效的地點 ID」
+- 根因：後端 #063 確認所有 `:placeId` 路徑參數期望 `officialPlaceId`（places 表數字 ID）
 
-塗鴉牆（500）和筆記（500）的根因是**前端送錯 placeId**：
-- 資料映射時 `parseInt(googlePlaceId)` 把 Google Places ID（如 `ChIJd6CdqqvlZzQRXh8_XLGsH0c`）解析成 `NaN`，fallback 為 `0`
-- API 實際送出 `POST /api/mini/graffiti/0` 和 `POST /api/mini/notes/0` → 後端找不到 placeId=0 → 500
-- **修復**：改用 `item.placeId`（Google Places ID 字串）+ hooks 型別從 `number` 改為 `string`
-- 修復檔案：`CollectionScreen.tsx`、`useMiniQueries.ts`
+**修復內容**：全鏈改用 `officialPlaceId: number`（places 表 ID）
+- `CollectionItem` 型別加入 `officialPlaceId?: number`
+- `FavoriteItem` 型別加入 `officialPlaceId?: number`
+- `GachaItemWithRead` 加入 `officialPlaceId` 並映射
+- `PlaceDetailModal` 所有 7 個 mutation 改用 `officialPlaceId`
+- `miniApi.ts` 4 個方法 placeId 改為 `number`
+- `useMiniQueries.ts` 所有 hooks placeId 改為 `number`
+- `collectionApi.ts` addFavorite/removeFavorite/getFavoriteStatus 改為 `number`
+- `contributionApi.ts` addToBlacklist/removeFromBlacklist 改為 `number`
+- `FavoritesScreen.tsx` removeFavorite 改用 `officialPlaceId`
 
-**問題 3（仍未解決）：加入我的最愛失敗**
-- API：`POST /api/collections/:placeId/favorite`
-- 前端送出 placeId：`ChIJd6CdqqvlZzQRXh8_XLGsH0c`（Google Places ID 字串）
-- 實際回傳：**HTTP 400「無效的地點 ID」**
-- 前端已確認 placeId 格式正確（與其他 API 使用的 Google Places ID 一致）
+**影響的 API 端點（共 10 個）**：
+| 端點 | 修復前送值 | 修復後送值 |
+|------|-----------|-----------|
+| `GET /api/mini/graffiti/:placeId` | 0（NaN fallback） | officialPlaceId |
+| `POST /api/mini/graffiti/:placeId` | 0 | officialPlaceId |
+| `GET /api/mini/notes/:placeId` | 0 | officialPlaceId |
+| `POST /api/mini/notes/:placeId` | 0 | officialPlaceId |
+| `POST /api/collections/:placeId/favorite` | Google Places ID 字串 | officialPlaceId |
+| `DELETE /api/collections/:placeId/favorite` | Google Places ID 字串 | officialPlaceId |
+| `GET /api/collections/:placeId/favorite/status` | Google Places ID 字串 | officialPlaceId |
+| `POST /api/collection/:placeId/blacklist` | Google Places ID 字串 | officialPlaceId |
+| `DELETE /api/collection/:placeId/blacklist` | Google Places ID 字串 | officialPlaceId |
 
 **請後端確認**：
-1. `POST /api/collections/:placeId/favorite` 的 `:placeId` 期望什麼格式？
-   - Google Places ID 字串（如 `ChIJd6CdqqvlZzQRXh8_XLGsH0c`）？
-   - 還是 collections 表的數字 ID（如 `3595`）？
-2. 如果期望數字 ID，前端需要改用 `collectionId` 而非 `placeId`
+1. `GET /api/collections` 回應是否包含 `officialPlaceId` 欄位？（前端已加型別，需確認實際回傳）
+2. `GET /api/favorites` 回應是否也包含 `officialPlaceId` 欄位？（FavoritesScreen 也需要）
 
 ---
 

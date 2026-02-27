@@ -252,7 +252,7 @@ class CollectionApiService extends ApiBase {
    * @param placeId - 景點 ID
    * @returns 加入結果
    */
-  async addFavorite(token: string, placeId: string): Promise<AddFavoriteResponse> {
+  async addFavorite(token: string, placeId: number): Promise<AddFavoriteResponse> {
     return this.request<AddFavoriteResponse>(`/api/collections/${placeId}/favorite`, {
       method: 'POST',
       headers: this.authHeaders(token),
@@ -266,7 +266,7 @@ class CollectionApiService extends ApiBase {
    * @param placeId - 景點 ID
    * @returns 移除結果
    */
-  async removeFavorite(token: string, placeId: string): Promise<RemoveFavoriteResponse> {
+  async removeFavorite(token: string, placeId: number): Promise<RemoveFavoriteResponse> {
     return this.request<RemoveFavoriteResponse>(`/api/collections/${placeId}/favorite`, {
       method: 'DELETE',
       headers: this.authHeaders(token),
@@ -280,7 +280,7 @@ class CollectionApiService extends ApiBase {
    * @param placeId - 景點 ID
    * @returns 最愛狀態
    */
-  async getFavoriteStatus(token: string, placeId: string): Promise<FavoriteStatusResponse> {
+  async getFavoriteStatus(token: string, placeId: number): Promise<FavoriteStatusResponse> {
     return this.request<FavoriteStatusResponse>(`/api/collections/${placeId}/favorite/status`, {
       headers: this.authHeaders(token),
     });

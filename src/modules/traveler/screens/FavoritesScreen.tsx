@@ -67,7 +67,7 @@ export function FavoritesScreen() {
   );
 
   /** 移除收藏 mutation */
-  const removeFavoriteMutation = useAuthMutation<RemoveFavoriteResponse, string>(
+  const removeFavoriteMutation = useAuthMutation<RemoveFavoriteResponse, number>(
     (token, placeId) => collectionApi.removeFavorite(token, placeId),
     {
       onSuccess: () => {
@@ -97,7 +97,8 @@ export function FavoritesScreen() {
    * 移除收藏
    * 顯示確認對話框，確認後呼叫 mutation 移除
    */
-  const handleRemoveFavorite = async (placeId: string, placeName: string) => {
+  const handleRemoveFavorite = async (officialPlaceId: number | undefined, placeName: string) => {
+    if (!officialPlaceId) return;
     Alert.alert(
       t.favorites_removeFavorite,
       tFormat(t.favorites_confirmRemove, { name: placeName }),
@@ -108,7 +109,7 @@ export function FavoritesScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await removeFavoriteMutation.mutateAsync(placeId);
+              await removeFavoriteMutation.mutateAsync(officialPlaceId);
             } catch (error) {
               console.error('Failed to remove favorite:', error);
               Alert.alert(t.favorites_error, t.favorites_removeFailed);
@@ -200,7 +201,7 @@ export function FavoritesScreen() {
           icon="heart"
           iconColor={SemanticColors.errorDark}
           size={24}
-          onPress={() => handleRemoveFavorite(item.placeId, item.placeName)}
+          onPress={() => handleRemoveFavorite(item.officialPlaceId, item.placeName)}
           style={styles.removeBtn}
         />
       </Card.Content>

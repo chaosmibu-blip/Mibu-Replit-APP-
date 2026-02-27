@@ -23,7 +23,8 @@ import { Pagination } from './common';
 export interface CollectionItem {
   id: number;                    // 收藏 ID
   userId: string;                // 用戶 ID
-  placeId?: string;              // 地點 ID
+  placeId?: string;              // Google Places ID（字串）
+  officialPlaceId?: number;      // places 表數字 ID（用於 API 路徑參數）
   placeName: string;             // 地點名稱
   category: string;              // 分類
   subcategory?: string;          // 子分類
@@ -81,7 +82,8 @@ export interface CollectionStats {
  */
 export interface FavoriteItem {
   id: number;              // 最愛 ID
-  placeId: string;         // 地點 ID
+  placeId: string;         // Google Places ID（字串）
+  officialPlaceId?: number; // places 表數字 ID（用於 API 路徑參數）
   placeName: string;       // 地點名稱
   category: string;        // 分類
   subcategory?: string;    // 子分類

@@ -208,7 +208,7 @@ class ContributionApiService extends ApiBase {
    * @example
    * await contributionApi.addToBlacklist(token, 'place-123');
    */
-  async addToBlacklist(token: string, placeId: string): Promise<BlacklistActionResponse> {
+  async addToBlacklist(token: string, placeId: number): Promise<BlacklistActionResponse> {
     return this.request<BlacklistActionResponse>(`/api/collection/${placeId}/blacklist`, {
       method: 'POST',
       headers: this.authHeaders(token),
@@ -230,7 +230,7 @@ class ContributionApiService extends ApiBase {
    * @example
    * await contributionApi.removeFromBlacklist(token, 'place-123');
    */
-  async removeFromBlacklist(token: string, placeId: string): Promise<BlacklistActionResponse> {
+  async removeFromBlacklist(token: string, placeId: number): Promise<BlacklistActionResponse> {
     // 改用 this.request() 統一走 base.ts（含超時機制）
     return this.request<BlacklistActionResponse>(
       `/api/collection/${placeId}/blacklist`,

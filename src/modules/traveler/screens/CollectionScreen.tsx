@@ -72,9 +72,10 @@ import styles from './CollectionScreen.styles';
  */
 type GachaItemWithRead = GachaItem & {
   isRead?: boolean;           // 是否已讀
-  collectionId?: number;      // 圖鑑 ID
+  collectionId?: number;      // 圖鑑 ID（collections 表 ID）
   hasPromoUpdate?: boolean;   // #028 是否有優惠更新通知
-  placeId?: string;           // 地點 ID（用於收藏/黑名單 API）
+  placeId?: string;           // Google Places ID（顯示用）
+  officialPlaceId?: number;   // places 表數字 ID（API 路徑參數用，#063）
 };
 
 // ============================================================
@@ -147,8 +148,8 @@ type PlaceDetailTab = 'info' | 'graffiti' | 'notes';
 
 function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: PlaceDetailModalProps) {
   const { t } = useI18n();
-  const placeId = item.placeId || '';
-  console.log('[PlaceDetailModal] placeId:', placeId, '| item.id:', item.id, '| collectionId:', (item as any).collectionId);
+  const officialPlaceId = item.officialPlaceId ?? 0;
+  console.log('[PlaceDetailModal] officialPlaceId:', officialPlaceId, '| placeId:', item.placeId, '| collectionId:', item.collectionId);
 
   // UI 狀態
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -159,12 +160,12 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
 
   // #058 塗鴉牆（切到該 tab 才載入，避免 Modal 動畫期間搶 JS 線程）
-  const graffitiQuery = useGraffiti(placeId, activeTab === 'graffiti');
+  const graffitiQuery = useGraffiti(officialPlaceId, activeTab === 'graffiti');
   const createGraffitiMutation = useCreateGraffiti();
   const deleteGraffitiMutation = useDeleteGraffiti();
 
   // #059 筆記（同上，懶載入）
-  const notesQuery = useNotes(placeId, activeTab === 'notes');
+  const notesQuery = useNotes(officialPlaceId, activeTab === 'notes');
   const createNoteMutation = useCreateNote();
   const updateNoteMutation = useUpdateNote();
   const deleteNoteMutation = useDeleteNote();
@@ -215,7 +216,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
       return;
     }
     createGraffitiMutation.mutate(
-      { placeId, params: { content } },
+      { placeId: officialPlaceId, params: { content } },
       {
         onSuccess: () => setGraffitiInput(''),
         onError: (error) => {
@@ -233,7 +234,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
         text: t.mini_graffitiDelete,
         style: 'destructive',
         onPress: () => deleteGraffitiMutation.mutate(
-          { graffitiId, placeId },
+          { graffitiId, placeId: officialPlaceId },
           {
             onError: (error) => {
               console.error('deleteGraffiti failed:', extractApiError(error, 'unknown'));
@@ -252,7 +253,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
       const content = editNoteInput.trim();
       if (!content) return;
       updateNoteMutation.mutate(
-        { noteId: editingNoteId, placeId, params: { content } },
+        { noteId: editingNoteId, placeId: officialPlaceId, params: { content } },
         {
           onSuccess: () => { setEditNoteInput(''); setEditingNoteId(null); },
           onError: (error) => {
@@ -265,7 +266,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
       const content = newNoteInput.trim();
       if (!content) return;
       createNoteMutation.mutate(
-        { placeId, params: { content } },
+        { placeId: officialPlaceId, params: { content } },
         {
           onSuccess: () => setNewNoteInput(''),
           onError: (error) => {
@@ -289,7 +290,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
         text: t.mini_notesDelete,
         style: 'destructive',
         onPress: () => deleteNoteMutation.mutate(
-          { noteId, placeId },
+          { noteId, placeId: officialPlaceId },
           {
             onError: (error) => {
               console.error('deleteNote failed:', extractApiError(error, 'unknown'));
@@ -582,6 +583,7 @@ export function CollectionScreen() {
       merchant: item.merchant,
       isCoupon: item.isCoupon,
       couponData: item.couponData,
+      officialPlaceId: item.officialPlaceId ?? undefined,
     })) as GachaItemWithRead[];
   }, [collectionQuery.data]);
 
@@ -700,12 +702,12 @@ export function CollectionScreen() {
       return;
     }
 
-    const placeId = item.placeId || item.id?.toString();
-    console.log('[handleFavorite] item.placeId:', item.placeId, '| item.id:', item.id, '| collectionId:', item.collectionId, '| 實際送出 placeId:', placeId);
-    if (!placeId) return;
+    const pid = item.officialPlaceId;
+    console.log('[handleFavorite] officialPlaceId:', pid, '| placeId:', item.placeId, '| collectionId:', item.collectionId);
+    if (!pid) return;
 
     try {
-      const response = await collectionApi.addFavorite(token, placeId);
+      const response = await collectionApi.addFavorite(token, pid);
       if (response.success) {
         Alert.alert(
           language === 'zh-TW' ? '已加入最愛' : 'Added to Favorites',
@@ -736,8 +738,8 @@ export function CollectionScreen() {
       return;
     }
 
-    const placeId = item.placeId || item.id?.toString();
-    if (!placeId) return;
+    const pid = item.officialPlaceId;
+    if (!pid) return;
 
     // 確認對話框
     Alert.alert(
@@ -752,7 +754,7 @@ export function CollectionScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await contributionApi.addToBlacklist(token, placeId);
+              const response = await contributionApi.addToBlacklist(token, pid);
               if (response.success) {
                 Alert.alert(
                   language === 'zh-TW' ? '已加入黑名單' : 'Added to Blacklist',

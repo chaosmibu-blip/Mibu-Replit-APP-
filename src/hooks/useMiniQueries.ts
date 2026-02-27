@@ -48,8 +48,8 @@ import type {
 export const miniQueryKeys = {
   profile: ['mini', 'profile'] as const,
   explorationStatus: ['mini', 'exploration', 'status'] as const,
-  graffiti: (placeId: string) => ['mini', 'graffiti', placeId] as const,
-  notes: (placeId: string) => ['mini', 'notes', placeId] as const,
+  graffiti: (placeId: number) => ['mini', 'graffiti', placeId] as const,
+  notes: (placeId: number) => ['mini', 'notes', placeId] as const,
 };
 
 // ============ #056 Profile Hooks ============
@@ -122,7 +122,7 @@ export function useClaimExploration() {
 // ============ #058 塗鴉牆 Hooks ============
 
 /** 景點塗鴉牆查詢（支援懶載入，Modal 動畫完成後再觸發） */
-export function useGraffiti(placeId: string, isActive = true) {
+export function useGraffiti(placeId: number, isActive = true) {
   return useAuthQuery<GraffitiListResponse>(
     miniQueryKeys.graffiti(placeId),
     (token) => miniApi.getGraffiti(token, placeId),
@@ -134,7 +134,7 @@ export function useGraffiti(placeId: string, isActive = true) {
 export function useCreateGraffiti() {
   const queryClient = useQueryClient();
 
-  return useAuthMutation<CreateGraffitiResponse, { placeId: string; params: CreateGraffitiParams }>(
+  return useAuthMutation<CreateGraffitiResponse, { placeId: number; params: CreateGraffitiParams }>(
     (token, { placeId, params }) => miniApi.createGraffiti(token, placeId, params),
     {
       onSuccess: (_data, variables) => {
@@ -148,7 +148,7 @@ export function useCreateGraffiti() {
 export function useDeleteGraffiti() {
   const queryClient = useQueryClient();
 
-  return useAuthMutation<{ success: boolean }, { graffitiId: number; placeId: string }>(
+  return useAuthMutation<{ success: boolean }, { graffitiId: number; placeId: number }>(
     (token, { graffitiId }) => miniApi.deleteGraffiti(token, graffitiId),
     {
       onSuccess: (_data, variables) => {
@@ -161,7 +161,7 @@ export function useDeleteGraffiti() {
 // ============ #059 筆記 Hooks ============
 
 /** 景點筆記查詢（支援懶載入，Modal 動畫完成後再觸發） */
-export function useNotes(placeId: string, isActive = true) {
+export function useNotes(placeId: number, isActive = true) {
   return useAuthQuery<NotesListResponse>(
     miniQueryKeys.notes(placeId),
     (token) => miniApi.getNotes(token, placeId),
@@ -173,7 +173,7 @@ export function useNotes(placeId: string, isActive = true) {
 export function useCreateNote() {
   const queryClient = useQueryClient();
 
-  return useAuthMutation<CreateNoteResponse, { placeId: string; params: CreateNoteParams }>(
+  return useAuthMutation<CreateNoteResponse, { placeId: number; params: CreateNoteParams }>(
     (token, { placeId, params }) => miniApi.createNote(token, placeId, params),
     {
       onSuccess: (_data, variables) => {
@@ -187,7 +187,7 @@ export function useCreateNote() {
 export function useUpdateNote() {
   const queryClient = useQueryClient();
 
-  return useAuthMutation<UpdateNoteResponse, { noteId: number; placeId: string; params: UpdateNoteParams }>(
+  return useAuthMutation<UpdateNoteResponse, { noteId: number; placeId: number; params: UpdateNoteParams }>(
     (token, { noteId, params }) => miniApi.updateNote(token, noteId, params),
     {
       onSuccess: (_data, variables) => {
@@ -201,7 +201,7 @@ export function useUpdateNote() {
 export function useDeleteNote() {
   const queryClient = useQueryClient();
 
-  return useAuthMutation<{ success: boolean }, { noteId: number; placeId: string }>(
+  return useAuthMutation<{ success: boolean }, { noteId: number; placeId: number }>(
     (token, { noteId }) => miniApi.deleteNote(token, noteId),
     {
       onSuccess: (_data, variables) => {
