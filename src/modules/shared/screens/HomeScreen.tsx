@@ -465,6 +465,7 @@ export function HomeScreen() {
         />
       }
       showsVerticalScrollIndicator={false}
+      directionalLockEnabled
     >
       {/* ========== 頂部問候區 ========== */}
       <View style={styles.header}>
@@ -616,10 +617,7 @@ export function HomeScreen() {
 
       {/* ========== 全台活動卡片（最多 6 則/頁，左右滑 + 自動輪播）========== */}
       {events.festivals.length > 0 && (
-        <View
-          style={styles.localSection}
-          onLayout={(e) => setFestivalContainerWidth(e.nativeEvent.layout.width)}
-        >
+        <View style={styles.localSection}>
           <View style={styles.sectionHeader}>
             <Ionicons name="location-outline" size={20} color={MibuBrand.copper} />
             <Text style={styles.localSectionHeaderText}>{t.home_localTab}</Text>
@@ -634,6 +632,8 @@ export function HomeScreen() {
               onMomentumScrollEnd={handleFestivalScrollEnd}
               scrollEventThrottle={16}
               nestedScrollEnabled
+              directionalLockEnabled
+              onLayout={(e) => setFestivalContainerWidth(e.nativeEvent.layout.width)}
             >
               {Array.from({ length: festivalTotalPages }, (_, pageIdx) => {
                 const pageItems = events.festivals.slice(
