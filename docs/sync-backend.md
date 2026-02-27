@@ -43,9 +43,27 @@
 | `POST /api/collection/:placeId/blacklist` | Google Places ID 字串 | officialPlaceId |
 | `DELETE /api/collection/:placeId/blacklist` | Google Places ID 字串 | officialPlaceId |
 
-**請後端確認**：
-1. `GET /api/collections` 回應是否包含 `officialPlaceId` 欄位？（前端已加型別，需確認實際回傳）
-2. `GET /api/favorites` 回應是否也包含 `officialPlaceId` 欄位？（FavoritesScreen 也需要）
+---
+
+### 2026-02-27 ❓ 待後端確認：officialPlaceId 欄位回傳
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | #063 前端修復後的依賴確認 |
+| 狀態 | 🟡 等後端確認 |
+| 嚴重度 | 高（欄位缺少 = 所有 placeId 相關功能失效） |
+
+前端已全鏈改用 `officialPlaceId: number`（places 表數字 ID），但需後端確認以下兩個 GET API 的回應確實包含此欄位：
+
+| # | API 端點 | 前端讀取欄位 | 用途 |
+|---|---------|-------------|------|
+| 1 | `GET /api/collections` | `item.officialPlaceId` | 圖鑑頁：塗鴉牆、筆記、收藏、黑名單全靠此欄位 |
+| 2 | `GET /api/favorites` | `item.officialPlaceId` | 我的最愛頁：移除收藏靠此欄位 |
+
+**如果後端尚未回傳 `officialPlaceId`**：
+- 請在回應的每個 item 中加入 `officialPlaceId: number`（對應 places 表的主鍵 ID）
+- 前端型別已準備好接收（`CollectionItem.officialPlaceId?: number`、`FavoriteItem.officialPlaceId?: number`）
+- 欄位缺少時前端 fallback 為 `0`，API 呼叫會失敗
 
 ---
 
