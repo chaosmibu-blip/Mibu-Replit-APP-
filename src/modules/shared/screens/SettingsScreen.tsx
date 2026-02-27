@@ -323,16 +323,15 @@ export function SettingsScreen() {
           iconBg: SemanticColors.warningLight,
           iconColor: SemanticColors.warningDark,
         },
-        // [HIDDEN] 送審隱藏 #1 推薦領好禮
-        // {
-        //   icon: 'gift-outline',
-        //   label: t.referAndEarn,
-        //   action: () => router.push('/referral' as any),
-        //   hasArrow: true,
-        //   highlight: true,
-        //   iconBg: '#ECFDF5',
-        //   iconColor: '#059669',
-        // },
+        {
+          icon: 'gift-outline',
+          label: t.referAndEarn,
+          action: () => router.push('/referral' as any),
+          hasArrow: true,
+          highlight: true,
+          iconBg: '#ECFDF5',
+          iconColor: '#059669',
+        },
         {
           icon: 'globe-outline',
           label: t.settings_language,
@@ -344,20 +343,19 @@ export function SettingsScreen() {
         },
       ],
     },
-    // [HIDDEN] 送審隱藏 — 成就與任務（#043 規則引擎，功能未完成）
-    // {
-    //   title: t.explore,
-    //   items: [
-    //     {
-    //       icon: 'trophy-outline',
-    //       label: t.settings_achievements,
-    //       action: () => router.push('/economy' as any),
-    //       hasArrow: true,
-    //       iconBg: '#FFF3D4',
-    //       iconColor: '#D4A24C',
-    //     },
-    //   ],
-    // },
+    {
+      title: t.explore,
+      items: [
+        {
+          icon: 'trophy-outline',
+          label: t.settings_achievements,
+          action: () => router.push('/economy' as any),
+          hasArrow: true,
+          iconBg: '#FFF3D4',
+          iconColor: '#D4A24C',
+        },
+      ],
+    },
     // 信箱群組（#045 統一收件箱）
     {
       title: t.mailbox_title,
@@ -373,43 +371,41 @@ export function SettingsScreen() {
         },
       ],
     },
-    // [HIDDEN] 申請入口暫時隱藏（自己人 + 商家）
-    // {
-    //   title: t.explore,
-    //   items: [
-    //     ...(partnerStatus !== 'approved' ? [{
-    //       icon: 'people-outline' as keyof typeof Ionicons.glyphMap,
-    //       label: t.settings_partnerApply,
-    //       action: () => router.push('/partner-apply' as any),
-    //       hasArrow: true,
-    //       badge: partnerStatus === 'pending' ? t.settings_applicationPending : undefined,
-    //       iconBg: '#F0FDF4',
-    //       iconColor: MibuBrand.success,
-    //     }] : []),
-    //     ...(merchantStatus !== 'approved' ? [{
-    //       icon: 'storefront-outline' as keyof typeof Ionicons.glyphMap,
-    //       label: t.settings_merchantApply,
-    //       action: () => router.push('/merchant-apply' as any),
-    //       hasArrow: true,
-    //       badge: merchantStatus === 'pending' ? t.settings_applicationPending : undefined,
-    //       iconBg: '#FFF7ED',
-    //       iconColor: '#EA580C',
-    //     }] : []),
-    //   ].filter(Boolean),
-    // },
+    {
+      title: t.explore,
+      items: [
+        ...(partnerStatus !== 'approved' ? [{
+          icon: 'people-outline' as keyof typeof Ionicons.glyphMap,
+          label: t.settings_partnerApply,
+          action: () => router.push('/partner-apply' as any),
+          hasArrow: true,
+          badge: partnerStatus === 'pending' ? t.settings_applicationPending : undefined,
+          iconBg: '#F0FDF4',
+          iconColor: MibuBrand.success,
+        }] : []),
+        ...(merchantStatus !== 'approved' ? [{
+          icon: 'storefront-outline' as keyof typeof Ionicons.glyphMap,
+          label: t.settings_merchantApply,
+          action: () => router.push('/merchant-apply' as any),
+          hasArrow: true,
+          badge: merchantStatus === 'pending' ? t.settings_applicationPending : undefined,
+          iconBg: '#FFF7ED',
+          iconColor: '#EA580C',
+        }] : []),
+      ].filter(Boolean),
+    },
     // 偏好設定群組（推播通知開關）
     {
       title: t.settings_preferences,
       items: [
-        // [HIDDEN] 送審隱藏 — 我的最愛/黑名單（功能未完成）
-        // {
-        //   icon: 'heart-outline',
-        //   label: t.settings_favoritesBlacklist,
-        //   action: () => router.push('/favorites-management' as any),
-        //   hasArrow: true,
-        //   iconBg: '#FEE2E2',
-        //   iconColor: MibuBrand.tierSP,
-        // },
+        {
+          icon: 'heart-outline',
+          label: t.settings_favoritesBlacklist,
+          action: () => router.push('/favorites-management' as any),
+          hasArrow: true,
+          iconBg: '#FEE2E2',
+          iconColor: MibuBrand.tierSP,
+        },
         {
           icon: 'notifications-outline',
           label: t.settings_pushNotifications,
@@ -430,40 +426,37 @@ export function SettingsScreen() {
           iconBg: '#EEF2FF',
           iconColor: '#6366f1',
         },
-        // [HIDDEN] 送審隱藏 — 通知偏好（功能未完成）
-        // {
-        //   icon: 'options-outline',
-        //   label: t.settings_notificationPreferences,
-        //   action: () => router.push('/notification-preferences' as any),
-        //   hasArrow: true,
-        //   iconBg: '#F5F3FF',
-        //   iconColor: '#7C3AED',
-        // },
-        // [HIDDEN] 送審隱藏 — 通知紀錄（功能未完成）
-        // {
-        //   icon: 'list-outline',
-        //   label: t.notifList_title,
-        //   action: () => router.push('/notifications' as any),
-        //   hasArrow: true,
-        //   iconBg: '#FEF3C7',
-        //   iconColor: '#D97706',
-        // },
+        {
+          icon: 'options-outline',
+          label: t.settings_notificationPreferences,
+          action: () => router.push('/notification-preferences' as any),
+          hasArrow: true,
+          iconBg: '#F5F3FF',
+          iconColor: '#7C3AED',
+        },
+        {
+          icon: 'list-outline',
+          label: t.notifList_title,
+          action: () => router.push('/notifications' as any),
+          hasArrow: true,
+          iconBg: '#FEF3C7',
+          iconColor: '#D97706',
+        },
       ],
     },
-    // [HIDDEN] 送審隱藏 — 社群貢獻（功能未完成）
-    // {
-    //   title: t.settings_moreFeatures,
-    //   items: [
-    //     {
-    //       icon: 'hand-left-outline',
-    //       label: t.settings_contributions,
-    //       action: () => router.push('/contribution' as any),
-    //       hasArrow: true,
-    //       iconBg: '#F0FDF4',
-    //       iconColor: '#16a34a',
-    //     },
-    //   ],
-    // },
+    {
+      title: t.settings_moreFeatures,
+      items: [
+        {
+          icon: 'hand-left-outline',
+          label: t.settings_contributions,
+          action: () => router.push('/contribution' as any),
+          hasArrow: true,
+          iconBg: '#F0FDF4',
+          iconColor: '#16a34a',
+        },
+      ],
+    },
     {
       title: t.settings_about,
       items: [

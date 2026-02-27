@@ -479,8 +479,8 @@ export function HomeScreen() {
         </View>
       </View>
 
-      {/* [HIDDEN] 送審隱藏 #9 用戶卡片（稱號+連續登入） */}
-      {/* <View style={styles.levelCard}>
+      {/* #9 用戶卡片（稱號+連續登入） */}
+      <View style={styles.levelCard}>
         <View style={styles.levelHeader}>
           <View style={styles.avatarWithBadge}>
             {(() => {
@@ -540,10 +540,10 @@ export function HomeScreen() {
             </View>
           </View>
         )}
-      </View> */}
+      </View>
 
-      {/* [HIDDEN] 送審隱藏 #10 每日任務卡片 */}
-      {/* <TouchableOpacity
+      {/* #10 每日任務卡片 */}
+      <TouchableOpacity
         style={styles.taskCard}
         onPress={() => router.push('/economy')}
         activeOpacity={0.8}
@@ -571,7 +571,7 @@ export function HomeScreen() {
         <View style={styles.taskProgressBg}>
           <View style={[styles.taskProgressFill, { width: `${taskProgress}%` }]} />
         </View>
-      </View> */}
+      </View>
 
       {/* ========== 公告卡片 ========== */}
       {events.announcements.length > 0 && (
