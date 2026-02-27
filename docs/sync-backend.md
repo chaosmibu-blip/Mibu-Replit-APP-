@@ -6,6 +6,43 @@
 
 ## 最新回報
 
+### 2026-02-27 🐛 BUG：MINI 塗鴉牆/筆記寫入失敗 + 收藏功能失敗
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | APP 端實機測試 |
+| 狀態 | 🟡 等後端確認 |
+| 嚴重度 | 高（三個功能完全無法使用） |
+
+**問題 1：塗鴉牆留言失敗**
+- API：`POST /api/mini/graffiti/:placeId`
+- 錯誤訊息：「留言發送失敗，請稍後再試」
+- 前端已確認：URL、token、body 參數（`{ content }`) 均正確
+
+**問題 2：筆記新增失敗**
+- API：`POST /api/mini/notes/:placeId`
+- 錯誤訊息：「筆記新增失敗，請稍後再試」
+- 前端已確認：URL、token、body 參數（`{ content }`) 均正確
+
+**問題 3：加入我的最愛失敗**
+- API：`POST /api/collections/:placeId/favorite`
+- 錯誤訊息：`Failed to add favorite: ApiError: API Error: ...`
+- 前端已確認：URL、token 均正確
+
+**共同特徵**
+- 三個 API 都是 POST 請求
+- 三個 API 的 GET 請求（讀取資料）正常
+- 前端呼叫邏輯、參數格式均與契約一致
+- 推測後端 POST 端點可能尚未部署或有 bug
+
+**請後端確認**
+1. `/api/mini/graffiti/:placeId` POST 端點是否已部署？
+2. `/api/mini/notes/:placeId` POST 端點是否已部署？
+3. `/api/collections/:placeId/favorite` POST 端點是否正常？
+4. 以上端點是否需要特殊權限或參數？
+
+---
+
 ### 2026-02-27 🐛 BUG：EventApi 回傳 500 錯誤
 
 | 項目 | 內容 |
