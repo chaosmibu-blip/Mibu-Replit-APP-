@@ -6,38 +6,33 @@
 
 ## 最新回報
 
-### 2026-02-27 🐛 BUG：MINI 塗鴉牆/筆記寫入失敗 + 收藏功能失敗
+### 2026-02-27 🐛 BUG：塗鴉牆/筆記寫入失敗（前端已修復）+ 收藏功能失敗（待後端確認）
 
 | 項目 | 內容 |
 |------|------|
-| 來源 | APP 端實機測試 |
-| 狀態 | 🔴 確認為後端 500 錯誤 |
-| 嚴重度 | 高（三個功能完全無法使用） |
+| 來源 | APP 端實機測試 + 根因分析 |
+| 狀態 | 🟡 塗鴉牆/筆記已修（前端 bug），收藏待後端確認 |
+| 嚴重度 | 中（收藏功能仍無法使用） |
 
-**APP 端已排查完畢**：
-- ✅ placeId 傳的是 places 表 ID（不是 collections 表 ID）
-- ✅ Content-Type: application/json header 有設（base.ts 統一設定）
-- ✅ 補齊 error handler 後，實機測試三個 API 均回傳 **HTTP 500（伺服器錯誤）**
+**根因分析（前端 bug 已修復）**：
 
-**問題 1：塗鴉牆留言失敗**
-- API：`POST /api/mini/graffiti/:placeId`
-- 實際回傳：**HTTP 500**
-- 前端已確認：URL、token、body 參數（`{ content }`）、Content-Type 均正確
+塗鴉牆（500）和筆記（500）的根因是**前端送錯 placeId**：
+- 資料映射時 `parseInt(googlePlaceId)` 把 Google Places ID（如 `ChIJd6CdqqvlZzQRXh8_XLGsH0c`）解析成 `NaN`，fallback 為 `0`
+- API 實際送出 `POST /api/mini/graffiti/0` 和 `POST /api/mini/notes/0` → 後端找不到 placeId=0 → 500
+- **修復**：改用 `item.placeId`（Google Places ID 字串）+ hooks 型別從 `number` 改為 `string`
+- 修復檔案：`CollectionScreen.tsx`、`useMiniQueries.ts`
 
-**問題 2：筆記新增失敗**
-- API：`POST /api/mini/notes/:placeId`
-- 實際回傳：**HTTP 500**
-- 前端已確認：URL、token、body 參數（`{ content }`）、Content-Type 均正確
-
-**問題 3：加入我的最愛失敗**
+**問題 3（仍未解決）：加入我的最愛失敗**
 - API：`POST /api/collections/:placeId/favorite`
-- 實際回傳：**HTTP 500**
-- 前端已確認：URL、token、Content-Type 均正確
+- 前端送出 placeId：`ChIJd6CdqqvlZzQRXh8_XLGsH0c`（Google Places ID 字串）
+- 實際回傳：**HTTP 400「無效的地點 ID」**
+- 前端已確認 placeId 格式正確（與其他 API 使用的 Google Places ID 一致）
 
-**結論：三個 POST API 在正式環境對 APP 用戶回傳 500，問題在後端。**
-
-後端提到用 placeId=6 測試成功（201/200），但 APP 用戶的實際 placeId 可能觸發了後端未處理的邊界條件。
-請後端檢查 server log，確認這三個端點在哪些 placeId 或條件下會 500。
+**請後端確認**：
+1. `POST /api/collections/:placeId/favorite` 的 `:placeId` 期望什麼格式？
+   - Google Places ID 字串（如 `ChIJd6CdqqvlZzQRXh8_XLGsH0c`）？
+   - 還是 collections 表的數字 ID（如 `3595`）？
+2. 如果期望數字 ID，前端需要改用 `collectionId` 而非 `placeId`
 
 ---
 

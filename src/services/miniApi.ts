@@ -108,14 +108,14 @@ class MiniApiService extends ApiBase {
   // ============ #058 塗鴉牆 ============
 
   /** 取得景點塗鴉牆留言 */
-  async getGraffiti(token: string, placeId: number): Promise<GraffitiListResponse> {
+  async getGraffiti(token: string, placeId: string): Promise<GraffitiListResponse> {
     return this.request<GraffitiListResponse>(`/api/mini/graffiti/${placeId}`, {
       headers: this.authHeaders(token),
     });
   }
 
   /** 新增塗鴉牆留言（每人每景點最多 3 則） */
-  async createGraffiti(token: string, placeId: number, params: CreateGraffitiParams): Promise<CreateGraffitiResponse> {
+  async createGraffiti(token: string, placeId: string, params: CreateGraffitiParams): Promise<CreateGraffitiResponse> {
     return this.request<CreateGraffitiResponse>(`/api/mini/graffiti/${placeId}`, {
       method: 'POST',
       headers: this.authHeaders(token),
@@ -134,14 +134,14 @@ class MiniApiService extends ApiBase {
   // ============ #059 景點筆記 ============
 
   /** 取得景點私人筆記 */
-  async getNotes(token: string, placeId: number): Promise<NotesListResponse> {
+  async getNotes(token: string, placeId: string): Promise<NotesListResponse> {
     return this.request<NotesListResponse>(`/api/mini/notes/${placeId}`, {
       headers: this.authHeaders(token),
     });
   }
 
   /** 新增景點筆記（1-2000 字） */
-  async createNote(token: string, placeId: number, params: CreateNoteParams): Promise<CreateNoteResponse> {
+  async createNote(token: string, placeId: string, params: CreateNoteParams): Promise<CreateNoteResponse> {
     return this.request<CreateNoteResponse>(`/api/mini/notes/${placeId}`, {
       method: 'POST',
       headers: this.authHeaders(token),

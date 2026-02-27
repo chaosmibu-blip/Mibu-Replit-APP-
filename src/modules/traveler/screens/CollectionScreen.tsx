@@ -131,11 +131,11 @@ const formatDate = (dateStr: string | undefined): string => {
 // ============================================================
 
 interface PlaceDetailModalProps {
-  item: GachaItem;     // 景點資料
-  language: Language;  // 語言設定
-  onClose: () => void; // 關閉回調
-  onFavorite: (item: GachaItem) => void;   // 收藏回調
-  onBlacklist: (item: GachaItem) => void;  // 黑名單回調
+  item: GachaItemWithRead;  // 景點資料（含 placeId、collectionId）
+  language: Language;       // 語言設定
+  onClose: () => void;      // 關閉回調
+  onFavorite: (item: GachaItemWithRead) => void;   // 收藏回調
+  onBlacklist: (item: GachaItemWithRead) => void;  // 黑名單回調
 }
 
 /**
@@ -147,7 +147,8 @@ type PlaceDetailTab = 'info' | 'graffiti' | 'notes';
 
 function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: PlaceDetailModalProps) {
   const { t } = useI18n();
-  const placeId = item.id;
+  const placeId = item.placeId || '';
+  console.log('[PlaceDetailModal] placeId:', placeId, '| item.id:', item.id, '| collectionId:', (item as any).collectionId);
 
   // UI 狀態
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -700,6 +701,7 @@ export function CollectionScreen() {
     }
 
     const placeId = item.placeId || item.id?.toString();
+    console.log('[handleFavorite] item.placeId:', item.placeId, '| item.id:', item.id, '| collectionId:', item.collectionId, '| 實際送出 placeId:', placeId);
     if (!placeId) return;
 
     try {
