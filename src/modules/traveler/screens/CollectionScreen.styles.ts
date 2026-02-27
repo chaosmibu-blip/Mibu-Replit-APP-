@@ -55,11 +55,12 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: UIColors.overlayLight,
+    justifyContent: 'flex-end',
   },
 
-  /** Modal 背景可點擊區域（佔據內容以外的空間，點擊關閉） */
+  /** Modal 背景可點擊區域（絕對定位覆蓋全螢幕，不佔 flex 空間） */
   modalBackdrop: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
   },
 
   /** Modal 內容容器 */
