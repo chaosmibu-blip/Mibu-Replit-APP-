@@ -63,12 +63,12 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
 
-  /** Modal 內容容器 */
+  /** Modal 內容容器（height 而非 maxHeight，讓 ScrollView flex: 1 有確定高度可撐） */
   modalContent: {
     backgroundColor: MibuBrand.warmWhite,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '85%',
+    height: '85%',
   },
 
   /** Modal 頂部色塊區域 */

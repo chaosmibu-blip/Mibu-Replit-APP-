@@ -6,6 +6,29 @@
 
 ## 最新回報
 
+### 2026-02-27 🐛 BUG：EventApi 回傳 500 錯誤
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | APP 端 Console 錯誤 |
+| 狀態 | 🟡 等後端修復 |
+| 嚴重度 | 中（活動資料無法載入） |
+
+**問題描述**
+- Console 出現 `[EventApi] Failed to fetch events: [ApiError: API Error: 500]`
+- Call Stack：`ApiError#constructor (src/services/base.ts:135:5)` → `ApiBase#request (src/services/base.ts:274:29)`
+- 後端回傳 HTTP 500（Internal Server Error）
+
+**影響範圍**
+- 首頁活動區塊可能無法顯示
+- 前端有 error fallback 處理，不會 crash
+
+**前端狀態**
+- 前端呼叫正確，錯誤來自後端
+- 請後端檢查 `/api/events` 端點
+
+---
+
 ### 2026-02-25 #056/#058/#059：MINI 貓咪系統（Profile + 塗鴉牆 + 筆記）
 
 | 項目 | 內容 |
