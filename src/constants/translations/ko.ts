@@ -824,7 +824,6 @@ const ko: Record<string, string> = {
     merchant_appFormTitle: '가맹점 신청',
     merchant_appFormSubtitle: '아래 정보를 입력해 주세요. 심사에 1~3 영업일이 소요됩니다.',
     merchant_ownerName: '대표자 이름 *',
-    merchant_businessName: '상호명 *',
     merchant_taxId: '사업자등록번호',
     merchant_businessCategoryLabel: '업종 *',
     merchant_merchantPhone: '전화번호',

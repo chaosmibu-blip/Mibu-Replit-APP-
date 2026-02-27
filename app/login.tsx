@@ -216,7 +216,7 @@ export default function LoginScreen() {
           const userRole = userData.role || 'traveler';
           const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
           
-          setUser({
+          await setUser({
             id: userData.id,
             name: userData.name,
             email: userData.email || null,
@@ -475,7 +475,7 @@ export default function LoginScreen() {
           const userRole = userData.role || 'traveler';
           const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
           
-          setUser({
+          await setUser({
             id: userData.id,
             name: displayName,
             email: userData.email || null,
@@ -552,7 +552,7 @@ export default function LoginScreen() {
           const userRole = userData.role || 'traveler';
           const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
           
-          setUser({
+          await setUser({
             id: userData.id,
             name: userData.name,
             email: userData.email || null,

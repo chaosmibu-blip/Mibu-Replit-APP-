@@ -81,27 +81,7 @@ export function PlaceListScreen() {
         </View>
       </View>
 
-      {/* ============ 操作按鈕區 ============ */}
-      <View style={styles.actionButtons}>
-        {/* 認領現有店家按鈕 */}
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => router.push('/merchant/claim-place' as any)}
-          accessibilityLabel="認領現有店家"
-        >
-          <Ionicons name="search" size={20} color={MibuBrand.brown} />
-          <Text style={styles.actionButtonText}>{t.merchant_claimExisting}</Text>
-        </TouchableOpacity>
-        {/* 新增自有店家按鈕 */}
-        <TouchableOpacity
-          style={[styles.actionButton, styles.actionButtonPrimary]}
-          onPress={() => router.push('/merchant/new-place' as any)}
-          accessibilityLabel="新增自有店家"
-        >
-          <Ionicons name="add" size={20} color={UIColors.white} />
-          <Text style={[styles.actionButtonText, styles.actionButtonTextPrimary]}>{t.merchant_addNewPlace}</Text>
-        </TouchableOpacity>
-      </View>
+      {/* TODO: /merchant/claim-place 和 /merchant/new-place 路由建立後恢復操作按鈕 */}
 
       {/* ============ 店家列表區 ============ */}
       {places.length === 0 ? (

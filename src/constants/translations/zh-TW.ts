@@ -710,7 +710,6 @@ const zhTW: Record<string, string> = {
     merchant_appFormTitle: '商家入駐申請',
     merchant_appFormSubtitle: '填寫以下資料，我們將在 1-3 個工作天內審核',
     merchant_ownerName: '負責人姓名 *',
-    merchant_businessName: '商家名稱 *',
     merchant_taxId: '統一編號',
     merchant_businessCategoryLabel: '商家類型 *',
     merchant_merchantPhone: '市話',

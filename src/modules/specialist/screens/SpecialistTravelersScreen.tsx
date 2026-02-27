@@ -184,13 +184,7 @@ export function SpecialistTravelersScreen() {
                   >
                     <Ionicons name="location" size={20} color="#6366f1" />
                   </TouchableOpacity>
-                  {/* 開啟聊天按鈕 */}
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => router.push(`/specialist/chat/${traveler.id}` as any)}
-                  >
-                    <Ionicons name="chatbubble" size={20} color="#6366f1" />
-                  </TouchableOpacity>
+                  {/* TODO: /specialist/chat/[id] 路由建立後恢復聊天按鈕 */}
                 </View>
               </View>
             ))}

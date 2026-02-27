@@ -201,8 +201,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ========== 401 攔截器 ==========
   useEffect(() => {
-    setOnUnauthorized(() => {
-      setUser(null);
+    setOnUnauthorized(async () => {
+      await setUser(null);
     });
     return () => setOnUnauthorized(null);
   }, [setUser]);

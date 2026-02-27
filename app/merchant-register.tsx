@@ -117,15 +117,18 @@ export default function MerchantRegisterScreen() {
         return;
       }
 
+      // #053 契約：額外欄位放進 surveyResponses
       const params: MerchantApplyParams = {
-        ownerName: ownerName.trim(),
         businessName: businessName.trim(),
-        taxId: taxId.trim() || undefined,
-        businessCategory,
-        address: address.trim(),
-        phone: phone.trim() || undefined,
-        mobile: mobile.trim(),
         email: email.trim(),
+        surveyResponses: {
+          ownerName: ownerName.trim(),
+          taxId: taxId.trim() || undefined,
+          businessCategory,
+          address: address.trim(),
+          phone: phone.trim() || undefined,
+          mobile: mobile.trim(),
+        },
       };
 
       await apiService.applyMerchant(token, params);

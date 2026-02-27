@@ -341,14 +341,7 @@ export function SOSScreen() {
             <Text style={styles.lockedText}>
               {eligibilityReason || t.sos_requirePurchase}
             </Text>
-            <TouchableOpacity
-              style={styles.purchaseButton}
-              onPress={() => router.push('/purchase-service' as any)}
-            >
-              <Text style={styles.purchaseButtonText}>
-                {t.sos_purchaseService}
-              </Text>
-            </TouchableOpacity>
+            {/* TODO: /purchase-service 路由建立後恢復購買按鈕 */}
           </View>
         ) : (
           <>

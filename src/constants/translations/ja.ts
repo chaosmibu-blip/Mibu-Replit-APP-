@@ -825,7 +825,6 @@ const ja: Record<string, string> = {
     merchant_appFormTitle: 'Merchant Application', /* TODO: ja */
     merchant_appFormSubtitle: 'Fill in the details below. Review takes 1-3 business days.', /* TODO: ja */
     merchant_ownerName: 'Owner Name *', /* TODO: ja */
-    merchant_businessName: 'Business Name *', /* TODO: ja */
     merchant_taxId: 'Tax ID', /* TODO: ja */
     merchant_businessCategoryLabel: 'Business Category *', /* TODO: ja */
     merchant_merchantPhone: 'Phone', /* TODO: ja */

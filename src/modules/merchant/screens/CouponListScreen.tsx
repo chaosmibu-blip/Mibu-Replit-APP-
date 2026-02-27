@@ -136,15 +136,7 @@ export function CouponListScreen() {
         </View>
       </View>
 
-      {/* Add Button */}
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => router.push('/merchant/coupon/new' as any)}
-        accessibilityLabel="新增優惠券"
-      >
-        <Ionicons name="add-circle" size={20} color={UIColors.white} />
-        <Text style={styles.addButtonText}>{t.merchant_addCoupon}</Text>
-      </TouchableOpacity>
+      {/* TODO: /merchant/coupon/new 路由建立後恢復新增優惠券按鈕 */}
 
       {/* Coupons List */}
       {coupons.length === 0 ? (

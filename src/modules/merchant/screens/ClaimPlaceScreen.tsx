@@ -142,14 +142,7 @@ export function ClaimPlaceScreen() {
             <Ionicons name="search-outline" size={64} color="#cbd5e1" />
             <Text style={styles.emptyTitle}>{t.merchant_noSearchResults}</Text>
             <Text style={styles.emptySubtitle}>{t.merchant_noResultsHint}</Text>
-            <TouchableOpacity
-              style={styles.addNewButton}
-              onPress={() => router.push('/merchant/new-place' as any)}
-              accessibilityLabel="新增自有店家"
-            >
-              <Ionicons name="add-circle-outline" size={20} color={MibuBrand.brown} />
-              <Text style={styles.addNewButtonText}>{t.merchant_addNewPlace}</Text>
-            </TouchableOpacity>
+            {/* TODO: /merchant/new-place 路由建立後恢復新增店家按鈕 */}
           </View>
         ) : (
           <View style={styles.resultsList}>

@@ -23,6 +23,18 @@ interface MerchantRegistrationFormProps {
   onCancel: () => void;
 }
 
+/** 表單本地狀態（比 API 契約多出的欄位會塞進 surveyResponses） */
+interface MerchantFormData {
+  ownerName: string;
+  businessName: string;
+  taxId: string;
+  businessCategory: string;
+  address: string;
+  phone: string;
+  mobile: string;
+  email: string;
+}
+
 // 商家類型對應的翻譯 key
 const BUSINESS_CATEGORY_KEYS = [
   { value: 'restaurant', tKey: 'merchant_catRestaurant' },
@@ -38,7 +50,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
   const { t } = useI18n();
 
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<MerchantApplyParams>({
+  const [formData, setFormData] = useState<MerchantFormData>({
     ownerName: '',
     businessName: '',
     taxId: '',
@@ -50,7 +62,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
   });
 
   const handleSubmit = async () => {
-    if (!formData.ownerName.trim() || !formData.businessName.trim() || 
+    if (!formData.ownerName.trim() || !formData.businessName.trim() ||
         !formData.businessCategory || !formData.address.trim() ||
         !formData.mobile.trim() || !formData.email.trim()) {
       Alert.alert(t.common_error, t.merchant_requiredFields);
@@ -62,21 +74,34 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
       const token = await getToken();
       if (!token) return;
 
-      await apiService.applyMerchant(token, formData);
+      // #053 契約：額外欄位放進 surveyResponses
+      const params: MerchantApplyParams = {
+        businessName: formData.businessName.trim(),
+        email: formData.email.trim(),
+        surveyResponses: {
+          ownerName: formData.ownerName.trim(),
+          taxId: formData.taxId.trim() || undefined,
+          businessCategory: formData.businessCategory,
+          address: formData.address.trim(),
+          phone: formData.phone.trim() || undefined,
+          mobile: formData.mobile.trim(),
+        },
+      };
+
+      await apiService.applyMerchant(token, params);
       Alert.alert(
         t.common_success,
         t.merchant_submitSuccess,
         [{ text: 'OK', onPress: onSuccess }]
       );
     } catch (error) {
-      console.error('Apply failed:', error);
       Alert.alert(t.common_error, t.merchant_submitFailed);
     } finally {
       setLoading(false);
     }
   };
 
-  const updateField = (field: keyof MerchantApplyParams, value: string) => {
+  const updateField = (field: keyof MerchantFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -109,7 +134,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.label}>{t.merchant_businessName}</Text>
+          <Text style={styles.label}>{t.merchant_businessName} *</Text>
           <TextInput
             style={styles.input}
             value={formData.businessName}

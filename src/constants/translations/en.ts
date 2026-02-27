@@ -824,7 +824,6 @@ const en: Record<string, string> = {
     merchant_appFormTitle: 'Merchant Application',
     merchant_appFormSubtitle: 'Fill in the details below. Review takes 1-3 business days.',
     merchant_ownerName: 'Owner Name *',
-    merchant_businessName: 'Business Name *',
     merchant_taxId: 'Tax ID',
     merchant_businessCategoryLabel: 'Business Category *',
     merchant_merchantPhone: 'Phone',
