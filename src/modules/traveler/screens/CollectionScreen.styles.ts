@@ -51,11 +51,15 @@ const styles = StyleSheet.create({
 
   // ========== PlaceDetailModal ==========
 
-  /** Modal 背景遮罩 */
+  /** Modal 背景遮罩（全螢幕容器） */
   modalOverlay: {
     flex: 1,
     backgroundColor: UIColors.overlayLight,
-    justifyContent: 'flex-end',
+  },
+
+  /** Modal 背景可點擊區域（佔據內容以外的空間，點擊關閉） */
+  modalBackdrop: {
+    flex: 1,
   },
 
   /** Modal 內容容器 */

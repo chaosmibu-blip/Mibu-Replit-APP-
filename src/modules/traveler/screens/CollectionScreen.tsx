@@ -30,6 +30,7 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   Linking,
   Modal,
   RefreshControl,
@@ -443,8 +444,11 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
 
   return (
     <Modal visible transparent animationType="fade">
-      <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose}>
-        <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+      <View style={styles.modalOverlay}>
+        {/* 背景層：點擊關閉（獨立 Pressable，不包住內容，避免手勢衝突） */}
+        <Pressable style={styles.modalBackdrop} onPress={onClose} />
+        {/* 內容層：不在任何 Touchable 裡面，ScrollView 可自由滾動 */}
+        <View style={styles.modalContent}>
           <View style={[styles.modalHeader, { backgroundColor: categoryToken.badge }]}>
             <View style={styles.modalTopRight}>
               {!showActionMenu ? (
@@ -492,7 +496,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
             {activeTab === 'notes' && renderNotesTab()}
           </ScrollView>
         </View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 }
