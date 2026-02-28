@@ -6,6 +6,42 @@
 
 ## 最新回報
 
+### 2026-02-28 ✅ #064 新增：使用者意見回饋功能（前端已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #064 |
+| 狀態 | ✅ 前端已完成 |
+
+**新增檔案**
+- `src/types/feedback.ts` — 型別定義（CreateFeedbackRequest/Response、FeedbackType、DeviceInfo）
+- `src/services/feedbackApi.ts` — API 服務（POST /api/feedback）
+- `src/hooks/useFeedbackQueries.ts` — useSubmitFeedback mutation hook
+- `src/modules/shared/screens/FeedbackScreen.tsx` — 回饋表單畫面
+- `app/feedback.tsx` — 路由入口
+
+**修改檔案**
+- `src/types/index.ts` — 註冊 feedback 型別匯出
+- `src/services/api.ts` — 註冊 feedbackApi import + re-export + proxy binding
+- `app/_layout.tsx` — 註冊 `/feedback` Stack.Screen
+- `src/modules/shared/screens/SettingsScreen.tsx` — 「更多功能」群組新增「意見回饋」入口
+- `src/constants/translations/zh-TW.ts` — 21 個翻譯 key
+- `src/constants/translations/en.ts` — 21 個翻譯 key
+- `src/constants/translations/ja.ts` — 21 個翻譯 key
+- `src/constants/translations/ko.ts` — 21 個翻譯 key
+
+**功能摘要**
+- 設定頁 → 更多功能 → 意見回饋
+- 選擇類型（問題回報/功能建議）→ 輸入描述（≤2000 字）→ 可選截圖（≤3 張 Base64）→ 自動帶入裝置資訊 → 送出
+- 成功顯示感謝提示並自動返回
+
+**後端比對確認**
+- 契約（APP.md）、shared types（api-types.ts）、route handler（feedback.ts）三方一致
+- 欄位名稱、驗證規則、回應格式完全對齊
+- 注意：shared 套件 1.0.10 尚未在 index.ts 匯出 Feedback 型別，前端暫用本地定義
+
+---
+
 ### 2026-02-27 ✅ #063 修復：所有 placeId 路徑參數改用 officialPlaceId（前端已完成）
 
 | 項目 | 內容 |

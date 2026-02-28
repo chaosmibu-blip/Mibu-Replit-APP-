@@ -56,6 +56,7 @@ npx expo start --web --port 5000 --tunnel --go
 | `/crowdfunding/:id` | `app/crowdfunding/[id].tsx` | 募資活動詳情 |
 | `/referral` | `app/referral.tsx` | 推薦好友 |
 | `/contribution` | `app/contribution.tsx` | 社群貢獻 |
+| `/feedback` | `app/feedback.tsx` | 意見回饋（#064） |
 | `/sos` | `app/sos.tsx` | SOS 緊急求助 |
 | `/pending-approval` | `app/pending-approval.tsx` | 等待審核 |
 

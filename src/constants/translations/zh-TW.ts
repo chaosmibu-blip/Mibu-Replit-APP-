@@ -1561,6 +1561,30 @@ const zhTW: Record<string, string> = {
     itemBox_packSelectCity: '選擇城市',
     itemBox_packPlaces: '個景點',
     itemBox_packOpening: '開啟中...',
+
+    // ============ #064 意見回饋 ============
+    settings_feedback: '意見回饋',
+    feedback_title: '意見回饋',
+    feedback_introTitle: '分享你的想法',
+    feedback_introDesc: '不管是遇到問題還是有好點子，都歡迎告訴我們！你的回饋是我們進步的動力。',
+    feedback_typeLabel: '回饋類型',
+    feedback_typeBugReport: '問題回報',
+    feedback_typeSuggestion: '功能建議',
+    feedback_messageLabel: '詳細描述',
+    feedback_messagePlaceholder: '請描述你遇到的問題或想要的功能...',
+    feedback_screenshotLabel: '附加截圖（選填）',
+    feedback_screenshotHint: '最多 3 張，每張不超過 2MB',
+    feedback_addScreenshot: '新增',
+    feedback_screenshotLimitTitle: '已達上限',
+    feedback_screenshotLimitDesc: '最多只能上傳 3 張截圖',
+    feedback_imageTooLargeTitle: '圖片過大',
+    feedback_imageTooLargeDesc: '請選擇小於 2MB 的圖片',
+    feedback_permissionTitle: '需要相簿權限',
+    feedback_permissionDesc: '請到系統設定允許存取相簿',
+    feedback_submit: '送出回饋',
+    feedback_successTitle: '感謝你的回饋！',
+    feedback_successDesc: '我們已收到你的意見，會盡快處理。',
+    feedback_errorTitle: '送出失敗',
 };
 
 export default zhTW;

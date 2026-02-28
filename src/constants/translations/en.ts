@@ -1521,6 +1521,30 @@ const en: Record<string, string> = {
     itemBox_packSelectCity: 'Select City',
     itemBox_packPlaces: 'places',
     itemBox_packOpening: 'Opening...',
+
+    // ============ #064 Feedback ============
+    settings_feedback: 'Feedback',
+    feedback_title: 'Feedback',
+    feedback_introTitle: 'Share Your Thoughts',
+    feedback_introDesc: 'Whether you found a bug or have a great idea, we\'d love to hear from you! Your feedback helps us improve.',
+    feedback_typeLabel: 'Feedback Type',
+    feedback_typeBugReport: 'Bug Report',
+    feedback_typeSuggestion: 'Suggestion',
+    feedback_messageLabel: 'Description',
+    feedback_messagePlaceholder: 'Describe the issue or feature you\'d like...',
+    feedback_screenshotLabel: 'Screenshots (Optional)',
+    feedback_screenshotHint: 'Up to 3 images, each under 2MB',
+    feedback_addScreenshot: 'Add',
+    feedback_screenshotLimitTitle: 'Limit Reached',
+    feedback_screenshotLimitDesc: 'You can upload up to 3 screenshots',
+    feedback_imageTooLargeTitle: 'Image Too Large',
+    feedback_imageTooLargeDesc: 'Please select an image under 2MB',
+    feedback_permissionTitle: 'Permission Required',
+    feedback_permissionDesc: 'Please allow photo library access in Settings',
+    feedback_submit: 'Submit Feedback',
+    feedback_successTitle: 'Thank You!',
+    feedback_successDesc: 'We\'ve received your feedback and will review it shortly.',
+    feedback_errorTitle: 'Submission Failed',
 };
 
 export default en;

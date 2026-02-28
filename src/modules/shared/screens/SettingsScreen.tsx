@@ -455,6 +455,14 @@ export function SettingsScreen() {
           iconBg: '#F0FDF4',
           iconColor: '#16a34a',
         },
+        {
+          icon: 'chatbubbles-outline',
+          label: t.settings_feedback,
+          action: () => router.push('/feedback' as any),
+          hasArrow: true,
+          iconBg: '#EEF2FF',
+          iconColor: '#6366f1',
+        },
       ],
     },
     {

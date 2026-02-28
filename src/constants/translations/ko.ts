@@ -1513,6 +1513,30 @@ const ko: Record<string, string> = {
     itemBox_packSelectCity: '도시 선택',
     itemBox_packPlaces: '개 장소',
     itemBox_packOpening: '여는 중...',
+
+    // ============ #064 피드백 ============
+    settings_feedback: '의견 보내기',
+    feedback_title: '의견 보내기',
+    feedback_introTitle: '의견을 들려주세요',
+    feedback_introDesc: '버그 신고든 아이디어 제안이든 모두 환영합니다! 여러분의 피드백이 서비스 개선에 큰 힘이 됩니다.',
+    feedback_typeLabel: '유형',
+    feedback_typeBugReport: '버그 신고',
+    feedback_typeSuggestion: '기능 제안',
+    feedback_messageLabel: '상세 설명',
+    feedback_messagePlaceholder: '겪은 문제나 원하는 기능을 설명해 주세요...',
+    feedback_screenshotLabel: '스크린샷 (선택)',
+    feedback_screenshotHint: '최대 3장, 각 2MB 이하',
+    feedback_addScreenshot: '추가',
+    feedback_screenshotLimitTitle: '제한 초과',
+    feedback_screenshotLimitDesc: '스크린샷은 최대 3장까지 업로드 가능합니다',
+    feedback_imageTooLargeTitle: '이미지가 너무 큽니다',
+    feedback_imageTooLargeDesc: '2MB 이하의 이미지를 선택해 주세요',
+    feedback_permissionTitle: '권한 필요',
+    feedback_permissionDesc: '설정에서 사진 라이브러리 접근을 허용해 주세요',
+    feedback_submit: '피드백 보내기',
+    feedback_successTitle: '감사합니다!',
+    feedback_successDesc: '피드백을 접수했습니다. 빠르게 검토하겠습니다.',
+    feedback_errorTitle: '전송 실패',
 };
 
 export default ko;

@@ -1514,6 +1514,30 @@ const ja: Record<string, string> = {
     itemBox_packSelectCity: '都市を選択',
     itemBox_packPlaces: '件のスポット',
     itemBox_packOpening: '開封中...',
+
+    // ============ #064 フィードバック ============
+    settings_feedback: 'フィードバック',
+    feedback_title: 'フィードバック',
+    feedback_introTitle: 'ご意見をお聞かせください',
+    feedback_introDesc: 'バグの報告や新機能のアイデアなど、何でもお気軽にどうぞ！皆さまの声がサービス改善の力になります。',
+    feedback_typeLabel: '種類',
+    feedback_typeBugReport: '不具合報告',
+    feedback_typeSuggestion: '機能提案',
+    feedback_messageLabel: '詳細',
+    feedback_messagePlaceholder: '発生した問題や欲しい機能を教えてください...',
+    feedback_screenshotLabel: 'スクリーンショット（任意）',
+    feedback_screenshotHint: '最大3枚、各2MB以下',
+    feedback_addScreenshot: '追加',
+    feedback_screenshotLimitTitle: '上限に達しました',
+    feedback_screenshotLimitDesc: 'スクリーンショットは最大3枚までです',
+    feedback_imageTooLargeTitle: '画像が大きすぎます',
+    feedback_imageTooLargeDesc: '2MB以下の画像を選択してください',
+    feedback_permissionTitle: '権限が必要です',
+    feedback_permissionDesc: '設定からフォトライブラリへのアクセスを許可してください',
+    feedback_submit: '送信',
+    feedback_successTitle: 'ありがとうございます！',
+    feedback_successDesc: 'フィードバックを受け付けました。確認次第対応いたします。',
+    feedback_errorTitle: '送信に失敗しました',
 };
 
 export default ja;

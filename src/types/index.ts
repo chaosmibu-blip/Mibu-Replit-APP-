@@ -89,3 +89,6 @@ export * from './mailbox';
 // ============ MINI 貓咪系統（#056-#061） ============
 // 包含：Profile、探索、塗鴉牆、筆記、副貓、養成
 export * from './mini';
+
+// ============ 使用者回饋系統（#064） ============
+export * from './feedback';

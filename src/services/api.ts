@@ -38,6 +38,7 @@ import { itineraryApi } from './itineraryApi';
 import { rulesApi } from './rulesApi';
 import { mailboxApi } from './mailboxApi';
 import { miniApi } from './miniApi';
+import { feedbackApi } from './feedbackApi';
 
 // ============ Re-export 模組化 API ============
 
@@ -104,6 +105,9 @@ export { mailboxApi } from './mailboxApi';
 
 // MINI 貓咪系統（#056-#061）
 export { miniApi } from './miniApi';
+
+// 使用者回饋（#064）
+export { feedbackApi } from './feedbackApi';
 
 // ============ 統一 API Service（向後兼容） ============
 
@@ -515,6 +519,11 @@ class ApiService {
   updateNote = miniApi.updateNote.bind(miniApi);
   /** 刪除筆記 */
   deleteNote = miniApi.deleteNote.bind(miniApi);
+
+  // ============ Feedback 使用者回饋 (#064) ============
+
+  /** 提交使用者回饋 */
+  submitFeedback = feedbackApi.submitFeedback.bind(feedbackApi);
 }
 
 // ============ 匯出 ============
