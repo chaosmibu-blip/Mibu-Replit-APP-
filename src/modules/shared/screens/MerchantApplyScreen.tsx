@@ -82,8 +82,12 @@ export function MerchantApplyScreen() {
   const [contactMethod, setContactMethod] = useState('');
   const [email, setEmail] = useState(user?.email ?? '');
 
+  // 重新申請模式：覆蓋 API 狀態，強制顯示表單
+  const [isReapplying, setIsReapplying] = useState(false);
+
   // ========== 衍生狀態 ==========
-  const applicationStatus = statusData?.status ?? 'none';
+  const rawStatus = statusData?.status ?? 'none';
+  const applicationStatus = isReapplying ? 'none' : rawStatus;
   const rejectionReason = statusData?.application?.rejectionReason ?? null;
 
   const isFormValid =

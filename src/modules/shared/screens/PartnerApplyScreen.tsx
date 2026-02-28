@@ -80,8 +80,12 @@ export function PartnerApplyScreen() {
   // 第四段：收尾
   const [additionalNotes, setAdditionalNotes] = useState('');
 
+  // 重新申請模式：覆蓋 API 狀態，強制顯示表單
+  const [isReapplying, setIsReapplying] = useState(false);
+
   // ========== 衍生狀態 ==========
-  const applicationStatus = statusData?.status ?? 'none';
+  const rawStatus = statusData?.status ?? 'none';
+  const applicationStatus = isReapplying ? 'none' : rawStatus;
   const rejectionReason = statusData?.application?.rejectionReason ?? null;
 
   const isFormValid =
@@ -177,6 +181,7 @@ export function PartnerApplyScreen() {
 
     applyMutation.mutate(surveyResponses, {
       onSuccess: () => {
+        setIsReapplying(false);
         Alert.alert(
           t.partner_applySuccess,
           t.partner_applySuccessDesc,
@@ -189,7 +194,22 @@ export function PartnerApplyScreen() {
     });
   };
 
-  const handleReapply = () => refetchStatus();
+  const handleReapply = () => {
+    // 清空表單，切回填寫模式
+    setName('');
+    setRegion('');
+    setEmail('');
+    setContact('');
+    setLocalRecommendation('');
+    setScenarioResponse('');
+    setLanguages([]);
+    setExpectations([]);
+    setExpectedIncome('');
+    setDailyAvailability('');
+    setOnSiteWillingness('');
+    setAdditionalNotes('');
+    setIsReapplying(true);
+  };
 
   // ========== 渲染子函數 ==========
 
