@@ -1526,7 +1526,7 @@ const ja: Record<string, string> = {
     feedback_messageLabel: '詳細',
     feedback_messagePlaceholder: '発生した問題や欲しい機能を教えてください...',
     feedback_screenshotLabel: 'スクリーンショット（任意）',
-    feedback_screenshotHint: '最大3枚、各2MB以下',
+    feedback_screenshotHint: '最大3枚、自動圧縮されます',
     feedback_addScreenshot: '追加',
     feedback_screenshotLimitTitle: '上限に達しました',
     feedback_screenshotLimitDesc: 'スクリーンショットは最大3枚までです',

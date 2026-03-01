@@ -108,7 +108,7 @@ export function MerchantRegistrationForm({ onSuccess, onCancel }: MerchantRegist
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.header}>
         <TouchableOpacity onPress={onCancel} style={styles.closeButton} accessibilityLabel="關閉">

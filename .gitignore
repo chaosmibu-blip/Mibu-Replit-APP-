@@ -38,3 +38,6 @@ yarn-error.*
 
 app-example
 .claude/settings.local.json
+
+# Google Play Service Account Key
+gen-lang-client-*.json

@@ -36,6 +36,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Application from 'expo-application';
 import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { useI18n } from '../../../context/AppContext';
 import { useSubmitFeedback } from '../../../hooks/useFeedbackQueries';
 import { MibuBrand } from '../../../../constants/Colors';
@@ -46,7 +47,8 @@ import type { FeedbackType, DeviceInfo } from '../../../types/feedback';
 
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_SCREENSHOTS = 3;
-const MAX_SCREENSHOT_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+const MAX_SCREENSHOT_SIZE_BYTES = 500 * 1024; // 500KB（縮圖後的上限）
+const SCREENSHOT_MAX_DIMENSION = 1024; // 縮圖最大邊長
 const HEADER_ICON_SIZE = 24;
 const SCREENSHOT_PREVIEW_SIZE = 80;
 
@@ -99,22 +101,38 @@ export function FeedbackScreen() {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      quality: 0.7,
-      base64: true,
+      quality: 1,
       allowsEditing: false,
     });
 
-    if (result.canceled || !result.assets?.[0]?.base64) return;
+    if (result.canceled || !result.assets?.[0]?.uri) return;
 
     const asset = result.assets[0];
-    // 後端檢查 base64 字串長度 ≤ MAX_SCREENSHOT_SIZE * 1.37
-    const estimatedBytes = (asset.base64?.length ?? 0) * 0.75;
+
+    // 計算縮圖尺寸（最大邊不超過 SCREENSHOT_MAX_DIMENSION）
+    const { width, height } = asset;
+    const resizeAction = (width && height && Math.max(width, height) > SCREENSHOT_MAX_DIMENSION)
+      ? [{ resize: width > height
+          ? { width: SCREENSHOT_MAX_DIMENSION } as const
+          : { height: SCREENSHOT_MAX_DIMENSION } as const }]
+      : [];
+
+    // 縮圖 + 壓縮 + 轉 Base64
+    const manipulated = await manipulateAsync(
+      asset.uri,
+      resizeAction,
+      { compress: 0.5, format: SaveFormat.JPEG, base64: true },
+    );
+
+    if (!manipulated.base64) return;
+
+    const estimatedBytes = manipulated.base64.length * 0.75;
     if (estimatedBytes > MAX_SCREENSHOT_SIZE_BYTES) {
       Alert.alert(t.feedback_imageTooLargeTitle, t.feedback_imageTooLargeDesc);
       return;
     }
 
-    setScreenshots(prev => [...prev, asset.base64!]);
+    setScreenshots(prev => [...prev, manipulated.base64!]);
   }, [screenshots.length, t]);
 
   const handleRemoveScreenshot = useCallback((index: number) => {
@@ -249,7 +267,7 @@ export function FeedbackScreen() {
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {renderHeader()}
         <ScrollView

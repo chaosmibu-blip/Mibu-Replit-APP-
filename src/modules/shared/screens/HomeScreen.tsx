@@ -542,37 +542,6 @@ export function HomeScreen() {
         )}
       </View>
 
-      {/* #10 每日任務卡片 */}
-      <TouchableOpacity
-        style={styles.taskCard}
-        onPress={() => router.push('/economy')}
-        activeOpacity={0.8}
-      >
-        <View style={styles.taskLeft}>
-          <View style={styles.taskIcon}>
-            <Ionicons name="calendar-outline" size={24} color={MibuBrand.brown} />
-          </View>
-          <View style={styles.taskInfo}>
-            <Text style={styles.taskTitle}>
-              {t.home_dailyTasks}
-            </Text>
-            <Text style={styles.taskProgress}>
-              {dailyTask.completed}/{dailyTask.total} {t.home_done}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.taskRight}>
-          <Text style={styles.taskEarnedLabel}>{t.home_earned}</Text>
-          <Text style={styles.taskEarnedCoins}>+{dailyTask.earnedCoins} {t.home_coinsUnit}</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
-      </TouchableOpacity>
-      <View style={styles.taskProgressContainer}>
-        <View style={styles.taskProgressBg}>
-          <View style={[styles.taskProgressFill, { width: `${taskProgress}%` }]} />
-        </View>
-      </View>
-
       {/* ========== 公告卡片 ========== */}
       {events.announcements.length > 0 && (
         <View style={styles.announcementSection}>

@@ -1525,7 +1525,7 @@ const ko: Record<string, string> = {
     feedback_messageLabel: '상세 설명',
     feedback_messagePlaceholder: '겪은 문제나 원하는 기능을 설명해 주세요...',
     feedback_screenshotLabel: '스크린샷 (선택)',
-    feedback_screenshotHint: '최대 3장, 각 2MB 이하',
+    feedback_screenshotHint: '최대 3장, 자동 압축',
     feedback_addScreenshot: '추가',
     feedback_screenshotLimitTitle: '제한 초과',
     feedback_screenshotLimitDesc: '스크린샷은 최대 3장까지 업로드 가능합니다',

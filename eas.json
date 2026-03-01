@@ -55,6 +55,10 @@
       "ios": {
         "appleId": "s8869420@gmail.com",
         "ascAppId": "6756925221"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./gen-lang-client-0601655003-281aee142a67.json",
+        "track": "production"
       }
     }
   }

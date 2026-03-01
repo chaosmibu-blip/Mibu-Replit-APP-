@@ -859,13 +859,17 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
 
 ---
 
-### /pre-submit — App Store 送審前檢查（每次 eas build production 前自動觸發）
+### /pre-submit — 雙平台送審前檢查（每次 eas build production 前自動觸發）
 
-**核心原則**：每次退件都是血的教訓。送審前跑完這份清單，把踩過的坑全堵住。
+**核心原則**：每次退件都是血的教訓。送審前跑完這份清單，把踩過的坑全堵住。iOS 和 Android 各有各的雷，分開檢查。
 
-**觸發時機**：用語意與情境判斷 — 當用戶準備 build production 版本、提交 App Store 審查、或提到送審相關字詞時自動觸發。
+**觸發時機**：用語意與情境判斷 — 當用戶準備 build production 版本、提交 App Store / Google Play 審查、或提到送審相關字詞時自動觸發。根據平台跑對應清單。
 
-**歷史退件教訓**：
+---
+
+#### 歷史退件教訓
+
+**iOS App Store**：
 
 | 次數 | Guideline | 退件原因 | 教訓 |
 |------|-----------|---------|------|
@@ -873,50 +877,172 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
 | #2 | 2.1 Performance | 扭蛋載入無限等待 | 長時間操作必須有進度提示 + 取消按鈕 |
 | #3 | 2.1 Information Needed | 未揭露第三方 AI 服務 | 使用 AI 必須明確揭露服務商、資料用途、提供同意/拒絕 |
 
-**送審前必過清單**：
+**Google Play**：
+
+| 次數 | 政策 | 退件原因 | 教訓 |
+|------|------|---------|------|
+| （尚無退件記錄，踩坑後更新此表） | | | |
+
+---
+
+#### 共通檢查（iOS / Android 都要過）
 
 ```
-=== 退件教訓檢查（踩過的坑）===
-□ iPad 2x 模式：所有頁面在 iPad 上正常顯示（#1 教訓）
-□ 長時間操作：AI 生成等操作有進度提示 + 預估時間 + 取消按鈕（#2 教訓）
-□ AI 揭露：使用第三方 AI 有同意彈窗（服務商名稱 + 資料類型 + 同意/拒絕）（#3 教訓）
-□ AI 設定：設定頁有 AI 資料分享開關，可隨時撤回同意（#3 教訓）
+=== 退件教訓（踩過的坑）===
+□ 長時間操作：AI 生成等操作有進度提示 + 預估時間 + 取消按鈕（iOS #2）
+□ AI 揭露：使用第三方 AI 有同意彈窗（服務商名稱 + 資料類型 + 同意/拒絕）（iOS #3）
+□ AI 設定：設定頁有 AI 資料分享開關，可隨時撤回同意（iOS #3）
 
-=== 基本檢查 ===
-□ Build Number 已遞增（不能跟上次相同）
-□ npx tsc --noEmit 零新增錯誤
-□ 審查備註已更新（APP_STORE_REVIEW_CHECKLIST.md）
-□ 審查備註含中英文雙語
-□ 隱私權政策連結有效
+=== 程式碼品質 ===
+□ npx tsc --noEmit 零錯誤
+□ 隱私權政策連結有效（https://mibu-travel.com/ 上的隱私頁面）
+□ git push 最新 code
 
-=== 功能檢查 ===
-□ 登入流程：訪客登入 + Apple 登入都正常
+=== 功能驗證 ===
+□ 登入流程完整走通（各平台支援的登入方式）
 □ 核心功能：扭蛋 → 載入 → 結果 完整走通
 □ AI 對話：行程 AI 聊天正常回應
 □ 錯誤處理：斷網、API 逾時有友善提示
 □ 多語系：切換語言後 UI 文字正確
-
-=== 提交動作 ===
-□ git push 最新 code
-□ eas build --platform ios --profile production
-□ Build 完成後 eas submit --platform ios
-□ App Store Connect 填入審查備註
-□ 確認正確的 build 版本被提交
 ```
 
-**自動檢查指令**（可在 build 前跑）：
+---
+
+#### iOS 專屬檢查
+
+```
+=== iOS 版本號 ===
+□ IOS_BUILD_NUMBER 已遞增（app.config.js，不能跟上次相同）
+□ version 版本號正確（有功能新增才升版）
+
+=== iOS 退件教訓 ===
+□ iPad 2x 模式：所有頁面在 iPad 上正常顯示（#1 教訓）
+
+=== iOS 登入 ===
+□ Apple Sign In 正常（iOS 必要，上架含第三方登入就必須提供）
+□ Google Sign In 正常
+□ 訪客登入正常
+
+=== iOS 審查備註 ===
+□ APP_STORE_REVIEW_CHECKLIST.md 已更新
+□ 審查備註含中英文雙語
+□ 測試帳號資訊正確（如有需要）
+
+=== iOS 提交流程 ===
+□ eas build --platform ios --profile production
+□ Build 完成 → eas submit --platform ios
+□ App Store Connect 填入審查備註
+□ 確認正確的 build 版本被提交
+□ 審核時間：通常 1-3 天
+```
+
+---
+
+#### Android 專屬檢查
+
+```
+=== Android 版本號 ===
+□ ANDROID_VERSION_CODE 已遞增（app.config.js，每次上傳必須比上一次大）
+□ version 版本號與 iOS 一致
+
+=== Android 平台相容性 ===
+□ Target API Level ≥ 35（Expo SDK 54 預設 36，OK）
+□ Apple Sign In 已隱藏（Platform.OS === 'ios' 條件判斷）
+□ Google Sign In 正常（androidClientId 已設定）
+□ 訪客登入正常
+□ KeyboardAvoidingView 全部用 'height'（不是 undefined）
+□ 所有 Modal 有 onRequestClose（Android 返回鍵關閉）
+□ 返回鍵行為正確（不會卡死在某頁面）
+
+=== Google Play Console — 首次上架必填 ===
+□ 商店資訊（Store Listing）：
+  □ App 名稱、簡短說明（80 字內）、完整說明（4000 字內）
+  □ App 圖示（512x512 PNG）
+  □ 精選圖片（1024x500）
+  □ 手機截圖（至少 2 張，16:9 或 9:16）
+  □ 分類（旅遊與地方資訊）
+□ 內容分級（Content Rating）：填問卷取得 IARC 分級
+□ 目標客群與內容（Target Audience）：選擇年齡層（非兒童導向）
+□ 資料安全性（Data Safety）：
+  □ 是否收集使用者資料 → 是（位置、帳號資訊）
+  □ 是否分享給第三方 → 是（AI 服務）
+  □ 加密傳輸 → 是（HTTPS）
+  □ 使用者能否要求刪除資料 → 依後端功能填寫
+  □ 隱私權政策 URL
+□ 應用程式存取權（App Access）：提供測試帳號（如需登入才能用）
+□ 廣告宣告：App 是否含廣告 → 否
+□ 政府應用程式：否
+□ 金融功能自行聲明：否（除非有金流功能）
+
+=== Android 首次上架特別注意 ===
+□ 首次必須手動上傳 AAB（Google Play API 限制，第一次不能用 eas submit）
+  → 在 Google Play Console 手動上傳：正式版 → 建立新版本 → 上傳 AAB
+  → 之後才能用 eas submit 自動上傳
+□ Service Account 已在 Google Play Console 邀請為使用者
+□ 機構帳戶免 14 天封測（個人帳戶才需要）
+
+=== Android 提交流程 ===
+□ eas build --platform android --profile production
+□ 首次：手動到 Google Play Console 上傳 AAB
+□ 非首次：eas submit --platform android --profile production
+□ Google Play Console 確認版本 → 送審
+□ 審核時間：通常 1-7 天（首次可能較久）
+```
+
+---
+
+#### 雙平台同時送審流程
+
+```
+1. 確認版本號
+   → iOS: IOS_BUILD_NUMBER 遞增
+   → Android: ANDROID_VERSION_CODE 遞增
+   → version 兩邊一致
+
+2. 程式碼檢查
+   → npx tsc --noEmit（零錯誤）
+   → git push
+
+3. 並行 Build
+   → eas build --platform ios --profile production
+   → eas build --platform android --profile production
+   （兩個可以同時跑）
+
+4. 提交
+   → iOS: eas submit --platform ios → App Store Connect 填備註
+   → Android: eas submit --platform android（非首次）
+              或手動上傳 AAB（首次）→ Google Play Console 填資訊
+
+5. 等待審核
+   → iOS: 1-3 天
+   → Android: 1-7 天
+```
+
+---
+
+#### 自動檢查指令（Build 前跑）
+
 ```bash
 # 1. TypeScript 檢查
 npx tsc --noEmit
 
-# 2. Build Number 確認
-grep 'IOS_BUILD_NUMBER' app.config.js
+# 2. 版本號確認
+grep 'IOS_BUILD_NUMBER\|ANDROID_VERSION_CODE' app.config.js
 
-# 3. 確認 AI 揭露元件存在
+# 3. AI 揭露元件存在
 ls src/modules/shared/components/AiDisclosureModal.tsx
 
-# 4. 確認設定頁有 AI 開關
+# 4. 設定頁有 AI 開關
 grep -c 'aiDataSharing' src/modules/shared/screens/SettingsScreen.tsx
+
+# 5. Android KeyboardAvoidingView 無 undefined（應回傳 0 行）
+grep -rn "padding' : undefined" src/
+
+# 6. Apple Sign In 有平台判斷
+grep -n "Platform.OS === 'ios'" app/login.tsx | grep -i apple
+
+# 7. Android Client ID 已設定
+grep 'androidClientId' hooks/useGoogleAuth.ts
 ```
 
 ---

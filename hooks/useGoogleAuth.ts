@@ -2,7 +2,7 @@
  * Google 原生登入 Hook
  *
  * 使用 expo-auth-session 進行 Google 原生登入
- * 目前僅支援 iOS 平台，Android 支援將於上架時加入
+ * 支援 iOS 和 Android 平台
  *
  * 使用方式：
  * import { useGoogleAuth } from '@/hooks/useGoogleAuth';
@@ -23,8 +23,9 @@ import * as WebBrowser from 'expo-web-browser';
 // 確保 Web 瀏覽器 session 正確關閉
 WebBrowser.maybeCompleteAuthSession();
 
-/** Google OAuth iOS Client ID */
+/** Google OAuth Client IDs */
 const GOOGLE_IOS_CLIENT_ID = '543517647590-3fpo4kl895apdp3tt2ditgj5leo034dv.apps.googleusercontent.com';
+const GOOGLE_ANDROID_CLIENT_ID = '543517647590-08cql33698gq8tp62n86v0aggcvriig7.apps.googleusercontent.com';
 
 /**
  * Google 登入 Hook
@@ -49,7 +50,7 @@ export function useGoogleAuth() {
   // 設定 Google OAuth 請求
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     iosClientId: GOOGLE_IOS_CLIENT_ID,
-    // androidClientId: 之後 Android 上架時再加
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
   });
 
   /**

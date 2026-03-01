@@ -1533,7 +1533,7 @@ const en: Record<string, string> = {
     feedback_messageLabel: 'Description',
     feedback_messagePlaceholder: 'Describe the issue or feature you\'d like...',
     feedback_screenshotLabel: 'Screenshots (Optional)',
-    feedback_screenshotHint: 'Up to 3 images, each under 2MB',
+    feedback_screenshotHint: 'Up to 3 images, auto-compressed',
     feedback_addScreenshot: 'Add',
     feedback_screenshotLimitTitle: 'Limit Reached',
     feedback_screenshotLimitDesc: 'You can upload up to 3 screenshots',

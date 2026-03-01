@@ -491,7 +491,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
     <Modal visible transparent animationType="fade">
       <KeyboardAvoidingView
         style={styles.modalOverlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* 背景層：點擊關閉（獨立 Pressable，不包住內容，避免手勢衝突） */}
         <Pressable style={styles.modalBackdrop} onPress={onClose} />

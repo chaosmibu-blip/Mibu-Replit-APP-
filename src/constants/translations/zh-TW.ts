@@ -1573,7 +1573,7 @@ const zhTW: Record<string, string> = {
     feedback_messageLabel: '詳細描述',
     feedback_messagePlaceholder: '請描述你遇到的問題或想要的功能...',
     feedback_screenshotLabel: '附加截圖（選填）',
-    feedback_screenshotHint: '最多 3 張，每張不超過 2MB',
+    feedback_screenshotHint: '最多 3 張，圖片會自動壓縮',
     feedback_addScreenshot: '新增',
     feedback_screenshotLimitTitle: '已達上限',
     feedback_screenshotLimitDesc: '最多只能上傳 3 張截圖',
