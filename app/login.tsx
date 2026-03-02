@@ -328,11 +328,16 @@ export default function LoginScreen() {
         body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        console.error('[Google Native] 後端回應錯誤:', response.status);
-      }
-
       const data = await response.json();
+      console.log('[Google Native] 後端回應:', response.status, JSON.stringify(data).substring(0, 300));
+
+      if (!response.ok) {
+        // 後端回傳錯誤（errorCode + message 格式）
+        const errorMsg = data.message || data.error || `HTTP ${response.status}`;
+        console.error('[Google Native] 後端錯誤:', response.status, errorMsg);
+        Alert.alert(t.auth_oauthLoginFailed, errorMsg);
+        return;
+      }
 
       if (data.token && data.user) {
         const userRole = data.user.role as UserRole || 'traveler';
@@ -360,10 +365,10 @@ export default function LoginScreen() {
           showSuggestMergeAlert(data.suggestMerge);
         }
       } else {
-        console.error('[Google Native] 後端回應缺少 token/user:', JSON.stringify(data));
+        console.error('[Google Native] 回應格式異常（缺 token/user）:', JSON.stringify(data));
         Alert.alert(
           t.auth_oauthLoginFailed,
-          data.error || data.message || t.auth_tryAgainLater
+          data.message || data.error || t.auth_tryAgainLater
         );
       }
     } catch (error: any) {

@@ -24,6 +24,7 @@ import * as WebBrowser from 'expo-web-browser';
 WebBrowser.maybeCompleteAuthSession();
 
 /** Google OAuth Client IDs */
+const GOOGLE_WEB_CLIENT_ID = '543517647590-cst5g9vp5pq22tvl3oet9nu0jr14n1d0.apps.googleusercontent.com';
 const GOOGLE_IOS_CLIENT_ID = '543517647590-3fpo4kl895apdp3tt2ditgj5leo034dv.apps.googleusercontent.com';
 const GOOGLE_ANDROID_CLIENT_ID = '543517647590-08cql33698gq8tp62n86v0aggcvriig7.apps.googleusercontent.com';
 
@@ -49,6 +50,7 @@ const GOOGLE_ANDROID_CLIENT_ID = '543517647590-08cql33698gq8tp62n86v0aggcvriig7.
 export function useGoogleAuth() {
   // 設定 Google OAuth 請求
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    webClientId: GOOGLE_WEB_CLIENT_ID,
     iosClientId: GOOGLE_IOS_CLIENT_ID,
     androidClientId: GOOGLE_ANDROID_CLIENT_ID,
   });
