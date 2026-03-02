@@ -332,10 +332,9 @@ export default function LoginScreen() {
       console.log('[Google Native] 後端回應:', response.status, JSON.stringify(data).substring(0, 300));
 
       if (!response.ok) {
-        // 後端回傳錯誤（errorCode + message 格式）
         const errorMsg = data.message || data.error || `HTTP ${response.status}`;
         console.error('[Google Native] 後端錯誤:', response.status, errorMsg);
-        Alert.alert(t.auth_oauthLoginFailed, errorMsg);
+        Alert.alert(t.auth_oauthLoginFailed, t.auth_googleSignInFailed);
         return;
       }
 
@@ -368,7 +367,7 @@ export default function LoginScreen() {
         console.error('[Google Native] 回應格式異常（缺 token/user）:', JSON.stringify(data));
         Alert.alert(
           t.auth_oauthLoginFailed,
-          data.message || data.error || t.auth_tryAgainLater
+          t.auth_googleSignInFailed
         );
       }
     } catch (error: any) {

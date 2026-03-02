@@ -75,13 +75,14 @@ export default function EventDetailScreen() {
     return event.title;
   };
 
+  /** 後端 v3.3.0 改用 content 欄位，description 為舊欄位向後相容 */
   const getLocalizedDesc = (): string => {
     if (!event) return '';
-    if (language === 'zh-TW') return event.description;
+    const mainText = event.content || event.description || '';
     if (language === 'en' && event.descriptionEn) return event.descriptionEn;
     if (language === 'ja' && event.descriptionJa) return event.descriptionJa;
     if (language === 'ko' && event.descriptionKo) return event.descriptionKo;
-    return event.description;
+    return mainText;
   };
 
   const formatDate = (dateStr: string): string => {
@@ -93,9 +94,12 @@ export default function EventDetailScreen() {
     });
   };
 
+  /** 後端 v3.3.0 改用 linkUrl/sourceUrl，externalUrl 為舊欄位向後相容 */
+  const externalUrl = event?.linkUrl || event?.sourceUrl || event?.externalUrl;
+
   const handleExternalLink = () => {
-    if (event?.externalUrl) {
-      Linking.openURL(event.externalUrl).catch(() => {});
+    if (externalUrl) {
+      Linking.openURL(externalUrl).catch(() => {});
     }
   };
 
@@ -143,10 +147,10 @@ export default function EventDetailScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-        {/* Banner Image */}
-        {(event.bannerUrl || event.imageUrl) && (
+        {/* Banner Image — 後端 v3.3.0 統一用 imageUrl */}
+        {event.imageUrl && (
           <Image
-            source={{ uri: event.bannerUrl || event.imageUrl }}
+            source={{ uri: event.imageUrl }}
             style={styles.bannerImage}
             resizeMode="cover"
           />
@@ -175,12 +179,39 @@ export default function EventDetailScreen() {
         </View>
 
         {/* Location */}
-        {(event.city || event.location) && (
+        {(event.city || event.location || event.address) && (
           <View style={styles.locationSection}>
             <Ionicons name="location-outline" size={18} color={MibuBrand.copper} />
             <Text style={styles.locationText}>
-              {[event.city, event.location].filter(Boolean).join(' · ')}
+              {[event.city, event.location, event.address].filter(Boolean).join(' · ')}
             </Text>
+          </View>
+        )}
+
+        {/* Organizer */}
+        {event.organizer && (
+          <View style={styles.infoRow}>
+            <Ionicons name="people-outline" size={18} color={MibuBrand.copper} />
+            <Text style={styles.infoLabel}>{t.common_organizer}</Text>
+            <Text style={styles.infoValue}>{event.organizer}</Text>
+          </View>
+        )}
+
+        {/* Fee */}
+        {event.charge && (
+          <View style={styles.infoRow}>
+            <Ionicons name="cash-outline" size={18} color={MibuBrand.copper} />
+            <Text style={styles.infoLabel}>{t.common_fee}</Text>
+            <Text style={styles.infoValue}>{event.charge}</Text>
+          </View>
+        )}
+
+        {/* Phone */}
+        {event.phone && (
+          <View style={styles.infoRow}>
+            <Ionicons name="call-outline" size={18} color={MibuBrand.copper} />
+            <Text style={styles.infoLabel}>{t.common_phone}</Text>
+            <Text style={styles.infoValue}>{event.phone}</Text>
           </View>
         )}
 
@@ -193,7 +224,7 @@ export default function EventDetailScreen() {
         </View>
 
         {/* External Link */}
-        {event.externalUrl && (
+        {externalUrl && (
           <TouchableOpacity style={styles.externalLinkButton} onPress={handleExternalLink}>
             <Ionicons name="open-outline" size={20} color="#ffffff" />
             <Text style={styles.externalLinkText}>
@@ -322,6 +353,24 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 14,
     color: MibuBrand.copper,
+    flex: 1,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 20,
+    marginTop: 8,
+  },
+  infoLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: MibuBrand.brownDark,
+  },
+  infoValue: {
+    fontSize: 14,
+    color: MibuBrand.copper,
+    flex: 1,
   },
   descriptionSection: {
     marginHorizontal: 20,
