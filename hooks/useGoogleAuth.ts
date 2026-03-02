@@ -4,6 +4,10 @@
  * 使用 expo-auth-session 進行 Google 原生登入
  * 支援 iOS 和 Android 平台
  *
+ * ⚠️ [需 EAS Build] webClientId + CFBundleURLSchemes 為 Native 層修改，
+ *    目前 production build 尚未包含，需重新 eas build 才會生效。
+ *    OTA 推送無法修復 Google 登入問題。
+ *
  * 使用方式：
  * import { useGoogleAuth } from '@/hooks/useGoogleAuth';
  *
