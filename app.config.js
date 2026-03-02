@@ -70,7 +70,7 @@ const baseConfig = {
   // EAS Update OTA 更新設定（開發/正式共用）
   updates: {
     url: 'https://u.expo.dev/f1c74b9b-747d-450c-8c99-22a7729b4a31',
-    fallbackToCacheTimeout: 0,           // 無網路時直接用快取
+    fallbackToCacheTimeout: 5000,        // 啟動時最多等 5 秒下載 OTA，讓用戶一次看到最新版
   },
   runtimeVersion: {
     policy: 'appVersion',                // 用 App 版本號作為 runtime 版本
