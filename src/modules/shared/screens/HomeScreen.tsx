@@ -104,6 +104,7 @@ const DEFAULT_ANNOUNCEMENTS: Event[] = [
     titleEn: 'Welcome to Mibu! Explore amazing attractions across Taiwan',
     titleJa: 'Mibu へようこそ！台湾各地の素敵なスポットを探索しよう',
     titleKo: 'Mibu에 오신 것을 환영합니다! 대만 각지의 멋진 명소를 탐험하세요',
+    content: '歡迎使用 Mibu 旅遊扭蛋！探索台灣各地的精彩景點',
     description: '歡迎使用 Mibu 旅遊扭蛋！探索台灣各地的精彩景點',
     descriptionEn: 'Welcome to Mibu! Explore amazing attractions across Taiwan',
     descriptionJa: 'Mibu へようこそ！台湾各地の素敵なスポットを探索しよう',
@@ -121,6 +122,7 @@ const DEFAULT_ANNOUNCEMENTS: Event[] = [
     titleEn: 'New: Trip planner is live — plan your perfect itinerary',
     titleJa: '新機能：旅行プランナーがリリース、完璧な旅程を計画しよう',
     titleKo: '새 기능: 여행 플래너가 출시되었습니다 — 완벽한 여행을 계획하세요',
+    content: '新功能：旅程策劃模組已上線，規劃你的完美行程',
     description: '新功能：旅程策劃模組已上線，規劃你的完美行程',
     descriptionEn: 'New: Trip planner is live — plan your perfect itinerary',
     descriptionJa: '新機能：旅行プランナーがリリース、完璧な旅程を計画しよう',
@@ -141,6 +143,7 @@ const DEFAULT_LIMITED_EVENTS: Event[] = [
     titleEn: '🎁 Spring special: Yangmingshan Flower Festival — collect flower spots for rewards!',
     titleJa: '🎁 春限定：陽明山花祭り — 花スポットを集めて特別特典をゲット！',
     titleKo: '🎁 봄 한정: 양밍산 꽃 축제 — 꽃 명소를 수집하고 특별 혜택을 받으세요!',
+    content: '🎁 春季限定：陽明山花季 — 收集花卉景點獲得特別優惠！',
     description: '🎁 春季限定：陽明山花季 — 收集花卉景點獲得特別優惠！',
     descriptionEn: '🎁 Spring special: Yangmingshan Flower Festival — collect flower spots for rewards!',
     descriptionJa: '🎁 春限定：陽明山花祭り — 花スポットを集めて特別特典をゲット！',
@@ -158,6 +161,7 @@ const DEFAULT_LIMITED_EVENTS: Event[] = [
     titleEn: '🌟 Trending: Tainan heritage tour — visit classic landmarks',
     titleJa: '🌟 今週の人気：台南古跡巡り — 府城の名所を訪ねよう',
     titleKo: '🌟 이번 주 인기: 타이난 유적 투어 — 부성의 명소를 방문하세요',
+    content: '🌟 本週熱門：台南古蹟巡禮 — 走訪府城經典景點',
     description: '🌟 本週熱門：台南古蹟巡禮 — 走訪府城經典景點',
     descriptionEn: '🌟 Trending: Tainan heritage tour — visit classic landmarks',
     descriptionJa: '🌟 今週の人気：台南古跡巡り — 府城の名所を訪ねよう',
@@ -178,6 +182,7 @@ const DEFAULT_FESTIVALS: Event[] = [
     titleEn: '🏮 2026 Taiwan Lantern Festival in Kaohsiung — Lantern Festival event starts now',
     titleJa: '🏮 2026 台湾ランタンフェスティバル in 高雄 — 元宵節イベント開催中',
     titleKo: '🏮 2026 대만 랜턴 페스티벌 in 가오슝 — 원소절 이벤트 시작',
+    content: '🏮 2026 台灣燈會在高雄 — 元宵節限定活動開跑',
     description: '🏮 2026 台灣燈會在高雄 — 元宵節限定活動開跑',
     descriptionEn: '🏮 2026 Taiwan Lantern Festival in Kaohsiung — Lantern Festival event starts now',
     descriptionJa: '🏮 2026 台湾ランタンフェスティバル in 高雄 — 元宵節イベント開催中',
@@ -417,9 +422,10 @@ export function HomeScreen() {
    * 根據當前語言返回對應的描述
    */
   const getLocalizedDesc = (event: Event): string => {
-    if (language === 'zh-TW') return event.description;
+    const desc = event.description ?? event.content;
+    if (language === 'zh-TW') return desc;
     if (language === 'en' && event.descriptionEn) return event.descriptionEn;
-    return event.description;
+    return desc;
   };
 
   /**
@@ -487,20 +493,21 @@ export function HomeScreen() {
               if (userAvatar === 'custom' && customAvatarUrl) {
                 return (
                   <ExpoImage
-                    source={{ uri: customAvatarUrl }}
+                    source={{ uri: customAvatarUrl ?? undefined }}
                     style={styles.levelAvatar}
                     contentFit="cover"
                   />
                 );
               }
-              const avatarPreset = avatarPresets.find(a => a.id === userAvatar);
-              const avatarColor = avatarPreset?.color || MibuBrand.brown;
+              const foundPreset = avatarPresets.find(a => a.id === userAvatar);
+              const avatarColor = foundPreset?.color || MibuBrand.brown;
+              const presetImageUrl = foundPreset?.imageUrl;
               // 有圖片 URL 的頭像（Cloudinary）
-              if (avatarPreset?.imageUrl) {
+              if (presetImageUrl) {
                 return (
                   <View style={[styles.levelAvatar, { backgroundColor: avatarColor, overflow: 'hidden' }]}>
                     <ExpoImage
-                      source={{ uri: avatarPreset.imageUrl }}
+                      source={{ uri: presetImageUrl }}
                       style={{ width: '100%', height: '100%' }}
                       contentFit="cover"
                     />
