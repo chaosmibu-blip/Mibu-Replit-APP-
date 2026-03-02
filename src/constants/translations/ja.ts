@@ -156,6 +156,8 @@ const ja: Record<string, string> = {
     common_password: 'パスワード',
     common_phone: '電話',
     common_address: '住所',
+    common_organizer: '主催者',
+    common_fee: '料金',
     common_status: 'ステータス',
     common_place: 'スポット',
     common_coupon: 'クーポン',
@@ -311,7 +313,7 @@ const ja: Record<string, string> = {
     auth_oauthLoginFailed: 'ログイン失敗',
     auth_loginError: 'ログインエラー',
     auth_tryAgainLater: '後でもう一度お試しください',
-    auth_googleSignInFailed: 'Google ログインを完了できませんでした', /* TODO: ja */
+    auth_googleSignInFailed: 'Google ログインに一時的な問題があります。修復中です',
     auth_appleSignInFailed: 'Apple ログインを完了できませんでした', /* TODO: ja */
     auth_cannotConnectServer: 'サーバーに接続できません', /* TODO: ja */
     auth_networkError: 'ネットワークエラー',

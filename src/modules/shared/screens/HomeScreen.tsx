@@ -479,8 +479,8 @@ export function HomeScreen() {
         </View>
       </View>
 
-      {/* #9 用戶卡片（稱號+連續登入） */}
-      <View style={styles.levelCard}>
+      {/* #9 用戶卡片（稱號+連續登入）— 暫時隱藏，重新打包後移除 */}
+      {false && <View style={styles.levelCard}>
         <View style={styles.levelHeader}>
           <View style={styles.avatarWithBadge}>
             {(() => {
@@ -540,7 +540,7 @@ export function HomeScreen() {
             </View>
           </View>
         )}
-      </View>
+      </View>}
 
       {/* ========== 公告卡片 ========== */}
       {events.announcements.length > 0 && (

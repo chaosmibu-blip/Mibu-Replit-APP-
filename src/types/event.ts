@@ -40,25 +40,34 @@ export type EventStatus = 'draft' | 'active' | 'ended' | 'cancelled';
 export interface Event {
   id: number;               // 活動 ID
   type: EventType;          // 活動類型
-  title: string;            // 標題（中文）
-  titleEn?: string;         // 標題（英文）
-  titleJa?: string;         // 標題（日文）
-  titleKo?: string;         // 標題（韓文）
-  description: string;      // 描述（中文）
-  descriptionEn?: string;   // 描述（英文）
-  descriptionJa?: string;   // 描述（日文）
-  descriptionKo?: string;   // 描述（韓文）
-  imageUrl?: string;        // 活動圖片 URL
-  bannerUrl?: string;       // 橫幅圖片 URL
+  title: string;            // 標題
+  content: string;          // 內容描述（對齊後端 v3.3.0）
+  description?: string;     // 舊欄位（向後相容，預設/首頁活動用）
+  imageUrl?: string | null;  // 活動圖片 URL
+  linkUrl?: string | null;   // 外部連結（新欄位）
+  sourceUrl?: string | null; // 原始外部連結（新欄位）
+  address?: string | null;   // 活動地址
+  city?: string | null;      // 活動城市
+  location?: string | null;  // 活動地點名稱
+  organizer?: string | null; // 主辦單位
+  charge?: string | null;    // 費用標示
+  phone?: string | null;     // 聯絡電話
+  activityClass?: string | null; // 活動分類（TDX 同步）
   startDate: string;        // 開始日期（ISO 8601）
-  endDate?: string;         // 結束日期（ISO 8601）
-  city?: string;            // 活動城市
-  location?: string;        // 活動地點
-  externalUrl?: string;     // 外部連結
-  status: EventStatus;      // 活動狀態
-  priority: number;         // 優先順序（數字越大越優先）
-  createdAt: string;        // 建立時間（ISO 8601）
-  updatedAt: string;        // 更新時間（ISO 8601）
+  endDate?: string | null;  // 結束日期（ISO 8601）
+  priority: number;         // 優先順序
+  // 向後相容（首頁預設活動仍在用）
+  bannerUrl?: string;
+  externalUrl?: string;
+  titleEn?: string;
+  titleJa?: string;
+  titleKo?: string;
+  descriptionEn?: string;
+  descriptionJa?: string;
+  descriptionKo?: string;
+  status?: EventStatus;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ============ API 型別 ============
