@@ -313,12 +313,12 @@ export default function LoginScreen() {
       // 2. 取得裝置 ID（#046 訪客自動升級）
       const deviceId = await getDeviceId();
 
-      // 3. 傳送到後端驗證
+      // 3. 傳送到後端驗證（欄位名對齊 authApi.mobileAuth / Apple 登入）
       const apiUrl = `${API_BASE_URL}/api/auth/mobile`;
       const requestBody = {
         provider: 'google',
-        idToken: idToken,
-        targetPortal: selectedPortal,
+        identityToken: idToken,
+        portal: selectedPortal,
         ...(deviceId ? { deviceId } : {}),
       };
 
@@ -327,6 +327,10 @@ export default function LoginScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
       });
+
+      if (!response.ok) {
+        console.error('[Google Native] 後端回應錯誤:', response.status);
+      }
 
       const data = await response.json();
 
@@ -356,13 +360,14 @@ export default function LoginScreen() {
           showSuggestMergeAlert(data.suggestMerge);
         }
       } else {
+        console.error('[Google Native] 後端回應缺少 token/user:', JSON.stringify(data));
         Alert.alert(
           t.auth_oauthLoginFailed,
-          data.error || t.auth_tryAgainLater
+          data.error || data.message || t.auth_tryAgainLater
         );
       }
     } catch (error: any) {
-      console.error('[Google Native] Error:', error);
+      console.error('[Google Native] Error:', error?.message || error);
       if (error.message === '使用者取消登入') {
         // 使用者取消登入，不需處理
       } else {

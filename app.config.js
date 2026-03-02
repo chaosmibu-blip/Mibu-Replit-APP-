@@ -94,6 +94,16 @@ const developmentConfig = {
     bundleIdentifier: 'com.chaos.mibu',  // iOS Bundle ID
     buildNumber: IOS_BUILD_NUMBER,
     usesAppleSignIn: true,               // 啟用 Apple 登入
+    infoPlist: {
+      // Google OAuth redirect URI（expo-auth-session 回調用，開發/正式都需要）
+      CFBundleURLTypes: [
+        {
+          CFBundleURLSchemes: [
+            'com.googleusercontent.apps.543517647590-3fpo4kl895apdp3tt2ditgj5leo034dv',
+          ],
+        },
+      ],
+    },
   },
   android: {
     package: 'com.chaos.mibu',           // Android 套件名稱
