@@ -67,6 +67,10 @@ export function useGoogleAuth() {
     // 登入成功，回傳 ID Token
     if (result.type === 'success') {
       const { id_token } = result.params;
+      if (!id_token) {
+        console.error('[Google Auth] OAuth 成功但 id_token 為空，params:', Object.keys(result.params));
+        throw new Error('Google 驗證回傳缺少 id_token');
+      }
       return id_token;
     }
 
