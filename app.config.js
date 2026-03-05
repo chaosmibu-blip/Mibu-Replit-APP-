@@ -18,7 +18,7 @@ const IS_EAS_UPDATE = process.env.EAS_UPDATE === 'true';
 const IS_PRODUCTION = IS_EAS_BUILD || IS_EAS_UPDATE || process.env.APP_ENV === 'production';
 
 // ============ 版本常數（統一管理，避免兩邊不同步） ============
-const IOS_BUILD_NUMBER = '1';            // iOS Build 號（每次提審要遞增）
+const IOS_BUILD_NUMBER = '2';            // iOS Build 號（每次提審要遞增）
 const ANDROID_VERSION_CODE = 1;          // Android 版本碼（每次上架要遞增）
 
 // ============ 基礎設定（開發/正式共用） ============
@@ -53,6 +53,13 @@ const baseConfig = {
     ],
     // expo-media-library：權限描述統一在 infoPlist 區段設定，避免 plugin 覆蓋
     'expo-media-library',
+    // Google 原生登入（取代 expo-auth-session 的網頁式 OAuth）
+    [
+      '@react-native-google-signin/google-signin',
+      {
+        iosUrlScheme: 'com.googleusercontent.apps.543517647590-3fpo4kl895apdp3tt2ditgj5leo034dv',
+      },
+    ],
     [
       'expo-notifications',              // 推播通知（Android 通知列 icon）
       {
@@ -94,16 +101,7 @@ const developmentConfig = {
     bundleIdentifier: 'com.chaos.mibu',  // iOS Bundle ID
     buildNumber: IOS_BUILD_NUMBER,
     usesAppleSignIn: true,               // 啟用 Apple 登入
-    infoPlist: {
-      // Google OAuth redirect URI（expo-auth-session 回調用，開發/正式都需要）
-      CFBundleURLTypes: [
-        {
-          CFBundleURLSchemes: [
-            'com.googleusercontent.apps.543517647590-3fpo4kl895apdp3tt2ditgj5leo034dv',
-          ],
-        },
-      ],
-    },
+    // Google OAuth URL Scheme 由 @react-native-google-signin/google-signin plugin 自動注入
   },
   android: {
     package: 'com.chaos.mibu',           // Android 套件名稱
@@ -133,14 +131,7 @@ const productionConfig = {
       NSPhotoLibraryUsageDescription: '允許 Mibu 存取您的相簿，讓您可以從相簿中選擇一張照片作為個人頭像。例如：在「設定 > 個人資料」頁面，點擊頭像後選擇「從相簿選擇」上傳自訂照片。',
       NSPhotoLibraryAddUsageDescription: '允許 Mibu 將圖片儲存到您的相簿。例如：在行程頁面中，您可以將 AI 旅伴 Mini 的頭像圖片儲存到相簿。',
       ITSAppUsesNonExemptEncryption: false,  // App 未使用非豁免加密，避免每次提審手動確認
-      // Google OAuth redirect URI（expo-auth-session 回調用）
-      CFBundleURLTypes: [
-        {
-          CFBundleURLSchemes: [
-            'com.googleusercontent.apps.543517647590-3fpo4kl895apdp3tt2ditgj5leo034dv',
-          ],
-        },
-      ],
+      // Google OAuth URL Scheme 由 @react-native-google-signin/google-signin plugin 自動注入
     },
   },
   android: {
