@@ -175,45 +175,9 @@ export interface ReorderPlacesRequest {
  *
  * v2.1.0 更新：改用 context 取代 previousMessages
  */
+/** #069 Agent 化：前端只送 message，後端自己管 context */
 export interface AiChatRequest {
-  message: string;           // 用戶訊息
-  context?: AiChatContext;   // 對話上下文
-}
-
-/**
- * AI 對話上下文
- *
- * 用於傳遞累積的篩選條件和行程變更狀態
- * v2.2.0 更新：新增 userPreferences 用戶偏好
- */
-export interface AiChatContext {
-  currentFilters?: {                // 前一輪對話提取的篩選條件（累積傳遞）
-    categories?: string[];          // 大分類
-    subcategories?: string[];       // 子分類
-    districts?: string[];           // 區域
-    keywords?: string[];            // 關鍵字
-    constraints?: {                 // 限制條件
-      hasVehicle?: boolean | null;      // 是否有車
-      withKids?: boolean | null;        // 是否帶小孩
-      kidsAge?: number | null;          // 小孩年齡
-      withElderly?: boolean | null;     // 是否有長輩
-      maxHours?: number | null;         // 最大時數
-      preferHighRating?: boolean | null; // 偏好高評分
-    };
-  };
-  itineraryChanged?: boolean;       // 行程是否有變更
-  changeType?: 'added' | 'removed' | 'reordered'; // 變更類型
-  changedItem?: { name: string };   // 變更的項目
-  excludedPlaces?: number[];        // 排除的地點 ID
-  userPreferences?: {               // v2.2.0 用戶偏好（用於個人化推薦）
-    favoriteCategories?: string[];  // 常去的分類
-    recentDistricts?: string[];     // 最近瀏覽的區域
-    collectionCount?: number;       // 圖鑑收藏數量
-  };
-  lastSuggestedPlaces?: Array<{     // v2.3.0 上一輪 AI 推薦的景點（用於「好啊」等確認回覆）
-    collectionId: number;           // 圖鑑收藏 ID
-    placeName: string;              // 地點名稱
-  }>;
+  message: string;
 }
 
 /**
@@ -367,45 +331,31 @@ export interface AiActionTaken {
  * AI 對話回應
  * POST /api/itinerary/:id/ai-chat
  *
- * v2.1.0 更新：新增 extractedFilters 和 remainingCount
- * v2.2.0 更新：新增 detectedIntent, nextAction, actionTaken（智慧意圖識別）
+ * #069 Agent 化：前端只讀 response + itineraryUpdated + updatedItinerary
+ * 其餘欄位為過渡期暫時回傳，前端不再使用
  */
 export interface AiChatResponse {
-  success: boolean;                  // 是否成功
-  message?: string;                  // 原訊息
-  response: string;                  // AI 回覆
-  suggestions: AiSuggestedPlace[];   // 建議景點
-
-  // v2.2.0 意圖識別
-  detectedIntent?: AiDetectedIntent; // AI 偵測到的意圖
-  nextAction?: AiNextAction;         // 建議的下一步動作
-  actionTaken?: AiActionTaken;       // 已執行的動作（Function Calling 結果）
-
-  extractedFilters?: {               // 從本輪對話提取的篩選條件
-    categories: string[];            // 大分類
-    subcategories: string[];         // 子分類
-    districts: string[];             // 區域
-    keywords: string[];              // 關鍵字
-    constraints: {                   // 限制條件
-      hasVehicle: boolean | null;        // 是否有車
-      withKids: boolean | null;          // 是否帶小孩
-      kidsAge: number | null;            // 小孩年齡
-      withElderly: boolean | null;       // 是否有長輩
-      maxHours: number | null;           // 最大時數
-      preferHighRating: boolean | null;  // 偏好高評分
-    };
-  };
-  remainingCount?: number;           // 篩選後剩餘的候選景點數量
-  placesToRemove?: number[];         // v2.3.0 AI 要刪除的景點 collectionId 陣列
-  itineraryUpdated?: boolean;        // 行程表是否有更新
-  updatedItinerary?: Array<{         // 更新後的行程
-    id: number;                      // 項目 ID
-    collectionId: number;            // 圖鑑 ID
-    placeName: string;               // 地點名稱
-    district: string | null;         // 區域
-    category: string | null;         // 分類
-    sortOrder: number;               // 排序
+  success: boolean;
+  response: string;                  // AI 回覆（核心）
+  itineraryUpdated?: boolean;        // 行程是否有更新
+  updatedItinerary?: Array<{         // 更新後的完整行程
+    id: number;
+    collectionId: number;
+    placeName: string;
+    district: string | null;
+    category: string | null;
+    sortOrder: number;
   }> | null;
+
+  // 過渡期：後端暫時還會回傳，前端不再讀取，之後後端會移除
+  message?: string;
+  suggestions?: AiSuggestedPlace[];
+  detectedIntent?: AiDetectedIntent;
+  nextAction?: AiNextAction;
+  actionTaken?: AiActionTaken;
+  extractedFilters?: Record<string, unknown>;
+  remainingCount?: number;
+  placesToRemove?: number[];
 }
 
 /**

@@ -450,6 +450,7 @@ const ja: Record<string, string> = {
     common_goBack: '戻る',
     common_description: '説明',
     common_learnMore: '詳しく見る',
+    event_activityClass: 'カテゴリー',
     event_announcement: 'お知らせ', /* TODO: ja */
     event_festival: 'フェスティバル', /* TODO: ja */
     event_limited: '期間限定イベント', /* TODO: ja */

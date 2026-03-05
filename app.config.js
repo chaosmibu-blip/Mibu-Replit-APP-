@@ -18,14 +18,14 @@ const IS_EAS_UPDATE = process.env.EAS_UPDATE === 'true';
 const IS_PRODUCTION = IS_EAS_BUILD || IS_EAS_UPDATE || process.env.APP_ENV === 'production';
 
 // ============ 版本常數（統一管理，避免兩邊不同步） ============
-const IOS_BUILD_NUMBER = '2';            // iOS Build 號（每次提審要遞增）
-const ANDROID_VERSION_CODE = 1;          // Android 版本碼（每次上架要遞增）
+const IOS_BUILD_NUMBER = '1';            // iOS Build 號（每次提審要遞增）
+const ANDROID_VERSION_CODE = 2;          // Android 版本碼（每次上架要遞增）
 
 // ============ 基礎設定（開發/正式共用） ============
 const baseConfig = {
   name: 'Mibu',                          // App 名稱（顯示在手機桌面）
   slug: 'mibu-travel',                   // Expo 專案識別碼（URL 用）
-  version: '1.1.1',                      // App 版本號
+  version: '1.1.2',                      // App 版本號
   orientation: 'portrait',               // 螢幕方向：僅支援直向
   icon: './assets/images/icon.png',      // App 圖示（1024x1024）
   scheme: 'mibu',                        // Deep Link scheme（mibu://）

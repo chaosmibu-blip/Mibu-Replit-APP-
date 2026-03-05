@@ -884,6 +884,7 @@ const zhTW: Record<string, string> = {
     common_goBack: '返回',
     common_description: '活動說明',
     common_learnMore: '查看更多',
+    event_activityClass: '活動分類',
     event_announcement: '公告',
     event_festival: '節慶活動',
     event_limited: '限時活動',

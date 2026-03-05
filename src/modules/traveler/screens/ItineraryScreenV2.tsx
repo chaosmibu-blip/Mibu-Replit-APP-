@@ -76,8 +76,6 @@ import {
   ItinerarySummary,
   ItineraryPlaceItem,
   AiChatMessage,
-  AiSuggestedPlace,
-  AiChatContext,
   AvailablePlacesByCategory,
 } from '../../../types/itinerary';
 // 拆分模組
@@ -120,8 +118,6 @@ export function ItineraryScreenV2() {
   const [inputText, setInputText] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiContext, setAiContext] = useState<AiChatContext | undefined>(undefined);
-  const [aiSuggestions, setAiSuggestions] = useState<AiSuggestedPlace[]>([]);
   // 打字機效果：正在打字的訊息索引（-1 表示沒有）
   const [typingMessageIndex, setTypingMessageIndex] = useState<number>(-1);
 
@@ -342,69 +338,27 @@ export function ItineraryScreenV2() {
     setAiLoading(true);
 
     try {
-      // v2.3.0: 組裝 lastSuggestedPlaces（從上一輪的 aiSuggestions 轉換）
-      const lastSuggestedPlaces = aiSuggestions.length > 0
-        ? aiSuggestions.map(s => ({
-            collectionId: s.collectionId,
-            placeName: s.placeName || s.name || '',
-          }))
-        : undefined;
-
+      // #069 Agent 化：只送 message，後端自己管 context
       const res = await itineraryApi.aiChat(
         currentItinerary.id,
-        {
-          message: userMessage.content,
-          context: {
-            currentFilters: aiContext?.currentFilters,
-            excludedPlaces: aiContext?.excludedPlaces,
-            // v2.2.0: 傳送用戶偏好（未來可從本地統計取得）
-            userPreferences: aiContext?.userPreferences,
-            // v2.3.0: 傳遞上一輪推薦，讓 AI 可以理解「好啊」等確認回覆
-            lastSuggestedPlaces,
-          },
-        },
+        { message: userMessage.content },
         token
       );
 
       if (res.success) {
-        // v2.2.0: 根據 actionTaken 顯示操作結果
-        let responseText = res.response;
-        if (res.actionTaken?.type === 'add_place') {
-          responseText += '\n\n✅ ' + t.itinerary_addedToItinerary;
-        } else if (res.actionTaken?.type === 'remove_place') {
-          responseText += '\n\n✅ ' + t.itinerary_removedFromItinerary;
-        }
-
-        const assistantMessage: AiChatMessage = { role: 'assistant', content: responseText };
+        const assistantMessage: AiChatMessage = { role: 'assistant', content: res.response };
         setMessages(prev => {
           const newMessages = [...prev, assistantMessage];
-          // 【截圖 9-15 #13】保存對話記錄
           saveMessages(currentItinerary.id, newMessages);
-          // 觸發打字機效果（設定為新訊息的索引）
           setTypingMessageIndex(newMessages.length - 1);
           return newMessages;
         });
 
-        // v2.2.0: 根據 detectedIntent 決定是否顯示推薦
-        // chitchat 和 unsupported 不顯示推薦卡片
-        const shouldShowSuggestions = res.detectedIntent !== 'chitchat' && res.detectedIntent !== 'unsupported';
-
-        setAiSuggestions(shouldShowSuggestions ? (res.suggestions || []) : []);
-
-        // 保存篩選條件
-        if (res.extractedFilters) {
-          setAiContext(prev => ({
-            ...prev,
-            currentFilters: res.extractedFilters,
-          }));
-        }
-
-        // 行程有更新時重新載入（含 AI 自動操作）
+        // 行程有更新時重新載入
         if (res.itineraryUpdated) {
           await fetchItineraryDetail(currentItinerary.id);
         }
 
-        // 滾動到底部
         setTimeout(() => {
           chatScrollRef.current?.scrollToEnd({ animated: true });
         }, 100);
@@ -421,7 +375,7 @@ export function ItineraryScreenV2() {
     } finally {
       setAiLoading(false);
     }
-  }, [currentItinerary, inputText, getToken, aiContext, aiSuggestions, fetchItineraryDetail, t]);
+  }, [currentItinerary, inputText, getToken, fetchItineraryDetail, t]);
 
   // 【截圖 9-15 #11】移除景點 - 不使用彈窗確認，直接移除並顯示 Toast
   const handleRemovePlace = useCallback(async (itemId: number, placeName?: string) => {
@@ -490,8 +444,6 @@ export function ItineraryScreenV2() {
   // 【截圖 9-15 #5 #13】【截圖 36 修復】切換行程 - 使用快取但同時背景更新
   const handleSelectItinerary = useCallback(async (id: number) => {
     setActiveItineraryId(id);
-    setAiContext(undefined);
-    setAiSuggestions([]);
 
     // 【截圖 36 修復】快取僅用於快速顯示，同時在背景載入最新資料
     const cached = itineraryCache.current[id];
@@ -648,8 +600,6 @@ export function ItineraryScreenV2() {
     setActiveItineraryId(newItin.id);
     setCurrentItinerary(newItin);
     setMessages([]);
-    setAiContext(undefined);
-    setAiSuggestions([]);
     // 延遲關閉抽屜，等 Modal 完全關閉後再執行
     setTimeout(() => {
       drawerAnimating.current = false;

@@ -397,10 +397,9 @@ class ItineraryApi extends ApiBase {
    *
    * @param id - 行程 ID
    * @param data - 對話請求
+   * #069 Agent 化：只送 message，後端自己管 context
    * @param data.message - 用戶訊息
-   * @param data.context - 對話上下文
    * @param token - JWT Token
-   * @returns AI 回應和推薦的景點
    */
   async aiChat(
     id: number,
@@ -438,16 +437,9 @@ class ItineraryApi extends ApiBase {
           await delay(RETRY_DELAY);
         }
 
+        // #069 Agent 化：只送 message，只讀核心欄位
         const result = await this.request<{
-          message: string;
           response: string;
-          suggestions: AiChatResponse['suggestions'];
-          // v2.2.0 新增欄位
-          detectedIntent?: AiChatResponse['detectedIntent'];
-          nextAction?: AiChatResponse['nextAction'];
-          actionTaken?: AiChatResponse['actionTaken'];
-          extractedFilters?: AiChatResponse['extractedFilters'];
-          remainingCount?: number;
           itineraryUpdated?: boolean;
           updatedItinerary?: AiChatResponse['updatedItinerary'];
         }>(`/api/itinerary/${id}/ai-chat`, {
@@ -456,18 +448,9 @@ class ItineraryApi extends ApiBase {
           body: JSON.stringify(data),
         });
 
-        // 後端直接回傳資料，包裝成 APP 期望的格式
         return {
           success: true,
-          message: result.message,
           response: result.response,
-          suggestions: result.suggestions || [],
-          // v2.2.0 新增欄位
-          detectedIntent: result.detectedIntent,
-          nextAction: result.nextAction,
-          actionTaken: result.actionTaken,
-          extractedFilters: result.extractedFilters,
-          remainingCount: result.remainingCount,
           itineraryUpdated: result.itineraryUpdated,
           updatedItinerary: result.updatedItinerary,
         };
@@ -486,7 +469,6 @@ class ItineraryApi extends ApiBase {
     return {
       success: false,
       response: '',
-      suggestions: [],
     };
   }
 

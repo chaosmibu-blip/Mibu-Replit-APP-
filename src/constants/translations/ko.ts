@@ -336,6 +336,7 @@ const ko: Record<string, string> = {
     common_goBack: '돌아가기',
     common_description: '설명',
     common_learnMore: '자세히 보기',
+    event_activityClass: '카테고리',
     event_announcement: '공지',
     event_festival: '축제',
     event_limited: '기간 한정 이벤트',

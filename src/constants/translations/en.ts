@@ -754,6 +754,7 @@ const en: Record<string, string> = {
     common_goBack: 'Go Back',
     common_description: 'Description',
     common_learnMore: 'Learn More',
+    event_activityClass: 'Category',
     event_announcement: 'Announcement',
     event_festival: 'Festival',
     event_limited: 'Limited Event',

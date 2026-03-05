@@ -188,6 +188,15 @@ export default function EventDetailScreen() {
           </View>
         )}
 
+        {/* Activity Class（TDX 活動分類） */}
+        {event.activityClass && (
+          <View style={styles.infoRow}>
+            <Ionicons name="pricetag-outline" size={18} color={MibuBrand.copper} />
+            <Text style={styles.infoLabel}>{t.event_activityClass}</Text>
+            <Text style={styles.infoValue}>{event.activityClass}</Text>
+          </View>
+        )}
+
         {/* Organizer */}
         {event.organizer && (
           <View style={styles.infoRow}>
