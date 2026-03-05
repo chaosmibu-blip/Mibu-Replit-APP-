@@ -125,10 +125,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         STORAGE_KEYS.LANGUAGE,
         STORAGE_KEYS.AVATAR_PRESET,
         STORAGE_KEYS.CUSTOM_AVATAR_URL,
+        STORAGE_KEYS.AI_DISCLOSURE_ACCEPTED,
       ];
       const TUTORIAL_PREFIX = '@mibu_tutorial_';
+      const MESSAGES_PREFIX = '@itinerary_messages_';
       const keysToRemove = allKeys.filter(k =>
-        !keepKeys.includes(k) && !k.startsWith(TUTORIAL_PREFIX)
+        !keepKeys.includes(k) &&
+        !k.startsWith(TUTORIAL_PREFIX) &&
+        !k.startsWith(MESSAGES_PREFIX)
       );
       if (keysToRemove.length > 0) {
         await AsyncStorage.multiRemove(keysToRemove);
