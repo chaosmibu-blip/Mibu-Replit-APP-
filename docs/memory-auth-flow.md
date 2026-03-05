@@ -13,9 +13,10 @@
 
 ## 支援的登入方式
 
-1. **Apple Sign In** (iOS 優先)
-2. ~~Google Sign In~~ (暫未實作)
-3. ~~Email/Password~~ (暫未實作)
+1. **Apple Sign In** (iOS 限定)
+2. **Google Sign In** (iOS/Android 原生 SDK，Web 用 Replit OAuth)
+3. **訪客瀏覽** (免登入，部分功能限制)
+4. ~~Email/Password~~ (暫未實作)
 
 ---
 
@@ -231,7 +232,39 @@ const isSpecialist = user?.role === 'specialist';
 
 ---
 
+## Google 原生登入流程
+
+```
+使用者點擊「使用 Google 登入」
+    ↓
+Platform.OS 判斷
+├── iOS/Android → useGoogleAuth Hook（原生 SDK）
+└── Web → Replit OAuth（瀏覽器視窗）
+
+iOS/Android 原生流程：
+  1. GoogleSignin.hasPlayServices()（Android 檢查）
+  2. GoogleSignin.signIn() → 原生登入 UI
+  3. 取得 Google idToken
+  4. POST /api/auth/mobile { provider: 'google', identityToken, portal, deviceId? }
+  5. 後端驗證 → 回傳 JWT + User
+  6. 儲存 Token → 更新 AuthContext → 導向對應首頁
+```
+
+### 關鍵檔案
+| 檔案 | 用途 |
+|------|------|
+| `hooks/useGoogleAuth.ts` | 原生 SDK 延遲載入 + 登入邏輯 |
+| `app/login.tsx` | 登入 UI + 平台分流 + 後端串接 |
+| `app.config.js` | config plugin + iosUrlScheme |
+
+### 注意事項
+- **Expo Go 不支援**：原生模組需要 EAS Build dev client
+- `useGoogleAuth.ts` 使用延遲載入（`require()`），Expo Go 中不會 crash，會拋出明確錯誤
+- Android 不需要 `androidClientId`，透過 `webClientId` + GCP SHA-1 fingerprint 驗證
+- `GoogleSignin.configure()` 只在首次呼叫 `signInWithGoogle()` 時執行
+
+---
+
 ## 待補充
-- [ ] Google 登入實作
 - [ ] Token 自動刷新機制
 - [ ] 生物辨識登入
