@@ -30,7 +30,7 @@ import {
   useSpecialistMe,
   useUpdateSpecialistAvailability,
 } from '../../../hooks/useSpecialistQueries';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
 // ============ 元件主體 ============
 export function SpecialistProfileScreen() {
@@ -67,7 +67,7 @@ export function SpecialistProfileScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.info} />
         <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
@@ -80,7 +80,7 @@ export function SpecialistProfileScreen() {
       <View style={styles.header}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.title}>{t.specialist_profile}</Text>
       </View>
@@ -89,7 +89,7 @@ export function SpecialistProfileScreen() {
       <View style={styles.avatarSection}>
         {/* 專員頭像 */}
         <View style={styles.avatar}>
-          <Ionicons name="person" size={48} color="#6366f1" />
+          <Ionicons name="person" size={48} color={MibuBrand.info} />
         </View>
         {/* 專員名稱 */}
         <Text style={styles.name}>{specialist?.name || user?.name || '-'}</Text>
@@ -119,7 +119,7 @@ export function SpecialistProfileScreen() {
             <Ionicons
               name={specialist?.isAvailable ? "checkmark-circle" : "pause-circle"}
               size={24}
-              color={specialist?.isAvailable ? "#22c55e" : "#f59e0b"}
+              color={specialist?.isAvailable ? SemanticColors.successMain : SemanticColors.warningMain}
             />
           </View>
           {/* 狀態文字 */}
@@ -131,13 +131,13 @@ export function SpecialistProfileScreen() {
         </View>
         {/* 切換開關 */}
         {availabilityMutation.isPending ? (
-          <ActivityIndicator size="small" color="#6366f1" />
+          <ActivityIndicator size="small" color={MibuBrand.info} />
         ) : (
           <Switch
             value={specialist?.isAvailable || false}
             onValueChange={handleToggleAvailable}
-            trackColor={{ false: '#e2e8f0', true: '#c7d2fe' }}
-            thumbColor={specialist?.isAvailable ? '#6366f1' : '#94a3b8'}
+            trackColor={{ false: MibuBrand.tanLight, true: MibuBrand.creamLight }}
+            thumbColor={specialist?.isAvailable ? MibuBrand.info : UIColors.textSecondary}
           />
         )}
       </View>
@@ -147,7 +147,7 @@ export function SpecialistProfileScreen() {
         {/* 服務地區 */}
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
-            <Ionicons name="location-outline" size={20} color="#6366f1" />
+            <Ionicons name="location-outline" size={20} color={MibuBrand.info} />
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{t.specialist_serviceRegion}</Text>
@@ -162,7 +162,7 @@ export function SpecialistProfileScreen() {
         {/* 目前服務中人數 */}
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
-            <Ionicons name="people-outline" size={20} color="#6366f1" />
+            <Ionicons name="people-outline" size={20} color={MibuBrand.info} />
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{t.specialist_currentlyServing}</Text>
@@ -177,7 +177,7 @@ export function SpecialistProfileScreen() {
         {/* 最大服務人數 */}
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
-            <Ionicons name="person-add-outline" size={20} color="#6366f1" />
+            <Ionicons name="person-add-outline" size={20} color={MibuBrand.info} />
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{t.specialist_maxTravelers}</Text>
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   // 容器樣式
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   content: {
     padding: 20,
@@ -225,16 +225,16 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   // 頭像區樣式
   avatarSection: {
@@ -245,17 +245,17 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     borderWidth: 3,
-    borderColor: '#c7d2fe',
+    borderColor: MibuBrand.tanLight,
   },
   name: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 12,
   },
   // 上線狀態標籤樣式
@@ -268,10 +268,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   onlineBadgeActive: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
   },
   onlineBadgeInactive: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
   },
   onlineDot: {
     width: 8,
@@ -279,17 +279,17 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   onlineDotActive: {
-    backgroundColor: '#22c55e',
+    backgroundColor: SemanticColors.successMain,
   },
   onlineDotInactive: {
-    backgroundColor: '#94a3b8',
+    backgroundColor: UIColors.textSecondary,
   },
   onlineText: {
     fontSize: 14,
     fontWeight: '600',
   },
   onlineTextActive: {
-    color: '#16a34a',
+    color: SemanticColors.successDark,
   },
   onlineTextInactive: {
     color: UIColors.textSecondary,
@@ -299,12 +299,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   availabilityInfo: {
     flexDirection: 'row',
@@ -319,15 +319,15 @@ const styles = StyleSheet.create({
   availabilityLabel: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   // 詳細資訊卡片樣式
   infoCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 20,
     padding: 20,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   infoRow: {
     flexDirection: 'row',
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -354,12 +354,12 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   // 分隔線樣式
   divider: {
     height: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: MibuBrand.tanLight,
     marginVertical: 4,
   },
 });

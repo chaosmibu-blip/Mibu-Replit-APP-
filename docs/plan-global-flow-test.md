@@ -42,29 +42,32 @@
 - [x] MINI 貓咪系統 — 修復：加入 RefreshControl
 - [x] 個人資料 — 修復：加入 RefreshControl
 
-### Phase 4：商家流程
-- [ ] 商家註冊 + 儀表板
-- [ ] 店面管理（認領/新增/編輯/列表）
-- [ ] 優惠券管理
-- [ ] 產品管理
-- [ ] 核銷驗證
-- [ ] 數據分析 + 交易記錄
+### Phase 4：商家流程 ✅
+- [x] 8 Screen 功能完整 — 修復：批量加入 ErrorState（6 Screen）
+- [x] MerchantCoupons Modal maxHeight → height（#012 教訓）
+- [x] MerchantPlaces error banner 改善
 
-### Phase 5：專家流程
-- [ ] 專家儀表板
-- [ ] 旅人追蹤
-- [ ] 服務歷史
+### Phase 5：專家流程 ✅
+- [x] Dashboard + History + Profile — ✅ 完整
+- [x] Tracking — 修復：WebSocket connectionError + reconnect
+- [x] Travelers — 修復：遷移至 React Query（移除 useState+useEffect）
 
-### Phase 6：管理員流程
-- [ ] 管理後台（7 Tab）
-- [ ] 公告管理
-- [ ] 排除管理
+### Phase 6：管理員流程 ✅（技術債記錄）
+- [x] Announcements + Exclusions — ✅ 完整
+- [ ] ⏳ AdminDashboard 1418 行需拆分（技術債，暫不動）
+- [ ] ⏳ 49 處 `as any` router casting（Expo Router 已知限制，暫不動）
 
-### Phase 7：跨功能檢查
-- [ ] Loading / Error / Empty 狀態覆蓋率
-- [ ] 硬編碼值檢查（魔術數字、寫死的 URL）
-- [ ] 導航完整性（所有 router.push 的目標路由都存在）
-- [ ] 資料流一致性（Context 欄位名 vs API 回傳欄位名）
+### Phase 7：跨功能檢查 ✅
+- [x] Loading / Error / Empty 狀態覆蓋率 — 修復：16 Screen 加入 ErrorState
+- [x] 硬編碼值檢查（魔術數字、寫死的 URL）— 修復：8 檔案共 ~130 硬編碼色值改 Design Token
+- [x] 導航完整性（所有 router.push 的目標路由都存在）— Phase 0 已修復
+- [x] 資料流一致性 — 修復：LocationScreen 補 Authorization token（CRITICAL）+ SOSScreen 改用 useAuth()
+
+#### Phase 7 修復清單：
+1. **CRITICAL**：LocationScreen.tsx + LocationScreen.web.tsx — fetch 缺少 Authorization header → 加入 useAuth() + Bearer token
+2. **HIGH**：16 Screen 加入 ErrorState（ContributionScreen、CrowdfundingScreen、CrowdfundingDetailScreen、EconomyScreen、ReferralScreen、ItemBoxScreen、NotificationListScreen、SettingsScreen、SOSScreen、SOSContactsScreen、NotificationPreferencesScreen、MerchantApplyScreen、PartnerApplyScreen、SpecialistDashboardScreen、SpecialistHistoryScreen、CouponFormScreen）
+3. **MEDIUM**：8 檔案硬編碼色值改 Design Token（SpecialistProfileScreen、SpecialistHistoryScreen、SpecialistTravelersScreen、ItemBoxScreen、CrowdfundingScreen、ReferralScreen、ReferralScreen.styles、SOSScreen）+ 商家 2 檔修色（MerchantVerifyScreen、ClaimPlaceScreen）
+4. **LOW**：SOSScreen — AsyncStorage.getItem(TOKEN) → useAuth().getToken()
 
 ## 輸出格式
 每個 Phase 完成後輸出：

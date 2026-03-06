@@ -25,7 +25,8 @@ import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
 import { ServiceRelation } from '../../../types';
 import { useSpecialistServices } from '../../../hooks/useSpecialistQueries';
-import { UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 元件主體 ============
@@ -113,8 +114,20 @@ export function SpecialistHistoryScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
+        <ActivityIndicator size="large" color={MibuBrand.info} />
         <Text style={styles.loadingText}>{t.loading}</Text>
+      </View>
+    );
+  }
+
+  // ============ 錯誤狀態 ============
+  if (servicesQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => servicesQuery.refetch()}
+        />
       </View>
     );
   }
@@ -126,7 +139,7 @@ export function SpecialistHistoryScreen() {
       <View style={styles.header}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.title}>{t.specialist_serviceHistory}</Text>
       </View>
@@ -150,7 +163,7 @@ export function SpecialistHistoryScreen() {
       {filteredServices.length === 0 ? (
         // 空狀態顯示
         <View style={styles.emptyCard}>
-          <Ionicons name="time-outline" size={48} color="#94a3b8" />
+          <Ionicons name="time-outline" size={48} color={UIColors.textSecondary} />
           <Text style={styles.emptyText}>{t.specialist_noHistory}</Text>
         </View>
       ) : (
@@ -162,7 +175,7 @@ export function SpecialistHistoryScreen() {
               <View key={service.id} style={styles.serviceCard}>
                 {/* 旅客頭像 */}
                 <View style={styles.serviceAvatar}>
-                  <Ionicons name="person" size={24} color="#ffffff" />
+                  <Ionicons name="person" size={24} color={UIColors.white} />
                 </View>
                 {/* 服務資訊 */}
                 <View style={styles.serviceInfo}>
@@ -193,7 +206,7 @@ const styles = StyleSheet.create({
   // 容器樣式
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   content: {
     padding: 20,
@@ -222,16 +235,16 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   title: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   // 篩選按鈕樣式
   filterRow: {
@@ -243,14 +256,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   filterButtonActive: {
-    backgroundColor: '#6366f1',
-    borderColor: '#6366f1',
+    backgroundColor: MibuBrand.info,
+    borderColor: MibuBrand.info,
   },
   filterText: {
     fontSize: 14,
@@ -258,16 +271,16 @@ const styles = StyleSheet.create({
     color: UIColors.textSecondary,
   },
   filterTextActive: {
-    color: '#ffffff',
+    color: UIColors.white,
   },
   // 空狀態樣式
   emptyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 40,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   emptyText: {
     fontSize: 16,
@@ -281,17 +294,17 @@ const styles = StyleSheet.create({
   serviceCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 16,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   serviceAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.info,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -302,7 +315,7 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 4,
   },
   serviceDate: {
@@ -321,23 +334,23 @@ const styles = StyleSheet.create({
   },
   // 進行中狀態樣式
   activeBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
   },
   activeText: {
-    color: '#16a34a',
+    color: SemanticColors.successDark,
   },
   // 已完成狀態樣式
   completedBadge: {
-    backgroundColor: '#e0e7ff',
+    backgroundColor: MibuBrand.creamLight,
   },
   completedText: {
-    color: '#6366f1',
+    color: MibuBrand.info,
   },
   // 已取消狀態樣式
   cancelledBadge: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: SemanticColors.errorLight,
   },
   cancelledText: {
-    color: '#ef4444',
+    color: SemanticColors.errorDark,
   },
 });

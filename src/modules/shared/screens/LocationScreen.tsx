@@ -34,6 +34,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../../constants/translations';
 import { useI18n } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
@@ -79,6 +80,7 @@ function getDistanceFromLatLonInMeters(
 
 export function LocationScreen() {
   const { t } = useI18n();
+  const { getToken } = useAuth();
 
   // ============ 狀態管理 ============
 
@@ -104,10 +106,14 @@ export function LocationScreen() {
    */
   const updateUserLocation = useCallback(async (latitude: number, longitude: number, sharing: boolean) => {
     try {
+      const token = await getToken();
+      if (!token) return;
+
       const response = await fetch(`${API_BASE_URL}/api/location/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ lat: latitude, lng: longitude }),
       });
@@ -125,7 +131,7 @@ export function LocationScreen() {
     } catch (error) {
       console.error('Failed to update location:', error);
     }
-  }, []);
+  }, [getToken]);
 
   /**
    * 判斷是否應該回報位置

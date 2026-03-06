@@ -10,7 +10,7 @@
  * 更新日期：2026-02-12（從主檔案抽離樣式）
  */
 import { StyleSheet, Platform } from 'react-native';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
 const styles = StyleSheet.create({
   container: {
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   codeCardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: UIColors.white,
     opacity: 0.9,
   },
   codeDisplayArea: {
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   codeTextLarge: {
     fontSize: 32,
     fontWeight: '900',
-    color: '#fff',
+    color: UIColors.white,
     letterSpacing: 6,
   },
   codeCardActions: {
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     paddingVertical: 12,
     borderRadius: 12,
   },
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   shareButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#fff',
+    color: UIColors.white,
   },
   // 生成推薦碼卡片（尚未生成時顯示）
   generateCodeCard: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   generateBtnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   // 統計數據列 - 帶圖示圓圈的 StatCard 風格
   statsRow: {
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 12,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   stepNumberText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#fff',
+    color: UIColors.white,
   },
   stepContent: {
     flex: 1,
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -399,15 +399,15 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 14,
-    shadowColor: '#000',
+    shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 6,
     elevation: 1,
   },
   rewardItemAchieved: {
-    backgroundColor: '#ECFDF5',
-    borderColor: '#059669',
+    backgroundColor: SemanticColors.successLight,
+    borderColor: SemanticColors.successDark,
   },
   rewardItemNext: {
     borderWidth: 2,
@@ -435,10 +435,10 @@ const styles = StyleSheet.create({
     color: MibuBrand.brownDark,
   },
   rewardValueAchieved: {
-    color: '#059669',
+    color: SemanticColors.successDark,
   },
   achievedBadge: {
-    backgroundColor: '#059669',
+    backgroundColor: SemanticColors.successDark,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   achievedText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#fff',
+    color: UIColors.white,
   },
   nextBadge: {
     backgroundColor: MibuBrand.highlight,
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: 16,
     padding: 14,
-    shadowColor: '#000',
+    shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 6,
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
   referralXp: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#059669',
+    color: SemanticColors.successDark,
   },
   bottomSpacer: {
     height: 100,

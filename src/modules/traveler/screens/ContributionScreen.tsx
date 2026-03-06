@@ -47,6 +47,7 @@ import {
   useVoteSuggestion,
 } from '../../../hooks/useContributionQueries';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 import {
   MyReport,
   MySuggestion,
@@ -561,6 +562,24 @@ export function ContributionScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
+      </View>
+    );
+  }
+
+  // 根據當前 Tab 判斷錯誤狀態
+  const hasError = activeTab === 'report'
+    ? reportsQuery.isError
+    : activeTab === 'suggest'
+      ? suggestionsQuery.isError
+      : pendingVotesQuery.isError || pendingSuggestionsQuery.isError;
+
+  if (hasError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={onRefresh}
+        />
       </View>
     );
   }

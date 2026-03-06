@@ -39,6 +39,7 @@ import {
 } from '../../../hooks/useNotificationQueries';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
+import { ErrorState } from '../components/ui/ErrorState';
 import type { NotificationPreferences } from '../../../types/notifications';
 
 // ============ 通知類型設定項 ============
@@ -195,6 +196,19 @@ export function NotificationPreferencesScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={MibuBrand.brown} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (prefQuery.isError) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ErrorState
+            message={t.common_loadFailed}
+            onRetry={() => prefQuery.refetch()}
+          />
         </View>
       </SafeAreaView>
     );

@@ -39,6 +39,7 @@ import { useI18n } from '../../../context/AppContext';
 import { useSOSContacts, useAddSOSContact, useUpdateSOSContact, useDeleteSOSContact } from '../../../hooks/useSOSQueries';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { SOSContact } from '../../../types/sos';
+import { ErrorState } from '../components/ui/ErrorState';
 import { tFormat } from '../../../utils/i18n';
 
 // ============ 常數定義 ============
@@ -253,6 +254,19 @@ export function SOSContactsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
+      </View>
+    );
+  }
+
+  // ============ 錯誤狀態 ============
+
+  if (contactsQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => contactsQuery.refetch()}
+        />
       </View>
     );
   }

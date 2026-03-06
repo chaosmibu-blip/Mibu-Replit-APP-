@@ -28,7 +28,8 @@ import { inventoryApi } from '../../../services/inventoryApi';
 import { preloadService } from '../../../services/preloadService';
 import { ApiError } from '../../../services/base';
 import { InventoryItem, CouponTier, PlacePackOptionsResponse } from '../../../types';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============================================================
 // 常數定義
@@ -161,16 +162,16 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
           height: SLOT_SIZE,
           margin: 4,
           borderRadius: 12,
-          backgroundColor: '#f1f5f9',
+          backgroundColor: MibuBrand.creamLight,
           borderWidth: 2,
-          borderColor: '#e2e8f0',
+          borderColor: MibuBrand.tanLight,
           borderStyle: 'dashed',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
         {/* 格子序號 */}
-        <Text style={{ fontSize: 10, color: '#cbd5e1' }}>{index + 1}</Text>
+        <Text style={{ fontSize: 10, color: MibuBrand.tanLight }}>{index + 1}</Text>
       </View>
     );
   }
@@ -208,7 +209,7 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
                 width: 12,
                 height: 12,
                 borderRadius: 6,
-                backgroundColor: '#ef4444',
+                backgroundColor: SemanticColors.errorDark,
                 borderWidth: 2,
                 borderColor: UIColors.white,
                 zIndex: 10,
@@ -240,9 +241,9 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
         height: SLOT_SIZE,
         margin: 4,
         borderRadius: 12,
-        backgroundColor: isDisabled ? '#e2e8f0' : tierStyle.bgColor,
+        backgroundColor: isDisabled ? MibuBrand.tanLight : tierStyle.bgColor,
         borderWidth: 3,
-        borderColor: isDisabled ? '#9ca3af' : tierStyle.borderColor,
+        borderColor: isDisabled ? UIColors.textSecondary : tierStyle.borderColor,
         alignItems: 'center',
         justifyContent: 'center',
         opacity: isDisabled ? 0.5 : 1,
@@ -264,7 +265,7 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
             width: 12,
             height: 12,
             borderRadius: 6,
-            backgroundColor: '#ef4444',
+            backgroundColor: SemanticColors.errorDark,
             borderWidth: 2,
             borderColor: UIColors.white,
             zIndex: 10,
@@ -276,7 +277,7 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
       <Ionicons
         name={(TIER_ICONS[itemTier || 'R'] || 'ticket') as any}
         size={20}
-        color={isDisabled ? '#9ca3af' : tierStyle.borderColor}
+        color={isDisabled ? UIColors.textSecondary : tierStyle.borderColor}
       />
 
       {/* 稀有度文字 */}
@@ -284,7 +285,7 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
         style={{
           fontSize: 8,
           fontWeight: '800',
-          color: isDisabled ? '#9ca3af' : tierStyle.borderColor,
+          color: isDisabled ? UIColors.textSecondary : tierStyle.borderColor,
           marginTop: 2,
         }}
       >
@@ -316,7 +317,7 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
             position: 'absolute',
             top: -6,
             left: -6,
-            backgroundColor: timeRemaining.isUrgent ? '#ef4444' : '#f59e0b',
+            backgroundColor: timeRemaining.isUrgent ? SemanticColors.errorDark : SemanticColors.warningMain,
             paddingHorizontal: 4,
             paddingVertical: 2,
             borderRadius: 6,
@@ -725,6 +726,17 @@ export function ItemBoxScreen() {
     );
   }
 
+  if (inventoryQuery.isError) {
+    return (
+      <View style={{ flex: 1, backgroundColor: MibuBrand.warmWhite, alignItems: 'center', justifyContent: 'center' }}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => inventoryQuery.refetch()}
+        />
+      </View>
+    );
+  }
+
   // ============================================================
   // 主畫面渲染
   // ============================================================
@@ -757,7 +769,7 @@ export function ItemBoxScreen() {
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: slotCount >= maxSlots ? '#fef2f2' : slotCount >= maxSlots * 0.8 ? '#fef3c7' : MibuBrand.cream,
+            backgroundColor: slotCount >= maxSlots ? SemanticColors.errorLight : slotCount >= maxSlots * 0.8 ? SemanticColors.warningLight : MibuBrand.cream,
             paddingHorizontal: 14,
             paddingVertical: 8,
             borderRadius: 16,
@@ -765,12 +777,12 @@ export function ItemBoxScreen() {
             <Ionicons
               name="cube"
               size={18}
-              color={slotCount >= maxSlots ? MibuBrand.error : slotCount >= maxSlots * 0.8 ? '#d97706' : MibuBrand.brown}
+              color={slotCount >= maxSlots ? MibuBrand.error : slotCount >= maxSlots * 0.8 ? SemanticColors.warningDark : MibuBrand.brown}
             />
             <Text style={{
               fontSize: 16,
               fontWeight: '800',
-              color: slotCount >= maxSlots ? MibuBrand.error : slotCount >= maxSlots * 0.8 ? '#d97706' : MibuBrand.brown,
+              color: slotCount >= maxSlots ? MibuBrand.error : slotCount >= maxSlots * 0.8 ? SemanticColors.warningDark : MibuBrand.brown,
               marginLeft: 6,
             }}>
               {slotCount}/{maxSlots}
@@ -780,7 +792,7 @@ export function ItemBoxScreen() {
 
         {/* 滿格警告 */}
         {slotCount >= maxSlots && (
-          <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 12, marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ backgroundColor: SemanticColors.errorLight, borderRadius: 12, padding: 12, marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="warning" size={18} color={MibuBrand.error} />
             <Text style={{ fontSize: 13, color: MibuBrand.error, marginLeft: 8, flex: 1 }}>
               {t.itemBox_full}
@@ -790,9 +802,9 @@ export function ItemBoxScreen() {
 
         {/* 快滿警告（80% 以上） */}
         {slotCount >= maxSlots * 0.8 && slotCount < maxSlots && (
-          <View style={{ backgroundColor: '#fef3c7', borderRadius: 12, padding: 12, marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="alert-circle" size={18} color="#d97706" />
-            <Text style={{ fontSize: 13, color: '#92400e', marginLeft: 8, flex: 1 }}>
+          <View style={{ backgroundColor: SemanticColors.warningLight, borderRadius: 12, padding: 12, marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="alert-circle" size={18} color={SemanticColors.warningDark} />
+            <Text style={{ fontSize: 13, color: MibuBrand.brownDark, marginLeft: 8, flex: 1 }}>
               {t.itemBox_almostFull.replace('{remaining}', String(maxSlots - slotCount))}
             </Text>
           </View>
@@ -1052,7 +1064,7 @@ export function ItemBoxScreen() {
           <View style={{ backgroundColor: MibuBrand.warmWhite, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
             {/* 警告圖示 */}
             <View style={{ alignItems: 'center', marginBottom: 20 }}>
-              <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: '#fef2f2', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+              <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: SemanticColors.errorLight, alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                 <Ionicons name="trash" size={28} color={MibuBrand.error} />
               </View>
               <Text style={{ fontSize: 18, fontWeight: '800', color: MibuBrand.dark, marginBottom: 8 }}>

@@ -24,6 +24,7 @@ import {
   useCreateMerchantCoupon,
   useUpdateMerchantCoupon,
 } from '../../../hooks/useMerchantQueries';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { MerchantCouponTier } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
@@ -128,6 +129,17 @@ export function CouponFormScreen() {
       Alert.alert(t.common_error, t.common_saveFailed);
     }
   };
+
+  if (isEdit && couponsQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => couponsQuery.refetch()}
+        />
+      </View>
+    );
+  }
 
   if (loading) {
     return (

@@ -35,6 +35,7 @@ import {
 } from '../../../hooks/useSpecialistQueries';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
 import { MibuBrand } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 元件主體 ============
@@ -101,6 +102,21 @@ export function SpecialistDashboardScreen() {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{t.loading}</Text>
+      </View>
+    );
+  }
+
+  // ============ 錯誤狀態 ============
+  if (specialistQuery.isError || servicesQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => {
+            specialistQuery.refetch();
+            servicesQuery.refetch();
+          }}
+        />
       </View>
     );
   }

@@ -36,6 +36,7 @@ import { useRouter } from 'expo-router';
 import { useAuth, useI18n } from '../../../context/AppContext';
 import { useMerchantApplicationStatus, useApplyMerchant } from '../../../hooks/useMerchantQueries';
 import { MibuBrand } from '../../../../constants/Colors';
+import { ErrorState } from '../components/ui/ErrorState';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import {
   SurveySectionTitle,
@@ -57,7 +58,7 @@ export function MerchantApplyScreen() {
   const router = useRouter();
   const { t } = useI18n();
   const { user } = useAuth();
-  const { data: statusData, isLoading: isLoadingStatus, refetch: refetchStatus } = useMerchantApplicationStatus();
+  const { data: statusData, isLoading: isLoadingStatus, isError: isStatusError, refetch: refetchStatus } = useMerchantApplicationStatus();
   const applyMutation = useApplyMerchant();
 
   // ========== 表單狀態 ==========
@@ -356,8 +357,18 @@ export function MerchantApplyScreen() {
     </ScrollView>
   );
 
+  const renderError = () => (
+    <View style={styles.centerContainer}>
+      <ErrorState
+        message={t.common_loadFailed}
+        onRetry={() => refetchStatus()}
+      />
+    </View>
+  );
+
   const renderContent = () => {
     if (isLoadingStatus) return renderLoading();
+    if (isStatusError) return renderError();
 
     switch (applicationStatus) {
       case 'pending':

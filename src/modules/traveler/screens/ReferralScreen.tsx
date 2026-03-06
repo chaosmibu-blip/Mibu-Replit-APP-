@@ -35,7 +35,8 @@ import * as Clipboard from 'expo-clipboard';
 import { useAuth, useI18n } from '../../../context/AppContext';
 import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 import { referralApi } from '../../../services/referralApi';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
 import {
   LeaderboardPeriod,
@@ -70,10 +71,10 @@ interface RewardTier {
  * 根據邀請人數給予不同獎勵
  */
 const REWARD_TIERS: RewardTier[] = [
-  { count: 1, reward: '雙方各得 50 XP', icon: 'star', color: '#D97706' },
-  { count: 3, reward: '額外獎勵 200 XP', icon: 'star', color: '#6366f1' },
-  { count: 5, reward: '免費扭蛋券 x3', icon: 'ticket', color: '#059669' },
-  { count: 10, reward: '專屬優惠券禮包', icon: 'gift', color: '#DC2626' },
+  { count: 1, reward: '雙方各得 50 XP', icon: 'star', color: SemanticColors.warningDark },
+  { count: 3, reward: '額外獎勵 200 XP', icon: 'star', color: MibuBrand.info },
+  { count: 5, reward: '免費扭蛋券 x3', icon: 'ticket', color: SemanticColors.successDark },
+  { count: 10, reward: '專屬優惠券禮包', icon: 'gift', color: SemanticColors.errorDark },
 ];
 
 
@@ -211,6 +212,17 @@ export function ReferralScreen() {
     );
   }
 
+  if (codeQuery.isError || listQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={refreshAll}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -243,7 +255,7 @@ export function ReferralScreen() {
         {myCode ? (
           <View style={styles.referralCodeCard}>
             <View style={styles.codeCardHeader}>
-              <Ionicons name="gift" size={24} color="#fff" />
+              <Ionicons name="gift" size={24} color={UIColors.white} />
               <Text style={styles.codeCardTitle}>
                 {t.referral_myCode}
               </Text>
@@ -265,7 +277,7 @@ export function ReferralScreen() {
                 style={styles.shareButton}
                 onPress={handleShareCode}
               >
-                <Ionicons name="share-social" size={20} color="#fff" />
+                <Ionicons name="share-social" size={20} color={UIColors.white} />
                 <Text style={styles.shareButtonText}>
                   {t.referral_share}
                 </Text>
@@ -288,10 +300,10 @@ export function ReferralScreen() {
                 disabled={generateCodeMutation.isPending}
               >
                 {generateCodeMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <ActivityIndicator size="small" color={UIColors.white} />
                 ) : (
                   <>
-                    <Ionicons name="add-circle" size={20} color="#ffffff" />
+                    <Ionicons name="add-circle" size={20} color={UIColors.white} />
                     <Text style={styles.generateBtnText}>
                       {t.referral_generateNow}
                     </Text>
@@ -312,19 +324,19 @@ export function ReferralScreen() {
             <Text style={styles.statLabel}>{t.referral_invited}</Text>
           </View>
           <View style={styles.statCard}>
-            <View style={[styles.statIconCircle, { backgroundColor: '#DCFCE7' }]}>
-              <Ionicons name="checkmark-circle" size={20} color="#059669" />
+            <View style={[styles.statIconCircle, { backgroundColor: SemanticColors.successLight }]}>
+              <Ionicons name="checkmark-circle" size={20} color={SemanticColors.successDark} />
             </View>
-            <Text style={[styles.statNumber, { color: '#059669' }]}>
+            <Text style={[styles.statNumber, { color: SemanticColors.successDark }]}>
               {referralStats.activeReferrals}
             </Text>
             <Text style={styles.statLabel}>{t.referral_successful}</Text>
           </View>
           <View style={styles.statCard}>
-            <View style={[styles.statIconCircle, { backgroundColor: '#E0E7FF' }]}>
-              <Ionicons name="diamond" size={20} color="#6366f1" />
+            <View style={[styles.statIconCircle, { backgroundColor: SemanticColors.infoLight }]}>
+              <Ionicons name="diamond" size={20} color={MibuBrand.info} />
             </View>
-            <Text style={[styles.statNumber, { color: '#6366f1' }]}>
+            <Text style={[styles.statNumber, { color: MibuBrand.info }]}>
               {balance?.totalEarned || 0}
             </Text>
             <Text style={styles.statLabel}>{t.referral_xpEarned}</Text>
@@ -416,7 +428,7 @@ export function ReferralScreen() {
                       ]}
                     >
                       {isTopThree ? (
-                        <Ionicons name="medal" size={16} color="#fff" />
+                        <Ionicons name="medal" size={16} color={UIColors.white} />
                       ) : (
                         <Text style={styles.rankText}>{user.rank}</Text>
                       )}
@@ -503,7 +515,7 @@ export function ReferralScreen() {
                     <Ionicons
                       name={isAchieved ? 'checkmark-circle' : tier.icon}
                       size={20}
-                      color={isAchieved ? '#059669' : tier.color}
+                      color={isAchieved ? SemanticColors.successDark : tier.color}
                     />
                   </View>
                   <View style={styles.rewardInfo}>
@@ -565,9 +577,9 @@ export function ReferralScreen() {
                 disabled={applyingCode || !inputCode.trim()}
               >
                 {applyingCode ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <ActivityIndicator size="small" color={UIColors.white} />
                 ) : (
-                  <Ionicons name="checkmark" size={24} color="#fff" />
+                  <Ionicons name="checkmark" size={24} color={UIColors.white} />
                 )}
               </TouchableOpacity>
             </View>

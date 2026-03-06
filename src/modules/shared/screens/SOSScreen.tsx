@@ -33,15 +33,15 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as Location from 'expo-location';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL } from '../../../constants/translations';
 import { useI18n } from '../../../context/AppContext';
+import { useAuth } from '../../../context/AuthContext';
 import { useSOSEligibility, useSOSAlerts, useSendSOS, useCancelSOS } from '../../../hooks/useSOSQueries';
 import { SosAlertStatus } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
-import { STORAGE_KEYS } from '../../../constants/storageKeys';
+import { ErrorState } from '../components/ui/ErrorState';
 import { LOCALE_MAP } from '../../../utils/i18n';
 
 // ============ 元件本體 ============
@@ -49,6 +49,7 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 export function SOSScreen() {
   const { t, language } = useI18n();
   const router = useRouter();
+  const { getToken } = useAuth();
 
   // ============ React Query Hooks ============
 
@@ -77,9 +78,9 @@ export function SOSScreen() {
   /** SOS 狀態顏色對應（使用 t 翻譯） */
   const STATUS_COLORS: Record<SosAlertStatus, { bg: string; text: string; label: string }> = {
     pending: { bg: SemanticColors.warningLight, text: SemanticColors.warningDark, label: t.sos_statusPending },
-    acknowledged: { bg: '#dbeafe', text: '#2563eb', label: t.sos_statusAcknowledged },
+    acknowledged: { bg: SemanticColors.infoLight, text: SemanticColors.infoDark, label: t.sos_statusAcknowledged },
     resolved: { bg: SemanticColors.successLight, text: SemanticColors.successDark, label: t.sos_statusResolved },
-    cancelled: { bg: '#f1f5f9', text: UIColors.textSecondary, label: t.sos_statusCancelled },
+    cancelled: { bg: MibuBrand.creamLight, text: UIColors.textSecondary, label: t.sos_statusCancelled },
   };
 
   // ============ Webhook 載入（非標準 auth API，保留手動 fetch）============
@@ -88,7 +89,7 @@ export function SOSScreen() {
    * 載入 Webhook URL（不透過 React Query，因為這不是標準 auth API）
    */
   const fetchWebhook = useCallback(async () => {
-    const userToken = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+    const userToken = await getToken();
     if (!userToken) return;
 
     try {
@@ -125,7 +126,7 @@ export function SOSScreen() {
     } catch (error: unknown) {
       console.error('Failed to fetch webhook URL:', error);
     }
-  }, []);
+  }, [getToken]);
 
   useEffect(() => {
     fetchWebhook();
@@ -302,6 +303,22 @@ export function SOSScreen() {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={SemanticColors.errorDark} />
         <Text style={styles.loadingText}>{t.loading}</Text>
+      </View>
+    );
+  }
+
+  // ============ 錯誤狀態 ============
+
+  if (eligibilityQuery.isError || alertsQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => {
+            eligibilityQuery.refetch();
+            alertsQuery.refetch();
+          }}
+        />
       </View>
     );
   }
@@ -758,21 +775,21 @@ const styles = StyleSheet.create({
   },
   // 設定步驟說明
   instructionBox: {
-    backgroundColor: '#fffbeb',
+    backgroundColor: SemanticColors.warningLight,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#fde68a',
+    borderColor: SemanticColors.warningMain,
   },
   instructionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#92400e',
+    color: MibuBrand.brownDark,
     marginBottom: 12,
   },
   instructionStep: {
     fontSize: 14,
-    color: '#78350f',
+    color: MibuBrand.brownDark,
     marginBottom: 6,
     lineHeight: 20,
   },

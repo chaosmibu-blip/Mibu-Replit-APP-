@@ -26,7 +26,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
 import { useSpecialistTravelers } from '../../../hooks/useSpecialistQueries';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { LOCALE_MAP } from '../../../utils/i18n';
 
@@ -76,7 +76,7 @@ export function SpecialistTravelersScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1e293b" />
+          <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.title}>{t.specialist_activeTravelers}</Text>
       </View>
@@ -95,7 +95,7 @@ export function SpecialistTravelersScreen() {
       >
         {travelers.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Ionicons name="people-outline" size={48} color="#94a3b8" />
+            <Ionicons name="people-outline" size={48} color={UIColors.textSecondary} />
             <Text style={styles.emptyText}>{t.specialist_noActiveTravelers}</Text>
           </View>
         ) : (
@@ -103,7 +103,7 @@ export function SpecialistTravelersScreen() {
             {travelers.map((traveler) => (
               <View key={traveler.id} style={styles.travelerCard}>
                 <View style={styles.travelerAvatar}>
-                  <Ionicons name="person" size={28} color="#ffffff" />
+                  <Ionicons name="person" size={28} color={UIColors.white} />
                 </View>
                 <View style={styles.travelerInfo}>
                   <Text style={styles.travelerName}>{traveler.name}</Text>
@@ -117,7 +117,7 @@ export function SpecialistTravelersScreen() {
                     style={styles.actionButton}
                     onPress={() => router.push(`/specialist/tracking?travelerId=${traveler.id}` as any)}
                   >
-                    <Ionicons name="location" size={20} color="#6366f1" />
+                    <Ionicons name="location" size={20} color={MibuBrand.info} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -132,7 +132,7 @@ export function SpecialistTravelersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: MibuBrand.creamLight,
   },
   header: {
     flexDirection: 'row',
@@ -140,9 +140,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: MibuBrand.tanLight,
   },
   backButton: {
     marginRight: 16,
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
   },
   scrollView: {
     flex: 1,
@@ -170,12 +170,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   emptyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 40,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   emptyText: {
     fontSize: 16,
@@ -186,19 +186,19 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   travelerCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: MibuBrand.tanLight,
   },
   travelerAvatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.info,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -209,14 +209,14 @@ const styles = StyleSheet.create({
   travelerName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1e293b',
+    color: MibuBrand.brownDark,
     marginBottom: 4,
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -226,12 +226,12 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#22c55e',
+    backgroundColor: SemanticColors.successMain,
   },
   statusText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#16a34a',
+    color: SemanticColors.successDark,
   },
   actions: {
     flexDirection: 'row',
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#eef2ff',
+    backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
     justifyContent: 'center',
   },

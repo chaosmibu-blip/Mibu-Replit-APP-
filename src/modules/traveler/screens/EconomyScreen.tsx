@@ -37,6 +37,7 @@ import { useI18n } from '../../../context/AppContext';
 import { CoinReward } from '../../shared/components/ui/CoinReward';
 import { SectionHeader } from '../../shared/components/ui/SectionHeader';
 import { MibuBrand } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { RuleItem, NavigateTo, RuleStatus } from '../../../types/rules';
 import { useRules, usePerks, useClaimReward, useRefreshEconomyData } from '../../../hooks/useEconomyQueries';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
@@ -449,6 +450,19 @@ export function EconomyScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={MibuBrand.brown} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (rulesQuery.isError) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+        <View style={styles.loadingContainer}>
+          <ErrorState
+            message={t.common_loadFailed}
+            onRetry={refreshAll}
+          />
         </View>
       </SafeAreaView>
     );

@@ -32,8 +32,9 @@ import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '../../../context/AppContext';
 import { useCampaigns, useMyContributions } from '../../../hooks/useCrowdfundingQueries';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { Campaign, MyContribution } from '../../../types/crowdfunding';
 
 // ============================================================
@@ -93,26 +94,26 @@ const STATUS_CONFIG: Record<RegionStatus, {
 }> = {
   unlocked: {
     labelKey: 'crowdfunding_statusUnlocked',
-    color: '#059669',
-    bg: '#ECFDF5',
+    color: SemanticColors.successDark,
+    bg: SemanticColors.successLight,
     icon: 'checkmark-circle',
   },
   fundraising: {
     labelKey: 'crowdfunding_statusFundraising',
-    color: '#6366f1',
-    bg: '#EEF2FF',
+    color: MibuBrand.info,
+    bg: SemanticColors.infoLight,
     icon: 'trending-up',
   },
   coming_soon: {
     labelKey: 'crowdfunding_statusComingSoon',
-    color: '#D97706',
-    bg: '#FEF3C7',
+    color: SemanticColors.warningDark,
+    bg: SemanticColors.warningLight,
     icon: 'time-outline',
   },
   stay_tuned: {
     labelKey: 'crowdfunding_statusStayTuned',
-    color: '#6b7280',
-    bg: '#F3F4F6',
+    color: UIColors.textSecondary,
+    bg: MibuBrand.creamLight,
     icon: 'sparkles-outline',
   },
 };
@@ -216,6 +217,17 @@ export function CrowdfundingScreen() {
     );
   }
 
+  if (campaignsQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => campaignsQuery.refetch()}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -242,14 +254,14 @@ export function CrowdfundingScreen() {
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: '#6366f1' }]}>{stats.fundraising}</Text>
+          <Text style={[styles.statValue, { color: MibuBrand.info }]}>{stats.fundraising}</Text>
           <Text style={styles.statLabel}>
             {t.crowdfunding_statFundraising}
           </Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: '#D97706' }]}>{stats.coming}</Text>
+          <Text style={[styles.statValue, { color: SemanticColors.warningDark }]}>{stats.coming}</Text>
           <Text style={styles.statLabel}>
             {t.crowdfunding_statComing}
           </Text>
@@ -272,7 +284,7 @@ export function CrowdfundingScreen() {
         {regions.filter(r => r.status === 'unlocked').length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Ionicons name="checkmark-circle" size={18} color="#059669" />
+              <Ionicons name="checkmark-circle" size={18} color={SemanticColors.successDark} />
               <Text style={styles.sectionTitle}>
                 {t.crowdfunding_availableRegions}
               </Text>
@@ -285,7 +297,7 @@ export function CrowdfundingScreen() {
         {regions.filter(r => r.status === 'fundraising').length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Ionicons name="trending-up" size={18} color="#6366f1" />
+              <Ionicons name="trending-up" size={18} color={MibuBrand.info} />
               <Text style={styles.sectionTitle}>
                 {t.crowdfunding_fundraising}
               </Text>
@@ -298,7 +310,7 @@ export function CrowdfundingScreen() {
         {regions.filter(r => r.status === 'coming_soon').length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Ionicons name="time-outline" size={18} color="#D97706" />
+              <Ionicons name="time-outline" size={18} color={SemanticColors.warningDark} />
               <Text style={styles.sectionTitle}>
                 {t.crowdfunding_comingSoon}
               </Text>
@@ -311,7 +323,7 @@ export function CrowdfundingScreen() {
         {regions.filter(r => r.status === 'stay_tuned').length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Ionicons name="sparkles-outline" size={18} color="#6b7280" />
+              <Ionicons name="sparkles-outline" size={18} color={UIColors.textSecondary} />
               <Text style={styles.sectionTitle}>
                 {t.crowdfunding_stayTuned}
               </Text>
@@ -445,7 +457,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#059669',
+    color: SemanticColors.successDark,
     marginBottom: 4,
   },
   statLabel: {
@@ -532,13 +544,13 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#6366f1',
+    backgroundColor: MibuBrand.info,
     borderRadius: 4,
   },
   progressText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6366f1',
+    color: MibuBrand.info,
   },
   statusBadge: {
     flexDirection: 'row',

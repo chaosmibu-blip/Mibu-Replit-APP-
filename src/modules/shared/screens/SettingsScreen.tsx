@@ -38,6 +38,7 @@ import { useMerchantApplicationStatus } from '../../../hooks/useMerchantQueries'
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
 import { hasAcceptedAiDisclosure, revokeAiConsent, grantAiConsent } from '../components/AiDisclosureModal';
+import { ErrorState } from '../components/ui/ErrorState';
 
 // ============================================================
 // 常數定義
@@ -524,6 +525,26 @@ export function SettingsScreen() {
       )}
     </TouchableOpacity>
   );
+
+  // ============================================================
+  // 錯誤狀態
+  // ============================================================
+
+  if (partnerStatusQuery.isError || merchantStatusQuery.isError) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.creamLight }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ErrorState
+            message={t.common_loadFailed}
+            onRetry={() => {
+              partnerStatusQuery.refetch();
+              merchantStatusQuery.refetch();
+            }}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // ============================================================
   // 主畫面渲染

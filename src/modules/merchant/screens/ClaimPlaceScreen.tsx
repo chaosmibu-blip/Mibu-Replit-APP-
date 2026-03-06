@@ -134,12 +134,12 @@ export function ClaimPlaceScreen() {
         {/* Results */}
         {!hasSearched ? (
           <View style={styles.emptyState}>
-            <Ionicons name="storefront-outline" size={64} color="#cbd5e1" />
+            <Ionicons name="storefront-outline" size={64} color={MibuBrand.tanLight} />
             <Text style={styles.emptyTitle}>{t.merchant_searchHint}</Text>
           </View>
         ) : searchResults.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={64} color="#cbd5e1" />
+            <Ionicons name="search-outline" size={64} color={MibuBrand.tanLight} />
             <Text style={styles.emptyTitle}>{t.merchant_noSearchResults}</Text>
             <Text style={styles.emptySubtitle}>{t.merchant_noResultsHint}</Text>
             {/* TODO: /merchant/new-place 路由建立後恢復新增店家按鈕 */}
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 20,
   },
   claimedText: {

@@ -39,6 +39,7 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 import { useCampaignDetail, useContribute } from '../../../hooks/useCrowdfundingQueries';
 import { revenueCatService } from '../../../services/revenueCatService';
 import { MibuBrand } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { Image as ExpoImage } from 'expo-image';
 import { CampaignDetail, CampaignReward, CampaignUpdate } from '../../../types/crowdfunding';
 
@@ -277,6 +278,17 @@ export function CrowdfundingDetailScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
+      </View>
+    );
+  }
+
+  if (detailQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => detailQuery.refetch()}
+        />
       </View>
     );
   }

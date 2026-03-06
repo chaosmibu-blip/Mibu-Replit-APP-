@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   resetButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: MibuBrand.creamLight,
     borderRadius: 12,
   },
   // 重試按鈕文字

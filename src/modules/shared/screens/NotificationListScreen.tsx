@@ -41,6 +41,7 @@ import {
 } from '../../../hooks/useNotificationQueries';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
+import { ErrorState } from '../components/ui/ErrorState';
 import type {
   NotificationItem,
   NotificationType,
@@ -268,8 +269,16 @@ export function NotificationListScreen() {
         )}
       </View>
 
-      {/* 列表 */}
-      {loading ? (
+      {/* 錯誤狀態 */}
+      {listQuery.isError ? (
+        <View style={styles.loadingContainer}>
+          <ErrorState
+            message={t.common_loadFailed}
+            onRetry={() => listQuery.refetch()}
+          />
+        </View>
+      ) : /* 列表 */
+      loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={MibuBrand.brown} />
         </View>

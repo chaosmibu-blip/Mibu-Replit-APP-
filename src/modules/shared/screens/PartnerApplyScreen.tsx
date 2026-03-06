@@ -36,6 +36,7 @@ import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
 import { usePartnerApplicationStatus, useApplyPartner } from '../../../hooks/useEconomyQueries';
 import { MibuBrand } from '../../../../constants/Colors';
+import { ErrorState } from '../components/ui/ErrorState';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import {
   SurveySectionTitle,
@@ -55,7 +56,7 @@ const STATUS_ICON_SIZE = 64;
 export function PartnerApplyScreen() {
   const router = useRouter();
   const { t } = useI18n();
-  const { data: statusData, isLoading: isLoadingStatus, refetch: refetchStatus } = usePartnerApplicationStatus();
+  const { data: statusData, isLoading: isLoadingStatus, isError: isStatusError, refetch: refetchStatus } = usePartnerApplicationStatus();
   const applyMutation = useApplyPartner();
 
   // ========== 表單狀態 ==========
@@ -332,8 +333,18 @@ export function PartnerApplyScreen() {
     </ScrollView>
   );
 
+  const renderError = () => (
+    <View style={styles.centerContainer}>
+      <ErrorState
+        message={t.common_loadFailed}
+        onRetry={() => refetchStatus()}
+      />
+    </View>
+  );
+
   const renderContent = () => {
     if (isLoadingStatus) return renderLoading();
+    if (isStatusError) return renderError();
 
     switch (applicationStatus) {
       case 'pending':
