@@ -24,6 +24,7 @@ import {
   Alert,
   ActivityIndicator,
   StyleSheet,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -156,7 +157,18 @@ export function MiniProfileScreen() {
         <View style={localStyles.backButton} />
       </View>
 
-      <ScrollView style={localStyles.scrollView} contentContainerStyle={localStyles.scrollContent}>
+      <ScrollView
+        style={localStyles.scrollView}
+        contentContainerStyle={localStyles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={profileQuery.isFetching && !profileQuery.isLoading}
+            onRefresh={() => profileQuery.refetch()}
+            tintColor={MibuBrand.brown}
+            colors={[MibuBrand.brown]}
+          />
+        }
+      >
         {/* 名字區塊 */}
         <View style={localStyles.nameCard}>
           <Text style={localStyles.stageEmoji}>{STAGE_ICON[profile.growthStage]}</Text>

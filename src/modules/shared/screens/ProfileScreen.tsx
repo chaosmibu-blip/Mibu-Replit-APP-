@@ -17,7 +17,7 @@
  * @see 後端合約: contracts/APP.md Phase 2
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Animated } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Animated, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -104,6 +104,7 @@ export function ProfileScreen() {
 
   const [loading, setLoading] = useState(true); // 頁面載入中
   const [saving, setSaving] = useState(false); // 儲存中
+  const [refreshing, setRefreshing] = useState(false); // 下拉重整中
   const [profile, setProfile] = useState<UserProfile | null>(null); // 完整的 profile 資料
 
   // 基本資訊欄位
@@ -249,6 +250,12 @@ export function ProfileScreen() {
     }
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadProfile();
+    setRefreshing(false);
+  }, []);
+
   // ============ 事件處理 ============
 
   /**
@@ -366,7 +373,19 @@ export function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={MibuBrand.brown}
+            colors={[MibuBrand.brown]}
+          />
+        }
+      >
         {/* ===== 頭像區塊 ===== */}
         <View style={styles.avatarSection}>
           <TouchableOpacity
