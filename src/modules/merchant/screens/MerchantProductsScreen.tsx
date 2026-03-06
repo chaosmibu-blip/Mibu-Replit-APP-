@@ -39,6 +39,7 @@ import { MerchantProduct } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============ 主元件 ============
 export function MerchantProductsScreen() {
@@ -47,10 +48,8 @@ export function MerchantProductsScreen() {
   const router = useRouter();
 
   // ============ React Query：產品列表 ============
-  const {
-    data: productsData,
-    isLoading,
-  } = useMerchantProducts();
+  const productsQuery = useMerchantProducts();
+  const { data: productsData, isLoading } = productsQuery;
 
   // 從 API 回傳取出產品列表，預設空陣列
   const products: MerchantProduct[] = productsData?.products ?? [];
@@ -176,6 +175,18 @@ export function MerchantProductsScreen() {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{t.loading}</Text>
+      </View>
+    );
+  }
+
+  // ============ 錯誤狀態 ============
+  if (productsQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => productsQuery.refetch()}
+        />
       </View>
     );
   }

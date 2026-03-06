@@ -203,6 +203,19 @@ export function MerchantPlacesScreen() {
           <Text style={styles.title}>{translations.title}</Text>
         </View>
 
+        {/* ============ 錯誤橫幅（有資料但刷新失敗） ============ */}
+        {loadError && places.length > 0 && (
+          <TouchableOpacity
+            style={styles.errorBanner}
+            onPress={() => refetchPlaces()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="alert-circle-outline" size={18} color={SemanticColors.errorDark} />
+            <Text style={styles.errorBannerText}>{t.common_loadFailed}</Text>
+            <Ionicons name="refresh" size={16} color={SemanticColors.errorDark} />
+          </TouchableOpacity>
+        )}
+
         {/* ============ 列表模式 ============ */}
         {!showSearch ? (
           <>
@@ -586,5 +599,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: MibuBrand.warmWhite,
+  },
+  // 錯誤橫幅（有資料但刷新失敗時顯示）
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: SemanticColors.errorLight,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: SemanticColors.errorMain,
+  },
+  // 錯誤橫幅文字
+  errorBannerText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: SemanticColors.errorDark,
   },
 });

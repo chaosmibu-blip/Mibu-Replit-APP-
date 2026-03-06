@@ -34,6 +34,7 @@ import {
   usePurchaseCredits,
 } from '../../../hooks/useMerchantQueries';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { MibuBrand } from '../../../../constants/Colors';
 import { LOCALE_MAP } from '../../../utils/i18n';
 
@@ -128,6 +129,21 @@ export function MerchantDashboardScreen() {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{translations.loading}</Text>
+      </View>
+    );
+  }
+
+  // ============ 錯誤狀態 ============
+  if (dailyCodeQuery.isError || creditsQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => {
+            dailyCodeQuery.refetch();
+            creditsQuery.refetch();
+          }}
+        />
       </View>
     );
   }

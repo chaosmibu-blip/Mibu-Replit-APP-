@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -29,6 +30,7 @@ import { authApi } from '../../../services/authApi';
 import { useMerchantMe } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { LOCALE_MAP } from '../../../utils/i18n';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============ 主元件 ============
 export function MerchantProfileScreen() {
@@ -138,6 +140,18 @@ export function MerchantProfileScreen() {
         <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{translations.loading}</Text>
       </View>
+    );
+  }
+
+  // ============ 錯誤狀態畫面 ============
+  if (merchantQuery.isError) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => merchantQuery.refetch()}
+        />
+      </SafeAreaView>
     );
   }
 

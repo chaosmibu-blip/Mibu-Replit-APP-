@@ -44,6 +44,7 @@ import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============ 主元件 ============
 export function MerchantCouponsScreen() {
@@ -276,6 +277,18 @@ export function MerchantCouponsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
+      </View>
+    );
+  }
+
+  // ============ 錯誤狀態 ============
+  if (couponsQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => couponsQuery.refetch()}
+        />
       </View>
     );
   }
@@ -761,7 +774,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '90%',
+    height: '90%',
   },
   // 彈窗頂部
   modalHeader: {

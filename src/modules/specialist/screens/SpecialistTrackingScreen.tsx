@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -27,7 +28,8 @@ import { io, Socket } from 'socket.io-client';
 import { useAuth, useI18n } from '../../../context/AppContext';
 import { API_BASE_URL } from '../../../constants/translations';
 import { LOCALE_MAP } from '../../../utils/i18n';
-import { UIColors } from '../../../../constants/Colors';
+import { UIColors, MibuBrand } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============ 型別定義 ============
 
@@ -57,6 +59,8 @@ export function SpecialistTrackingScreen() {
   const [locations, setLocations] = useState<Map<string, TravelerLocation>>(new Map());
   // connected: WebSocket 是否已連線
   const [connected, setConnected] = useState(false);
+  // connectionError: WebSocket 連線是否發生錯誤
+  const [connectionError, setConnectionError] = useState(false);
   // loading: 是否正在載入/連線中
   const [loading, setLoading] = useState(true);
 
@@ -93,6 +97,7 @@ export function SpecialistTrackingScreen() {
       // 連線成功事件
       socketRef.current.on('connect', () => {
         setConnected(true);
+        setConnectionError(false);
         setLoading(false);
         // 訂閱旅客位置更新
         socketRef.current?.emit('specialist_subscribe', {});
@@ -124,10 +129,12 @@ export function SpecialistTrackingScreen() {
       // 連線錯誤事件
       socketRef.current.on('connect_error', (error) => {
         console.error('Socket connection error:', error);
+        setConnectionError(true);
         setLoading(false);
       });
     } catch (error) {
       console.error('Failed to initialize socket:', error);
+      setConnectionError(true);
       setLoading(false);
     }
   };
@@ -151,6 +158,16 @@ export function SpecialistTrackingScreen() {
   // 將 Map 轉為陣列以便渲染
   const locationArray = Array.from(locations.values());
 
+  // ============ 重新連線 ============
+  const handleReconnect = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
+    setLoading(true);
+    setConnectionError(false);
+    initSocket();
+  };
+
   // ============ Loading 畫面 ============
   if (loading) {
     return (
@@ -158,6 +175,19 @@ export function SpecialistTrackingScreen() {
         <ActivityIndicator size="large" color="#6366f1" />
         <Text style={styles.loadingText}>{t.specialist_connecting}</Text>
       </View>
+    );
+  }
+
+  // ============ 連線錯誤畫面 ============
+  if (connectionError && !connected) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}>
+        <ErrorState
+          icon="cloud-offline-outline"
+          message={t.common_loadFailed}
+          onRetry={handleReconnect}
+        />
+      </SafeAreaView>
     );
   }
 

@@ -31,6 +31,7 @@ import {
   useMerchantPlaces,
 } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 import {
   AnalyticsPeriod,
 } from '../../../types';
@@ -114,6 +115,18 @@ export function MerchantAnalyticsScreen() {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{t.loading}</Text>
+      </View>
+    );
+  }
+
+  // ============ 錯誤狀態 ============
+  if (analyticsQuery.isError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => analyticsQuery.refetch()}
+        />
       </View>
     );
   }

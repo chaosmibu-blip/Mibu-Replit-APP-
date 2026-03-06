@@ -18,6 +18,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -26,6 +27,7 @@ import { useMerchantTransactions } from '../../../hooks/useMerchantQueries';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { MerchantTransaction } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============ 主元件 ============
 export function MerchantTransactionsScreen() {
@@ -37,6 +39,7 @@ export function MerchantTransactionsScreen() {
   const {
     data: transactionsData,
     isLoading,
+    isError,
     isRefetching,
     refetch,
   } = useMerchantTransactions();
@@ -97,6 +100,18 @@ export function MerchantTransactionsScreen() {
         <ActivityIndicator size="large" color={MibuBrand.brown} />
         <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
+    );
+  }
+
+  // ============ 錯誤狀態畫面 ============
+  if (isError) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: MibuBrand.warmWhite }}>
+        <ErrorState
+          message={t.common_loadFailed}
+          onRetry={() => refetch()}
+        />
+      </SafeAreaView>
     );
   }
 
