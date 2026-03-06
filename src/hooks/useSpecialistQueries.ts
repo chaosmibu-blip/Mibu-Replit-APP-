@@ -29,6 +29,14 @@ export function useSpecialistServices() {
   );
 }
 
+/** 專家服務中的旅客列表 */
+export function useSpecialistTravelers() {
+  return useAuthQuery(
+    ['specialist', 'travelers'],
+    (token) => specialistApi.getSpecialistTravelers(token),
+  );
+}
+
 // ============ Mutation Hooks ============
 
 /** 切換上線狀態 */
