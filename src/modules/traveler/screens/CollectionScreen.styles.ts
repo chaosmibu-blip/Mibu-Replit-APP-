@@ -449,6 +449,16 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.tierSP,
   },
 
+  /** #028 優惠更新徽章 */
+  promoUpdateBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: MibuBrand.success,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+
   /** 分類標籤容器 */
   categoryBadge: {
     paddingHorizontal: 6,

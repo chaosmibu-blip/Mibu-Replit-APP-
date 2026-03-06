@@ -17,19 +17,19 @@
   - 搬移 TypewriterText.tsx 從 screens/ 到 components/（位置不當）
   - 清理 merchant/index.ts 移除死碼 export
 
-### Phase 1：認證流程
-- [ ] 登入流程（Apple OAuth → Token → Context）
-- [ ] 登出流程（清理 Token + State + AsyncStorage → 重導登入）
-- [ ] Token 過期處理（401 攔截 → 重新登入）
-- [ ] 角色切換（user/merchant/specialist/admin）
-- [ ] 帳號合併流程
+### Phase 1：認證流程 ✅（95/100）
+- [x] 登入流程（Google/Apple/訪客 → Token → Context）— 完整
+- [x] 登出流程（所有路徑 await setUser(null)，符合 #009 教訓）— 無競態條件
+- [x] Token 過期處理（401 攔截 + 防重入旗標）— 堅牢
+- [x] 角色切換（activeRole 追蹤 + 路由導向正確）— 完整
+- [x] 帳號合併流程 → 已改為 #049 訪客自動升級 — 完整
 
-### Phase 2：旅人核心流程
-- [ ] 首頁（等級卡 + 每日任務 + 活動公告）資料流
-- [ ] 扭蛋流程（選國家 → 選城市 → 扭蛋 → 結果展示 → 收藏）
-- [ ] 圖鑑/收藏庫（分類瀏覽 + 搜尋 + PlaceDetailModal + 塗鴉牆 + 筆記）
-- [ ] 物品箱（容量管理 + 使用/刪除道具）
-- [ ] 行程規劃（建立 → 編輯 → AI 對話 → 定位）
+### Phase 2：旅人核心流程 ✅
+- [x] 首頁 — 修復：API 失敗時顯示 error banner + 點擊重試
+- [x] 扭蛋 — 修復：扭蛋後重新檢查背包容量（checkInventoryCapacity）
+- [x] 圖鑑 — 修復：#028 優惠更新徽章（promoUpdateBadge）顯示於卡片
+- [x] 物品箱 — ✅ 核銷/景點包 UI 已在 ItemBoxScreen 完整實作（偵察誤報）
+- [x] 行程規劃 — ✅ 100% 完整，無問題
 
 ### Phase 3：旅人支線流程
 - [ ] 經濟系統（等級/經驗/成就/每日任務）

@@ -238,7 +238,7 @@ export function GachaScreen() {
    * 檢查道具箱容量
    * 優先使用 capacity API，失敗則 fallback 到 getInventory
    */
-  const checkInventoryCapacity = async () => {
+  const checkInventoryCapacity = useCallback(async () => {
     try {
       const token = await getToken();
       if (!token) return;
@@ -258,7 +258,7 @@ export function GachaScreen() {
     } catch (error) {
       console.error('Failed to check inventory capacity:', error);
     }
-  };
+  }, [getToken]);
 
   /**
    * 當選擇國家時，自動載入該國家的城市列表
@@ -679,10 +679,13 @@ export function GachaScreen() {
 
       setShowLoadingAd(false);
 
+      // 扭蛋後重新檢查背包容量（避免顯示「可扭」但實際已滿）
+      checkInventoryCapacity();
+
       // 跳轉到結果頁
       router.push('/(tabs)/gacha/items');
     }
-  }, [addToCollection, setResult, router]);
+  }, [addToCollection, setResult, router, checkInventoryCapacity]);
 
   /** AI 資料分享同意後，繼續執行暫停的扭蛋動作 */
   const handleAiDisclosureAccept = useCallback(() => {

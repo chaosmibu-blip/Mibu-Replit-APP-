@@ -454,6 +454,9 @@ export function HomeScreen() {
     );
   }
 
+  // 是否有任何 API 錯誤（非 loading 時才顯示）
+  const hasApiError = eventsQuery.isError || coinsQuery.isError || dailyTasksQuery.isError;
+
   // ============================================================
   // 主畫面渲染
   // ============================================================
@@ -473,6 +476,30 @@ export function HomeScreen() {
       showsVerticalScrollIndicator={false}
       directionalLockEnabled
     >
+      {/* ========== API 錯誤提示 ========== */}
+      {hasApiError && (
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: MibuBrand.error + '15',
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 8,
+            marginBottom: 8,
+            gap: 8,
+          }}
+          onPress={onRefresh}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="cloud-offline-outline" size={18} color={MibuBrand.error} />
+          <Text style={{ color: MibuBrand.error, fontSize: 13, flex: 1 }}>
+            {t.common_errorTryAgain}
+          </Text>
+          <Ionicons name="refresh" size={16} color={MibuBrand.error} />
+        </TouchableOpacity>
+      )}
+
       {/* ========== 頂部問候區 ========== */}
       <View style={styles.header}>
         <View style={styles.greeting}>

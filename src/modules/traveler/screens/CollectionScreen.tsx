@@ -961,6 +961,7 @@ export function CollectionScreen() {
     const category = (typeof item.category === 'string' ? item.category : '').toLowerCase() || 'other';
     const catToken = getCategoryToken(category);
     const isUnread = item.isRead === false;
+    const hasPromoUpdate = item.collectionId ? promoUpdateIds.has(item.collectionId) : false;
     const isMerchantPro = item.merchant?.isPro && item.merchant?.brandColor;
     const merchantScheme = isMerchantPro ? deriveMerchantScheme(item.merchant!.brandColor!) : null;
     const accentColor = merchantScheme ? merchantScheme.accent : catToken.stripe;
@@ -976,10 +977,15 @@ export function CollectionScreen() {
           {/* 分類色條 */}
           <View style={[styles.gridCardStripe, { backgroundColor: accentColor }]} />
           <View style={styles.gridCardBody}>
-            {/* 未讀紅點 + 分類標籤 */}
+            {/* 未讀紅點 + 優惠徽章 + 分類標籤 */}
             <View style={styles.gridCardTopRow}>
               {isUnread && (
                 <View style={styles.unreadDot} />
+              )}
+              {hasPromoUpdate && (
+                <View style={styles.promoUpdateBadge}>
+                  <Ionicons name="pricetag" size={10} color="#fff" />
+                </View>
               )}
               <View style={[styles.categoryBadge, { backgroundColor: catToken.badge }]}>
                 <Text style={[styles.categoryBadgeText, { color: catToken.badgeText }]}>
@@ -1016,6 +1022,11 @@ export function CollectionScreen() {
       >
         <View style={styles.listCardTopRow}>
           <Text style={styles.listCardDate}>{date}</Text>
+          {hasPromoUpdate && (
+            <View style={styles.promoUpdateBadge}>
+              <Ionicons name="pricetag" size={10} color="#fff" />
+            </View>
+          )}
           <View style={[styles.listCardBadge, { backgroundColor: catToken.badge }]}>
             <Text style={[styles.listCardBadgeText, { color: catToken.badgeText }]}>
               {getCategoryLabel(category, language)}
