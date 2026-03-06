@@ -175,8 +175,6 @@ class ApiService {
   pullGacha = gachaApi.pullGacha.bind(gachaApi);
   /** 取得獎池優惠券 */
   getPrizePool = gachaApi.getPrizePool.bind(gachaApi);
-  /** 排除景點 */
-  excludePlace = gachaApi.excludePlace.bind(gachaApi);
   /** 取得景點優惠 */
   getPlacePromo = gachaApi.getPlacePromo.bind(gachaApi);
 

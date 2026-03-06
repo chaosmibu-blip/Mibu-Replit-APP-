@@ -11,7 +11,6 @@
  * - GET  /api/gacha/pool         - 取得扭蛋獎池
  * - POST /api/gacha/pull/v3      - 抽取扭蛋 (#009)
  * - GET  /api/gacha/prize-pool   - 取得獎池優惠券
- * - POST /api/feedback/exclude   - 排除景點
  * - GET  /api/place/promo        - 取得景點優惠
  * - GET  /api/gacha/quota        - 取得今日額度 (#009)
  * - POST /api/gacha/submit-trip  - 提交行程至官網 (#010)
@@ -177,30 +176,6 @@ class GachaApiService extends ApiBase {
       console.error('[GachaApi] getPrizePool error:', error);
       return { success: false, coupons: [], region: { id: 0, name: '' } };
     }
-  }
-
-  /**
-   * 排除景點
-   *
-   * 用戶不喜歡某個景點時，可將其加入排除清單
-   * 未來抽獎不會再抽到該景點
-   *
-   * @param params - 景點資訊
-   * @param params.placeName - 景點名稱
-   * @param params.district - 區域
-   * @param params.city - 城市
-   * @param params.placeCacheId - 快取 ID（可選）
-   */
-  async excludePlace(params: {
-    placeName: string;
-    district: string;
-    city: string;
-    placeCacheId?: string | null;
-  }): Promise<void> {
-    await this.request('/api/feedback/exclude', {
-      method: 'POST',
-      body: JSON.stringify(params),
-    });
   }
 
   /**
