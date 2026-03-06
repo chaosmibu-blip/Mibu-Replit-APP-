@@ -8,10 +8,14 @@
 
 ## 測試範圍
 
-### Phase 0：基礎建設檢查
-- [ ] TypeScript 編譯錯誤盤點
-- [ ] 共用套件版本確認
-- [ ] 路由完整性檢查（app/ 下的路由 vs Screen 元件對應）
+### Phase 0：基礎建設檢查 ✅
+- [x] TypeScript 編譯錯誤盤點 — 零錯誤
+- [x] 共用套件版本確認 — @chaosmibu-blip/mibu-shared@1.0.10（最新）
+- [x] 路由完整性檢查 — 修復 4 個問題：
+  - 刪除孤兒路由 app/map.tsx（指向 CrowdfundingScreen，無人引用）
+  - 刪除死碼 PlaceListScreen.tsx / CouponListScreen.tsx（無引用的重複 Screen）
+  - 搬移 TypewriterText.tsx 從 screens/ 到 components/（位置不當）
+  - 清理 merchant/index.ts 移除死碼 export
 
 ### Phase 1：認證流程
 - [ ] 登入流程（Apple OAuth → Token → Context）

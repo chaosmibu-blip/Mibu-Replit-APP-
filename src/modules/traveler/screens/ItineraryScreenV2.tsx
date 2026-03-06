@@ -80,7 +80,7 @@ import {
 } from '../../../types/itinerary';
 // 拆分模組
 import styles, { DRAWER_WIDTH } from './ItineraryScreenV2.styles';
-import TypewriterText from './TypewriterText';
+import TypewriterText from '../components/TypewriterText';
 import {
   openInGoogleMaps,
   getPlaceCoords,
