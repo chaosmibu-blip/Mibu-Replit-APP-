@@ -1,313 +1,365 @@
-# 前端程式碼品質健檢報告
+# 前端程式碼品質健檢 — 執行計劃
 
 > 建立日期：2026-03-09
-> 掃描範圍：16 個畫面 + 10 個服務/hooks 檔案（約 70,000 行）
-> 掃描面向：8 大品質維度
+> 狀態：確認待執行
+> 方法論：按項目逐項掃全專案，修完一項再換下一項
 
 ---
 
-## 掃描範圍總覽
+## 執行原則
 
-| Phase | 掃描對象 | 檔案數 |
-|-------|---------|--------|
-| Phase 1 | ItineraryScreenV2, GachaScreen, CollectionScreen, HomeScreen, Login | 5 + styles |
-| Phase 2 | ItemBoxScreen, EconomyScreen, ContributionScreen, ProfileScreen, SettingsScreen | 5 + styles |
-| Phase 3 | AdminDashboard, AdminAnnouncements, MerchantCoupons, MerchantAnalytics, MerchantPlaces, SpecialistDashboard | 6 |
-| Phase 4 | api.ts, base.ts, commonApi.ts, gachaApi.ts, collectionApi.ts, itineraryApi.ts, useHomeQueries, useCollectionQueries, useInventoryQueries, QueryProvider | 10 |
+- **一次只處理一個項目**，掃過全專案所有相關檔案，全部修完再換下一個
+- 每個項目用 `grep` / `glob` 批量搜出所有問題點，列出清單後逐一修復
+- 每個項目修完後跑 `npx tsc --noEmit` 確認零錯誤
+- 每個項目獨立 commit
 
 ---
 
-## 一、架構級問題（影響全專案）
+## 掃描範圍
 
-### A1. Service 層吞掉錯誤，React Query error 狀態完全失效 ⚠️ 最高優先
-
-**嚴重度：高 | 影響：全專案所有 API 呼叫**
-
-幾乎所有 service 方法都 catch 錯誤後回傳 `{ success: false, ... }`，導致：
-- React Query 的 `isError` 永遠 false（Promise 永遠 resolve）
-- hooks 的 `error`、`retry` 全部失效
-- 用戶無法區分「真的沒資料」和「API 掛了」
-- `base.ts` 設計的 `ApiError`（含 status、serverMessage）全被吃掉
-
-**影響檔案**：`itineraryApi.ts`（10+ 處）、`collectionApi.ts`（3 處）、`gachaApi.ts`（1 處）、`commonApi.ts`（1+ 處）
-
-**修復方向**：移除 service 層的 try/catch，讓錯誤冒泡到 React Query 統一處理。
+185 個 .ts/.tsx 檔案（app/ 57 個 + src/ 128 個），共 70,336 行
 
 ---
 
-### A2. 核心畫面未使用 React Query，與專案模式不一致
+## 項目 1：Service 層吞錯誤
 
-**嚴重度：高 | 影響：3 個最重要畫面**
+**問題**：Service 方法 try/catch 後回傳 `{ success: false, ... }` 而非讓錯誤冒泡，導致 React Query 的 isError/retry 全部失效
 
-| 畫面 | 行數 | 問題 |
-|------|------|------|
-| ItineraryScreenV2 | 1843 | 全部用 useState + useEffect + useRef 手動快取 |
-| GachaScreen | 1233 | 全部用 useState + useEffect，無快取、無重試、無去重 |
-| ProfileScreen | 736 | 用 useEffect + 手動 fetch |
-
-其他畫面（Collection、Economy、Contribution 等）已正確使用 React Query。
-
----
-
-### A3. Design Token 使用率極低
-
-**嚴重度：高 | 影響：全專案 80% 的樣式檔**
-
-| 畫面 | Design Token 使用狀況 |
-|------|---------------------|
-| ItineraryScreenV2.styles.ts (1135行) | 部分使用 MibuBrand 色彩，但 Spacing/Radius/FontSize 未使用 |
-| GachaScreen.styles.ts (530行) | 只用 MibuBrand，Spacing/Radius/FontSize 完全未用 |
-| CollectionScreen.styles.ts (911行) | 同上 |
-| ItemBoxScreen (1208行) | 大量 inline style，完全未用 Token |
-| MerchantCoupons (891行) | StyleSheet 完全未用 Token |
-| MerchantAnalytics (709行) | StyleSheet 完全未用 Token |
-| MerchantPlaces (624行) | StyleSheet 完全未用 Token |
-| SpecialistDashboard (493行) | StyleSheet 完全未用 Token |
-
-**修復方向**：分批替換，從最大的 styles 檔開始。
-
----
-
-### A4. `paddingTop: 60` safe area 硬編碼遍布全專案
-
-**嚴重度：高 | 影響：10+ 個畫面**
-
-出現在：ItineraryScreenV2、GachaScreen、ItemBoxScreen、ContributionScreen、AdminDashboard、AdminAnnouncements、MerchantCoupons、MerchantAnalytics、MerchantPlaces、SpecialistDashboard
-
-**修復方向**：統一使用 `useSafeAreaInsets()` 或定義 `SAFE_AREA_TOP` 常數。
-
----
-
-## 二、按畫面分組的詳細發現
-
----
-
-### ItineraryScreenV2.tsx（1843 行）— 全專案最大檔案
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 全檔 | 高 | 元件拆分 | 1843 行，含 renderLeftDrawer(158行)、renderRightDrawer(205行)、renderMainContent(205行) | 拆為 LeftDrawer、RightDrawer、ChatMainContent 子元件 |
-| 2 | 111-138 | 高 | 資料請求 | 手動 useState + useRef 快取管理伺服器狀態，未用 React Query | 遷移至 React Query |
-| 3 | 445+852 | 中 | 資料請求 | activeItineraryId 變更觸發重複請求（handleSelectItinerary 呼叫 + useEffect 自動觸發） | 統一由一處管理 |
-| 4 | 907-916 | 高 | 硬編碼 | Alert.alert 用硬編碼中文（'需要權限'、'儲存成功'、'儲存失敗'） | 改用 i18n |
-| 5 | 829-831 | 高 | 錯誤處理 | 刪除行程失敗只有 console.error，無用戶提示 | 加 showToastMessage |
-| 6 | 233,312 | 中 | 錯誤處理 | 載入行程失敗卻顯示「建立失敗」的訊息（用錯 i18n key） | 用正確的 key |
-| 7 | 1264-1321 | 高 | 重複邏輯 | AI 訊息頭像+名稱區塊完全重複（正常訊息 vs loading） | 抽為 AiMessageRow 元件 |
-| 8 | 681-713 | 中 | 重複邏輯 | handleSaveTitle 回滾邏輯重複兩段 | 抽為 rollbackTitle 函數 |
-| 9 | 1347 | 中 | Loading | sendAiMessage 按鈕在 async getToken 期間仍可點擊 | 開頭立即 setAiLoading(true) |
-| 10 | 755-788 | 中 | Loading | 批量刪除行程期間無 loading 指示 | 加 loading overlay |
-
----
-
-### GachaScreen.tsx（1233 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 118-171 | 高 | 資料請求 | 全部用 useState + useEffect，未用 React Query | 遷移至 React Query |
-| 2 | 478-660 | 高 | 元件拆分 | handleGacha 函數 182 行 | 拆分為多個小函數 |
-| 3 | 1001-1016 | 高 | Loading | 扭蛋按鈕無防連點，可觸發重複 API | 加 useRef 鎖或 disabled |
-| 4 | 1068,1081 | 高 | 硬編碼 | `color="#6366f1"` 不屬於品牌色系（Indigo） | 改用 MibuBrand |
-| 5 | styles L350-416 | 高 | 硬編碼 | 大量硬編碼紫色系（#ddd6fe, #8b5cf6, #a855f7） | 定義為 Design Token |
-| 6 | 258-260 | 中 | 錯誤處理 | 道具箱容量檢查失敗只 console.error | 加用戶提示 |
-| 7 | 462-464 | 中 | 錯誤處理 | 獎池載入失敗顯示「無優惠券」而非錯誤提示 | 區分空狀態和錯誤 |
-| 8 | 493+644 | 中 | 重複邏輯 | 登入提示 Alert 重複兩處 | 抽為函數 |
-| 9 | styles 全檔 | 中 | 硬編碼 | Spacing/Radius/FontSize 完全未用 Design Token | 全面替換 |
-| 10 | 305 | 中 | 魔術數字 | setTimeout 10000ms 無常數名 | 定義 REGION_LOAD_TIMEOUT |
-
----
-
-### CollectionScreen.tsx（1377 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 全檔 | 高 | 元件拆分 | 1377 行，PlaceDetailModal 約 400 行 | 拆為獨立元件 |
-| 2 | 15+ 處 | 高 | 硬編碼 | 大量用 `language === 'zh-TW'` inline 判斷而非 t.xxx | 統一用 i18n |
-| 3 | 3 處 | 高 | 資料請求 | 檢查 response.success（違反教訓 #002） | HTTP 200 即成功 |
-| 4 | - | 高 | 硬編碼 | 預設國家 '台灣' 硬編碼 | 用 i18n 或常數 |
-| 5 | styles 全檔 | 中 | 硬編碼 | Spacing/Radius/FontSize 未用 Token | 全面替換 |
-
----
-
-### HomeScreen.tsx（1036 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 414-429 | 高 | 命名 | getLocalizedTitle/Desc 漏掉日韓語系 | 補上 ja/ko 判斷 |
-| 2 | 562 | 中 | 硬編碼 | `color="#F97316"` 火焰 icon 橘色 | 定義 Token |
-| 3 | 260-264 | 中 | 魔術數字 | 稱號等級門檻 5000/2000/500/100 硬編碼 | 定義常數 |
-| 4 | 277 | 中 | 魔術數字 | dailyPullLimit fallback 36、inventorySlots fallback 30 | 定義常數 |
-| 5 | 485 | 低 | 硬編碼 | `MibuBrand.error + '15'` 透明度字串拼接 | 建 withOpacity 工具函數 |
-
----
-
-### login.tsx（1108 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 172-585 | 高 | 重複邏輯 | 三個 fetchUser 函數 80% 邏輯重複 | 合併為 processAuthToken |
-| 2 | 全檔 | 高 | 資料請求 | 全部直接 fetch() 而非用 authApi | 統一使用 authApi |
-| 3 | 237-584 | 高 | 錯誤處理 | 多處 API 失敗只 console.error | 加 Alert 提示 |
-| 4 | 827 | 高 | 硬編碼 | 副標題「今天去哪玩?老天說了算」硬編碼繁中 | 改用 i18n |
-| 5 | 345-757 | 高 | 重複邏輯 | setUser({...}) 物件組裝重複 5 次 | 抽為 buildUserObject |
-| 6 | 375 | 中 | 錯誤處理 | `error.message === '使用者取消登入'` 用中文比對 | 改用 error code |
-| 7 | 640-641 | 高 | 硬編碼 | Version 1.0.0 寫死 | 用 Constants.expoConfig?.version |
-| 8 | 612 | 中 | 硬編碼 | `'@mibu_web_device_id'` 未統一到 STORAGE_KEYS | 搬到 storageKeys.ts |
-
----
-
-### ItemBoxScreen.tsx（1208 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 747-1192 | 高 | 元件拆分 | 4 個 Modal 共 460 行 JSX 全部內聯 | 拆為獨立 Modal 元件 |
-| 2 | 553-554 | 高 | 錯誤處理 | 開啟景點包失敗直接隱藏 item，無用戶提示 | 加 Alert |
-| 3 | 160-353 | 高 | 硬編碼 | InventorySlot 全部 inline style，每次 render 重建 | 移至 StyleSheet |
-| 4 | 690-697 | 中 | 硬編碼 | getTierLabel 回傳英文硬編碼 | 改用 i18n |
-| 5 | 623 | 中 | 魔術數字 | setCountdown(180) 無常數名 | 定義 REDEEM_COUNTDOWN_SECONDS |
-
----
-
-### EconomyScreen.tsx（858 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 165-169 | 中 | 硬編碼 | handleClaim 成功訊息用硬編碼中文 | 改用 i18n |
-| 2 | 140-143 | 中 | 魔術數字 | fallback 36/30/999 無常數名 | 定義常數 |
-| 3 | 268,651,741 | 中 | 硬編碼 | '#fff'、'#ffffff' 未用 UIColors.white | 替換 |
-
----
-
-### ContributionScreen.tsx（974 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 150-188 | 高 | 重複邏輯 | handleVotePlace 與 handleVoteSuggestion 幾乎完全一樣 | 抽為通用 handleVote |
-| 2 | 197 | 高 | 硬編碼 | getStatusStyle 回傳硬編碼色值 | 改用 SemanticColors |
-| 3 | 430-543 | 高 | 重複邏輯 | 投票按鈕組 JSX 結構完全相同 | 抽為 VoteButtonPair |
-| 4 | 150-168 | 中 | 防呆 | useState 做防重複鎖（教訓 #006） | 改用 useRef |
-
----
-
-### ProfileScreen.tsx（736 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 161 | 高 | Timer | setTimeout 未清理（教訓 #004） | 用 useRef + cleanup |
-| 2 | 175-180 | 中 | 資料請求 | 手動 fetch 而非 React Query | 遷移 |
-| 3 | 293-303 | 高 | 重複邏輯 | 表單欄位設定邏輯重複（loadProfile vs handleSave） | 抽為函數 |
-
----
-
-### SettingsScreen.tsx（902 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 640-641 | 高 | 硬編碼 | 'Mibu 旅行扭蛋'、'Version 1.0.0'、'© 2025' 全硬編碼 | 動態取版本、i18n 翻譯 |
-| 2 | 397-468 | 中 | 重複邏輯 | 「關於」群組在已登入/未登入各寫一份相同配置 | 抽為共用 aboutItems |
-| 3 | 533-547 | 中 | 錯誤處理 | 任一 query 錯誤就整頁 ErrorState，過於激進 | 局部降級 |
-
----
-
-### AdminDashboardScreen.tsx（1418 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 全檔 | 高 | 元件拆分 | 1418 行含 7 個分頁 | 每個分頁拆為獨立子元件 |
-| 2 | 332,397 | 高 | 錯誤處理 | Alert 用英文硬編碼 'Error'、'Failed to save' | 改用 i18n |
-| 3 | 多處 | 中 | 硬編碼 | '#ffffff'、'#FFFEFA'、'#fce7f3' 等非 Token 色彩 | 統一 Token |
-
----
-
-### Merchant 畫面群（Coupons 891行 / Analytics 709行 / Places 624行）
-
-| # | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|--------|------|------|---------|
-| 1 | 高 | 硬編碼 | 三個檔案的 StyleSheet 完全未用 Design Token | 全面替換 |
-| 2 | 中 | 錯誤處理 | MerchantPlaces 自行處理 401（應由全域 interceptor） | 移除本地處理 |
-| 3 | 中 | 元件拆分 | MerchantAnalytics 的 StatCard 定義在 render 內 | 提取為獨立元件 |
-
----
-
-### SpecialistDashboardScreen.tsx（493 行）
-
-| # | 行號 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | 81 | 高 | 型別 | `mutate(undefined as any)` 繞過型別檢查 | 修正 hook 型別 |
-| 2 | 多處 | 高 | 硬編碼 | '#ef4444'、'#94a3b8'、'#22c55e' 等非 Token 色彩 | 統一 Token |
-| 3 | 180-237 | 中 | 重複邏輯 | 四個 menuItem 結構完全一致 | 用陣列 + .map() |
-
----
-
-### 服務層與 Hooks
-
-| # | 檔案 | 嚴重度 | 面向 | 問題 | 建議修復 |
-|---|------|--------|------|------|---------|
-| 1 | itineraryApi 等多檔 | 高 | 錯誤處理 | Service 吞錯誤回傳假成功（見 A1） | 移除 try/catch |
-| 2 | gachaApi + collectionApi | 中 | 重複 | getPlacePromo 在兩處實作打不同端點 | 確認契約，移除重複 |
-| 3 | itineraryApi L409 | 中 | 重複 | aiChat 自建重試與 base.ts 重試疊加（最多 6 次） | 移除自建重試 |
-| 4 | useInventoryQueries | 中 | 命名 | Query Key 用原始字串，未統一用 queryKeys 常數 | 補齊 queryKeys |
-| 5 | useCollectionQueries | 中 | 資料請求 | deleteCollection 未 invalidate collectionStats/Unread | 補齊 invalidation |
-| 6 | gachaApi L151 | 中 | 安全 | pullGacha 未帶認證 Token | 確認契約，加 auth header |
-| 7 | translations/index.ts | 低 | 命名 | API_BASE_URL 放在翻譯檔裡 | 搬到 constants/config.ts |
-
----
-
-## 三、跨畫面共通問題
-
-| # | 問題 | 影響範圍 | 嚴重度 |
-|---|------|---------|--------|
-| 1 | `bottomSpacer: { height: 100 }` 重複定義 | Economy、Contribution、Profile、ItemBox 等 | 中 |
-| 2 | Header 返回按鈕 + 標題結構重複 | 8+ 個畫面 | 中 |
-| 3 | Tab 切換器 UI 重複 | Economy、Contribution 等 | 中 |
-| 4 | `formatDate` 函數各自定義 | Admin、Specialist、MerchantCoupons | 中 |
-| 5 | Modal 結構（overlay + content + header + body）重複 | 5+ 個畫面 | 中 |
-| 6 | `'#fff'` / `'#ffffff'` 散落各處 | 10+ 個檔案 | 中 |
-| 7 | base.ts + QueryProvider 雙重重試 | 全專案 | 低 |
-
----
-
-## 四、Top 10 優先處理清單
-
-| 優先序 | 問題 | 嚴重度 | 影響範圍 | 預估工作量 | 說明 |
-|--------|------|--------|---------|-----------|------|
-| **#1** | Service 層吞錯誤 | 高 | 全專案 | 中 | 架構級問題，修了之後 React Query 的 error/retry/loading 才能正常運作。影響所有 API 呼叫。先改這個，其他 error handling 問題自動改善 |
-| **#2** | login.tsx 重複邏輯合併 | 高 | 登入流程 | 中 | 三個 fetchUser 函數 80% 重複 + setUser 組裝重複 5 次 + 直接 fetch 而非用 authApi。登入是核心流程，一改忘改就出 bug |
-| **#3** | GachaScreen + ItineraryScreenV2 遷移 React Query | 高 | 2 核心畫面 | 大 | 兩個最大畫面仍用 useState+useEffect 管理伺服器狀態，與專案模式不一致且缺少快取/重試/去重 |
-| **#4** | paddingTop: 60 統一改用 useSafeAreaInsets | 高 | 10+ 畫面 | 小 | 批量搜尋替換即可，風險低效果大。不同裝置 safe area 高度不同，硬編碼 60 在某些機型會出問題 |
-| **#5** | 巨型元件拆分（Top 5 最大檔案） | 高 | 5 個畫面 | 大 | ItineraryV2(1843)、AdminDashboard(1418)、CollectionScreen(1377)、GachaScreen(1233)、ItemBoxScreen(1208) |
-| **#6** | 硬編碼中文/英文字串改用 i18n | 高 | 8+ 畫面 | 中 | login 副標題、Alert 訊息、tier label、status label 等。非中文用戶會看到亂碼 |
-| **#7** | SettingsScreen 版本號硬編碼 | 高 | 設定頁 | 小 | 'Version 1.0.0' 寫死 + '© 2025' 年份過期。5 分鐘可修，影響用戶感知 |
-| **#8** | Query Key 統一 + Mutation invalidation 補齊 | 中 | hooks 層 | 小 | inventory、home 用原始字串；deleteCollection 沒 invalidate stats。靜默 bug，不修會在特定操作後顯示過時資料 |
-| **#9** | Design Token 全面導入（Spacing/Radius/FontSize） | 高 | 80% styles | 大 | 目前大部分樣式檔只用了 MibuBrand 色彩，間距/圓角/字體全硬編碼。先從 Merchant 4 個檔案開始（完全沒用 Token） |
-| **#10** | 共用元件抽取（ScreenHeader、TabBar、bottomSpacer） | 中 | 8+ 畫面 | 中 | 多畫面重複相同的 UI 結構。抽一次，受益 8+ 處 |
-
----
-
-## 五、嚴重度統計
-
-| 嚴重度 | 發現數量 | 說明 |
-|--------|---------|------|
-| 高 | ~35 | 架構缺陷、核心流程缺錯誤處理、巨型元件、i18n 遺漏 |
-| 中 | ~55 | Design Token 未用、魔術數字、重複邏輯、命名不一致 |
-| 低 | ~20 | 微調項目、註解、minor style issues |
-
----
-
-## 六、建議執行順序
-
-```
-Phase 0（基礎建設）：#1 Service 層錯誤修復 + #8 Query Key 統一
-  ↓ 這兩個改完，React Query 才能正常發揮作用
-Phase 1（核心流程）：#2 Login 重構 + #7 版本號修復
-  ↓ 登入是第一印象，版本號是 5 分鐘的事
-Phase 2（一致性）：#4 Safe Area + #6 i18n 硬編碼
-  ↓ 批量搜尋替換，風險低
-Phase 3（架構改善）：#3 React Query 遷移 + #5 元件拆分
-  ↓ 最大工程量，但長期維護性提升最大
-Phase 4（打磨）：#9 Design Token + #10 共用元件
-  ↓ 錦上添花，但量大
+**掃描方式**：
+```bash
+grep -rn "catch.*error" src/services/ --include="*.ts" | grep -v "base.ts" | grep -v "node_modules"
 ```
 
+**要檢查的檔案**：
+- [ ] `src/services/itineraryApi.ts`（10+ 處）
+- [ ] `src/services/collectionApi.ts`（3 處）
+- [ ] `src/services/gachaApi.ts`（1 處）
+- [ ] `src/services/commonApi.ts`
+- [ ] `src/services/contributionApi.ts`
+- [ ] `src/services/economyApi.ts`
+- [ ] `src/services/inventoryApi.ts`
+- [ ] `src/services/merchantApi.ts`
+- [ ] `src/services/adminApi.ts`
+- [ ] `src/services/mailboxApi.ts`
+- [ ] `src/services/crowdfundingApi.ts`
+- [ ] `src/services/referralApi.ts`
+- [ ] `src/services/couponApi.ts`
+- [ ] `src/services/specialistApi.ts`
+- [ ] `src/services/miniApi.ts`
+- [ ] `src/services/feedbackApi.ts`
+- [ ] `src/services/eventApi.ts`
+- [ ] `src/services/authApi.ts`
+- [ ] `src/services/rulesApi.ts`
+- [ ] `src/services/configApi.ts`
+- [ ] `src/services/locationApi.ts`
+
+**修復規則**：
+- 移除 service 層的 try/catch，讓錯誤冒泡到 React Query
+- 只保留格式轉換邏輯（如果需要）
+- `base.ts` 的錯誤處理不動（那是統一的錯誤攔截層）
+
+**驗證**：修完後 hooks 層的 `isError`、`error`、`retry` 應能正常運作
+
 ---
 
-*報告結束。如需針對任一項目展開詳細修復計劃或直接開始修復，請告知。*
+## 項目 2：login.tsx 重複邏輯合併
+
+**問題**：三個 fetchUser 函數 80% 邏輯重複、setUser 組裝重複 5 次、直接 fetch 而非用 authApi
+
+**掃描方式**：
+```bash
+grep -n "fetchUserWith\|fetchUserAfter\|setUser({" app/login.tsx
+```
+
+**要檢查的檔案**：
+- [ ] `app/login.tsx`
+
+**修復規則**：
+- 合併三個 fetchUser 函數為一個 `processAuthToken(token, options)`
+- 抽出 `buildUserObject(userData, provider)` 統一組裝 user 物件
+- 將直接 fetch 改為使用 `authApi` 服務層
+- 抽出 `switchRoleIfNeeded(token, portal, currentRole)` 去重
+- 登入失敗加 Alert 提示用戶
+
+**驗證**：所有登入路徑（Google/Apple/Guest/Web OAuth/Deep Link）都能正常運作
+
+---
+
+## 項目 3：paddingTop: 60 統一改用 useSafeAreaInsets
+
+**問題**：10+ 個畫面硬編碼 `paddingTop: 60` 作為 safe area，不同機型高度不同會出問題
+
+**掃描方式**：
+```bash
+grep -rn "paddingTop.*60\|paddingTop.*Platform" src/ app/ --include="*.tsx" --include="*.ts"
+```
+
+**要檢查的檔案**（所有畫面的 styles 和 tsx）：
+- [ ] `src/modules/traveler/screens/GachaScreen.styles.ts`
+- [ ] `src/modules/traveler/screens/ItemBoxScreen.tsx`
+- [ ] `src/modules/traveler/screens/ContributionScreen.tsx`
+- [ ] `src/modules/traveler/screens/EconomyScreen.tsx`
+- [ ] `src/modules/traveler/screens/ItineraryScreenV2.styles.ts`
+- [ ] `src/modules/admin/screens/AdminDashboardScreen.tsx`
+- [ ] `src/modules/admin/screens/AdminAnnouncementsScreen.tsx`
+- [ ] `src/modules/merchant/screens/MerchantCouponsScreen.tsx`
+- [ ] `src/modules/merchant/screens/MerchantAnalyticsScreen.tsx`
+- [ ] `src/modules/merchant/screens/MerchantPlacesScreen.tsx`
+- [ ] `src/modules/specialist/screens/SpecialistDashboardScreen.tsx`
+- [ ] 其他 grep 出的檔案
+
+**修復規則**：
+- 已用 SafeAreaView 的 → 不需要手動 paddingTop
+- 未用 SafeAreaView 的 → 加上 `const insets = useSafeAreaInsets()` + `paddingTop: insets.top`
+- `Platform.OS === 'ios' ? 60 : 40` 同樣替換
+
+**驗證**：`grep -rn "paddingTop.*60" src/ app/` 回傳 0 結果
+
+---
+
+## 項目 4：硬編碼中文/英文字串改用 i18n
+
+**問題**：Alert 訊息、tier label、status label、按鈕文字直接用中文/英文寫死，非對應語系用戶會看到亂碼
+
+**掃描方式**：
+```bash
+# 找 Alert.alert 裡的中文
+grep -rn "Alert\.alert.*'[^\x00-\x7F]" src/ app/ --include="*.tsx"
+# 找 language === 'zh-TW' 的 inline 判斷
+grep -rn "language === 'zh-TW'" src/ --include="*.tsx"
+# 找硬編碼中文字串（在 JSX 中）
+grep -rn "'[^']*[\u4e00-\u9fff][^']*'" src/modules/ --include="*.tsx" | grep -v "console\|comment\|//"
+```
+
+**要檢查的檔案**：
+- [ ] `app/login.tsx`（副標題「今天去哪玩?老天說了算」）
+- [ ] `src/modules/traveler/screens/ItineraryScreenV2.tsx`（Alert 中文）
+- [ ] `src/modules/traveler/screens/GachaScreen.tsx`（i18n fallback 中文）
+- [ ] `src/modules/traveler/screens/CollectionScreen.tsx`（15+ 處 language 判斷）
+- [ ] `src/modules/traveler/screens/ItemBoxScreen.tsx`（tier label 英文）
+- [ ] `src/modules/traveler/screens/EconomyScreen.tsx`（金幣中文）
+- [ ] `src/modules/traveler/screens/ContributionScreen.tsx`（金幣中文）
+- [ ] `src/modules/admin/screens/AdminDashboardScreen.tsx`（Error 英文）
+- [ ] `src/modules/shared/screens/SettingsScreen.tsx`（版本號、App 名稱、版權年份）
+- [ ] `src/modules/shared/screens/HomeScreen.tsx`（getLocalizedTitle 漏 ja/ko）
+- [ ] 其他 grep 出的檔案
+
+**修復規則**：
+- 所有用戶可見文字必須走 `t.xxx` 翻譯 key
+- 新增的 key 必須同時加入 4 個語系檔案（zh-TW、en、ja、ko）
+- `language === 'zh-TW' ? '中文' : 'English'` 全部改為 `t.xxx`
+- console.log/error 的文字不改（開發者看的）
+- 特別注意 SettingsScreen 的 `Version 1.0.0` → 用 `Constants.expoConfig?.version`
+
+**驗證**：`grep -rn "Alert\.alert.*'[^\x00-\x7F]" src/` 回傳 0 結果
+
+---
+
+## 項目 5：Query Key 統一 + Mutation invalidation 補齊
+
+**問題**：部分用 queryKeys 常數、部分用原始字串；某些 mutation 沒有 invalidate 關聯查詢
+
+**掃描方式**：
+```bash
+# 找原始字串 query key
+grep -rn "queryKey.*\['" src/hooks/ --include="*.ts"
+# 找 invalidateQueries
+grep -rn "invalidateQueries" src/hooks/ --include="*.ts"
+# 找 queryKeys 定義
+grep -rn "queryKeys" src/hooks/ --include="*.ts"
+```
+
+**要檢查的檔案**：
+- [ ] `src/hooks/useInventoryQueries.ts`（完全沒用 queryKeys）
+- [ ] `src/hooks/useHomeQueries.ts`（用原始字串）
+- [ ] `src/hooks/useCollectionQueries.ts`（混合使用）
+- [ ] `src/hooks/useAuthQuery.ts`（queryKeys 定義）
+- [ ] 其他所有 hooks 檔案
+
+**修復規則**：
+- 在 queryKeys 補齊所有缺失的 key（inventory、home 等）
+- 全面替換原始字串為 queryKeys 常數
+- 每個 mutation 的 onSuccess 檢查：是否 invalidate 了所有被影響的關聯查詢
+  - deleteCollection → 補 invalidate collectionStats、collectionUnread
+  - redeemItem → 補 invalidate collection
+  - markAllRead → 補 invalidate 通知
+
+**驗證**：`grep -rn "queryKey.*\['" src/hooks/` 回傳 0 結果（全部用 queryKeys）
+
+---
+
+## 項目 6：Service 層重複重試移除
+
+**問題**：base.ts 已有重試 + QueryProvider 已有 retry:1 → 疊加後最多 4-6 次重試
+
+**掃描方式**：
+```bash
+grep -rn "retry\|MAX_RETRIES\|RETRY_DELAY\|maxAttempts" src/services/ src/context/QueryProvider.tsx --include="*.ts" --include="*.tsx"
+```
+
+**要檢查的檔案**：
+- [ ] `src/services/base.ts`（base 層重試邏輯）
+- [ ] `src/services/itineraryApi.ts`（aiChat 自建重試）
+- [ ] `src/context/QueryProvider.tsx`（React Query retry 設定）
+
+**修復規則**：
+- 移除 `itineraryApi.aiChat` 的自建重試邏輯
+- 評估 base.ts 的重試是否與 React Query 重複 → 選一層留
+- 記錄最終的重試策略到文件
+
+**驗證**：確認每個 API 呼叫的最大重試次數合理（不超過 3 次）
+
+---
+
+## 項目 7：硬編碼色彩替換為 Design Token
+
+**問題**：大量 `'#fff'`、`'#6366f1'`、`'#ef4444'` 等散落在 styles 和 inline styles 中
+
+**掃描方式**：
+```bash
+# 找所有 hex 色碼
+grep -rn "'#[0-9a-fA-F]\{3,8\}'" src/modules/ app/ --include="*.tsx" --include="*.ts"
+# 找 rgba 色碼
+grep -rn "rgba(" src/modules/ --include="*.tsx" --include="*.ts"
+# 找 color="#
+grep -rn 'color="#' src/modules/ --include="*.tsx"
+```
+
+**要檢查的檔案**：所有 screens/ 和 components/ 下的 .tsx 和 .styles.ts 檔案
+
+**修復規則**：
+- `'#fff'` / `'#ffffff'` / `'#FFFFFF'` → `UIColors.white`
+- `'#000'` / `'#000000'` → `UIColors.black`
+- `'#6366f1'` / `'#8b5cf6'` 等非品牌色 → 評估是否需要加入 Token 或改用現有 Token
+- `rgba(0,0,0,0.7)` → `UIColors.overlayDark`
+- `MibuBrand.error + '15'` 這類拼接 → 建立 `withOpacity()` 工具函數
+- 品牌色用 `MibuBrand.xxx`，語意色用 `SemanticColors.xxx`
+
+**驗證**：硬編碼 hex 色碼數量大幅降低（允許少量合理的 inline 色彩）
+
+---
+
+## 項目 8：Magic Number 替換為命名常數
+
+**問題**：`setTimeout(xxx, 3000)`、`maxLength={200}`、`inventorySlots ?? 30` 等無語意數字散落各處
+
+**掃描方式**：
+```bash
+# 找 setTimeout 的延遲值
+grep -rn "setTimeout.*[0-9]\{3,\}" src/modules/ app/ --include="*.tsx"
+# 找 fallback 值
+grep -rn "?? [0-9]" src/modules/ app/ --include="*.tsx"
+# 找 maxLength
+grep -rn "maxLength=" src/modules/ --include="*.tsx"
+# 找 height: 100（bottomSpacer）
+grep -rn "height.*100" src/modules/ --include="*.tsx" --include="*.ts"
+```
+
+**要檢查的檔案**：所有 screens/ 下的 .tsx 檔案
+
+**修復規則**：
+- setTimeout 延遲 → 定義常數如 `TOAST_DISPLAY_MS = 3000`
+- API fallback 值 → 定義常數如 `DEFAULT_DAILY_PULL_LIMIT = 36`
+- maxLength → 定義常數如 `GRAFFITI_MAX_LENGTH = 200`
+- bottomSpacer `height: 100` → 定義共用常數 `BOTTOM_SPACER_HEIGHT`
+- `<= 5`（inventoryRemaining）→ `INVENTORY_ALMOST_FULL_THRESHOLD`
+- 動畫 duration → 集中定義 `ANIMATION.xxx` 常數組
+
+**驗證**：核心邏輯值都有命名常數（純 UI 微調值如 padding 可保留）
+
+---
+
+## 項目 9：Design Token 全面導入（Spacing / Radius / FontSize）
+
+**問題**：80% 的 styles 檔只用了 MibuBrand 色彩，Spacing/Radius/FontSize 全硬編碼
+
+**掃描方式**：
+```bash
+# 找未 import Spacing 的 styles 檔
+grep -rL "Spacing" src/modules/ --include="*.styles.ts"
+# 找未 import FontSize 的 styles 檔
+grep -rL "FontSize" src/modules/ --include="*.styles.ts"
+# 找裸數字 padding/margin/fontSize/borderRadius
+grep -rn "padding.*[0-9]\|margin.*[0-9]\|fontSize.*[0-9]\|borderRadius.*[0-9]" src/modules/ --include="*.styles.ts" | head -50
+```
+
+**要檢查的檔案**（按大小排序優先處理）：
+- [ ] `src/modules/traveler/screens/ItineraryScreenV2.styles.ts` (1134)
+- [ ] `src/modules/traveler/screens/CollectionScreen.styles.ts` (911)
+- [ ] `src/modules/traveler/screens/ReferralScreen.styles.ts` (560)
+- [ ] `src/modules/traveler/screens/GachaScreen.styles.ts` (530)
+- [ ] `src/modules/shared/screens/ProfileScreen.styles.ts` (237)
+- [ ] 所有 screen 中的 `StyleSheet.create` 區塊（未分離 styles 的檔案）
+
+**修復規則**：
+- `padding: 16` → `Spacing.lg`
+- `borderRadius: 12` → `Radius.md`
+- `fontSize: 14` → `FontSize.md`
+- 值不完全對應 Token 的 → 取最近的 Token 或新增合理的 Token
+- Token 對照表：
+
+| 數值 | Spacing | Radius | FontSize |
+|------|---------|--------|----------|
+| 4 | xs | xs | - |
+| 8 | sm | sm | - |
+| 10 | - | - | xs |
+| 12 | md | md | sm |
+| 14 | - | - | md |
+| 16 | lg | lg | lg |
+| 18 | - | - | xl |
+| 20 | - | xl | - |
+| 22 | - | - | xxl |
+| 24 | xl | xxl | - |
+| 32 | xxl | - | - |
+
+**驗證**：styles 檔案中的裸數字大幅減少
+
+---
+
+## 項目 10：共用元件抽取
+
+**問題**：ScreenHeader、TabBar、bottomSpacer、formatDate、Modal 結構在 8+ 個畫面重複
+
+**掃描方式**：
+```bash
+# 找 header 返回按鈕模式
+grep -rn "backButton\|goBack\|router.back" src/modules/ --include="*.tsx" | head -20
+# 找 tab 切換器模式
+grep -rn "activeTab\|selectedTab" src/modules/ --include="*.tsx"
+# 找 formatDate 定義
+grep -rn "formatDate\|format.*Date" src/modules/ --include="*.tsx"
+# 找 bottomSpacer
+grep -rn "bottomSpacer\|height.*100.*spacer" src/modules/ --include="*.tsx" --include="*.ts"
+```
+
+**要抽取的元件**：
+- [ ] `ScreenHeader` — 返回按鈕 + 標題 + 右側 action
+- [ ] `TabBar` — tab 陣列 map → TouchableOpacity → active style
+- [ ] `bottomSpacer` 常數 — 統一為 `BOTTOM_SPACER_HEIGHT`
+- [ ] `formatDate` 工具函數 — 搬到 `src/utils/formatDate.ts`
+- [ ] `BottomSheetModal` — overlay + content + header + body 結構
+
+**修復規則**：
+- 先建共用元件 → 再逐畫面替換 → 確認功能不變
+- 不改功能，只抽共用
+
+**驗證**：重複的 header/tab/modal 結構被共用元件取代
+
+---
+
+## 執行順序
+
+```
+項目 1 → 項目 2 → 項目 3 → 項目 4 → 項目 5
+→ 項目 6 → 項目 7 → 項目 8 → 項目 9 → 項目 10
+```
+
+每項完成後：
+1. `npx tsc --noEmit` 確認零錯誤
+2. 獨立 commit（訊息標明項目編號）
+3. 更新本文件勾選 checkbox
+4. 進入下一項
+
+---
+
+*最後更新：2026-03-09*
