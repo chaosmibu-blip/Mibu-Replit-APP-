@@ -163,17 +163,10 @@ class ConfigApiService extends ApiBase {
    * }
    */
   async getMapboxConfig(token: string): Promise<MapboxConfigResponse> {
-    try {
-      const data = await this.request<{ mapbox: MapboxConfig }>('/api/config/mapbox', {
-        headers: this.authHeaders(token),
-      });
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return { success: true, mapbox: data.mapbox };
-    } catch (error) {
-      console.error('[ConfigApi] getMapboxConfig error:', error);
-      // 錯誤時回傳空 Token，地圖功能將無法使用
-      return { success: false, mapbox: { accessToken: '' } };
-    }
+    const data = await this.request<{ mapbox: MapboxConfig }>('/api/config/mapbox', {
+      headers: this.authHeaders(token),
+    });
+    return { success: true, mapbox: data.mapbox };
   }
 }
 

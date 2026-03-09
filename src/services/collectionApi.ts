@@ -233,16 +233,10 @@ class CollectionApiService extends ApiBase {
     const queryString = query.toString();
     const endpoint = `/api/collections/favorites${queryString ? `?${queryString}` : ''}`;
 
-    try {
-      const data = await this.request<{ favorites: FavoriteItem[]; total: number }>(endpoint, {
-        headers: this.authHeaders(token),
-      });
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return { success: true, favorites: data.favorites || [], total: data.total || 0 };
-    } catch (error) {
-      console.error('[CollectionApi] getFavorites error:', error);
-      return { success: false, favorites: [], total: 0 };
-    }
+    const data = await this.request<{ favorites: FavoriteItem[]; total: number }>(endpoint, {
+      headers: this.authHeaders(token),
+    });
+    return { success: true, favorites: data.favorites || [], total: data.total || 0 };
   }
 
   /**
@@ -298,21 +292,15 @@ class CollectionApiService extends ApiBase {
    * @returns 未讀優惠更新的數量和項目 ID
    */
   async getPromoUpdates(token: string): Promise<PromoUpdatesResponse> {
-    try {
-      const data = await this.request<{ unreadCount: number; unreadCollectionIds: number[] }>(
-        '/api/collections/promo-updates',
-        { headers: this.authHeaders(token) }
-      );
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return {
-        success: true,
-        unreadCount: data.unreadCount || 0,
-        unreadCollectionIds: data.unreadCollectionIds || [],
-      };
-    } catch {
-      // 靜默處理：後端可能尚未實現此端點
-      return { success: false, unreadCount: 0, unreadCollectionIds: [] };
-    }
+    const data = await this.request<{ unreadCount: number; unreadCollectionIds: number[] }>(
+      '/api/collections/promo-updates',
+      { headers: this.authHeaders(token) }
+    );
+    return {
+      success: true,
+      unreadCount: data.unreadCount || 0,
+      unreadCollectionIds: data.unreadCollectionIds || [],
+    };
   }
 
   /**
@@ -325,15 +313,10 @@ class CollectionApiService extends ApiBase {
    * @returns 操作結果
    */
   async markPromoRead(token: string, collectionId: number): Promise<MarkPromoReadResponse> {
-    try {
-      return await this.request<MarkPromoReadResponse>(`/api/collections/${collectionId}/promo-read`, {
-        method: 'PATCH',
-        headers: this.authHeaders(token),
-      });
-    } catch (error) {
-      console.error('[CollectionApi] markPromoRead error:', error);
-      return { success: false };
-    }
+    return await this.request<MarkPromoReadResponse>(`/api/collections/${collectionId}/promo-read`, {
+      method: 'PATCH',
+      headers: this.authHeaders(token),
+    });
   }
 }
 
