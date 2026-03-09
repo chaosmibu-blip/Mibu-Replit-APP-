@@ -32,7 +32,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { CouponTier } from '../../../types';
-import { UIColors } from '../../../../constants/Colors';
+import { UIColors, SemanticColors } from '../../../../constants/Colors';
 import { useI18n } from '../../../context/AppContext';
 import { tFormat } from '../../../utils/i18n';
 
@@ -93,7 +93,7 @@ const TIER_CONFIG: Record<CouponTier, {
     labelKey: 'gacha_tierSR',
   },
   S: {
-    bgColor: '#dcfce7',
+    bgColor: SemanticColors.successLight,
     textColor: '#16a34a',
     glowColor: '#4ade80',
     icon: 'trophy',

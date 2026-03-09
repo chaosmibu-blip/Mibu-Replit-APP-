@@ -15,7 +15,7 @@
  * 更新日期：2026-02-12（從主檔拆出）
  */
 import { StyleSheet, Dimensions } from 'react-native';
-import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors, RoleColors } from '../../../../constants/Colors';
 
 // 螢幕寬度（用於計算獎池項目寬度）
 export const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
     borderColor: '#fbbf24',
   },
   regionCouponCardOther: {
-    backgroundColor: '#f3e8ff',
+    backgroundColor: RoleColors.specialist.light,
     borderColor: '#a855f7',
   },
   regionCouponBadgeSSR: {
