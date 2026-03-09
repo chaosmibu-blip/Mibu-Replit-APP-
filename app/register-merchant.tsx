@@ -30,7 +30,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
-import { MibuBrand } from '../constants/Colors';
+import { MibuBrand, UIColors } from '../constants/Colors';
 
 const BUSINESS_CATEGORIES = [
   { value: 'restaurant', labelKey: 'merchant_catRestaurant' },
@@ -279,7 +279,7 @@ export default function RegisterMerchantScreen() {
 
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
           {loading ? (
-            <ActivityIndicator color="#ffffff" />
+            <ActivityIndicator color={UIColors.white} />
           ) : (
             <Text style={styles.submitButtonText}>{texts.submit}</Text>
           )}
@@ -310,5 +310,5 @@ const styles = StyleSheet.create({
   pickerText: { fontSize: 15, color: MibuBrand.brownDark },
   pickerTextSelected: { color: MibuBrand.brown, fontWeight: '600' },
   submitButton: { backgroundColor: MibuBrand.success, borderRadius: 28, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
-  submitButtonText: { fontSize: 17, fontWeight: '700', color: '#ffffff' },
+  submitButtonText: { fontSize: 17, fontWeight: '700', color: UIColors.white },
 });

@@ -984,7 +984,7 @@ export function CollectionScreen() {
               )}
               {hasPromoUpdate && (
                 <View style={styles.promoUpdateBadge}>
-                  <Ionicons name="pricetag" size={10} color="#fff" />
+                  <Ionicons name="pricetag" size={10} color={UIColors.white} />
                 </View>
               )}
               <View style={[styles.categoryBadge, { backgroundColor: catToken.badge }]}>
@@ -1024,7 +1024,7 @@ export function CollectionScreen() {
           <Text style={styles.listCardDate}>{date}</Text>
           {hasPromoUpdate && (
             <View style={styles.promoUpdateBadge}>
-              <Ionicons name="pricetag" size={10} color="#fff" />
+              <Ionicons name="pricetag" size={10} color={UIColors.white} />
             </View>
           )}
           <View style={[styles.listCardBadge, { backgroundColor: catToken.badge }]}>

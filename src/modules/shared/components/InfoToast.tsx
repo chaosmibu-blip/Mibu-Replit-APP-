@@ -23,8 +23,9 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MibuBrand } from '@/constants/Colors';
+import { MibuBrand, UIColors } from '@/constants/Colors';
 import { Spacing, Radius, FontSize, Shadow, SemanticColors } from '@/src/theme/designTokens';
+import { AnimationTiming, AutoDismiss } from '@/src/constants/animationTiming';
 
 // ============ Props 介面定義 ============
 
@@ -36,7 +37,7 @@ interface InfoToastProps {
   visible: boolean;
   /** 顯示的訊息文字 */
   message: string;
-  /** 顯示時長（毫秒）（預設 3000） */
+  /** 顯示時長（毫秒）（預設 AutoDismiss.toast） */
   duration?: number;
   /** 吐司消失後的回調函數 */
   onHide?: () => void;
@@ -50,7 +51,7 @@ interface InfoToastProps {
  * 當 visible 為 true 時，會從底部滑入並淡入顯示。
  * 經過 duration 時間後，會自動淡出並滑出，然後觸發 onHide。
  */
-export function InfoToast({ visible, message, duration = 3000, onHide }: InfoToastProps) {
+export function InfoToast({ visible, message, duration = AutoDismiss.toast, onHide }: InfoToastProps) {
   // 淡入淡出動畫值
   const fadeAnim = useRef(new Animated.Value(0)).current;
   // 垂直位移動畫值
@@ -62,12 +63,12 @@ export function InfoToast({ visible, message, duration = 3000, onHide }: InfoToa
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 300,
+          duration: AnimationTiming.standard,
           useNativeDriver: true,
         }),
         Animated.timing(translateY, {
           toValue: 0,
-          duration: 300,
+          duration: AnimationTiming.standard,
           useNativeDriver: true,
         }),
       ]).start();
@@ -78,12 +79,12 @@ export function InfoToast({ visible, message, duration = 3000, onHide }: InfoToa
         Animated.parallel([
           Animated.timing(fadeAnim, {
             toValue: 0,
-            duration: 300,
+            duration: AnimationTiming.standard,
             useNativeDriver: true,
           }),
           Animated.timing(translateY, {
             toValue: 20,
-            duration: 300,
+            duration: AnimationTiming.standard,
             useNativeDriver: true,
           }),
         ]).start(() => {
@@ -112,7 +113,7 @@ export function InfoToast({ visible, message, duration = 3000, onHide }: InfoToa
     >
       <View style={styles.toast}>
         {/* 資訊圖示 */}
-        <Ionicons name="information-circle" size={20} color="#FFFFFF" style={styles.icon} />
+        <Ionicons name="information-circle" size={20} color={UIColors.white} style={styles.icon} />
         {/* 訊息文字 */}
         <Text style={styles.message}>{message}</Text>
       </View>
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
   message: {
     flex: 1,
     fontSize: FontSize.md,
-    color: '#FFFFFF',
+    color: UIColors.white,
     fontWeight: '500',
     lineHeight: 20,
   },

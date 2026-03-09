@@ -18,6 +18,7 @@ import { View, Text, Animated, StyleSheet, TouchableOpacity } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import { MibuBrand } from '@/constants/Colors';
 import { Spacing, Radius, FontSize } from '@/src/theme/designTokens';
+import { AnimationTiming } from '@/src/constants/animationTiming';
 
 // ============ Props ============
 
@@ -51,12 +52,12 @@ export function UpgradePromptToast({
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 300,
+          duration: AnimationTiming.standard,
           useNativeDriver: true,
         }),
         Animated.timing(translateY, {
           toValue: 0,
-          duration: 300,
+          duration: AnimationTiming.standard,
           useNativeDriver: true,
         }),
       ]).start();

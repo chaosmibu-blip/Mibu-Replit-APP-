@@ -11,7 +11,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '../src/context/AppContext';
-import { MibuBrand } from '../constants/Colors';
+import { MibuBrand, UIColors } from '../constants/Colors';
 
 export default function RegisterSuccessScreen() {
   const router = useRouter();
@@ -42,7 +42,7 @@ export default function RegisterSuccessScreen() {
         <Text style={styles.note}>{texts.note}</Text>
 
         <TouchableOpacity style={styles.button} onPress={() => router.replace('/login')}>
-          <Ionicons name="arrow-back" size={20} color="#ffffff" />
+          <Ionicons name="arrow-back" size={20} color={UIColors.white} />
           <Text style={styles.buttonText}>{texts.backToLogin}</Text>
         </TouchableOpacity>
       </View>
@@ -106,6 +106,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 });

@@ -25,7 +25,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 
 // ============================================================
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   sectionStepText: {
     fontSize: FontSize.sm,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: UIColors.white,
   },
   sectionTitleText: {
     fontSize: FontSize.lg,
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
 
   // ========== 文字輸入 ==========
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: UIColors.white,
     borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: UIColors.white,
   },
   chipSelected: {
     backgroundColor: MibuBrand.creamLight,
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
 
   // ========== 下拉選單按鈕 ==========
   pickerButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: UIColors.white,
     borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: UIColors.white,
     borderTopLeftRadius: Radius.xl,
     borderTopRightRadius: Radius.xl,
     maxHeight: '60%',

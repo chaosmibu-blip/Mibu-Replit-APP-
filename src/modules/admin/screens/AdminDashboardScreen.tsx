@@ -331,7 +331,7 @@ export function AdminDashboardScreen() {
       setRewardItems([{ type: 'coins', amount: 100 }]);
       setRewardExpiresInDays('');
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to send reward');
+      Alert.alert(t.common_error, error.message || t.common_errorTryAgain);
     }
   };
 
@@ -396,7 +396,7 @@ export function AdminDashboardScreen() {
       setShowShopModal(false);
       resetShopForm();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to save');
+      Alert.alert(t.common_error, error.message || t.common_saveFailed);
     }
   };
 
@@ -1052,7 +1052,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingBottom: Spacing.lg,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
   },
@@ -1078,7 +1078,7 @@ const styles = StyleSheet.create({
 
   // 分頁標籤樣式
   tabsContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
   },
@@ -1104,7 +1104,7 @@ const styles = StyleSheet.create({
     color: UIColors.textSecondary,
   },
   activeTabText: {
-    color: '#ffffff',
+    color: UIColors.white,
   },
   badgeText: {
     color: SemanticColors.error.main,
@@ -1140,7 +1140,7 @@ const styles = StyleSheet.create({
 
   // 空狀態卡片樣式
   emptyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: Radius.lg,
     padding: 40,
     alignItems: 'center',
@@ -1155,7 +1155,7 @@ const styles = StyleSheet.create({
 
   // 用戶卡片樣式
   userCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
     flexDirection: 'row',
@@ -1266,7 +1266,7 @@ const styles = StyleSheet.create({
 
   // 草稿卡片樣式
   draftCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
     flexDirection: 'row',
@@ -1308,7 +1308,7 @@ const styles = StyleSheet.create({
 
   // 排除項目卡片樣式
   exclusionCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
     flexDirection: 'row',
@@ -1339,7 +1339,7 @@ const styles = StyleSheet.create({
 
   // #047/#048 表單樣式
   formCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
     borderWidth: 2,
@@ -1406,7 +1406,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.lg,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
   },

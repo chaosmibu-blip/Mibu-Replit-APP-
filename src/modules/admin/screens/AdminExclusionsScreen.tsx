@@ -110,6 +110,10 @@ export function AdminExclusionsScreen() {
       confirmRemoveMsg: '確定要移除這個全域排除嗎？',
       noPermission: '您沒有管理權限',
       back: '返回',
+      error: '錯誤',
+      validationRequired: '地點名稱和城市為必填',
+      addFailed: '新增排除失敗',
+      removeFailed: '移除排除失敗',
     },
     'en': {
       title: 'Global Exclusions',
@@ -127,6 +131,10 @@ export function AdminExclusionsScreen() {
       confirmRemoveMsg: 'Are you sure you want to remove this exclusion?',
       noPermission: 'You do not have admin permission',
       back: 'Back',
+      error: 'Error',
+      validationRequired: 'Place name and city are required',
+      addFailed: 'Failed to add exclusion',
+      removeFailed: 'Failed to remove exclusion',
     },
     'ja': {
       title: 'グローバル除外管理',
@@ -144,6 +152,10 @@ export function AdminExclusionsScreen() {
       confirmRemoveMsg: 'この除外を削除してもよろしいですか？',
       noPermission: '管理者権限がありません',
       back: '戻る',
+      error: 'エラー',
+      validationRequired: '場所名と都市は必須です',
+      addFailed: '除外の追加に失敗しました',
+      removeFailed: '除外の削除に失敗しました',
     },
     'ko': {
       title: '전역 제외 관리',
@@ -161,6 +173,10 @@ export function AdminExclusionsScreen() {
       confirmRemoveMsg: '이 제외를 삭제하시겠습니까?',
       noPermission: '관리자 권한이 없습니다',
       back: '뒤로',
+      error: '오류',
+      validationRequired: '장소명과 도시는 필수입니다',
+      addFailed: '제외 추가 실패',
+      removeFailed: '제외 삭제 실패',
     },
   };
 
@@ -176,7 +192,7 @@ export function AdminExclusionsScreen() {
   const handleAdd = async () => {
     // 驗證必填欄位
     if (!placeName.trim() || !city.trim()) {
-      Alert.alert('Error', 'Place name and city are required');
+      Alert.alert(t.error, t.validationRequired);
       return;
     }
 
@@ -195,7 +211,7 @@ export function AdminExclusionsScreen() {
           setShowAddForm(false);
         },
         onError: () => {
-          Alert.alert('Error', 'Failed to add exclusion');
+          Alert.alert(t.error, t.addFailed);
         },
       },
     );
@@ -215,7 +231,7 @@ export function AdminExclusionsScreen() {
         onPress: () => {
           removeMutation.mutate(exclusion.id, {
             onError: () => {
-              Alert.alert('Error', 'Failed to remove exclusion');
+              Alert.alert(t.error, t.removeFailed);
             },
           });
         },
@@ -306,7 +322,7 @@ export function AdminExclusionsScreen() {
               disabled={addMutation.isPending}
             >
               {addMutation.isPending ? (
-                <ActivityIndicator size="small" color="#ffffff" />
+                <ActivityIndicator size="small" color={UIColors.white} />
               ) : (
                 <Text style={styles.addButtonText}>{t.add}</Text>
               )}
@@ -385,7 +401,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingBottom: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.creamLight,
   },
@@ -430,7 +446,7 @@ const styles = StyleSheet.create({
 
   // 新增表單樣式
   addForm: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     marginHorizontal: 20,
     marginTop: 20,
     padding: 20,
@@ -478,7 +494,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: FontSize.lg,
     fontWeight: FontWeight.semibold,
-    color: '#ffffff',
+    color: UIColors.white,
   },
 
   // 載入中樣式
@@ -516,7 +532,7 @@ const styles = StyleSheet.create({
 
   // 排除項目卡片樣式
   exclusionCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
     marginBottom: Spacing.md,

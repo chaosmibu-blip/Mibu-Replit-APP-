@@ -316,10 +316,10 @@ export default function MerchantRegisterScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={UIColors.white} />
             ) : (
               <>
-                <Ionicons name="send" size={18} color="#fff" />
+                <Ionicons name="send" size={18} color={UIColors.white} />
                 <Text style={styles.submitButtonText}>{translations.submit}</Text>
               </>
             )}
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     borderColor: MibuBrand.tanLight,
   },
   picker: {
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
   },
   pickerOptions: {
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     marginTop: 8,
     borderWidth: 1,
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -469,6 +469,6 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: UIColors.white,
   },
 });

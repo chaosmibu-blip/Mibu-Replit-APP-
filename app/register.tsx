@@ -30,7 +30,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth, useI18n } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
-import { MibuBrand } from '../constants/Colors';
+import { MibuBrand, UIColors } from '../constants/Colors';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
 
 const TRANSLATIONS = {
@@ -307,10 +307,10 @@ export default function RegisterScreen() {
             accessibilityRole="button"
           >
             {loading ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={UIColors.white} />
             ) : (
               <>
-                <Ionicons name="person-add-outline" size={20} color="#ffffff" />
+                <Ionicons name="person-add-outline" size={20} color={UIColors.white} />
                 <Text style={styles.registerButtonText}>{t.register}</Text>
               </>
             )}
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   registerButtonText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   footer: {
     flexDirection: 'row',

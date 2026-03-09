@@ -476,7 +476,7 @@ export function AdminAnnouncementsScreen() {
         <Text style={styles.headerTitle}>{t.admin_announcementManage}</Text>
         {/* 新增按鈕 */}
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Ionicons name="add" size={24} color="#fff" />
+          <Ionicons name="add" size={24} color={UIColors.white} />
         </TouchableOpacity>
       </View>
 
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 20,
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
   },
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
 
   // 卡片樣式
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
   typeBadgeText: {
     fontSize: FontSize.sm,
     fontWeight: FontWeight.semibold,
-    color: '#fff',
+    color: UIColors.white,
   },
 
   // 狀態標籤樣式
@@ -701,7 +701,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderTopLeftRadius: Radius.xxl,
     borderTopRightRadius: Radius.xxl,
     maxHeight: '90%',
@@ -810,6 +810,6 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 15,
     fontWeight: FontWeight.semibold,
-    color: '#fff',
+    color: UIColors.white,
   },
 });

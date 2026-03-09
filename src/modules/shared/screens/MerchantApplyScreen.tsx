@@ -35,7 +35,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth, useI18n } from '../../../context/AppContext';
 import { useMerchantApplicationStatus, useApplyMerchant } from '../../../hooks/useMerchantQueries';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../components/ui/ErrorState';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import {
@@ -220,7 +220,7 @@ export function MerchantApplyScreen() {
           );
         },
         onError: (error: Error) => {
-          Alert.alert('Error', error.message);
+          Alert.alert(t.common_error, error.message);
         },
       },
     );
@@ -442,8 +442,8 @@ const styles = StyleSheet.create({
     width: 120, height: 120, borderRadius: 60, backgroundColor: MibuBrand.creamLight,
     alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xl,
   },
-  statusIconApproved: { backgroundColor: '#DCFCE7' },
-  statusIconRejected: { backgroundColor: '#FEE2E2' },
+  statusIconApproved: { backgroundColor: SemanticColors.successLight },
+  statusIconRejected: { backgroundColor: SemanticColors.errorLight },
   statusTitle: {
     fontSize: FontSize.xxl, fontWeight: '800', color: MibuBrand.brownDark,
     marginBottom: Spacing.md, textAlign: 'center',
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     lineHeight: 22, marginBottom: Spacing.xl,
   },
   rejectionReasonCard: {
-    backgroundColor: '#FEE2E2', borderRadius: Radius.md, padding: Spacing.lg,
+    backgroundColor: SemanticColors.errorLight, borderRadius: Radius.md, padding: Spacing.lg,
     marginBottom: Spacing.xl, width: '100%',
   },
   rejectionReasonText: {

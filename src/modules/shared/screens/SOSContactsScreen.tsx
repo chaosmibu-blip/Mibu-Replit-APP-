@@ -328,7 +328,7 @@ export function SOSContactsScreen() {
             {t.sos_tapToAdd}
           </Text>
           <TouchableOpacity style={styles.addFirstBtn} onPress={openAddModal}>
-            <Ionicons name="add-circle" size={20} color="#fff" />
+            <Ionicons name="add-circle" size={20} color={UIColors.white} />
             <Text style={styles.addFirstBtnText}>
               {t.sos_addContact}
             </Text>
@@ -416,7 +416,7 @@ export function SOSContactsScreen() {
               disabled={saving}
             >
               {saving ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={UIColors.white} />
               ) : (
                 <Text style={styles.saveBtnText}>
                   {t.common_save}
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
   addFirstBtnText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: UIColors.white,
   },
   // Modal 樣式
   modalOverlay: {
@@ -665,7 +665,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   relationshipOptionTextActive: {
-    color: '#fff',
+    color: UIColors.white,
   },
   // 儲存按鈕
   saveBtn: {
@@ -681,6 +681,6 @@ const styles = StyleSheet.create({
   saveBtnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#fff',
+    color: UIColors.white,
   },
 });

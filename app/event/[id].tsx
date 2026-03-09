@@ -27,7 +27,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '../../src/context/AppContext';
 import { eventApi } from '../../src/services/api';
 import { Event } from '../../src/types';
-import { MibuBrand } from '../../constants/Colors';
+import { MibuBrand, UIColors, RoleColors } from '../../constants/Colors';
 import { LOCALE_MAP } from '../../src/utils/i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -36,7 +36,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const EVENT_TYPE_CONFIG: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string; labelKey: string }> = {
   announcement: { icon: 'megaphone', color: MibuBrand.brown, labelKey: 'event_announcement' },
   festival: { icon: 'calendar', color: '#dc2626', labelKey: 'event_festival' },
-  limited: { icon: 'time', color: '#7c3aed', labelKey: 'event_limited' },
+  limited: { icon: 'time', color: RoleColors.specialist.dark, labelKey: 'event_limited' },
 };
 
 export default function EventDetailScreen() {
@@ -159,7 +159,7 @@ export default function EventDetailScreen() {
         {/* Event Type Badge */}
         {typeConfig && (
           <View style={[styles.typeBadge, { backgroundColor: typeConfig.color }]}>
-            <Ionicons name={typeConfig.icon} size={14} color="#ffffff" />
+            <Ionicons name={typeConfig.icon} size={14} color={UIColors.white} />
             <Text style={styles.typeBadgeText}>
               {t[typeConfig.labelKey]}
             </Text>
@@ -235,7 +235,7 @@ export default function EventDetailScreen() {
         {/* External Link */}
         {externalUrl && (
           <TouchableOpacity style={styles.externalLinkButton} onPress={handleExternalLink}>
-            <Ionicons name="open-outline" size={20} color="#ffffff" />
+            <Ionicons name="open-outline" size={20} color={UIColors.white} />
             <Text style={styles.externalLinkText}>
               {t.common_learnMore}
             </Text>
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   backButtonText: {
-    color: '#ffffff',
+    color: UIColors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   typeBadgeText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   title: {
     fontSize: 24,
@@ -410,6 +410,6 @@ const styles = StyleSheet.create({
   externalLinkText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 });
