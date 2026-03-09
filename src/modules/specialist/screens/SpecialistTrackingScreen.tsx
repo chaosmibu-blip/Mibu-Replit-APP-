@@ -29,7 +29,7 @@ import { useAuth, useI18n } from '../../../context/AppContext';
 import { API_BASE_URL } from '../../../constants/translations';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { UIColors, MibuBrand } from '../../../../constants/Colors';
+import { UIColors, MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============ 型別定義 ============
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   statusConnected: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
   },
   statusDisconnected: {
     backgroundColor: '#fef2f2',

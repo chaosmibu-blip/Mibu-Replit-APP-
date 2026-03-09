@@ -398,7 +398,7 @@ export default function CouponWinAnimation({
           {/* 優惠券資訊 */}
           <Text style={styles.couponName}>{couponName}</Text>
           <Text style={styles.placeName}>
-            <Ionicons name="location" size={14} color="#64748b" /> {placeName}
+            <Ionicons name="location" size={14} color={UIColors.textSecondary} /> {placeName}
           </Text>
 
           {/* 恭喜文字 */}

@@ -35,7 +35,7 @@ import {
 } from '../../../hooks/useSpecialistQueries';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { LOCALE_MAP } from '../../../utils/i18n';
 
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.highlight,
   },
   serviceStatusActive: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
   },
   serviceStatusText: {
     fontSize: 12,
