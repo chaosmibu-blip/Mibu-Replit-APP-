@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   avatarPreviewName: {
     fontSize: FontSize.lg,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: UIColors.white,
     marginBottom: Spacing.md,
   },
   /** Mini 頭像放大預覽 - 大圖 */

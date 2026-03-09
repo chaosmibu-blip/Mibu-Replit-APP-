@@ -69,7 +69,7 @@ import { useAuth, useI18n } from '../../../context/AppContext';
 import { tFormat } from '../../../utils/i18n';
 import { itineraryApi } from '../../../services/itineraryApi';
 // locationApi, preloadService 已移至 CreateItineraryModal
-import { MibuBrand, getCategoryToken } from '../../../../constants/Colors';
+import { MibuBrand, getCategoryToken, UIColors } from '../../../../constants/Colors';
 import { Spacing } from '../../../theme/designTokens';
 import {
   Itinerary,
@@ -1819,7 +1819,7 @@ export function ItineraryScreenV2() {
             onPress={(e) => { e.stopPropagation(); saveAvatarToGallery(); }}
             activeOpacity={0.7}
           >
-            <Ionicons name="download-outline" size={24} color="#FFFFFF" />
+            <Ionicons name="download-outline" size={24} color={UIColors.white} />
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>

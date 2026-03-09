@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingBottom: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   // 旅客列表卡片樣式
   travelerListCard: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
