@@ -31,8 +31,8 @@ import {
   RefreshControl,
   TextInput,
   Alert,
-  Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
@@ -83,6 +83,7 @@ const REPORT_REASONS: { value: ReportReason; labelKey: string }[] = [
 // ============================================================
 
 export function ContributionScreen() {
+  const insets = useSafeAreaInsets();
   const { t, language } = useI18n();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -586,7 +587,7 @@ export function ContributionScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
@@ -653,7 +654,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
     backgroundColor: MibuBrand.warmWhite,

@@ -22,6 +22,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '../src/context/AppContext';
@@ -29,6 +30,7 @@ import { API_BASE_URL } from '../src/constants/translations';
 import { MibuBrand } from '../constants/Colors';
 
 export default function RegisterSpecialistScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useI18n();
 
@@ -113,7 +115,7 @@ export default function RegisterSpecialistScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#9B7BB8" />
           <Text style={[styles.backText, { color: '#9B7BB8' }]}>{texts.back}</Text>
@@ -201,7 +203,7 @@ export default function RegisterSpecialistScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F0FA' },
-  header: { paddingTop: 60, paddingHorizontal: 20, paddingBottom: 12 },
+  header: { paddingHorizontal: 20, paddingBottom: 12 },
   backButton: { flexDirection: 'row', alignItems: 'center' },
   backText: { fontSize: 16, marginLeft: 4 },
   scrollView: { flex: 1 },

@@ -20,6 +20,7 @@
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n, useGacha, useAuth } from '../../../context/AppContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -383,6 +384,7 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
 // ============================================================
 
 export function ItemBoxScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useI18n();
   const { setUnreadCount } = useGacha();
   const { getToken } = useAuth();
@@ -746,7 +748,7 @@ export function ItemBoxScreen() {
       {/* ========== Header 區域 ========== */}
       <View style={{
         backgroundColor: MibuBrand.creamLight,
-        paddingTop: 60,
+        paddingTop: insets.top,
         paddingHorizontal: 20,
         paddingBottom: 16,
         borderBottomLeftRadius: 24,

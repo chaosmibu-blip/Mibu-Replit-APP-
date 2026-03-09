@@ -29,6 +29,7 @@ import {
   Alert,
   Share,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
@@ -83,6 +84,7 @@ const REWARD_TIERS: RewardTier[] = [
 // ============================================================
 
 export function ReferralScreen() {
+  const insets = useSafeAreaInsets();
   const { getToken } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
@@ -226,7 +228,7 @@ export function ReferralScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>

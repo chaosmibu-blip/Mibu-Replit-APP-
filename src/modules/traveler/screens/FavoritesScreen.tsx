@@ -24,8 +24,8 @@ import {
   FlatList,
   RefreshControl,
   Alert,
-  Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Text,
   Card,
@@ -51,6 +51,7 @@ import { tFormat, LOCALE_MAP } from '../../../utils/i18n';
 // ============================================================
 
 export function FavoritesScreen() {
+  const insets = useSafeAreaInsets();
   const { t, language } = useI18n();
   const router = useRouter();
   const theme = useTheme();
@@ -227,7 +228,7 @@ export function FavoritesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Header */}
-      <Surface style={styles.header} elevation={1}>
+      <Surface style={[styles.header, { paddingTop: insets.top }]} elevation={1}>
         <IconButton
           icon="arrow-left"
           iconColor={theme.colors.primary}
@@ -303,7 +304,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 50 : 30,
     paddingHorizontal: 4,
     paddingBottom: 8,
   },

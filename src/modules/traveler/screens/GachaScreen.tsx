@@ -36,6 +36,7 @@ import {
   ActivityIndicator,
   Animated,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image as ExpoImage } from 'expo-image';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
@@ -105,6 +106,7 @@ export function GachaScreen() {
   // ============================================================
   // Hooks & Context
   // ============================================================
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, getToken, setUser } = useAuth();
   const { t, language } = useI18n();
@@ -815,7 +817,7 @@ export function GachaScreen() {
   return (
     <ScrollView
       style={styles.scrollView}
-      contentContainerStyle={styles.scrollContent}
+      contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
     >
       {/* ========== 頂部 Logo 區 ========== */}
       <View style={styles.logoContainer}>

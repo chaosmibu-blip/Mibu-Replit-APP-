@@ -29,6 +29,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
@@ -95,6 +96,7 @@ const LANGUAGE_OPTIONS: { code: 'zh-TW' | 'en' | 'ja' | 'ko'; label: string; fla
 ];
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const { setUser } = useAuth();
   const { t, language, setLanguage } = useI18n();
   const [loading, setLoading] = useState(false);
@@ -663,7 +665,7 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerLeft}>
           <Image 
             source={require('../assets/images/icon.png')} 
@@ -788,7 +790,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 60,
     paddingBottom: 16,
   },
   headerLeft: {

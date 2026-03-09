@@ -7,7 +7,7 @@
  *
  * 更新日期：2026-02-12（Phase 2C 拆分）
  */
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 
 const styles = StyleSheet.create({
@@ -74,7 +74,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
     backgroundColor: MibuBrand.creamLight,

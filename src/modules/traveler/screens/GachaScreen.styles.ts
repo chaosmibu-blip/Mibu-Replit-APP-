@@ -28,7 +28,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingTop: 60,
   },
 
   // ===== 頂部 Logo 區 =====

@@ -18,6 +18,7 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Animated, RefreshControl } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -93,6 +94,7 @@ const displayUserId = (userId: string | undefined): string => {
 // ============ 元件本體 ============
 
 export function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const { user, getToken, setUser } = useAuth();
   const { t, language } = useI18n();
 
@@ -359,7 +361,7 @@ export function ProfileScreen() {
       keyboardVerticalOffset={100}
     >
       {/* ===== 頂部導航列 ===== */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>

@@ -24,6 +24,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -116,6 +117,7 @@ const TRANSLATIONS = {
 };
 
 export default function RegisterScreen() {
+  const insets = useSafeAreaInsets();
   const { setUser } = useAuth();
   const { language } = useI18n();
   const [loading, setLoading] = useState(false);
@@ -201,7 +203,7 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
         keyboardShouldPersistTaps="handled"
       >
         <TouchableOpacity
@@ -338,7 +340,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 60,
     paddingBottom: 40,
   },
   backButton: {

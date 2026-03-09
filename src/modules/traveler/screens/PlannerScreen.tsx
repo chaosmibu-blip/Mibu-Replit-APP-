@@ -9,6 +9,7 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '../../../context/AppContext';
 import { MibuBrand } from '../../../../constants/Colors';
@@ -18,10 +19,11 @@ import { MibuBrand } from '../../../../constants/Colors';
 // ============================================================
 
 export function PlannerScreen() {
+  const insets = useSafeAreaInsets();
   const { t, language } = useI18n();
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top }]}>
       <Text style={styles.title}>{t.navPlannerModule}</Text>
 
       <View style={styles.comingSoon}>
@@ -80,7 +82,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingTop: 60,
     paddingBottom: 100,
   },
   title: {
