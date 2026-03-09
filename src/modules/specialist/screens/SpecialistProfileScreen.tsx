@@ -30,6 +30,7 @@ import {
   useSpecialistMe,
   useUpdateSpecialistAvailability,
 } from '../../../hooks/useSpecialistQueries';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 
 // ============ 元件主體 ============
@@ -37,6 +38,7 @@ export function SpecialistProfileScreen() {
   const { user } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // ============ React Query Hooks ============
 
@@ -75,7 +77,7 @@ export function SpecialistProfileScreen() {
 
   // ============ 主畫面 JSX ============
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top }]}>
       {/* ============ 頁面標題區 ============ */}
       <View style={styles.header}>
         {/* 返回按鈕 */}
@@ -200,7 +202,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingTop: 60,
     paddingBottom: 100,
   },
   // Loading 狀態樣式

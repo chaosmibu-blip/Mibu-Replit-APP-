@@ -46,6 +46,7 @@ import {
   useDeleteAnnouncement,
 } from '../../../hooks/useAdminQueries';
 import { Announcement, AnnouncementType } from '../../../types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 // ============ 型別定義 ============
@@ -73,6 +74,7 @@ export function AnnouncementManageScreen() {
   const { getToken } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // ============ 狀態管理 ============
 
@@ -290,7 +292,7 @@ export function AnnouncementManageScreen() {
   return (
     <View style={styles.container}>
       {/* 頂部標題列 */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color={MibuBrand.brown} />
@@ -469,7 +471,7 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 12, color: MibuBrand.copper, fontSize: 16 },
 
   // 頂部標題列樣式
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 60, paddingHorizontal: 20, paddingBottom: 16, backgroundColor: MibuBrand.warmWhite, borderBottomWidth: 1, borderBottomColor: MibuBrand.tanLight },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 16, backgroundColor: MibuBrand.warmWhite, borderBottomWidth: 1, borderBottomColor: MibuBrand.tanLight },
   backButton: { flexDirection: 'row', alignItems: 'center' },
   backText: { fontSize: 16, color: MibuBrand.brown, marginLeft: 4 },
   title: { fontSize: 20, fontWeight: '800', color: MibuBrand.brownDark },

@@ -26,6 +26,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/I18nContext';
 import {
   useMerchantPlaces,
@@ -42,6 +43,7 @@ export function MerchantPlacesScreen() {
   // ============ Hooks ============
   const { t } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // ============ React Query：已認領店家列表 ============
   const {
@@ -193,7 +195,7 @@ export function MerchantPlacesScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={100}
     >
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top }]} keyboardShouldPersistTaps="handled">
         {/* ============ 頂部標題區 ============ */}
         <View style={styles.header}>
           {/* 返回按鈕 */}
@@ -384,7 +386,6 @@ const styles = StyleSheet.create({
   // 內容區
   content: {
     padding: 20,
-    paddingTop: 60,
     paddingBottom: 100,
   },
   // 載入中容器

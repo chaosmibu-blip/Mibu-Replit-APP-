@@ -56,6 +56,7 @@ import {
 } from '../../../hooks/useAdminQueries';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { AdminUser, PlaceDraft, GlobalExclusion, ShopItem, ShopItemCategory, RewardItem, SendRewardParams } from '../../../types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';
 
@@ -81,6 +82,7 @@ export function AdminDashboardScreen() {
   const { user, setUser } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // ============ React Query Hooks ============
 
@@ -871,7 +873,7 @@ export function AdminDashboardScreen() {
   const renderShopModal = () => (
     <Modal visible={showShopModal} animationType="slide" presentationStyle="pageSheet">
       <View style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
+        <View style={[styles.modalHeader, { paddingTop: insets.top }]}>
           <Text style={styles.modalTitle}>{editingShopItem ? t.admin_shopItemEdit : t.admin_shopItemCreate}</Text>
           <TouchableOpacity onPress={() => { setShowShopModal(false); resetShopForm(); }}>
             <Ionicons name="close" size={24} color={MibuBrand.dark} />
@@ -1005,7 +1007,7 @@ export function AdminDashboardScreen() {
   return (
     <View style={styles.container}>
       {/* 頂部標題列 */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <Text style={styles.title}>{t.admin_title}</Text>
         {/* 登出按鈕 */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -1048,7 +1050,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: Spacing.lg,
     backgroundColor: '#ffffff',
@@ -1403,7 +1404,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 60,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.lg,
     backgroundColor: '#ffffff',

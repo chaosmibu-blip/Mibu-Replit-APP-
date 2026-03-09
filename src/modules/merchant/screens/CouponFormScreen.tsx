@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/I18nContext';
 import {
   useMerchantCoupons,
@@ -39,6 +40,7 @@ const TIERS: { id: MerchantCouponTier; label: string; prob: string; color: strin
 export function CouponFormScreen() {
   const { t } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ id?: string }>();
   const isEdit = !!params.id && params.id !== 'new';
 
@@ -156,7 +158,7 @@ export function CouponFormScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top }]}
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
@@ -332,7 +334,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingTop: 60,
     paddingBottom: 40,
   },
   loadingContainer: {

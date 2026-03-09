@@ -40,6 +40,7 @@ import {
   useDeleteAnnouncement,
 } from '../../../hooks/useAdminQueries';
 import { Announcement, AnnouncementType, CreateAnnouncementParams } from '../../../types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';
 
@@ -53,6 +54,7 @@ export function AdminAnnouncementsScreen() {
   // ============ Hooks & Context ============
   const { t } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // ============ React Query ============
   const announcementsQuery = useAdminAnnouncements();
@@ -465,7 +467,7 @@ export function AdminAnnouncementsScreen() {
   return (
     <View style={styles.container}>
       {/* 頂部標題列 */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
@@ -526,7 +528,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
     backgroundColor: '#fff',

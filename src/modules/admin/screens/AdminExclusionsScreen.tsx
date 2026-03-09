@@ -38,6 +38,7 @@ import {
   useAddGlobalExclusion,
   useRemoveGlobalExclusion,
 } from '../../../hooks/useAdminQueries';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UIColors, MibuBrand } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize, FontWeight, SemanticColors } from '../../../theme/designTokens';
 
@@ -52,6 +53,7 @@ export function AdminExclusionsScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { language } = useI18n();
+  const insets = useSafeAreaInsets();
 
   // ============ React Query Hooks ============
 
@@ -228,7 +230,7 @@ export function AdminExclusionsScreen() {
     return (
       <View style={styles.container}>
         {/* 頂部標題列 */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
           </TouchableOpacity>
@@ -248,7 +250,7 @@ export function AdminExclusionsScreen() {
   return (
     <View style={styles.container}>
       {/* 頂部標題列 */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         {/* 返回按鈕 */}
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
@@ -381,7 +383,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 20,
     backgroundColor: '#ffffff',

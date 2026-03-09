@@ -24,7 +24,7 @@
  */
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuthQuery, useAuthMutation } from './useAuthQuery';
+import { useAuthQuery, useAuthMutation, queryKeys } from './useAuthQuery';
 import { miniApi } from '../services/miniApi';
 import type {
   MiniProfileResponse,
@@ -43,13 +43,13 @@ import type {
   UpdateNoteResponse,
 } from '../types/mini';
 
-// ============ Query Keys ============
+// ============ Query Keys（引用中央 queryKeys，不重複定義） ============
 
-export const miniQueryKeys = {
-  profile: ['mini', 'profile'] as const,
-  explorationStatus: ['mini', 'exploration', 'status'] as const,
-  graffiti: (placeId: number) => ['mini', 'graffiti', placeId] as const,
-  notes: (placeId: number) => ['mini', 'notes', placeId] as const,
+const miniQueryKeys = {
+  profile: queryKeys.miniProfile,
+  explorationStatus: queryKeys.explorationStatus,
+  graffiti: queryKeys.graffiti,
+  notes: queryKeys.notes,
 };
 
 // ============ #056 Profile Hooks ============

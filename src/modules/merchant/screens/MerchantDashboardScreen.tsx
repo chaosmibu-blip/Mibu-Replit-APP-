@@ -26,6 +26,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
 import {
@@ -44,6 +45,7 @@ export function MerchantDashboardScreen() {
   const { user, setUser } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // ============ React Query Hooks ============
   const dailyCodeQuery = useMerchantDailyCode();
@@ -150,7 +152,7 @@ export function MerchantDashboardScreen() {
 
   // ============ 主要 JSX 渲染 ============
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top }]}>
       {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
         <Text style={styles.title}>{translations.title}</Text>
@@ -274,7 +276,6 @@ const styles = StyleSheet.create({
   // 內容區域
   content: {
     padding: 20,
-    paddingTop: 60,
     paddingBottom: 100,
   },
   // 載入中容器
