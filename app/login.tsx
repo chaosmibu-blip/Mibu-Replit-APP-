@@ -176,10 +176,10 @@ export default function LoginScreen() {
   // Super admin 角色切換
   const switchRoleIfNeeded = async (
     token: string,
-    portal: string,
-    currentActiveRole: string,
+    portal: UserRole,
+    currentActiveRole: UserRole,
     isSuperAdmin: boolean,
-  ): Promise<string> => {
+  ): Promise<UserRole> => {
     if (!isSuperAdmin || portal === currentActiveRole) return currentActiveRole;
     try {
       const switchResponse = await fetch(`${API_BASE_URL}/api/auth/switch-role`, {
@@ -192,7 +192,7 @@ export default function LoginScreen() {
       });
       if (switchResponse.ok) {
         const switchData = await switchResponse.json();
-        return switchData.activeRole || portal;
+        return (switchData.activeRole as UserRole) || portal;
       }
     } catch {
       // 角色切換失敗不阻斷登入
@@ -204,15 +204,15 @@ export default function LoginScreen() {
   const processLoginSuccess = async (
     userData: any,
     token: string,
-    portal: string,
+    portal: UserRole,
     provider: string,
   ) => {
-    const initialActiveRole = userData.activeRole || userData.role || portal;
+    const initialActiveRole = (userData.activeRole || userData.role || portal) as UserRole;
     const finalActiveRole = await switchRoleIfNeeded(
       token, portal, initialActiveRole, userData.isSuperAdmin || false
     );
 
-    const userRole = userData.role || 'traveler';
+    const userRole: UserRole = userData.role || 'traveler';
     const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
 
     await setUser({
@@ -235,10 +235,10 @@ export default function LoginScreen() {
   };
 
   // 讀取並清除登入前儲存的入口選擇
-  const consumeTargetPortal = async (): Promise<string> => {
+  const consumeTargetPortal = async (): Promise<UserRole> => {
     const stored = await AsyncStorage.getItem(STORAGE_KEYS.POST_LOGIN_PORTAL);
     await AsyncStorage.removeItem(STORAGE_KEYS.POST_LOGIN_PORTAL);
-    return stored || selectedPortal;
+    return (stored as UserRole) || selectedPortal;
   };
 
   // ===== fetchUser 函數 =====
