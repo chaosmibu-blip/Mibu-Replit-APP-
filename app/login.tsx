@@ -684,7 +684,41 @@ export default function LoginScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* 角色切換器已隱藏 — 目前僅開放旅客入口，商家/專員/管理端暫不開放 */}
+      <View style={styles.portalSwitcher}>
+        <TouchableOpacity
+          style={styles.switchButton}
+          onPress={() => setShowPortalMenu(!showPortalMenu)}
+        >
+          <Text style={[styles.switchButtonText, { color: currentPortal.color }]}>
+            {t.auth_switchPortal}: {currentPortal.label}
+          </Text>
+        </TouchableOpacity>
+
+        {showPortalMenu && (
+          <View style={styles.portalMenu}>
+            {portals.map((portal) => (
+              <TouchableOpacity
+                key={portal.type}
+                style={[
+                  styles.portalMenuItem,
+                  selectedPortal === portal.type && { backgroundColor: portal.bgColor },
+                ]}
+                onPress={() => {
+                  setSelectedPortal(portal.type);
+                  setShowPortalMenu(false);
+                }}
+              >
+                <Text style={[
+                  styles.portalMenuText,
+                  selectedPortal === portal.type && { color: portal.color, fontWeight: '600' },
+                ]}>
+                  {portal.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
 
       <View style={styles.content}>
         <Text style={styles.title}>Mibu</Text>
