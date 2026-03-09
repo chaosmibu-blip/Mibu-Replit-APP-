@@ -12,7 +12,7 @@
  * - 開始扭蛋按鈕
  * - 獎池預覽 Modal：標題列、優惠券列表、空狀態
  *
- * 更新日期：2026-02-12（從主檔拆出）
+ * 更新日期：2026-03-09（Design Token 標準化）
  */
 import { StyleSheet, Dimensions } from 'react-native';
 import { MibuBrand, SemanticColors, UIColors, RoleColors } from '../../../../constants/Colors';
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   // ===== 道具箱已滿警告 =====
   inventoryFullWarning: {
     backgroundColor: SemanticColors.errorLight,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     padding: 18,
     marginBottom: Spacing.xl,
     flexDirection: 'row',
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   // ===== 道具箱快滿提醒 =====
   inventoryAlmostFull: {
     backgroundColor: MibuBrand.highlight,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,
     flexDirection: 'row',
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   prizeCouponLocationText: {
     fontSize: 11,
     color: MibuBrand.tan,
-    marginLeft: 4,
+    marginLeft: Spacing.xs,
     flexShrink: 1,
   },
 
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.xs,
   },
   regionCouponDiscountText: {
-    fontSize: 10,
+    fontSize: FontSize.xs,
     fontWeight: '700',
     color: UIColors.white,
   },
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
   regionCouponMerchantText: {
     fontSize: 11,
     color: MibuBrand.tan,
-    marginLeft: 4,
+    marginLeft: Spacing.xs,
     flexShrink: 1,
   },
 
@@ -498,11 +498,11 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   poolItemRarityText: {
-    fontSize: 10,
+    fontSize: FontSize.xs,
     fontWeight: '800',
   },
   poolItemCategoryText: {
-    fontSize: 10,
+    fontSize: FontSize.xs,
     fontWeight: '600',
   },
   poolItemName: {
@@ -520,10 +520,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   poolItemMerchantText: {
-
-    fontSize: 10,
+    fontSize: FontSize.xs,
     color: SemanticColors.warningDark,
-    marginLeft: 4,
+    marginLeft: Spacing.xs,
     fontWeight: '600',
   },
 });
