@@ -16,6 +16,7 @@ import { LocationScreen } from '../../../src/modules/shared/screens/LocationScre
 import { ItineraryScreenV2 } from '../../../src/modules/traveler/screens/ItineraryScreenV2';
 import { ChatScreen } from '../../../src/modules/shared/screens/ChatScreen';
 import { useI18n } from '../../../src/context/AppContext';
+import { UIColors } from '../../../constants/Colors';
 
 type SubView = 'location' | 'itinerary' | 'chat';
 
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   header: {
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     paddingBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',

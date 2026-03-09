@@ -35,7 +35,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
 import { usePartnerApplicationStatus, useApplyPartner } from '../../../hooks/useEconomyQueries';
-import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
+import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorState } from '../components/ui/ErrorState';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import {
@@ -325,7 +325,7 @@ export function PartnerApplyScreen() {
         disabled={!isFormValid || applyMutation.isPending}
       >
         {applyMutation.isPending ? (
-          <ActivityIndicator size="small" color="#FFFFFF" />
+          <ActivityIndicator size="small" color={UIColors.white} />
         ) : (
           <Text style={styles.submitButtonText}>{t.partner_applyButton}</Text>
         )}
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginTop: Spacing.xl,
   },
   submitButtonDisabled: { opacity: 0.5 },
-  submitButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: '#FFFFFF' },
+  submitButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: UIColors.white },
 
   statusIconContainer: {
     width: 120, height: 120, borderRadius: 60, backgroundColor: MibuBrand.creamLight,
