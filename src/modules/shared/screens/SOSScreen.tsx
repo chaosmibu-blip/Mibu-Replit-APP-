@@ -44,6 +44,8 @@ import { SosAlertStatus } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorState } from '../components/ui/ErrorState';
 import { LOCALE_MAP } from '../../../utils/i18n';
+import { AutoDismiss } from '../../../constants/animationTiming';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 
 // ============ 元件本體 ============
 
@@ -143,7 +145,7 @@ export function SOSScreen() {
     if (webhookUrl) {
       await Clipboard.setStringAsync(webhookUrl);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), AutoDismiss.quick);
     }
   };
 
@@ -503,7 +505,7 @@ export function SOSScreen() {
         )}
 
         {/* 底部留白 */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: BOTTOM_SPACER_HEIGHT }} />
       </ScrollView>
     </View>
   );

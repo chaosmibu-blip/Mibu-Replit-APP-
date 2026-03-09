@@ -11,6 +11,7 @@
  */
 import { StyleSheet } from 'react-native';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 
 const styles = StyleSheet.create({
   container: {
@@ -552,7 +553,7 @@ const styles = StyleSheet.create({
     color: SemanticColors.successDark,
   },
   bottomSpacer: {
-    height: 100,
+    height: BOTTOM_SPACER_HEIGHT,
   },
 });
 

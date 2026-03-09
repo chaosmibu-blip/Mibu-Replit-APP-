@@ -35,6 +35,7 @@ import { CouponTier } from '../../../types';
 import { UIColors, SemanticColors } from '../../../../constants/Colors';
 import { useI18n } from '../../../context/AppContext';
 import { tFormat } from '../../../utils/i18n';
+import { AutoDismiss } from '../../../constants/animationTiming';
 
 // ============================================================
 // 常數定義
@@ -198,7 +199,7 @@ export default function CouponWinAnimation({
           await Clipboard.setStringAsync(shareText);
           setShareStatus('copied');
           if (shareTimerRef.current) clearTimeout(shareTimerRef.current);
-          shareTimerRef.current = setTimeout(() => { setShareStatus('idle'); shareTimerRef.current = null; }, 2000);
+          shareTimerRef.current = setTimeout(() => { setShareStatus('idle'); shareTimerRef.current = null; }, AutoDismiss.quick);
         }
       } else {
         // Native: Use React Native Share
@@ -212,7 +213,7 @@ export default function CouponWinAnimation({
       if (error instanceof Error && error.name !== 'AbortError') {
         await Clipboard.setStringAsync(shareText);
         setShareStatus('copied');
-        setTimeout(() => setShareStatus('idle'), 2000);
+        setTimeout(() => setShareStatus('idle'), AutoDismiss.quick);
       }
     }
   };

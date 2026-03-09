@@ -31,6 +31,8 @@ import { ApiError } from '../../../services/base';
 import { InventoryItem, CouponTier, PlacePackOptionsResponse } from '../../../types';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
+import { InputLimit } from '../../../constants/businessDefaults';
+import { AnimationTiming } from '../../../constants/animationTiming';
 
 // ============================================================
 // 常數定義
@@ -601,7 +603,7 @@ export function ItemBoxScreen() {
     setRedeemSuccess(false);
     setCountdown(null);
     if (redeemTimerRef.current) clearTimeout(redeemTimerRef.current);
-    redeemTimerRef.current = setTimeout(() => { setRedeemModalVisible(true); redeemTimerRef.current = null; }, 300);
+    redeemTimerRef.current = setTimeout(() => { setRedeemModalVisible(true); redeemTimerRef.current = null; }, AnimationTiming.standard);
   };
 
   /**
@@ -1014,7 +1016,7 @@ export function ItemBoxScreen() {
                   placeholder={t.itemBox_redeemPlaceholder}
                   placeholderTextColor={MibuBrand.copper}
                   autoCapitalize="characters"
-                  maxLength={8}
+                  maxLength={InputLimit.tagName}
                   style={{
                     backgroundColor: MibuBrand.cream,
                     borderRadius: 12,

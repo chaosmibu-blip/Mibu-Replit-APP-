@@ -55,6 +55,7 @@ import { ApiError } from '../../../services/base';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender, AvatarPreset } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
 import styles from './ProfileScreen.styles';
@@ -706,7 +707,7 @@ export function ProfileScreen() {
         </View>
 
         {/* 底部留白 */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: BOTTOM_SPACER_HEIGHT }} />
       </ScrollView>
 
       {/* ===== 頭像選擇 Modal（獨立元件） ===== */}

@@ -43,6 +43,7 @@ import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateM
 import { TierBadge } from '../../shared/components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
@@ -423,7 +424,7 @@ export function MerchantCouponsScreen() {
         )}
 
         {/* 底部間距 */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: BOTTOM_SPACER_HEIGHT }} />
       </ScrollView>
 
       {/* ============ 新增/編輯彈窗 ============ */}

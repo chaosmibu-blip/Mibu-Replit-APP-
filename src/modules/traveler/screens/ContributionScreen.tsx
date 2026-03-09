@@ -47,6 +47,7 @@ import {
   useVoteSuggestion,
 } from '../../../hooks/useContributionQueries';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import {
   MyReport,
@@ -969,6 +970,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   bottomSpacer: {
-    height: 100,
+    height: BOTTOM_SPACER_HEIGHT,
   },
 });

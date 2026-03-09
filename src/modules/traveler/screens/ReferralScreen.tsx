@@ -39,6 +39,7 @@ import { referralApi } from '../../../services/referralApi';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
+import { InputLimit } from '../../../constants/businessDefaults';
 import {
   LeaderboardPeriod,
 } from '../../../types/referral';
@@ -568,7 +569,7 @@ export function ReferralScreen() {
                 placeholder={t.referral_enterCodePlaceholder}
                 placeholderTextColor={MibuBrand.tan}
                 autoCapitalize="characters"
-                maxLength={12}
+                maxLength={InputLimit.referralCode}
               />
               <TouchableOpacity
                 style={[

@@ -95,6 +95,8 @@ import { AddPlacesModal } from './AddPlacesModal';
 import { useGuestUpgradePrompt } from '../../../hooks/useGuestUpgradePrompt';
 import { UpgradePromptToast } from '../../shared/components/UpgradePromptToast';
 import AiDisclosureModal, { hasAcceptedAiDisclosure } from '../../shared/components/AiDisclosureModal';
+import { InputLimit } from '../../../constants/businessDefaults';
+import { AnimationTiming } from '../../../constants/animationTiming';
 
 // 常數、TypewriterText、輔助函數已拆至獨立檔案
 // → ItineraryScreenV2.styles.ts / TypewriterText.tsx / itineraryHelpers.ts
@@ -1335,7 +1337,7 @@ export function ItineraryScreenV2() {
             value={inputText}
             onChangeText={setInputText}
             multiline
-            maxLength={500}
+            maxLength={InputLimit.chatMessage}
             editable={!aiLoading}
           />
           <TouchableOpacity
@@ -1830,7 +1832,7 @@ export function ItineraryScreenV2() {
         onAccept={() => {
           setShowAiDisclosure(false);
           // 同意後自動重新觸發發送
-          setTimeout(() => sendAiMessage(), 100);
+          setTimeout(() => sendAiMessage(), AnimationTiming.nextTick);
         }}
         onDecline={() => setShowAiDisclosure(false)}
       />

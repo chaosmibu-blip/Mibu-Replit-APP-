@@ -8,6 +8,8 @@
 
 /** 轉場動畫時間（毫秒） */
 export const AnimationTiming = {
+  /** UI 下一幀延遲（讓動畫/狀態更新完成後再觸發） */
+  nextTick: 100,
   /** 快速轉場（按鈕回饋、選取效果） */
   quick: 200,
   /** 標準轉場（淡入淡出、Toast 動畫） */

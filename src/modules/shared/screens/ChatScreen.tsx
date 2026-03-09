@@ -31,6 +31,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
+import { InputLimit } from '../../../constants/businessDefaults';
 
 // ============ 介面定義 ============
 
@@ -381,7 +382,7 @@ export function ChatScreen() {
           value={inputText}
           onChangeText={setInputText}
           multiline
-          maxLength={500}
+          maxLength={InputLimit.chatMessage}
         />
         <TouchableOpacity
           style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}

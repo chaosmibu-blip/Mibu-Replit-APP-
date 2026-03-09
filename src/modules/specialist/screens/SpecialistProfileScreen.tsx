@@ -32,6 +32,7 @@ import {
 } from '../../../hooks/useSpecialistQueries';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
+import { PerkDefaults } from '../../../constants/businessDefaults';
 
 // ============ 元件主體 ============
 export function SpecialistProfileScreen() {
@@ -184,7 +185,7 @@ export function SpecialistProfileScreen() {
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{t.specialist_maxTravelers}</Text>
             <Text style={styles.infoValue}>
-              {specialist?.maxTravelers ?? 5} {t.specialist_people}
+              {specialist?.maxTravelers ?? PerkDefaults.maxTravelers} {t.specialist_people}
             </Text>
           </View>
         </View>

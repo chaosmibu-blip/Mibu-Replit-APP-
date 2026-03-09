@@ -33,6 +33,7 @@ import { useMiniProfile, useUpdateMiniName } from '../../../hooks/useMiniQueries
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize, Shadow } from '../../../theme/designTokens';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
+import { InputLimit } from '../../../constants/businessDefaults';
 import type { MiniMood, MiniGrowthStage } from '../../../types/mini';
 
 // ============ 輔助函數 ============
@@ -180,7 +181,7 @@ export function MiniProfileScreen() {
                 onChangeText={setNameInput}
                 placeholder={t.mini_namePlaceholder}
                 placeholderTextColor={MibuBrand.brownLight}
-                maxLength={50}
+                maxLength={InputLimit.title}
                 autoFocus
                 onSubmitEditing={handleSaveName}
               />

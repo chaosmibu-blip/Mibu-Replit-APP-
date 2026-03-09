@@ -27,6 +27,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/I18nContext';
 import { useVerifyMerchantCode } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { InputLimit } from '../../../constants/businessDefaults';
 
 // ============ 主元件 ============
 export function MerchantVerifyScreen() {
@@ -167,7 +168,7 @@ export function MerchantVerifyScreen() {
                 placeholder={t.merchant_codePlaceholder}
                 placeholderTextColor={UIColors.textSecondary}
                 autoCapitalize="characters"
-                maxLength={6}
+                maxLength={InputLimit.verifyCode}
               />
             </View>
 
