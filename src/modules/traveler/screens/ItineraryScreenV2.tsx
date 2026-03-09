@@ -223,12 +223,10 @@ export function ItineraryScreenV2() {
 
     try {
       const res = await itineraryApi.getItineraries(token);
-      if (res.success) {
-        setItineraries(res.itineraries);
-        // 如果有行程且沒有選中的，選第一個
-        if (res.itineraries.length > 0 && !activeItineraryId) {
-          setActiveItineraryId(res.itineraries[0].id);
-        }
+      setItineraries(res.itineraries);
+      // 如果有行程且沒有選中的，選第一個
+      if (res.itineraries.length > 0 && !activeItineraryId) {
+        setActiveItineraryId(res.itineraries[0].id);
       }
     } catch (error) {
       console.error('Failed to fetch itineraries:', error);
@@ -285,29 +283,27 @@ export function ItineraryScreenV2() {
         return;
       }
 
-      if (res.success) {
-        // 【預防卡住】再次檢查是否是當前行程
-        if (!isBackgroundUpdate && loadingItineraryIdRef.current !== id) return;
+      // 【預防卡住】再次檢查是否是當前行程
+      if (!isBackgroundUpdate && loadingItineraryIdRef.current !== id) return;
 
-        setCurrentItinerary(res.itinerary);
-        // 【截圖 36 修復】更新快取
-        itineraryCache.current[id] = res.itinerary;
+      setCurrentItinerary(res.itinerary);
+      // 【截圖 36 修復】更新快取
+      itineraryCache.current[id] = res.itinerary;
 
-        // 【截圖 9-15 #13】載入已保存的對話記錄
-        const savedMessages = await loadMessages(id);
-        if (savedMessages.length > 0) {
-          setMessages(savedMessages);
-        } else {
-          // 初始化 AI 歡迎訊息
-          const city = res.itinerary.city || res.itinerary.country || t.itinerary_hereLocation;
-          const welcomeMessage: AiChatMessage = {
-            role: 'assistant',
-            content: tFormat(t.itinerary_aiWelcome, { city }),
-          };
-          setMessages([welcomeMessage]);
-          // 保存歡迎訊息
-          saveMessages(id, [welcomeMessage]);
-        }
+      // 【截圖 9-15 #13】載入已保存的對話記錄
+      const savedMessages = await loadMessages(id);
+      if (savedMessages.length > 0) {
+        setMessages(savedMessages);
+      } else {
+        // 初始化 AI 歡迎訊息
+        const city = res.itinerary.city || res.itinerary.country || t.itinerary_hereLocation;
+        const welcomeMessage: AiChatMessage = {
+          role: 'assistant',
+          content: tFormat(t.itinerary_aiWelcome, { city }),
+        };
+        setMessages([welcomeMessage]);
+        // 保存歡迎訊息
+        saveMessages(id, [welcomeMessage]);
       }
     } catch (error) {
       console.error('Failed to fetch itinerary detail:', error);
@@ -347,27 +343,25 @@ export function ItineraryScreenV2() {
         token
       );
 
-      if (res.success) {
-        const assistantMessage: AiChatMessage = { role: 'assistant', content: res.response };
-        setMessages(prev => {
-          const newMessages = [...prev, assistantMessage];
-          saveMessages(currentItinerary.id, newMessages);
-          setTypingMessageIndex(newMessages.length - 1);
-          return newMessages;
-        });
+      const assistantMessage: AiChatMessage = { role: 'assistant', content: res.response };
+      setMessages(prev => {
+        const newMessages = [...prev, assistantMessage];
+        saveMessages(currentItinerary.id, newMessages);
+        setTypingMessageIndex(newMessages.length - 1);
+        return newMessages;
+      });
 
-        // 行程有更新時重新載入
-        if (res.itineraryUpdated) {
-          await fetchItineraryDetail(currentItinerary.id);
-        }
-
-        setTimeout(() => {
-          chatScrollRef.current?.scrollToEnd({ animated: true });
-        }, 100);
-
-        // #051: 首次 AI 對話 → 升級提示
-        guestUpgrade.checkFirstAiChat();
+      // 行程有更新時重新載入
+      if (res.itineraryUpdated) {
+        await fetchItineraryDetail(currentItinerary.id);
       }
+
+      setTimeout(() => {
+        chatScrollRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+
+      // #051: 首次 AI 對話 → 升級提示
+      guestUpgrade.checkFirstAiChat();
     } catch (error) {
       console.error('AI chat error:', error);
       setMessages(prev => [...prev, {
@@ -397,11 +391,9 @@ export function ItineraryScreenV2() {
     } : null);
 
     try {
-      const res = await itineraryApi.removePlace(currentItinerary.id, itemId, token);
-      if (res.success) {
-        await fetchItineraryDetail(currentItinerary.id);
-        showToastMessage(tFormat(t.itinerary_removed, { name: placeName || '' }));
-      }
+      await itineraryApi.removePlace(currentItinerary.id, itemId, token);
+      await fetchItineraryDetail(currentItinerary.id);
+      showToastMessage(tFormat(t.itinerary_removed, { name: placeName || '' }));
     } catch (error) {
       console.error('Remove place error:', error);
       await fetchItineraryDetail(currentItinerary.id);
@@ -525,21 +517,17 @@ export function ItineraryScreenV2() {
     // 呼叫 API
     try {
       const itemIds = newPlaces.map(p => p.id);
-      const res = await itineraryApi.reorderPlaces(currentItinerary.id, { itemIds }, token);
-      if (!res.success) {
-        // 【預防卡住】失敗時直接還原本地狀態
-        setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
-      } else {
-        // 更新快取
-        if (itineraryCache.current[currentItinerary.id]) {
-          itineraryCache.current[currentItinerary.id] = {
-            ...itineraryCache.current[currentItinerary.id],
-            places: newPlaces,
-          };
-        }
+      await itineraryApi.reorderPlaces(currentItinerary.id, { itemIds }, token);
+      // 更新快取
+      if (itineraryCache.current[currentItinerary.id]) {
+        itineraryCache.current[currentItinerary.id] = {
+          ...itineraryCache.current[currentItinerary.id],
+          places: newPlaces,
+        };
       }
     } catch (error) {
       console.error('Reorder error:', error);
+      // 失敗時直接還原本地狀態
       setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
     } finally {
       movingPlaceId.current = null;
@@ -567,24 +555,17 @@ export function ItineraryScreenV2() {
     // 呼叫 API
     try {
       const itemIds = newPlaces.map(p => p.id);
-      const res = await itineraryApi.reorderPlaces(currentItinerary.id, { itemIds }, token);
-      if (!res.success) {
-        // 【預防卡住】失敗時直接還原本地狀態，不發起新的網路請求
-        setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
-        showToastMessage(t.itinerary_reorderFailed);
-      } else {
-        // 更新快取
-        if (itineraryCache.current[currentItinerary.id]) {
-          itineraryCache.current[currentItinerary.id] = {
-            ...itineraryCache.current[currentItinerary.id],
-            places: newPlaces,
-          };
-        }
-        // 用戶操作不跳通知
+      await itineraryApi.reorderPlaces(currentItinerary.id, { itemIds }, token);
+      // 更新快取
+      if (itineraryCache.current[currentItinerary.id]) {
+        itineraryCache.current[currentItinerary.id] = {
+          ...itineraryCache.current[currentItinerary.id],
+          places: newPlaces,
+        };
       }
     } catch (error) {
       console.error('Drag reorder error:', error);
-      // 【預防卡住】失敗時直接還原本地狀態
+      // 失敗時直接還原本地狀態
       setCurrentItinerary(prev => prev ? { ...prev, places: oldPlaces } : null);
       showToastMessage(t.itinerary_reorderFailed);
     }
@@ -673,29 +654,11 @@ export function ItineraryScreenV2() {
     setEditingTitle(false);
 
     try {
-      const res = await itineraryApi.updateItinerary(
+      await itineraryApi.updateItinerary(
         itineraryId,
         { title: newTitle },
         token
       );
-      if (!res.success) {
-        // API 失敗，回滾到舊標題
-        setCurrentItinerary(prev => prev ? { ...prev, title: oldTitle } : null);
-        setItineraries(prev =>
-          prev.map(item =>
-            item.id === itineraryId
-              ? { ...item, title: oldTitle }
-              : item
-          )
-        );
-        if (itineraryCache.current[itineraryId]) {
-          itineraryCache.current[itineraryId] = {
-            ...itineraryCache.current[itineraryId],
-            title: oldTitle,
-          };
-        }
-        showToastMessage(t.itinerary_updateFailed);
-      }
     } catch (error) {
       console.error('Update title error:', error);
       // API 錯誤，回滾到舊標題
@@ -766,17 +729,15 @@ export function ItineraryScreenV2() {
 
               // 重新載入列表
               const listRes = await itineraryApi.getItineraries(token);
-              if (listRes.success) {
-                setItineraries(listRes.itineraries);
-                // 如果刪除的包含當前行程，切換到第一個
-                if (selectedItineraryIds.includes(activeItineraryId!)) {
-                  if (listRes.itineraries.length > 0) {
-                    setActiveItineraryId(listRes.itineraries[0].id);
-                    await fetchItineraryDetail(listRes.itineraries[0].id);
-                  } else {
-                    setActiveItineraryId(null);
-                    setCurrentItinerary(null);
-                  }
+              setItineraries(listRes.itineraries);
+              // 如果刪除的包含當前行程，切換到第一個
+              if (selectedItineraryIds.includes(activeItineraryId!)) {
+                if (listRes.itineraries.length > 0) {
+                  setActiveItineraryId(listRes.itineraries[0].id);
+                  await fetchItineraryDetail(listRes.itineraries[0].id);
+                } else {
+                  setActiveItineraryId(null);
+                  setCurrentItinerary(null);
                 }
               }
 
@@ -809,27 +770,24 @@ export function ItineraryScreenV2() {
             if (!token) return;
 
             try {
-              const res = await itineraryApi.deleteItinerary(id, token);
-              if (res.success) {
-                // 重新載入列表
-                const listRes = await itineraryApi.getItineraries(token);
-                if (listRes.success) {
-                  setItineraries(listRes.itineraries);
-                  // 如果刪除的是當前行程，切換到第一個
-                  if (id === activeItineraryId) {
-                    if (listRes.itineraries.length > 0) {
-                      setActiveItineraryId(listRes.itineraries[0].id);
-                      await fetchItineraryDetail(listRes.itineraries[0].id);
-                    } else {
-                      setActiveItineraryId(null);
-                      setCurrentItinerary(null);
-                    }
-                  }
+              await itineraryApi.deleteItinerary(id, token);
+              // 重新載入列表
+              const listRes = await itineraryApi.getItineraries(token);
+              setItineraries(listRes.itineraries);
+              // 如果刪除的是當前行程，切換到第一個
+              if (id === activeItineraryId) {
+                if (listRes.itineraries.length > 0) {
+                  setActiveItineraryId(listRes.itineraries[0].id);
+                  await fetchItineraryDetail(listRes.itineraries[0].id);
+                } else {
+                  setActiveItineraryId(null);
+                  setCurrentItinerary(null);
                 }
-                showToastMessage(t.itinerary_deletedSingle);
               }
+              showToastMessage(t.itinerary_deletedSingle);
             } catch (error) {
               console.error('Delete itinerary error:', error);
+              showToastMessage(t.itinerary_deleteFailed);
             }
           },
         },
@@ -970,9 +928,7 @@ export function ItineraryScreenV2() {
       if (!itineraryCache.current[item.id]) {
         try {
           const res = await itineraryApi.getItinerary(item.id, token);
-          if (res.success) {
-            itineraryCache.current[item.id] = res.itinerary;
-          }
+          itineraryCache.current[item.id] = res.itinerary;
         } catch (error) {
           console.error(`Failed to preload itinerary ${item.id}:`, error);
         }
@@ -991,9 +947,7 @@ export function ItineraryScreenV2() {
 
     try {
       const res = await itineraryApi.getAvailablePlaces(currentItinerary.id, token);
-      if (res.success) {
-        collectionCacheRef.current = res.categories;
-      }
+      collectionCacheRef.current = res.categories;
     } catch (error) {
       console.error('Failed to preload collection:', error);
     }
