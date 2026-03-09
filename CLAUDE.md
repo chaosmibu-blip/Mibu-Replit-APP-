@@ -683,7 +683,7 @@ import { Image as ExpoImage } from 'expo-image';
 | 一致性維度 | 具體做法 |
 |-----------|---------|
 | **API 呼叫** | 全部走 React Query hooks，不混用 useState+useEffect |
-| **樣式值** | 全部用 Design Token（MibuBrand、Spacing、Radius、FontSize），不硬編碼 |
+| **樣式值** | 全部用 Design Token（MibuBrand、Spacing、Radius、FontSize），不硬編碼。業務值用 businessDefaults，動畫用 animationTiming |
 | **狀態管理** | Query 資料用 hooks，UI 狀態用 useState，跨元件用 Context |
 | **錯誤處理** | Query 層統一處理，mutation 用 onError callback |
 | **命名慣例** | hooks 用 `useXxx`，query hooks 用 `useXxxQueries`，畫面用 `XxxScreen` |
@@ -719,13 +719,43 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
 | 複雜演算法 | 要（解釋邏輯思路） |
 | 反直覺的決定 | 要（解釋為什麼不用顯而易見的做法） |
 
-#### 五、品質檢查清單（寫完自己過一遍）
+#### 五、寫碼防呆規則（寫的當下就要對）
+
+**以下是健檢反覆發現的問題，寫碼時就要避免，不要等事後修：**
+
+| 寫什麼 | 正確做法 | 錯誤做法 |
+|--------|---------|---------|
+| **色彩** | `MibuBrand.brown` / `UIColors.white` / `SemanticColors.success.light` | `'#7A5230'` / `'#fff'` / `'#dcfce7'` |
+| **間距** | `Spacing.lg`（16）/ `Spacing.xl`（24） | `padding: 16` / `margin: 24` |
+| **圓角** | `Radius.md`（12）/ `Radius.xl`（20） | `borderRadius: 12` / `borderRadius: 20` |
+| **字體大小** | `FontSize.md`（14）/ `FontSize.lg`（16） | `fontSize: 14` / `fontSize: 16` |
+| **SafeArea** | `const insets = useSafeAreaInsets()` + `paddingTop: insets.top` | `paddingTop: 60` / `Platform.OS === 'ios' ? 60 : 40` |
+| **動畫延遲** | `AnimationTiming.standard`（300ms）/ `AutoDismiss.quick`（2s） | `setTimeout(..., 300)` / `setTimeout(..., 2000)` |
+| **業務 fallback** | `PerkDefaults.dailyPullLimit` / `InputLimit.chatMessage` | `?? 36` / `maxLength={500}` |
+| **底部留白** | `BOTTOM_SPACER_HEIGHT` | `height: 100` |
+| **用戶可見文字** | `t.xxx`（i18n key） | `'請稍候'` / `'Error'` 硬編碼中英文 |
+| **API 錯誤** | 讓錯誤冒泡到 React Query（不 try/catch） | Service 層 catch → return `{ success: false }` |
+| **Query Key** | `queryKeys.xxx`（統一常數） | `queryKey: ['xxx']`（原始字串） |
+
+**常數檔案速查**：
+```typescript
+import { Spacing, Radius, FontSize } from '@/theme/designTokens';
+import { MibuBrand, UIColors, SemanticColors } from '@/constants/Colors';
+import { AnimationTiming, AutoDismiss } from '@/constants/animationTiming';
+import { PerkDefaults, InputLimit, Threshold, BOTTOM_SPACER_HEIGHT } from '@/constants/businessDefaults';
+import { ComponentSize } from '@/constants/componentSizes';
+```
+
+#### 六、品質檢查清單（寫完自己過一遍）
 
 ```
 □ 命名：隨便指一個變數，不看上下文能懂嗎？
 □ 結構：函數有超過 30 行的嗎？能拆嗎？
 □ 一致：跟專案裡同類的寫法一樣嗎？
-□ 硬編碼：有魔術數字嗎？該用 Token/常數嗎？
+□ 硬編碼：有魔術數字嗎？該用 Token/常數嗎？（見防呆規則表）
+□ 色彩：有 '#xxx' 嗎？該用 Color Token 嗎？
+□ 間距：有裸數字 padding/margin 嗎？該用 Spacing Token 嗎？
+□ 文字：有硬編碼中英文嗎？該走 i18n 嗎？
 □ 邊界：loading / error / empty 都處理了嗎？
 □ 重複：有沒有跟別處重複的邏輯可以抽出來？
 ```
@@ -1043,6 +1073,78 @@ grep -n "Platform.OS === 'ios'" app/login.tsx | grep -i apple
 
 # 7. Android Client ID 已設定
 grep 'androidClientId' hooks/useGoogleAuth.ts
+```
+
+---
+
+### /code-audit — 前端程式碼品質健檢（用戶要求健檢或定期品質檢查時觸發）
+
+**核心原則**：按項目逐項掃全專案，修完一項再換下一項。不是抽查，是全面體檢。
+
+**觸發時機**：用語意與情境判斷 — 當用戶提到「健檢」、「品質檢查」、「code audit」、「技術債清理」、或想全面檢視程式碼品質時觸發。
+
+**健檢項目（按優先順序執行）**：
+
+| 優先級 | 項目 | 掃描方式 | 修復規則 |
+|--------|------|---------|---------|
+| P0 | **Service 層吞錯誤** | `grep -rn "catch.*error" src/services/` | 移除 try/catch，讓錯誤冒泡到 React Query |
+| P0 | **重複邏輯合併** | 找超過 80% 相似的函數 | 抽取共用函數 |
+| P1 | **paddingTop 硬編碼** | `grep -rn "paddingTop.*60\|paddingTop.*Platform"` | 改用 `useSafeAreaInsets()` |
+| P1 | **硬編碼文字** | `grep -rn "Alert\.alert.*[\u4e00-\u9fff]"` | 全部走 `t.xxx` 翻譯 key |
+| P1 | **Query Key 不一致** | `grep -rn "queryKey.*\['" src/hooks/` | 統一用 queryKeys 常數 |
+| P2 | **重複重試** | `grep -rn "retry\|MAX_RETRIES" src/services/` | 選一層留，不疊加 |
+| P2 | **硬編碼色彩** | `grep -rn "'#[0-9a-fA-F]'" src/modules/` | 改用 MibuBrand / UIColors / SemanticColors |
+| P2 | **Magic Number** | `grep -rn "setTimeout.*[0-9]\{3,\}" src/modules/` | 改用 AnimationTiming / AutoDismiss / businessDefaults 常數 |
+| P3 | **Design Token 缺失** | `grep -rL "Spacing" src/modules/**/*.styles.ts` | 導入 Spacing/Radius/FontSize |
+| P3 | **共用元件抽取** | 找 3+ 處重複的 UI 結構 | 抽取共用元件 |
+
+**執行流程**：
+```
+每個項目必須完整走過：
+
+1. 掃描 → grep/glob 找出全專案所有問題點
+2. 規劃 → 列出受影響的檔案清單
+3. 建立計劃文件 → docs/plan-{主題}.md
+4. 逐檔修復 → 一次改一個檔案
+5. 驗證 → npx tsc --noEmit 確認零錯誤
+6. 獨立 commit → 訊息標明項目編號
+7. 進入下一項
+```
+
+**掃描範圍**：
+```bash
+# 統計專案規模
+find src/ app/ -name "*.ts" -o -name "*.tsx" | wc -l
+find src/ app/ -name "*.ts" -o -name "*.tsx" | xargs wc -l | tail -1
+```
+
+**常數檔案位置**（修復時引用）：
+
+| 常數 | 檔案 |
+|------|------|
+| AnimationTiming / AutoDismiss | `src/constants/animationTiming.ts` |
+| PerkDefaults / InputLimit / Threshold / BOTTOM_SPACER_HEIGHT | `src/constants/businessDefaults.ts` |
+| ComponentSize | `src/constants/componentSizes.ts` |
+| Spacing / Radius / FontSize / Shadow | `src/theme/designTokens.ts` |
+| MibuBrand / UIColors / SemanticColors | `constants/Colors.ts` |
+
+**Commit 策略**：每個項目獨立 commit，訊息格式：`refactor: 項目 N — {說明}（{檔案數} 檔）`
+
+**完成標準**：
+```
+□ 所有 P0-P2 項目已修復
+□ npx tsc --noEmit 零新增錯誤
+□ 每項獨立 commit + push
+□ 計劃文件更新 checkbox 勾選
+□ 輸出健檢摘要表格
+```
+
+**健檢摘要表格格式**：
+```
+| 項目 | 修復前 | 修復後 | 影響檔案 |
+|------|--------|--------|---------|
+| Service 吞錯誤 | 15 處 | 0 處 | 18 檔 |
+| 硬編碼色彩 | 120+ 處 | 0 處 | 30 檔 |
 ```
 
 ---
