@@ -16,6 +16,7 @@
  */
 import { StyleSheet, Dimensions } from 'react-native';
 import { MibuBrand, SemanticColors, UIColors, RoleColors } from '../../../../constants/Colors';
+import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 
 // 螢幕寬度（用於計算獎池項目寬度）
 export const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -51,9 +52,9 @@ const styles = StyleSheet.create({
   // ===== 選擇區域卡片 =====
   sectionCard: {
     backgroundColor: MibuBrand.creamLight,
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 24,
+    borderRadius: Radius.xxl,
+    padding: Spacing.xl,
+    marginBottom: Spacing.xl,
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
     shadowColor: MibuBrand.brown,
@@ -65,16 +66,16 @@ const styles = StyleSheet.create({
   sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   sectionTitleText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: MibuBrand.brown,
-    marginLeft: 8,
+    marginLeft: Spacing.sm,
   },
   regionSelectWrapper: {
-    marginTop: 12,
+    marginTop: Spacing.md,
   },
 
   // ===== 抽取張數卡片 =====
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   infoButtonText: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontWeight: '800',
     color: MibuBrand.warmWhite,
   },
@@ -114,9 +115,9 @@ const styles = StyleSheet.create({
     left: 0,
     // bottom: '100%' 需要在 inline style 中處理（StyleSheet 不支援百分比 bottom）
     backgroundColor: 'rgba(128, 128, 128, 0.5)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.sm,
     zIndex: 10,
     minWidth: 180,
   },
@@ -126,12 +127,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   pullCountValue: {
-    fontSize: 28,
+    fontSize: FontSize.xxxl,
     fontWeight: '800',
     color: MibuBrand.brownDark,
   },
   pullCountUnit: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '600',
   },
   sliderRow: {
@@ -148,8 +149,8 @@ const styles = StyleSheet.create({
   sliderLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 4,
-    paddingHorizontal: 4,
+    marginTop: Spacing.xs,
+    paddingHorizontal: Spacing.xs,
   },
   sliderLabelText: {
     fontSize: 13,
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: SemanticColors.errorLight,
     borderRadius: 20,
     padding: 18,
-    marginBottom: 24,
+    marginBottom: Spacing.xl,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
   },
   inventoryFullTextContainer: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: Spacing.md,
   },
   inventoryFullTitle: {
     fontSize: 15,
@@ -192,8 +193,8 @@ const styles = StyleSheet.create({
   inventoryFullButton: {
     backgroundColor: SemanticColors.errorDark,
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 12,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.md,
   },
   inventoryFullButtonText: {
     fontSize: 13,
@@ -205,13 +206,13 @@ const styles = StyleSheet.create({
   inventoryAlmostFull: {
     backgroundColor: MibuBrand.highlight,
     borderRadius: 20,
-    padding: 16,
-    marginBottom: 24,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
     flexDirection: 'row',
     alignItems: 'center',
   },
   inventoryAlmostFullText: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     color: MibuBrand.brown,
     marginLeft: 10,
     flex: 1,
@@ -219,12 +220,12 @@ const styles = StyleSheet.create({
 
   // ===== 開始扭蛋按鈕 =====
   gachaButton: {
-    borderRadius: 24,
+    borderRadius: Radius.xxl,
     height: 64,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: Spacing.xl,
   },
   gachaButtonEnabled: {
     backgroundColor: MibuBrand.brown,
@@ -262,8 +263,8 @@ const styles = StyleSheet.create({
   },
   poolModalContainer: {
     backgroundColor: UIColors.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: Radius.xxl,
+    borderTopRightRadius: Radius.xxl,
     maxHeight: '85%',
     minHeight: '60%',
   },
@@ -271,19 +272,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 20,
+    padding: Spacing.xl,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.creamLight,
   },
   poolModalTitle: {
-    fontSize: 18,
+    fontSize: FontSize.xl,
     fontWeight: '800',
     color: MibuBrand.dark,
   },
   poolModalCloseButton: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
     justifyContent: 'center',
@@ -297,9 +298,9 @@ const styles = StyleSheet.create({
     padding: 40,
   },
   poolLoadingText: {
-    marginTop: 16,
+    marginTop: Spacing.lg,
     color: MibuBrand.tan,
-    fontSize: 14,
+    fontSize: FontSize.md,
   },
 
   // ===== Modal 內容 =====
@@ -307,14 +308,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   poolContentContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
     paddingBottom: 40,
   },
   poolRegionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   poolRegionText: {
     fontSize: 13,
@@ -325,10 +326,10 @@ const styles = StyleSheet.create({
   poolSectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   poolSectionTitleText: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: SemanticColors.warningDark,
     marginLeft: 6,
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
 
   // ===== 獎品池優惠券卡片 =====
   prizeCouponCard: {
-    borderRadius: 12,
+    borderRadius: Radius.md,
     padding: 14,
     marginBottom: 10,
     borderWidth: 2,
@@ -356,17 +357,17 @@ const styles = StyleSheet.create({
   },
   prizeCouponBadgeSP: {
     backgroundColor: SemanticColors.starYellow,
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
     borderRadius: 6,
-    marginRight: 8,
+    marginRight: Spacing.sm,
   },
   prizeCouponBadgeOther: {
     backgroundColor: '#8b5cf6',
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
     borderRadius: 6,
-    marginRight: 8,
+    marginRight: Spacing.sm,
   },
   prizeCouponBadgeText: {
     fontSize: 11,
@@ -374,10 +375,10 @@ const styles = StyleSheet.create({
     color: UIColors.white,
   },
   prizeCouponTitle: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: MibuBrand.dark,
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   prizeCouponLocationRow: {
     flexDirection: 'row',
@@ -401,23 +402,23 @@ const styles = StyleSheet.create({
   },
   regionCouponBadgeSSR: {
     backgroundColor: '#fbbf24',
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
     borderRadius: 6,
-    marginRight: 8,
+    marginRight: Spacing.sm,
   },
   regionCouponBadgeOther: {
     backgroundColor: '#a855f7',
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
     borderRadius: 6,
-    marginRight: 8,
+    marginRight: Spacing.sm,
   },
   regionCouponDiscountBadge: {
     backgroundColor: SemanticColors.errorDark,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: Radius.xs,
   },
   regionCouponDiscountText: {
     fontSize: 10,
@@ -425,7 +426,7 @@ const styles = StyleSheet.create({
     color: UIColors.white,
   },
   regionCouponTitle: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: MibuBrand.dark,
     marginBottom: 2,
@@ -455,10 +456,10 @@ const styles = StyleSheet.create({
     backgroundColor: SemanticColors.warningLight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   poolEmptyText: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     color: MibuBrand.tan,
     textAlign: 'center',
   },
@@ -466,8 +467,8 @@ const styles = StyleSheet.create({
   // ===== 獎池項目卡片（renderPoolItem）=====
   poolItemCard: {
     backgroundColor: UIColors.white,
-    borderRadius: 16,
-    marginBottom: 12,
+    borderRadius: Radius.lg,
+    marginBottom: Spacing.md,
     marginHorizontal: 6,
     overflow: 'hidden',
     borderWidth: 2,
@@ -483,17 +484,17 @@ const styles = StyleSheet.create({
     height: 100,
   },
   poolItemInfoContainer: {
-    padding: 12,
+    padding: Spacing.md,
   },
   poolItemRarityRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   poolItemRarityBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: Radius.sm,
     marginRight: 6,
   },
   poolItemRarityText: {
@@ -519,6 +520,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   poolItemMerchantText: {
+
     fontSize: 10,
     color: SemanticColors.warningDark,
     marginLeft: 4,

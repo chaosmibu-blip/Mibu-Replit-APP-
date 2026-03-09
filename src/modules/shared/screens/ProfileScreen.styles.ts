@@ -9,6 +9,7 @@
  */
 import { StyleSheet } from 'react-native';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 
 const styles = StyleSheet.create({
   // 主容器
@@ -26,7 +27,7 @@ const styles = StyleSheet.create({
   // 頭像區塊
   avatarSection: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: Spacing.xl,
   },
   avatarContainer: {
     position: 'relative',
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     borderColor: MibuBrand.warmWhite,
   },
   avatarHint: {
-    marginTop: 8,
+    marginTop: Spacing.sm,
     fontSize: 13,
     color: MibuBrand.copper,
   },
@@ -74,8 +75,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
     backgroundColor: MibuBrand.creamLight,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.cream,
@@ -87,18 +88,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: FontSize.xl,
     fontWeight: '700',
     color: MibuBrand.brown,
   },
   saveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
     minHeight: 44,
     justifyContent: 'center',
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '600',
     color: MibuBrand.brown,
   },
@@ -115,15 +116,15 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: MibuBrand.brownLight,
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
     textTransform: 'uppercase',
   },
   // 輸入框
   input: {
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     padding: 14,
-    fontSize: 16,
+    fontSize: FontSize.lg,
     color: MibuBrand.dark,
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
   // 唯讀欄位
   readOnlyField: {
     backgroundColor: MibuBrand.cream,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     padding: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   readOnlyText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     color: MibuBrand.brownLight,
   },
   // 橫向排列
@@ -153,24 +154,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     padding: 14,
     borderWidth: 1,
     borderColor: MibuBrand.tanLight,
   },
   pickerText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     color: MibuBrand.dark,
   },
   pickerPlaceholder: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     color: MibuBrand.tan,
   },
   // 選擇器選項
   pickerOptions: {
-    marginTop: 8,
+    marginTop: Spacing.sm,
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -187,7 +188,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.highlight,
   },
   pickerOptionText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     color: MibuBrand.brownLight,
   },
   pickerOptionTextActive: {
@@ -198,14 +199,14 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: MibuBrand.cream,
-    marginVertical: 24,
+    marginVertical: Spacing.xl,
   },
   // 群組標題
   groupTitle: {
-    fontSize: 18,
+    fontSize: FontSize.xl,
     fontWeight: '700',
     color: MibuBrand.brown,
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   // 【截圖 19】Toast 樣式
   toast: {
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.brownDark,
     paddingVertical: 14,
     paddingHorizontal: 20,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

@@ -7,11 +7,12 @@
  * 從 ReferralScreen.tsx 抽離，僅包含 StyleSheet，
  * 不包含任何業務邏輯。
  *
- * 更新日期：2026-02-12（從主檔案抽離樣式）
+ * 更新日期：2026-03-09（替換硬編碼數值為 Design Token）
  */
 import { StyleSheet } from 'react-native';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
+import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 
 const styles = StyleSheet.create({
   container: {
@@ -28,8 +29,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
     backgroundColor: MibuBrand.warmWhite,
     borderBottomWidth: 1,
     borderBottomColor: MibuBrand.tanLight,
@@ -43,10 +44,10 @@ const styles = StyleSheet.create({
   headerCenter: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: FontSize.xl,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
@@ -57,13 +58,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
+    padding: Spacing.lg,
   },
   // 推薦碼卡片 - 棕色背景、白色文字
   referralCodeCard: {
     backgroundColor: MibuBrand.brown,
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: Radius.xl,
+    padding: Spacing.xl,
     marginBottom: 20,
     shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 4 },
@@ -75,19 +76,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   codeCardTitle: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '600',
     color: UIColors.white,
     opacity: 0.9,
   },
   codeDisplayArea: {
     backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    borderRadius: Radius.md,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
     alignItems: 'center',
     marginBottom: 20,
   },
@@ -99,18 +100,18 @@ const styles = StyleSheet.create({
   },
   codeCardActions: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
   },
   copyButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     backgroundColor: UIColors.white,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.md,
   },
   copyButtonText: {
     fontSize: 15,
@@ -122,10 +123,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.md,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
   },
@@ -137,8 +138,8 @@ const styles = StyleSheet.create({
   // 生成推薦碼卡片（尚未生成時顯示）
   generateCodeCard: {
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
-    padding: 4,
+    borderRadius: Radius.xl,
+    padding: Spacing.xs,
     marginBottom: 20,
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
@@ -146,18 +147,18 @@ const styles = StyleSheet.create({
   },
   generateCardInner: {
     alignItems: 'center',
-    paddingVertical: 32,
-    paddingHorizontal: 24,
+    paddingVertical: Spacing.xxl,
+    paddingHorizontal: Spacing.xl,
   },
   generateTitle: {
-    fontSize: 18,
+    fontSize: FontSize.xl,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   generateSubtitle: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     color: MibuBrand.copper,
     textAlign: 'center',
     marginBottom: 20,
@@ -166,29 +167,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     backgroundColor: MibuBrand.brown,
     paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 12,
+    paddingHorizontal: Spacing.xxl,
+    borderRadius: Radius.md,
   },
   generateBtnText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: UIColors.white,
   },
   // 統計數據列 - 帶圖示圓圈的 StatCard 風格
   statsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
   },
   statCard: {
     flex: 1,
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    borderRadius: Radius.lg,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
     alignItems: 'center',
     shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
@@ -208,32 +209,32 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '800',
     color: MibuBrand.brownDark,
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     color: MibuBrand.copper,
     textAlign: 'center',
   },
   // 區段樣式
   section: {
-    marginBottom: 24,
+    marginBottom: Spacing.xl,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: MibuBrand.brownDark,
   },
   // 運作說明卡片
   howItWorksCard: {
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     padding: 20,
     shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
@@ -248,14 +249,14 @@ const styles = StyleSheet.create({
   stepNumber: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     backgroundColor: MibuBrand.brown,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
   },
   stepNumberText: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: UIColors.white,
   },
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   stepDesc: {
     fontSize: 13,
@@ -278,12 +279,12 @@ const styles = StyleSheet.create({
     height: 20,
     backgroundColor: MibuBrand.tanLight,
     marginLeft: 15,
-    marginVertical: 8,
+    marginVertical: Spacing.sm,
   },
   // 排行榜
   leaderboardCard: {
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     overflow: 'hidden',
     shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
   },
   leaderboardItemBorder: {
     borderBottomWidth: 1,
@@ -311,24 +312,24 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.creamLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Spacing.md,
   },
   rankText: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: MibuBrand.copper,
   },
   leaderboardAvatar: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     backgroundColor: MibuBrand.cream,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Spacing.md,
   },
   leaderboardAvatarText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: MibuBrand.brown,
   },
@@ -350,42 +351,42 @@ const styles = StyleSheet.create({
   inviteCountBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: Spacing.xs,
     backgroundColor: MibuBrand.highlight,
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: Radius.md,
   },
   inviteCountText: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: MibuBrand.brown,
   },
   emptyLeaderboard: {
-    padding: 32,
+    padding: Spacing.xxl,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyLeaderboardText: {
-    marginTop: 12,
+    marginTop: Spacing.md,
     fontSize: 15,
     fontWeight: '600',
     color: MibuBrand.copper,
   },
   emptyLeaderboardSubtext: {
-    marginTop: 4,
+    marginTop: Spacing.xs,
     fontSize: 13,
     color: MibuBrand.tan,
   },
   myRankCard: {
-    marginTop: 12,
+    marginTop: Spacing.md,
     backgroundColor: MibuBrand.highlight,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     padding: 14,
     alignItems: 'center',
   },
   myRankText: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '600',
     color: MibuBrand.brown,
   },
@@ -397,7 +398,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     padding: 14,
     shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
@@ -416,10 +417,10 @@ const styles = StyleSheet.create({
   rewardIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Spacing.md,
   },
   rewardInfo: {
     flex: 1,
@@ -440,8 +441,8 @@ const styles = StyleSheet.create({
   achievedBadge: {
     backgroundColor: SemanticColors.successDark,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.sm,
   },
   achievedText: {
     fontSize: 11,
@@ -451,8 +452,8 @@ const styles = StyleSheet.create({
   nextBadge: {
     backgroundColor: MibuBrand.highlight,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.sm,
   },
   nextText: {
     fontSize: 11,
@@ -462,7 +463,7 @@ const styles = StyleSheet.create({
   // 套用推薦碼區段
   applyCard: {
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     padding: 20,
     shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
@@ -473,19 +474,19 @@ const styles = StyleSheet.create({
   applyCardHint: {
     fontSize: 13,
     color: MibuBrand.copper,
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   applyInputRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.md,
   },
   applyInput: {
     flex: 1,
     backgroundColor: MibuBrand.creamLight,
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.lg,
     paddingVertical: 14,
-    fontSize: 18,
+    fontSize: FontSize.xl,
     fontWeight: '600',
     color: MibuBrand.brownDark,
     letterSpacing: 2,
@@ -494,7 +495,7 @@ const styles = StyleSheet.create({
   applyBtn: {
     backgroundColor: MibuBrand.brown,
     width: 52,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -503,13 +504,13 @@ const styles = StyleSheet.create({
   },
   // 邀請歷史列表
   referralsList: {
-    gap: 8,
+    gap: Spacing.sm,
   },
   referralItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
+    borderRadius: Radius.lg,
     padding: 14,
     shadowColor: UIColors.black,
     shadowOffset: { width: 0, height: 2 },
@@ -520,14 +521,14 @@ const styles = StyleSheet.create({
   referralAvatar: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     backgroundColor: MibuBrand.cream,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Spacing.md,
   },
   referralAvatarText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: MibuBrand.brown,
   },
@@ -535,20 +536,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   referralName: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '600',
     color: MibuBrand.brownDark,
     marginBottom: 2,
   },
   referralDate: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     color: MibuBrand.tan,
   },
   referralReward: {
     alignItems: 'flex-end',
   },
   referralXp: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '700',
     color: SemanticColors.successDark,
   },
