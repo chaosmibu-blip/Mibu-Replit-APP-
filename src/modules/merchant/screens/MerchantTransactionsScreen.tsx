@@ -90,7 +90,7 @@ export function MerchantTransactionsScreen() {
     switch (type) {
       case 'purchase': return SemanticColors.successDark; // 綠色：購買
       case 'usage': return SemanticColors.errorDark;    // 紅色：使用
-      case 'refund': return '#f59e0b';   // 橘色：退款
+      case 'refund': return SemanticColors.starYellow;   // 橘色：退款
       default: return UIColors.textSecondary;
     }
   };

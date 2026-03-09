@@ -37,7 +37,7 @@ import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
 } from '../../../hooks/useNotificationQueries';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, RoleColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import { ErrorState } from '../components/ui/ErrorState';
 import type { NotificationPreferences } from '../../../types/notifications';
@@ -267,7 +267,7 @@ export function NotificationPreferencesScreen() {
         <View style={styles.card}>
           <View style={styles.settingItem}>
             <View style={[styles.iconContainer, { backgroundColor: '#F5F3FF' }]}>
-              <Ionicons name="moon-outline" size={22} color="#7C3AED" />
+              <Ionicons name="moon-outline" size={22} color={RoleColors.specialist.dark} />
             </View>
             <View style={styles.labelContainer}>
               <Text style={styles.itemLabel}>{t.notifPref_quietHoursTitle}</Text>
