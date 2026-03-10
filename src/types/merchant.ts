@@ -116,14 +116,6 @@ export interface MerchantDailyCode {
   expiresAt: string;  // 過期時間（ISO 8601）
 }
 
-/**
- * 商家點數資訊
- */
-export interface MerchantCredits {
-  creditBalance: number;  // 點數餘額
-  merchantId: number;     // 商家 ID
-}
-
 // ============ 商家申請 ============
 
 /**
@@ -135,6 +127,36 @@ export interface MerchantApplyParams {
   businessName: string;                       // 商家名稱（必填）
   email: string;                              // Email（必填）
   surveyResponses?: Record<string, unknown>;  // 問卷回答（選填）
+  // #070: 店家綁定欄位（三種模式擇一，全選填）
+  claimedPlaceId?: number;                    // 模式 1：選了現有景點的 place_cache ID
+  claimedGooglePlaceId?: string;              // 模式 2：貼連結解析後的 Google Place ID
+  claimedGoogleMapsUrl?: string;              // 模式 2：原始 Google Maps 連結
+  claimedPlaceName?: string;                  // 模式 2/3：店家名稱
+  claimedPlaceData?: Record<string, unknown>; // 模式 2/3：完整資料快照
+}
+
+/** #070: Google Maps 連結解析回應 */
+export interface ResolveUrlResponse {
+  success: boolean;
+  place: {
+    googlePlaceId: string;
+    placeName: string;
+    address: string;
+    district: string;
+    city: string;
+    country: string;
+    locationLat: number;
+    locationLng: number;
+    phone?: string;
+    website?: string;
+    openingHours?: {
+      weekdayText: string[];
+      periods: unknown[];
+    };
+    rating?: number;
+    types?: string[];
+    businessStatus?: string;
+  };
 }
 
 /**
@@ -292,20 +314,6 @@ export interface MerchantCouponsResponse {
   coupons: MerchantCoupon[];     // 優惠券列表
 }
 
-// ============ 商家交易記錄 ============
-
-/**
- * 商家交易記錄
- */
-export interface MerchantTransaction {
-  id: number;                                    // 交易 ID
-  merchantId: number;                            // 商家 ID
-  amount: number;                                // 金額
-  type: 'purchase' | 'usage' | 'refund';         // 交易類型
-  description?: string;                          // 描述
-  createdAt: string;                             // 交易時間
-}
-
 // ============ 商家地點管理 ============
 
 /**
@@ -384,23 +392,6 @@ export interface MerchantPlaceLegacy {
   createdAt: string;   // 建立時間
 }
 
-// ============ 商家產品 ============
-
-/**
- * 商家產品
- */
-export interface MerchantProduct {
-  id: number;              // 產品 ID
-  merchantId: number;      // 商家 ID
-  placeId?: number;        // 關聯地點 ID
-  name: string;            // 產品名稱
-  description?: string;    // 描述
-  price?: number;          // 原價
-  discountPrice?: number;  // 折扣價
-  isActive: boolean;       // 是否啟用
-  createdAt: string;       // 建立時間
-}
-
 // ============ 地點搜尋 ============
 
 /**
@@ -415,18 +406,6 @@ export interface PlaceSearchResult {
   district?: string;   // 區域
   city?: string;       // 城市
   isClaimed: boolean;  // 是否已被認領
-}
-
-// ============ 核銷碼 ============
-
-/**
- * 商家核銷碼
- *
- * 用於優惠券核銷的驗證碼
- */
-export interface MerchantRedemptionCode {
-  code: string;       // 核銷碼
-  expiresAt: string;  // 過期時間（ISO 8601）
 }
 
 // ============ 區域獎池 ============
