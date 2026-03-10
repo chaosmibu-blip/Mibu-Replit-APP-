@@ -364,11 +364,6 @@ export default function LoginScreen() {
 
       if (data.token && data.user) {
         await processLoginSuccess(data.user, data.token, selectedPortal, 'google');
-
-        // #046: 同裝置偵測到既有帳號，提示合併
-        if (data.suggestMerge) {
-          showSuggestMergeAlert(data.suggestMerge);
-        }
       } else {
         console.error('[Google Native] 回應格式異常（缺 token/user）:', JSON.stringify(data));
         Alert.alert(t.auth_oauthLoginFailed, t.auth_googleSignInFailed);
@@ -457,23 +452,6 @@ export default function LoginScreen() {
     } catch (error) {
       console.error('Failed to fetch user after auth:', error);
     }
-  };
-
-  // #046: 同裝置偵測到既有帳號時，提示用戶
-  const showSuggestMergeAlert = (suggestMerge: {
-    existingAccountId: string;
-    existingName: string | null;
-    sharedDeviceWarning: string;
-  }) => {
-    const parts: string[] = [];
-    if (suggestMerge.existingName) {
-      parts.push(t.auth_suggestMergeHasAccount.replace('{name}', suggestMerge.existingName));
-    }
-    if (suggestMerge.sharedDeviceWarning) {
-      parts.push(suggestMerge.sharedDeviceWarning);
-    }
-    parts.push(t.auth_suggestMergeHint);
-    Alert.alert(t.auth_suggestMergeTitle, parts.join('\n\n'), [{ text: t.common_confirm }]);
   };
 
   // #049: 訪客登入改為呼叫後端 API（後端建帳 + 發 JWT）
@@ -621,11 +599,6 @@ export default function LoginScreen() {
             data.user.email = credential.email;
           }
           await processLoginSuccess(data.user, data.token, selectedPortal, 'apple');
-
-          // #046: 同裝置偵測到既有帳號，提示合併
-          if (data.suggestMerge) {
-            showSuggestMergeAlert(data.suggestMerge);
-          }
         } else {
           Alert.alert(
             t.auth_oauthLoginFailed,

@@ -7,9 +7,7 @@ export { MerchantDashboardScreen } from './screens/MerchantDashboardScreen';
 export { MerchantAnalyticsScreen } from './screens/MerchantAnalyticsScreen';
 export { MerchantCouponsScreen } from './screens/MerchantCouponsScreen';
 export { MerchantPlacesScreen } from './screens/MerchantPlacesScreen';
-export { MerchantProductsScreen } from './screens/MerchantProductsScreen';
 export { MerchantProfileScreen } from './screens/MerchantProfileScreen';
-export { MerchantTransactionsScreen } from './screens/MerchantTransactionsScreen';
 export { MerchantVerifyScreen } from './screens/MerchantVerifyScreen';
 
 // Place Management Screens - 地點管理

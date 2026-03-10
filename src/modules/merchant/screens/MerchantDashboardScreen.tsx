@@ -3,15 +3,12 @@
  *
  * 功能說明：
  * - 商家後台首頁，顯示主要功能入口
- * - 提供今日核銷碼和點數餘額資訊
- * - 提供快速導航至各管理功能
+ * - 進入時先檢查商家審核狀態（GET /api/merchant/me）
+ * - approved → 顯示完整 Dashboard + 每日核銷碼
+ * - pending → 顯示審核中提示
+ * - rejected → 顯示審核未通過提示
  *
- * 串接的 API：
- * - GET /merchant/daily-code - 取得今日核銷碼
- * - GET /merchant/credits - 取得點數餘額
- * - POST /merchant/credits/purchase - 購買點數
- *
- * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
+ * 更新日期：2026-03-09（移除 credits API + 加入 merchant status 檢查）
  */
 import React from 'react';
 import {
@@ -21,131 +18,83 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
-  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../../context/AuthContext';
 import { useI18n } from '../../../context/I18nContext';
-import {
-  useMerchantDailyCode,
-  useMerchantCredits,
-  usePurchaseCredits,
-} from '../../../hooks/useMerchantQueries';
-import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
+import { useMerchantMe } from '../../../hooks/useMerchantQueries';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
-import { MibuBrand } from '../../../../constants/Colors';
-import { LOCALE_MAP } from '../../../utils/i18n';
+import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
 
 // ============ 主元件 ============
 export function MerchantDashboardScreen() {
   // ============ Hooks ============
   const { user, setUser } = useAuth();
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
   // ============ React Query Hooks ============
-  const dailyCodeQuery = useMerchantDailyCode();
-  const creditsQuery = useMerchantCredits();
-  const purchaseMutation = usePurchaseCredits();
-
-  // ============ 衍生狀態 ============
-  const loading = dailyCodeQuery.isLoading || creditsQuery.isLoading;
-  const dailyCode = dailyCodeQuery.data ?? null;
-  const credits = creditsQuery.data ?? null;
-  const purchasing = purchaseMutation.isPending;
-
-  // ============ 多語系翻譯（透過 t 字典） ============
-  const translations = {
-    title: t.merchant_dashboard,
-    dailyCode: t.merchant_dailyCode,
-    expiresAt: t.merchant_expiresAt,
-    credits: t.merchant_creditBalance,
-    points: t.merchant_points,
-    topUp: t.merchant_topUp,
-    useStripe: t.merchant_payStripe,
-    useRecur: t.merchant_payRecur,
-    purchaseAmount: t.merchant_purchaseCredits,
-    min100: t.merchant_min100,
-    loading: t.loading,
-    error: t.common_loadFailed,
-    logout: t.common_logout,
-  };
+  const merchantQuery = useMerchantMe();
+  const merchantStatus = merchantQuery.data?.status;
 
   // ============ 事件處理函數 ============
-
-  /**
-   * handleLogout - 處理登出
-   * 清除用戶資料並導向登入頁
-   */
   const handleLogout = async () => {
     await setUser(null);
     router.replace('/login');
   };
 
-  /**
-   * handlePurchase - 處理購買點數
-   * @param provider - 付款提供商 ('stripe' | 'recur')
-   * @param amount - 購買點數數量
-   */
-  const handlePurchase = async (provider: 'stripe' | 'recur', amount: number) => {
-    try {
-      const response = await purchaseMutation.mutateAsync({ amount, provider });
-
-      // 如果有結帳 URL，開啟外部連結
-      if (response.checkoutUrl) {
-        await Linking.openURL(response.checkoutUrl);
-      } else {
-        Alert.alert(
-          t.common_success,
-          response.message || t.merchant_transactionCreated
-        );
-      }
-    } catch (error) {
-      console.error('Purchase failed:', error);
-      Alert.alert(t.common_error, t.merchant_purchaseFailed);
-    }
-  };
-
-  /**
-   * formatExpiry - 格式化到期時間
-   * @param dateStr - ISO 格式日期字串
-   * @returns 格式化後的日期時間字串
-   */
-  const formatExpiry = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleString(LOCALE_MAP[language], {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   // ============ 載入中畫面 ============
-  if (loading) {
+  if (merchantQuery.isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={MibuBrand.brown} />
-        <Text style={styles.loadingText}>{translations.loading}</Text>
+        <Text style={styles.loadingText}>{t.loading}</Text>
       </View>
     );
   }
 
-  // ============ 錯誤狀態 ============
-  if (dailyCodeQuery.isError || creditsQuery.isError) {
+  // ============ 商家資料載入失敗 ============
+  if (merchantQuery.isError) {
     return (
       <View style={styles.loadingContainer}>
         <ErrorState
           message={t.common_loadFailed}
-          onRetry={() => {
-            dailyCodeQuery.refetch();
-            creditsQuery.refetch();
-          }}
+          onRetry={() => merchantQuery.refetch()}
         />
+      </View>
+    );
+  }
+
+  // ============ 商家審核狀態檢查 ============
+  if (merchantStatus === 'pending') {
+    return (
+      <View style={[styles.statusContainer, { paddingTop: insets.top + 40 }]}>
+        <Ionicons name="time-outline" size={64} color={MibuBrand.copper} />
+        <Text style={styles.statusTitle}>{t.merchant_pendingTitle || '審核中'}</Text>
+        <Text style={styles.statusMessage}>
+          {t.merchant_pendingMessage || '您的商家帳號正在審核中，請耐心等待管理員核准。'}
+        </Text>
+        <TouchableOpacity style={styles.statusButton} onPress={handleLogout}>
+          <Text style={styles.statusButtonText}>{t.common_logout}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (merchantStatus === 'rejected') {
+    return (
+      <View style={[styles.statusContainer, { paddingTop: insets.top + 40 }]}>
+        <Ionicons name="close-circle-outline" size={64} color={SemanticColors.errorMain} />
+        <Text style={styles.statusTitle}>{t.merchant_rejectedTitle || '審核未通過'}</Text>
+        <Text style={styles.statusMessage}>
+          {t.merchant_rejectedMessage || '很抱歉，您的商家申請未通過審核。如有疑問請聯繫客服。'}
+        </Text>
+        <TouchableOpacity style={styles.statusButton} onPress={handleLogout}>
+          <Text style={styles.statusButtonText}>{t.common_logout}</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -155,7 +104,7 @@ export function MerchantDashboardScreen() {
     <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top }]}>
       {/* ============ 頂部標題區 ============ */}
       <View style={styles.header}>
-        <Text style={styles.title}>{translations.title}</Text>
+        <Text style={styles.title}>{t.merchant_dashboard}</Text>
         <View style={styles.headerRight}>
           {/* 店家選擇器 */}
           <TouchableOpacity style={styles.storeSelector} accessibilityLabel="選擇店家">
@@ -210,22 +159,6 @@ export function MerchantDashboardScreen() {
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>{t.merchant_storeManagement}</Text>
             <Text style={styles.menuSubtitle}>{t.merchant_storeManagementDesc}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
-        </TouchableOpacity>
-
-        {/* 商品管理入口 */}
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => router.push('/merchant/products' as any)}
-          accessibilityLabel="商品管理"
-        >
-          <View style={styles.menuIcon}>
-            <Ionicons name="cube-outline" size={22} color={MibuBrand.copper} />
-          </View>
-          <View style={styles.menuContent}>
-            <Text style={styles.menuTitle}>{t.merchant_productManagementLabel}</Text>
-            <Text style={styles.menuSubtitle}>{t.merchant_productManagementDesc}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={MibuBrand.tan} />
         </TouchableOpacity>
@@ -378,5 +311,38 @@ const styles = StyleSheet.create({
   menuSubtitle: {
     fontSize: 13,
     color: MibuBrand.copper,
+  },
+  // 審核狀態頁面
+  statusContainer: {
+    flex: 1,
+    backgroundColor: MibuBrand.creamLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
+  statusTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: MibuBrand.brownDark,
+    marginTop: 20,
+    marginBottom: 12,
+  },
+  statusMessage: {
+    fontSize: 15,
+    color: MibuBrand.copper,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 32,
+  },
+  statusButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    backgroundColor: MibuBrand.brown,
+    borderRadius: 20,
+  },
+  statusButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFDF9',
   },
 });
