@@ -174,18 +174,27 @@ export default function EventDetailScreen() {
           <Ionicons name="calendar-outline" size={18} color={MibuBrand.copper} />
           <Text style={styles.dateText}>
             {formatDate(event.startDate)}
-            {event.endDate && ` ~ ${formatDate(event.endDate)}`}
+            {event.endDate ? ` ~ ${formatDate(event.endDate)}` : ` — ${t.event_longTerm || '長期活動'}`}
           </Text>
         </View>
 
-        {/* Location */}
+        {/* Location — #067: 點擊可開啟地圖 */}
         {(event.city || event.location || event.address) && (
-          <View style={styles.locationSection}>
+          <TouchableOpacity
+            style={styles.locationSection}
+            onPress={() => {
+              const query = [event.location, event.address, event.city].filter(Boolean).join(' ');
+              const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+              Linking.openURL(mapUrl).catch(() => {});
+            }}
+            activeOpacity={0.7}
+          >
             <Ionicons name="location-outline" size={18} color={MibuBrand.copper} />
-            <Text style={styles.locationText}>
+            <Text style={[styles.locationText, styles.tappableText]}>
               {[event.city, event.location, event.address].filter(Boolean).join(' · ')}
             </Text>
-          </View>
+            <Ionicons name="open-outline" size={14} color={MibuBrand.copper} />
+          </TouchableOpacity>
         )}
 
         {/* Activity Class（TDX 活動分類） */}
@@ -215,22 +224,28 @@ export default function EventDetailScreen() {
           </View>
         )}
 
-        {/* Phone */}
+        {/* Phone — #067: 點擊可撥打電話 */}
         {event.phone && (
-          <View style={styles.infoRow}>
+          <TouchableOpacity
+            style={styles.infoRow}
+            onPress={() => Linking.openURL(`tel:${event.phone}`).catch(() => {})}
+            activeOpacity={0.7}
+          >
             <Ionicons name="call-outline" size={18} color={MibuBrand.copper} />
             <Text style={styles.infoLabel}>{t.common_phone}</Text>
-            <Text style={styles.infoValue}>{event.phone}</Text>
-          </View>
+            <Text style={[styles.infoValue, styles.tappableText]}>{event.phone}</Text>
+          </TouchableOpacity>
         )}
 
-        {/* Description */}
-        <View style={styles.descriptionSection}>
-          <Text style={styles.sectionLabel}>
-            {t.common_description}
-          </Text>
-          <Text style={styles.descriptionText}>{getLocalizedDesc()}</Text>
-        </View>
+        {/* Description — #067: content 空字串時隱藏 */}
+        {getLocalizedDesc().trim() !== '' && (
+          <View style={styles.descriptionSection}>
+            <Text style={styles.sectionLabel}>
+              {t.common_description}
+            </Text>
+            <Text style={styles.descriptionText}>{getLocalizedDesc()}</Text>
+          </View>
+        )}
 
         {/* External Link */}
         {externalUrl && (
@@ -380,6 +395,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: MibuBrand.copper,
     flex: 1,
+  },
+  tappableText: {
+    textDecorationLine: 'underline',
   },
   descriptionSection: {
     marginHorizontal: 20,
