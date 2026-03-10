@@ -57,7 +57,7 @@
       [
         "expo-media-library",
         {
-          "photosPermission": "允許 Mibu 儲存圖片到您的相簿",
+          "photosPermission": false,
           "savePhotosPermission": "允許 Mibu 儲存圖片到您的相簿"
         }
       ]

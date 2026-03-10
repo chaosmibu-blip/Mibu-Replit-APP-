@@ -107,16 +107,10 @@ export function AvatarSelectorModal({
    */
   const handleUploadAvatar = async () => {
     try {
-      // 請求相簿權限
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        showToastMessage(t.profile_photoPermissionRequired);
-        return;
-      }
-
-      // 開啟圖片選擇器（含 base64 輸出）
+      // Android 13+ 使用 Photo Picker，不需要明確請求相簿權限
+      // iOS 使用 PHPickerViewController，同樣不需要明確權限
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],  // 正方形裁切
         quality: 0.8,    // 壓縮品質

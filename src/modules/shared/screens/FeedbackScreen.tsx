@@ -93,12 +93,8 @@ export function FeedbackScreen() {
       return;
     }
 
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert(t.feedback_permissionTitle, t.feedback_permissionDesc);
-      return;
-    }
-
+    // Android 13+ 使用 Photo Picker，不需要明確請求相簿權限
+    // iOS 使用 PHPickerViewController，同樣不需要明確權限
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 1,
