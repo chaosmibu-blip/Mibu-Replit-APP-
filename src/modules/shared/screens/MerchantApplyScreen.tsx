@@ -69,6 +69,7 @@ export function MerchantApplyScreen() {
   const [businessCategory, setBusinessCategory] = useState('');
   const [taxId, setTaxId] = useState('');
   const [businessRegion, setBusinessRegion] = useState('');
+  const [businessAddress, setBusinessAddress] = useState('');
 
   // 第二段：經營現況
   const [customerSources, setCustomerSources] = useState<string[]>([]);
@@ -197,6 +198,7 @@ export function MerchantApplyScreen() {
       taxId: taxId.trim() || undefined,
       businessCategory,
       businessRegion,
+      businessAddress: businessAddress.trim() || undefined,
       customerSources,
       challenges,
       monthlyMarketingBudget,
@@ -306,6 +308,7 @@ export function MerchantApplyScreen() {
       <TextInputField label={t.merchant_surveyTaxId} value={taxId} onChangeText={setTaxId} placeholder={t.merchant_surveyTaxIdPlaceholder} />
       <SingleSelectField label={t.merchant_surveyQ3Category} options={categoryOptions} selected={businessCategory} onSelect={setBusinessCategory} required />
       <RegionPickerField label={t.merchant_surveyQ4Region} value={businessRegion} onSelect={setBusinessRegion} required placeholder={t.merchant_surveyQ4Placeholder} />
+      <TextInputField label={t.merchant_surveyAddress} value={businessAddress} onChangeText={setBusinessAddress} placeholder={t.merchant_surveyAddressPlaceholder} />
 
       {/* ===== 第二段：經營現況 ===== */}
       <SurveySectionTitle step={2} title={t.merchant_surveySection2} />

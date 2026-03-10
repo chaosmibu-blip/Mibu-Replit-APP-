@@ -641,6 +641,8 @@ const ko: Record<string, string> = {
     merchant_catSpecialtyShop: '특색 상점',
     merchant_surveyQ4Region: '매장 소재지',
     merchant_surveyQ4Placeholder: '시/군/구를 선택하세요',
+    merchant_surveyAddress: '상세 주소 (선택)',
+    merchant_surveyAddressPlaceholder: '예: 강남대로 100, 2층',
 
     merchant_surveyQ5Sources: '고객은 주로 어디서 오나요?',
     merchant_srcWalkIn: '도보 유입',

@@ -415,6 +415,8 @@ const en: Record<string, string> = {
     merchant_catSpecialtyShop: 'Specialty Shop',
     merchant_surveyQ4Region: 'Business Location',
     merchant_surveyQ4Placeholder: 'Select your city/county',
+    merchant_surveyAddress: 'Address (Optional)',
+    merchant_surveyAddressPlaceholder: 'e.g. 100 Main St, 2F',
 
     merchant_surveyQ5Sources: 'Where do most of your customers come from?',
     merchant_srcWalkIn: 'Walk-in',

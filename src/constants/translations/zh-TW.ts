@@ -455,6 +455,8 @@ const zhTW: Record<string, string> = {
     merchant_catSpecialtyShop: '特色商店',
     merchant_surveyQ4Region: '店家所在地區',
     merchant_surveyQ4Placeholder: '選擇縣市',
+    merchant_surveyAddress: '詳細地址（選填）',
+    merchant_surveyAddressPlaceholder: '例：中山路 100 號 2 樓',
 
     merchant_surveyQ5Sources: '客人主要從哪裡來？',
     merchant_srcWalkIn: '路過',

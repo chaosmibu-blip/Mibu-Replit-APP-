@@ -570,6 +570,8 @@ const ja: Record<string, string> = {
     merchant_catSpecialtyShop: '特色ショップ',
     merchant_surveyQ4Region: '店舗所在地',
     merchant_surveyQ4Placeholder: '都道府県を選択',
+    merchant_surveyAddress: '住所（任意）',
+    merchant_surveyAddressPlaceholder: '例：中央区銀座1-1-1',
 
     merchant_surveyQ5Sources: 'お客様はどこから来ますか？',
     merchant_srcWalkIn: '通りがかり',
