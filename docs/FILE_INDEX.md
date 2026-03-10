@@ -268,7 +268,7 @@ workspace/
 
 | 檔案 | 用途 |
 |------|------|
-| `MerchantRegistrationForm.tsx` | 商家註冊表單 |
+| （已移除，改用 MerchantApplyScreen 12 題問卷） | |
 
 ---
 

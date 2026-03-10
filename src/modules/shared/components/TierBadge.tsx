@@ -23,7 +23,7 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { MerchantCouponTier } from '../../../types';
+import { CouponTier } from '../../../types';
 import { getTierStyle } from '../../../constants/tierStyles';
 
 // ============ Props 介面定義 ============
@@ -33,7 +33,7 @@ import { getTierStyle } from '../../../constants/tierStyles';
  */
 interface TierBadgeProps {
   /** 稀有度等級 */
-  tier: MerchantCouponTier;
+  tier: CouponTier;
   /** 徽章尺寸：small 小、medium 中、large 大（預設 medium） */
   size?: 'small' | 'medium' | 'large';
   /** 是否顯示抽中機率（預設 false） */

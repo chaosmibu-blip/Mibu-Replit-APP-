@@ -27,7 +27,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '../../src/context/AppContext';
 import { eventApi } from '../../src/services/api';
 import { Event } from '../../src/types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MibuBrand, UIColors, RoleColors } from '../../constants/Colors';
+import { Spacing } from '../../src/theme/designTokens';
 import { LOCALE_MAP } from '../../src/utils/i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -43,6 +45,7 @@ export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { t, language } = useI18n();
+  const insets = useSafeAreaInsets();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -136,7 +139,7 @@ export default function EventDetailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <TouchableOpacity style={styles.headerBackButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
@@ -300,7 +303,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 56,
     paddingBottom: 12,
     backgroundColor: MibuBrand.creamLight,
     borderBottomWidth: 1,

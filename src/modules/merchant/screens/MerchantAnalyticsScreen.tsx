@@ -340,7 +340,7 @@ export function MerchantAnalyticsScreen() {
             <Text style={styles.sectionTitle}>{t.merchant_topCoupons}</Text>
             <View style={styles.listContainer}>
               {analytics.topCoupons.map((coupon, index) => (
-                <View key={coupon.couponId} style={styles.listItem}>
+                <View key={`${coupon.title}-${index}`} style={styles.listItem}>
                   {/* 排名 */}
                   <View style={styles.listRank}>
                     <Text style={styles.listRankText}>{index + 1}</Text>

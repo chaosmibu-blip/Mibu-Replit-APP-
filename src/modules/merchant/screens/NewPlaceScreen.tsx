@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/I18nContext';
-import { useClaimMerchantPlace } from '../../../hooks/useMerchantQueries';
+import { useClaimPlace } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
 
@@ -52,7 +52,7 @@ export function NewPlaceScreen() {
 
   // ============ React Query Mutation ============
   // 認領/新增店家（token 由 hook 自動注入）
-  const claimPlace = useClaimMerchantPlace();
+  const claimPlace = useClaimPlace();
   const saving = claimPlace.isPending;
 
   // ============ 本地表單狀態 ============
@@ -61,6 +61,7 @@ export function NewPlaceScreen() {
     category: '',
     district: '',
     city: '',
+    country: '',
     address: '',
     description: '',
   });
@@ -81,6 +82,7 @@ export function NewPlaceScreen() {
         placeName: formData.placeName.trim(),
         district: formData.district.trim(),
         city: formData.city.trim(),
+        country: formData.country.trim() || 'TW',
       },
       {
         onSuccess: () => {

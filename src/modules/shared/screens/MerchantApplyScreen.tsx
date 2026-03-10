@@ -38,10 +38,10 @@ import { useAuth, useI18n } from '../../../context/AppContext';
 import {
   useMerchantApplicationStatus,
   useApplyMerchant,
-  useSearchMerchantPlaces,
+  useSearchPlaces,
   useResolveGoogleMapsUrl,
 } from '../../../hooks/useMerchantQueries';
-import type { PlaceSearchResult, ResolveUrlResponse } from '../../../types/merchant';
+import type { PlaceSearchResult, ResolveUrlResponse, MerchantApplyRequest, MerchantSurveyResponses, ResolvedPlace } from '../../../types/merchant';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorState } from '../components/ui/ErrorState';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
@@ -78,7 +78,9 @@ export function MerchantApplyScreen() {
   const [contactName, setContactName] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [businessCategory, setBusinessCategory] = useState('');
+  const [taxId, setTaxId] = useState('');
   const [businessRegion, setBusinessRegion] = useState('');
+  const [businessAddress, setBusinessAddress] = useState('');
 
   // 第二段：經營現況
   const [customerSources, setCustomerSources] = useState<string[]>([]);
@@ -105,7 +107,7 @@ export function MerchantApplyScreen() {
   const [manualPlaceName, setManualPlaceName] = useState('');
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const searchPlacesMutation = useSearchMerchantPlaces();
+  const searchPlacesMutation = useSearchPlaces();
   const resolveUrlMutation = useResolveGoogleMapsUrl();
 
   // 重新申請模式：覆蓋 API 狀態，強制顯示表單
@@ -136,9 +138,8 @@ export function MerchantApplyScreen() {
     { value: 'restaurant', label: t.merchant_catRestaurant },
     { value: 'hotel', label: t.merchant_catHotel },
     { value: 'attraction', label: t.merchant_catAttraction },
-    { value: 'souvenir', label: t.merchant_surveyCatSouvenir },
+    { value: 'specialty_shop', label: t.merchant_catSpecialtyShop },
     { value: 'experience', label: t.merchant_catExperience },
-    { value: 'transport', label: t.merchant_catTransportation },
     { value: 'other', label: t.merchant_catOther },
   ];
 
@@ -217,21 +218,23 @@ export function MerchantApplyScreen() {
   const handleSubmit = () => {
     if (!isFormValid) return;
 
-    const surveyResponses: Record<string, unknown> = {
+    const surveyResponses: MerchantSurveyResponses = {
       contactName: contactName.trim(),
-      businessCategory,
-      businessRegion,
+      taxId: taxId.trim() || undefined,
+      industryCategory: businessCategory,
+      region: businessRegion,
+      address: businessAddress.trim() || undefined,
       customerSources,
       challenges,
-      monthlyMarketingBudget,
+      marketingBudget: monthlyMarketingBudget,
       onlineChannels,
-      desiredOutcome,
-      gamificationInterest,
-      contactMethod: contactMethod.trim(),
+      expectedOutcome: desiredOutcome,
+      gamificationView: gamificationInterest,
+      contactInfo: contactMethod.trim(),
     };
 
     // 組合綁定資料（選填）
-    const bindingParams: Record<string, unknown> = {};
+    const bindingParams: Partial<Pick<MerchantApplyRequest, 'claimedPlaceId' | 'claimedPlaceName' | 'claimedGooglePlaceId' | 'claimedGoogleMapsUrl' | 'claimedPlaceData'>> = {};
     if (selectedPlace) {
       bindingParams.claimedPlaceId = selectedPlace.id;
       bindingParams.claimedPlaceName = selectedPlace.placeName;
@@ -289,7 +292,7 @@ export function MerchantApplyScreen() {
     }
 
     searchTimerRef.current = setTimeout(() => {
-      searchPlacesMutation.mutate(text.trim(), {
+      searchPlacesMutation.mutate({ query: text.trim() }, {
         onSuccess: (data: { places?: PlaceSearchResult[] }) => {
           setSearchResults(data?.places ?? []);
         },
@@ -591,8 +594,10 @@ export function MerchantApplyScreen() {
       <SurveySectionTitle step={1} title={t.merchant_surveySection1} />
       <TextInputField label={t.merchant_surveyQ1Contact} value={contactName} onChangeText={setContactName} required />
       <TextInputField label={t.merchant_surveyQ2Business} value={businessName} onChangeText={setBusinessName} required />
+      <TextInputField label={t.merchant_surveyTaxId} value={taxId} onChangeText={setTaxId} placeholder={t.merchant_surveyTaxIdPlaceholder} />
       <SingleSelectField label={t.merchant_surveyQ3Category} options={categoryOptions} selected={businessCategory} onSelect={setBusinessCategory} required />
       <RegionPickerField label={t.merchant_surveyQ4Region} value={businessRegion} onSelect={setBusinessRegion} required placeholder={t.merchant_surveyQ4Placeholder} />
+      <TextInputField label={t.merchant_surveyAddress} value={businessAddress} onChangeText={setBusinessAddress} placeholder={t.merchant_surveyAddressPlaceholder} />
 
       {/* ===== 第二段：經營現況 ===== */}
       <SurveySectionTitle step={2} title={t.merchant_surveySection2} />

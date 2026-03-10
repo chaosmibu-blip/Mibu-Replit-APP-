@@ -33,7 +33,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useI18n } from '../src/context/AppContext';
 import { apiService } from '../src/services/api';
 import { MibuBrand, UIColors } from '../constants/Colors';
-import { MerchantApplyParams } from '../src/types';
+import { MerchantApplyRequest } from '../src/types';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
 
 const BUSINESS_CATEGORIES = [
@@ -120,7 +120,8 @@ export default function MerchantRegisterScreen() {
       }
 
       // #053 契約：額外欄位放進 surveyResponses
-      const params: MerchantApplyParams = {
+      // 舊版註冊表單，surveyResponses 欄位與新版問卷不同
+      const params = {
         businessName: businessName.trim(),
         email: email.trim(),
         surveyResponses: {
@@ -131,7 +132,7 @@ export default function MerchantRegisterScreen() {
           phone: phone.trim() || undefined,
           mobile: mobile.trim(),
         },
-      };
+      } as unknown as MerchantApplyRequest;
 
       await apiService.applyMerchant(token, params);
 

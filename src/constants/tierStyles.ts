@@ -12,7 +12,7 @@
  * // { backgroundColor: '...', borderColor: '...', ... }
  */
 
-import { MerchantCouponTier } from '../types';
+import { CouponTier } from '../types';
 import { MibuBrand } from '../../constants/Colors';
 
 /**
@@ -46,7 +46,7 @@ export interface TierStyle {
  * - S (Superior): 高級等級（23%）
  * - R (Regular): 普通等級，最常見（32%）
  */
-export const TIER_STYLES: Record<MerchantCouponTier, TierStyle> = {
+export const TIER_STYLES: Record<CouponTier, TierStyle> = {
   /** SP 傳說等級 - 金色系，最閃耀 */
   SP: {
     backgroundColor: '#FFF8E7',
@@ -103,7 +103,7 @@ export const TIER_STYLES: Record<MerchantCouponTier, TierStyle> = {
  * 稀有度等級排序（由高到低）
  * 用於排序和顯示優先級
  */
-export const TIER_ORDER: MerchantCouponTier[] = ['SP', 'SSR', 'SR', 'S', 'R'];
+export const TIER_ORDER: CouponTier[] = ['SP', 'SSR', 'SR', 'S', 'R'];
 
 /**
  * 取得指定等級的樣式
@@ -115,7 +115,7 @@ export const TIER_ORDER: MerchantCouponTier[] = ['SP', 'SSR', 'SR', 'S', 'R'];
  * const ssrStyle = getTierStyle('SSR');
  * console.log(ssrStyle.label); // '超稀有'
  */
-export const getTierStyle = (tier: MerchantCouponTier): TierStyle => {
+export const getTierStyle = (tier: CouponTier): TierStyle => {
   return TIER_STYLES[tier] || TIER_STYLES.R;
 };
 
@@ -131,7 +131,7 @@ export const getTierStyle = (tier: MerchantCouponTier): TierStyle => {
  *   <Text>傳說</Text>
  * </View>
  */
-export const getTierBadgeStyle = (tier: MerchantCouponTier) => {
+export const getTierBadgeStyle = (tier: CouponTier) => {
   const style = getTierStyle(tier);
   return {
     backgroundColor: style.backgroundColor,

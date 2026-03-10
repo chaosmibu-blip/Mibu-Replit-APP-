@@ -222,36 +222,54 @@ class ApiService {
   /** 標記優惠已讀 */
   markPromoRead = collectionApi.markPromoRead.bind(collectionApi);
 
-  // ============ Merchant 商家相關 ============
+  // ============ Merchant 商家相關（#074 重寫，對齊 APP.md v4.2.0） ============
 
-  /** 取得商家資訊 */
+  /** 取得商家資料 */
   getMerchantMe = merchantApi.getMerchantMe.bind(merchantApi);
-  /** 註冊商家 */
-  registerMerchant = merchantApi.registerMerchant.bind(merchantApi);
-  /** 申請商家 */
+  /** 提交商家申請 */
   applyMerchant = merchantApi.applyMerchant.bind(merchantApi);
-  /** 驗證商家碼 */
-  verifyMerchantCode = merchantApi.verifyMerchantCode.bind(merchantApi);
-  /** 取得商家分析數據 */
-  getMerchantAnalytics = merchantApi.getMerchantAnalytics.bind(merchantApi);
-  /** 取得商家每日碼 */
-  getMerchantDailyCode = merchantApi.getMerchantDailyCode.bind(merchantApi);
+  /** 查詢申請狀態 */
+  getApplicationStatus = merchantApi.getApplicationStatus.bind(merchantApi);
+  /** 取得權限與方案資訊 */
+  getMerchantPermissions = merchantApi.getMerchantPermissions.bind(merchantApi);
+  /** 刪除商家帳號 */
+  deleteMerchantAccount = merchantApi.deleteMerchantAccount.bind(merchantApi);
+  /** 取得今日核銷碼 */
+  getDailyCode = merchantApi.getDailyCode.bind(merchantApi);
+  /** 數據分析 */
+  getAnalytics = merchantApi.getAnalytics.bind(merchantApi);
+  /** 數據摘要 */
+  getAnalyticsSummary = merchantApi.getAnalyticsSummary.bind(merchantApi);
+  /** 搜尋可認領景點 */
+  searchPlaces = merchantApi.searchPlaces.bind(merchantApi);
+  /** 解析 Google Maps 連結 */
+  resolveGoogleMapsUrl = merchantApi.resolveGoogleMapsUrl.bind(merchantApi);
+  /** 取得已認領景點列表 */
+  getMerchantPlaces = merchantApi.getMerchantPlaces.bind(merchantApi);
+  /** 認領景點 */
+  claimPlace = merchantApi.claimPlace.bind(merchantApi);
+  /** 新增自有景點 */
+  createNewPlace = merchantApi.createNewPlace.bind(merchantApi);
+  /** 更新景點 */
+  updatePlace = merchantApi.updatePlace.bind(merchantApi);
   /** 取得商家優惠券列表 */
   getMerchantCoupons = merchantApi.getMerchantCoupons.bind(merchantApi);
-  /** 建立商家優惠券 */
-  createMerchantCoupon = merchantApi.createMerchantCoupon.bind(merchantApi);
-  /** 更新商家優惠券 */
-  updateMerchantCoupon = merchantApi.updateMerchantCoupon.bind(merchantApi);
-  /** 刪除商家優惠券 */
-  deleteMerchantCoupon = merchantApi.deleteMerchantCoupon.bind(merchantApi);
-  /** 搜尋可認領地點 */
-  searchMerchantPlaces = merchantApi.searchMerchantPlaces.bind(merchantApi);
-  /** 認領地點 */
-  claimMerchantPlace = merchantApi.claimMerchantPlace.bind(merchantApi);
-  /** 取得商家地點列表 */
-  getMerchantPlaces = merchantApi.getMerchantPlaces.bind(merchantApi);
-  /** 更新商家地點 */
-  updateMerchantPlace = merchantApi.updateMerchantPlace.bind(merchantApi);
+  /** 建立優惠券 */
+  createCoupon = merchantApi.createCoupon.bind(merchantApi);
+  /** 更新優惠券 */
+  updateCoupon = merchantApi.updateCoupon.bind(merchantApi);
+  /** 刪除優惠券 */
+  deleteCoupon = merchantApi.deleteCoupon.bind(merchantApi);
+  /** 核銷歷史 */
+  getRedemptionHistory = merchantApi.getRedemptionHistory.bind(merchantApi);
+  /** 核銷統計 */
+  getRedemptionStats = merchantApi.getRedemptionStats.bind(merchantApi);
+  /** 取得訂閱狀態 */
+  getSubscription = merchantApi.getSubscription.bind(merchantApi);
+  /** 建立結帳 */
+  createCheckout = merchantApi.createCheckout.bind(merchantApi);
+  /** 取消訂閱 */
+  cancelSubscription = merchantApi.cancelSubscription.bind(merchantApi);
 
   // ============ Specialist 策劃師相關 ============
 

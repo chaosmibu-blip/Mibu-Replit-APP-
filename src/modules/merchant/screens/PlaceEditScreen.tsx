@@ -28,8 +28,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/I18nContext';
-import { useMerchantPlaces, useUpdateMerchantPlace } from '../../../hooks/useMerchantQueries';
-import { UpdateMerchantPlaceParams, MerchantPlaceOpeningHours } from '../../../types';
+import { useMerchantPlaces, useUpdatePlace } from '../../../hooks/useMerchantQueries';
+import { UpdatePlaceRequest } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
 
@@ -47,7 +47,7 @@ export function PlaceEditScreen() {
   // 取得店家列表（從中找出特定店家）
   const placesQuery = useMerchantPlaces();
   // 更新店家 mutation（token 由 hook 自動注入）
-  const updatePlace = useUpdateMerchantPlace();
+  const updatePlace = useUpdatePlace();
 
   // 從查詢結果中找出對應的店家
   const place = (placesQuery.data?.places ?? []).find(p => p.id === placeId) ?? null;
@@ -127,7 +127,7 @@ export function PlaceEditScreen() {
     if (!placeId || !place) return;
 
     // 將營業時間文字轉成 openingHours 格式
-    let openingHours: MerchantPlaceOpeningHours | undefined;
+    let openingHours: { weekdayText?: string[]; periods?: any[] } | undefined;
     if (openingHoursText.trim()) {
       openingHours = {
         weekdayText: openingHoursText.split('\n').filter(line => line.trim()),
@@ -135,7 +135,7 @@ export function PlaceEditScreen() {
     }
 
     // 組裝更新參數
-    const params: UpdateMerchantPlaceParams = {
+    const params: UpdatePlaceRequest = {
       description: description || undefined,
       googleMapUrl: googleMapUrl || undefined,
       openingHours,
@@ -145,7 +145,7 @@ export function PlaceEditScreen() {
     };
 
     updatePlace.mutate(
-      { placeId, data: params },
+      { linkId: placeId, data: params },
       {
         onSuccess: () => {
           Alert.alert(t.common_success, translations.saveSuccess, [

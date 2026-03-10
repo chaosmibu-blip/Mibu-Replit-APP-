@@ -28,6 +28,8 @@ import { useI18n, useGacha } from '../../../context/AppContext';
 import { GachaItem, Language, LocalizedContent, GachaMeta } from '../../../types';
 import { getCategoryLabel, getCategoryColor } from '../../../constants/translations';
 import { MibuBrand, SemanticColors, getCategoryToken, deriveMerchantScheme } from '../../../../constants/Colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Spacing } from '../../../theme/designTokens';
 import { InfoToast } from '../../shared/components/InfoToast';
 
 // ============================================================
@@ -304,6 +306,7 @@ function ItemCard({ item, translations, language }: ItemCardProps) {
 // ============================================================
 
 export function ItemsScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t, language } = useI18n();
   const { gachaState } = useGacha();
@@ -423,7 +426,7 @@ export function ItemsScreen() {
       {/* ========== 頂部區域：Logo + 城市名 ========== */}
       <View
         style={{
-          paddingTop: 56,
+          paddingTop: insets.top + Spacing.md,
           paddingHorizontal: 20,
           paddingBottom: 16,
           alignItems: 'center',
