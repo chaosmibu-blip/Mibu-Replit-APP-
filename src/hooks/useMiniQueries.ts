@@ -3,12 +3,18 @@
  * MINI 貓咪系統 Query Hooks (useMiniQueries.ts)
  * ============================================================
  * #056 Profile / #057 探索 / #058 塗鴉牆 / #059 筆記
+ * #060 副貓圖鑑 / #061 養成系統
  *
  * 查詢：
  * - useMiniProfile：MINI 基本資料
  * - useExplorationStatus：探索狀態
  * - useGraffiti：景點塗鴉牆
  * - useNotes：景點私人筆記
+ * - useSubCatCollection：副貓圖鑑
+ * - useSubCatBonuses：副貓加成
+ * - useNurtureStatus：養成狀態
+ * - useNurtureLogs：養成紀錄
+ * - useCatFood：貓糧數量
  *
  * Mutation：
  * - useUpdateMiniName：更改 MINI 名字
@@ -19,8 +25,9 @@
  * - useCreateNote：新增筆記
  * - useUpdateNote：更新筆記
  * - useDeleteNote：刪除筆記
+ * - useFeedMini：餵食 MINI
  *
- * 更新日期：2026-02-25
+ * 更新日期：2026-03-10
  */
 
 import { useQueryClient } from '@tanstack/react-query';
@@ -41,6 +48,14 @@ import type {
   CreateNoteResponse,
   UpdateNoteParams,
   UpdateNoteResponse,
+  SubCatType,
+  SubCatCatalogResponse,
+  SubCatCollectionResponse,
+  SubCatBonusesResponse,
+  NurtureStatusResponse,
+  FeedResponse,
+  NurtureLogsResponse,
+  CatFoodResponse,
 } from '../types/mini';
 
 // ============ Query Keys（引用中央 queryKeys，不重複定義） ============
@@ -208,5 +223,74 @@ export function useDeleteNote() {
         queryClient.invalidateQueries({ queryKey: miniQueryKeys.notes(variables.placeId) });
       },
     },
+  );
+}
+
+// ============ #060 副貓圖鑑 Hooks ============
+
+/** 副貓目錄查詢（可按類型篩選） */
+export function useSubCatCatalog(type?: SubCatType) {
+  return useAuthQuery<SubCatCatalogResponse>(
+    queryKeys.subCatCatalog(type),
+    (token) => miniApi.getSubCatCatalog(token, type),
+  );
+}
+
+/** 用戶副貓圖鑑（含收集進度） */
+export function useSubCatCollection() {
+  return useAuthQuery<SubCatCollectionResponse>(
+    queryKeys.subCatCollection,
+    (token) => miniApi.getSubCatCollection(token),
+  );
+}
+
+/** 副貓加成效果彙總 */
+export function useSubCatBonuses() {
+  return useAuthQuery<SubCatBonusesResponse>(
+    queryKeys.subCatBonuses,
+    (token) => miniApi.getSubCatBonuses(token),
+  );
+}
+
+// ============ #061 養成系統 Hooks ============
+
+/** 養成狀態查詢（飽食度、羈絆、成長階段） */
+export function useNurtureStatus() {
+  return useAuthQuery<NurtureStatusResponse>(
+    queryKeys.nurtureStatus,
+    (token) => miniApi.getNurtureStatus(token),
+  );
+}
+
+/** 餵食 MINI */
+export function useFeedMini() {
+  const queryClient = useQueryClient();
+
+  return useAuthMutation<FeedResponse, void>(
+    (token) => miniApi.feed(token),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.nurtureStatus });
+        queryClient.invalidateQueries({ queryKey: queryKeys.catFood });
+        queryClient.invalidateQueries({ queryKey: queryKeys.nurtureLogs });
+        queryClient.invalidateQueries({ queryKey: queryKeys.miniProfile });
+      },
+    },
+  );
+}
+
+/** 養成紀錄查詢 */
+export function useNurtureLogs(limit = 20) {
+  return useAuthQuery<NurtureLogsResponse>(
+    queryKeys.nurtureLogs,
+    (token) => miniApi.getNurtureLogs(token, limit),
+  );
+}
+
+/** 貓糧數量查詢 */
+export function useCatFood() {
+  return useAuthQuery<CatFoodResponse>(
+    queryKeys.catFood,
+    (token) => miniApi.getCatFood(token),
   );
 }
