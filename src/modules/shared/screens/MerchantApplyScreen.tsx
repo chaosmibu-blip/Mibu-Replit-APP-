@@ -34,7 +34,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth, useI18n } from '../../../context/AppContext';
-import { useMerchantApplicationStatus, useApplyMerchant } from '../../../hooks/useMerchantQueries';
+import {
+  useMerchantApplicationStatus,
+  useApplyMerchant,
+  useSearchPlaces,
+  useResolveGoogleMapsUrl,
+} from '../../../hooks/useMerchantQueries';
 import { MibuBrand } from '../../../../constants/Colors';
 import { ErrorState } from '../components/ui/ErrorState';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
@@ -45,6 +50,7 @@ import {
   MultiSelectField,
   RegionPickerField,
 } from '../components/SurveyFields';
+import type { MerchantApplyRequest, MerchantSurveyResponses, PlaceSearchResult, ResolvedPlace } from '../../../types/merchant';
 
 // ============ 常數定義 ============
 
@@ -84,6 +90,20 @@ export function MerchantApplyScreen() {
   // 第四段：聯絡方式
   const [contactMethod, setContactMethod] = useState('');
   const [email, setEmail] = useState(user?.email ?? '');
+
+  // 店家綁定
+  const [placeSearchQuery, setPlaceSearchQuery] = useState('');
+  const [googleMapsUrl, setGoogleMapsUrl] = useState('');
+  const [claimedPlace, setClaimedPlace] = useState<{
+    placeId?: number;
+    googlePlaceId?: string;
+    googleMapsUrl?: string;
+    placeName?: string;
+    placeData?: MerchantApplyRequest['claimedPlaceData'];
+  } | null>(null);
+
+  const searchPlacesMutation = useSearchPlaces();
+  const resolveUrlMutation = useResolveGoogleMapsUrl();
 
   // 重新申請模式：覆蓋 API 狀態，強制顯示表單
   const [isReapplying, setIsReapplying] = useState(false);
@@ -190,46 +210,92 @@ export function MerchantApplyScreen() {
     );
   }, []);
 
+  const handleSearchPlace = () => {
+    if (!placeSearchQuery.trim()) return;
+    searchPlacesMutation.mutate({ query: placeSearchQuery.trim() });
+  };
+
+  const handleSelectSearchResult = (place: PlaceSearchResult) => {
+    setClaimedPlace({
+      placeId: place.id,
+      placeName: place.placeName,
+    });
+    searchPlacesMutation.reset();
+  };
+
+  const handleResolveUrl = () => {
+    if (!googleMapsUrl.trim()) return;
+    resolveUrlMutation.mutate(googleMapsUrl.trim(), {
+      onSuccess: (data) => {
+        const p = data.place;
+        setClaimedPlace({
+          googlePlaceId: p.googlePlaceId,
+          googleMapsUrl: googleMapsUrl.trim(),
+          placeName: p.placeName,
+          placeData: {
+            address: p.address,
+            district: p.district,
+            city: p.city,
+            country: p.country,
+            locationLat: p.locationLat,
+            locationLng: p.locationLng,
+            openingHours: p.openingHours,
+            phone: p.phone,
+            website: p.website,
+          },
+        });
+      },
+    });
+  };
+
+  const handleClearClaimedPlace = () => setClaimedPlace(null);
+
   const handleSubmit = () => {
     if (!isFormValid) return;
 
-    const surveyResponses: Record<string, unknown> = {
+    const surveyResponses: MerchantSurveyResponses = {
       contactName: contactName.trim(),
       taxId: taxId.trim() || undefined,
-      businessCategory,
-      businessRegion,
-      businessAddress: businessAddress.trim() || undefined,
+      industryCategory: businessCategory,
+      region: businessRegion,
+      address: businessAddress.trim() || undefined,
       customerSources,
       challenges,
-      monthlyMarketingBudget,
+      marketingBudget: monthlyMarketingBudget,
       onlineChannels,
-      desiredOutcome,
-      gamificationInterest,
-      contactMethod: contactMethod.trim(),
+      expectedOutcome: desiredOutcome,
+      gamificationView: gamificationInterest,
+      contactInfo: contactMethod.trim(),
     };
 
-    applyMutation.mutate(
-      {
-        businessName: businessName.trim(),
-        email: email.trim(),
-        surveyResponses,
+    const request: MerchantApplyRequest = {
+      businessName: businessName.trim(),
+      email: email.trim(),
+      surveyResponses,
+      ...(claimedPlace?.placeId && { claimedPlaceId: claimedPlace.placeId }),
+      ...(claimedPlace?.googlePlaceId && { claimedGooglePlaceId: claimedPlace.googlePlaceId }),
+      ...(claimedPlace?.googleMapsUrl && { claimedGoogleMapsUrl: claimedPlace.googleMapsUrl }),
+      ...(claimedPlace?.placeName && { claimedPlaceName: claimedPlace.placeName }),
+      ...(claimedPlace?.placeData && { claimedPlaceData: claimedPlace.placeData }),
+    };
+
+    applyMutation.mutate(request, {
+      onSuccess: () => {
+        Alert.alert(
+          t.merchant_applySuccess,
+          t.merchant_applySuccessDesc,
+          [{ text: 'OK', onPress: () => refetchStatus() }],
+        );
       },
-      {
-        onSuccess: () => {
-          Alert.alert(
-            t.merchant_applySuccess,
-            t.merchant_applySuccessDesc,
-            [{ text: 'OK', onPress: () => refetchStatus() }],
-          );
-        },
-        onError: (error: Error) => {
-          Alert.alert('Error', error.message);
-        },
+      onError: (error: Error) => {
+        Alert.alert('Error', error.message);
       },
-    );
+    });
   };
 
-  const handleReapply = () => refetchStatus();
+  const handleReapply = () => {
+    setIsReapplying(true);
+  };
 
   // ========== 渲染子函數 ==========
 
@@ -347,6 +413,91 @@ export function MerchantApplyScreen() {
       <TextInputField label={t.merchant_surveyQ11ContactMethod} value={contactMethod} onChangeText={setContactMethod} required placeholder={t.merchant_surveyQ11Placeholder} />
       <TextInputField label={t.merchant_surveyQ12Email} value={email} onChangeText={setEmail} required keyboardType="email-address" />
 
+      {/* ===== 店家綁定（選填） ===== */}
+      <View style={styles.placeBindingSection}>
+        <Text style={styles.placeBindingTitle}>
+          {t.merchant_placeBinding || '綁定您的店家（選填）'}
+        </Text>
+        <Text style={styles.placeBindingDesc}>
+          {t.merchant_placeBindingDesc || '綁定後可加速審核流程'}
+        </Text>
+
+        {claimedPlace ? (
+          <View style={styles.claimedPlaceCard}>
+            <Ionicons name="checkmark-circle" size={20} color={MibuBrand.success} />
+            <Text style={styles.claimedPlaceName} numberOfLines={1}>
+              {claimedPlace.placeName}
+            </Text>
+            <TouchableOpacity onPress={handleClearClaimedPlace}>
+              <Ionicons name="close-circle" size={20} color={MibuBrand.tan} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            {/* 模式 1：搜尋景點 */}
+            <View style={styles.placeSearchRow}>
+              <TextInputField
+                label={t.merchant_searchPlace || '搜尋景點名稱'}
+                value={placeSearchQuery}
+                onChangeText={setPlaceSearchQuery}
+                placeholder={t.merchant_searchPlacePlaceholder || '輸入店名搜尋'}
+              />
+              <TouchableOpacity
+                style={styles.searchButton}
+                onPress={handleSearchPlace}
+                disabled={searchPlacesMutation.isPending}
+              >
+                {searchPlacesMutation.isPending ? (
+                  <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
+                ) : (
+                  <Ionicons name="search" size={18} color={MibuBrand.warmWhite} />
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* 搜尋結果 */}
+            {searchPlacesMutation.data?.places && searchPlacesMutation.data.places.length > 0 && (
+              <View style={styles.searchResults}>
+                {searchPlacesMutation.data.places.slice(0, 5).map((place) => (
+                  <TouchableOpacity
+                    key={place.id}
+                    style={styles.searchResultItem}
+                    onPress={() => handleSelectSearchResult(place)}
+                  >
+                    <Text style={styles.searchResultName}>{place.placeName}</Text>
+                    <Text style={styles.searchResultLocation}>
+                      {place.district}・{place.city}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* 模式 2：Google Maps 連結 */}
+            <Text style={styles.orDivider}>{t.common_or || '或'}</Text>
+            <View style={styles.placeSearchRow}>
+              <TextInputField
+                label={t.merchant_googleMapsUrl || 'Google Maps 連結'}
+                value={googleMapsUrl}
+                onChangeText={setGoogleMapsUrl}
+                placeholder="https://maps.google.com/..."
+              />
+              <TouchableOpacity
+                style={styles.searchButton}
+                onPress={handleResolveUrl}
+                disabled={resolveUrlMutation.isPending}
+              >
+                {resolveUrlMutation.isPending ? (
+                  <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
+                ) : (
+                  <Ionicons name="link" size={18} color={MibuBrand.warmWhite} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+      </View>
+
       {/* ===== 提交按鈕 ===== */}
       <TouchableOpacity
         style={[styles.submitButton, !isFormValid && styles.submitButtonDisabled]}
@@ -463,5 +614,51 @@ const styles = StyleSheet.create({
   },
   rejectionReasonText: {
     fontSize: FontSize.md, color: MibuBrand.error, lineHeight: 22, textAlign: 'center',
+  },
+
+  // 店家綁定
+  placeBindingSection: {
+    marginTop: Spacing.xl,
+    backgroundColor: MibuBrand.creamLight,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
+  },
+  placeBindingTitle: {
+    fontSize: FontSize.lg, fontWeight: '600', color: MibuBrand.brownDark, marginBottom: Spacing.xs,
+  },
+  placeBindingDesc: {
+    fontSize: FontSize.sm, color: MibuBrand.copper, marginBottom: Spacing.lg,
+  },
+  claimedPlaceCard: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.sm,
+    backgroundColor: MibuBrand.warmWhite, borderRadius: Radius.md,
+    padding: Spacing.md, borderWidth: 1, borderColor: MibuBrand.tanLight,
+  },
+  claimedPlaceName: {
+    flex: 1, fontSize: FontSize.md, fontWeight: '500', color: MibuBrand.brownDark,
+  },
+  placeSearchRow: {
+    flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.sm,
+  },
+  searchButton: {
+    width: 44, height: 44, borderRadius: Radius.md, backgroundColor: MibuBrand.brown,
+    alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.sm,
+  },
+  searchResults: {
+    backgroundColor: MibuBrand.warmWhite, borderRadius: Radius.md,
+    borderWidth: 1, borderColor: MibuBrand.tanLight, marginBottom: Spacing.md,
+  },
+  searchResultItem: {
+    padding: Spacing.md, borderBottomWidth: 1, borderBottomColor: MibuBrand.tanLight,
+  },
+  searchResultName: {
+    fontSize: FontSize.md, fontWeight: '500', color: MibuBrand.brownDark,
+  },
+  searchResultLocation: {
+    fontSize: FontSize.sm, color: MibuBrand.copper, marginTop: 2,
+  },
+  orDivider: {
+    textAlign: 'center', fontSize: FontSize.sm, color: MibuBrand.tan,
+    marginVertical: Spacing.md,
   },
 });
