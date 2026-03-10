@@ -31,7 +31,7 @@ export function ClaimPlaceScreen() {
   const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
-  const [claiming, setClaiming] = useState<string | null>(null);
+  const [claiming, setClaiming] = useState<number | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async () => {
@@ -44,7 +44,7 @@ export function ClaimPlaceScreen() {
         router.push('/login');
         return;
       }
-      const data = await merchantApi.searchMerchantPlaces(token, searchQuery);
+      const data = await merchantApi.searchPlaces(token, { query: searchQuery });
       setSearchResults(data.places || []);
     } catch (error: unknown) {
       console.error('Search failed:', error);
@@ -61,16 +61,15 @@ export function ClaimPlaceScreen() {
 
   const handleClaim = async (place: PlaceSearchResult) => {
     try {
-      setClaiming(place.placeId);
+      setClaiming(place.id);
       const token = await getToken();
       if (!token) return;
-      await merchantApi.claimMerchantPlace(token, {
+      await merchantApi.claimPlace(token, {
         placeName: place.placeName,
         district: place.district,
         city: place.city,
-        country: '台灣',
-        placeCacheId: String(place.id),
-        googlePlaceId: place.placeId,
+        country: place.country || 'TW',
+        placeCacheId: place.id,
       });
       Alert.alert(t.common_success, t.merchant_claimSuccess, [
         { text: 'OK', onPress: () => router.back() }
@@ -147,7 +146,7 @@ export function ClaimPlaceScreen() {
         ) : (
           <View style={styles.resultsList}>
             {searchResults.map((place) => (
-              <View key={place.placeId} style={styles.placeCard}>
+              <View key={place.id} style={styles.placeCard}>
                 <View style={styles.placeIcon}>
                   <Ionicons name="location" size={24} color={MibuBrand.brown} />
                 </View>
@@ -157,25 +156,18 @@ export function ClaimPlaceScreen() {
                     {[place.district, place.city].filter(Boolean).join(', ')}
                   </Text>
                 </View>
-                {place.isClaimed ? (
-                  <View style={styles.claimedBadge}>
-                    <Ionicons name="checkmark-circle" size={16} color={UIColors.textSecondary} />
-                    <Text style={styles.claimedText}>{t.merchant_claimed}</Text>
-                  </View>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.claimButton}
-                    onPress={() => handleClaim(place)}
-                    disabled={claiming === place.placeId}
-                    accessibilityLabel={`認領 ${place.placeName}`}
-                  >
-                    {claiming === place.placeId ? (
-                      <ActivityIndicator size="small" color={UIColors.white} />
-                    ) : (
-                      <Text style={styles.claimButtonText}>{t.merchant_claim}</Text>
-                    )}
-                  </TouchableOpacity>
-                )}
+                <TouchableOpacity
+                  style={styles.claimButton}
+                  onPress={() => handleClaim(place)}
+                  disabled={claiming === place.id}
+                  accessibilityLabel={`認領 ${place.placeName}`}
+                >
+                  {claiming === place.id ? (
+                    <ActivityIndicator size="small" color={UIColors.white} />
+                  ) : (
+                    <Text style={styles.claimButtonText}>{t.merchant_claim}</Text>
+                  )}
+                </TouchableOpacity>
               </View>
             ))}
           </View>

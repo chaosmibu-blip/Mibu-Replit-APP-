@@ -20,12 +20,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useI18n } from '../../../context/I18nContext';
 import {
+  useMerchantMe,
   useMerchantCoupons,
-  useCreateMerchantCoupon,
-  useUpdateMerchantCoupon,
+  useCreateCoupon,
+  useUpdateCoupon,
 } from '../../../hooks/useMerchantQueries';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
-import { CouponTier } from '../../../types';
+import { CouponTier, CouponRarityLevel } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
 const TIERS: { id: CouponTier; label: string; prob: string; color: string }[] = [
@@ -43,9 +44,11 @@ export function CouponFormScreen() {
   const isEdit = !!params.id && params.id !== 'new';
 
   // ============ React Query Hooks ============
-  const couponsQuery = useMerchantCoupons();
-  const createMutation = useCreateMerchantCoupon();
-  const updateMutation = useUpdateMerchantCoupon();
+  const meQuery = useMerchantMe();
+  const merchantId = meQuery.data?.merchant?.id;
+  const couponsQuery = useMerchantCoupons(merchantId);
+  const createMutation = useCreateCoupon();
+  const updateMutation = useUpdateCoupon();
 
   // 從快取中找出正在編輯的優惠券
   const existingCoupon = isEdit
@@ -58,12 +61,11 @@ export function CouponFormScreen() {
 
   // ============ UI 狀態 ============
   const [formData, setFormData] = useState({
-    name: '',
-    tier: 'R' as CouponTier,
-    content: '',
+    code: '',
+    title: '',
+    rarity: 'R' as CouponRarityLevel,
     terms: '',
-    quantity: '100',
-    validUntil: '',
+    remainingQuantity: '100',
     isActive: true,
   });
 
@@ -71,12 +73,11 @@ export function CouponFormScreen() {
   React.useEffect(() => {
     if (existingCoupon) {
       setFormData({
-        name: existingCoupon.name,
-        tier: existingCoupon.tier,
-        content: existingCoupon.content,
+        code: existingCoupon.code,
+        title: existingCoupon.title,
+        rarity: existingCoupon.rarity ?? 'R',
         terms: existingCoupon.terms || '',
-        quantity: String(existingCoupon.quantity),
-        validUntil: existingCoupon.validUntil ? existingCoupon.validUntil.split('T')[0] : '',
+        remainingQuantity: String(existingCoupon.remainingQuantity ?? 0),
         isActive: existingCoupon.isActive,
       });
     }
@@ -87,36 +88,36 @@ export function CouponFormScreen() {
   };
 
   const handleSave = async () => {
-    if (!formData.name.trim() || !formData.content.trim()) {
+    if (!formData.code.trim() || !formData.title.trim()) {
       Alert.alert(t.merchant_notice, t.common_fillRequired);
       return;
     }
 
     try {
-      const quantity = parseInt(formData.quantity, 10) || 100;
+      const quantity = parseInt(formData.remainingQuantity, 10) || 100;
 
       if (isEdit) {
         await updateMutation.mutateAsync({
           couponId: Number(params.id),
           data: {
-            name: formData.name.trim(),
-            tier: formData.tier,
-            content: formData.content.trim(),
+            title: formData.title.trim(),
             terms: formData.terms.trim() || undefined,
-            quantity,
-            validUntil: formData.validUntil || undefined,
+            remainingQuantity: quantity,
             isActive: formData.isActive,
           },
         });
       } else {
+        if (!merchantId) {
+          Alert.alert(t.common_error || '錯誤', '商家資料尚未載入');
+          return;
+        }
         await createMutation.mutateAsync({
-          name: formData.name.trim(),
-          tier: formData.tier,
-          content: formData.content.trim(),
+          code: formData.code.trim(),
+          title: formData.title.trim(),
           terms: formData.terms.trim() || undefined,
-          quantity,
-          validFrom: new Date().toISOString().split('T')[0],
-          validUntil: formData.validUntil || undefined,
+          merchantId,
+          rarity: formData.rarity,
+          remainingQuantity: quantity,
           isActive: formData.isActive,
         });
       }
@@ -169,7 +170,23 @@ export function CouponFormScreen() {
 
         {/* Form */}
         <View style={styles.form}>
-          {/* Name */}
+          {/* Code */}
+          <View style={styles.field}>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>{t.merchant_couponCode || '優惠券代碼'}</Text>
+              <Text style={styles.required}>{t.common_required}</Text>
+            </View>
+            <TextInput
+              style={styles.input}
+              value={formData.code}
+              onChangeText={(v) => updateField('code', v)}
+              placeholder={t.merchant_couponCodePlaceholder || '例：SUMMER2026'}
+              placeholderTextColor={UIColors.textSecondary}
+              editable={!isEdit}
+            />
+          </View>
+
+          {/* Title */}
           <View style={styles.field}>
             <View style={styles.labelRow}>
               <Text style={styles.label}>{t.merchant_couponName}</Text>
@@ -177,69 +194,53 @@ export function CouponFormScreen() {
             </View>
             <TextInput
               style={styles.input}
-              value={formData.name}
-              onChangeText={(v) => updateField('name', v)}
+              value={formData.title}
+              onChangeText={(v) => updateField('title', v)}
               placeholder={t.merchant_couponNamePlaceholder}
               placeholderTextColor={UIColors.textSecondary}
             />
           </View>
 
-          {/* Tier */}
-          <View style={styles.field}>
-            <View style={styles.labelRow}>
-              <Text style={styles.label}>{t.merchant_rarityTier}</Text>
-              <Text style={styles.hint}>{t.merchant_tierHint}</Text>
-            </View>
-            <View style={styles.tierGrid}>
-              {TIERS.map((tier) => (
-                <TouchableOpacity
-                  key={tier.id}
-                  style={[
-                    styles.tierButton,
-                    formData.tier === tier.id && styles.tierButtonActive,
-                    formData.tier === tier.id && { borderColor: tier.color },
-                  ]}
-                  onPress={() => updateField('tier', tier.id)}
-                  accessibilityLabel={`稀有度 ${tier.label}，機率 ${tier.prob}`}
-                >
-                  <Text
+          {/* Rarity（僅新增時可選） */}
+          {!isEdit && (
+            <View style={styles.field}>
+              <View style={styles.labelRow}>
+                <Text style={styles.label}>{t.merchant_rarityTier}</Text>
+                <Text style={styles.hint}>{t.merchant_tierHint}</Text>
+              </View>
+              <View style={styles.tierGrid}>
+                {TIERS.map((tier) => (
+                  <TouchableOpacity
+                    key={tier.id}
                     style={[
-                      styles.tierLabel,
-                      formData.tier === tier.id && { color: tier.color },
+                      styles.tierButton,
+                      formData.rarity === tier.id && styles.tierButtonActive,
+                      formData.rarity === tier.id && { borderColor: tier.color },
                     ]}
+                    onPress={() => updateField('rarity', tier.id)}
+                    accessibilityLabel={`稀有度 ${tier.label}，機率 ${tier.prob}`}
                   >
-                    {tier.label}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.tierProb,
-                      formData.tier === tier.id && { color: tier.color },
-                    ]}
-                  >
-                    {tier.prob}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        styles.tierLabel,
+                        formData.rarity === tier.id && { color: tier.color },
+                      ]}
+                    >
+                      {tier.label}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.tierProb,
+                        formData.rarity === tier.id && { color: tier.color },
+                      ]}
+                    >
+                      {tier.prob}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          </View>
-
-          {/* Content */}
-          <View style={styles.field}>
-            <View style={styles.labelRow}>
-              <Text style={styles.label}>{t.merchant_discountContent}</Text>
-              <Text style={styles.required}>{t.common_required}</Text>
-            </View>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={formData.content}
-              onChangeText={(v) => updateField('content', v)}
-              placeholder={t.merchant_discountContentPlaceholder}
-              placeholderTextColor={UIColors.textSecondary}
-              multiline
-              numberOfLines={3}
-              textAlignVertical="top"
-            />
-          </View>
+          )}
 
           {/* Terms */}
           <View style={styles.field}>
@@ -256,29 +257,17 @@ export function CouponFormScreen() {
             />
           </View>
 
-          {/* Quantity & Valid Until Row */}
-          <View style={styles.row}>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>{t.merchant_quantity}</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.quantity}
-                onChangeText={(v) => updateField('quantity', v.replace(/[^0-9]/g, ''))}
-                placeholder="100"
-                placeholderTextColor={UIColors.textSecondary}
-                keyboardType="number-pad"
-              />
-            </View>
-            <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>{t.merchant_validUntil}</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.validUntil}
-                onChangeText={(v) => updateField('validUntil', v)}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor={UIColors.textSecondary}
-              />
-            </View>
+          {/* Quantity */}
+          <View style={styles.field}>
+            <Text style={styles.label}>{t.merchant_quantity}</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.remainingQuantity}
+              onChangeText={(v) => updateField('remainingQuantity', v.replace(/[^0-9]/g, ''))}
+              placeholder="100"
+              placeholderTextColor={UIColors.textSecondary}
+              keyboardType="number-pad"
+            />
           </View>
 
           {/* Is Active */}
