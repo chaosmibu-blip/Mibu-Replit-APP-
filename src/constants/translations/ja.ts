@@ -380,7 +380,6 @@ const ja: Record<string, string> = {
     merchant_regCatHotel: 'Hotel', /* TODO: ja */
     merchant_regCatAttraction: 'Attraction', /* TODO: ja */
     merchant_regCatShopping: 'Shopping', /* TODO: ja */
-    merchant_regCatTransportation: 'Transportation', /* TODO: ja */
     merchant_regCatExperience: 'Experience', /* TODO: ja */
     merchant_regCatCulture: 'Culture/Art', /* TODO: ja */
     merchant_regCatOther: 'Other', /* TODO: ja */
@@ -565,8 +564,10 @@ const ja: Record<string, string> = {
 
     merchant_surveyQ1Contact: 'お名前',
     merchant_surveyQ2Business: '店舗・会社名',
+    merchant_surveyTaxId: '法人番号（任意）',
+    merchant_surveyTaxIdPlaceholder: '法人番号を入力',
     merchant_surveyQ3Category: '業種',
-    merchant_surveyCatSouvenir: 'お土産・小売',
+    merchant_catSpecialtyShop: '特色ショップ',
     merchant_surveyQ4Region: '店舗所在地',
     merchant_surveyQ4Placeholder: '都道府県を選択',
 
@@ -847,7 +848,6 @@ const ja: Record<string, string> = {
     merchant_catService: 'Service', /* TODO: ja */
     merchant_catOther: 'Other', /* TODO: ja */
     merchant_catAttraction: 'Attraction/Entertainment', /* TODO: ja */
-    merchant_catTransportation: 'Transportation', /* TODO: ja */
     merchant_catExperience: 'Experience/Activity', /* TODO: ja */
     merchant_catCulture: 'Culture/Art', /* TODO: ja */
 

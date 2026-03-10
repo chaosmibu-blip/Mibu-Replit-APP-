@@ -449,8 +449,10 @@ const zhTW: Record<string, string> = {
 
     merchant_surveyQ1Contact: '您的稱呼',
     merchant_surveyQ2Business: '店家 / 公司名稱',
+    merchant_surveyTaxId: '統一編號（選填）',
+    merchant_surveyTaxIdPlaceholder: '8 位數統一編號',
     merchant_surveyQ3Category: '產業類別',
-    merchant_surveyCatSouvenir: '伴手禮零售',
+    merchant_catSpecialtyShop: '特色商店',
     merchant_surveyQ4Region: '店家所在地區',
     merchant_surveyQ4Placeholder: '選擇縣市',
 
@@ -731,7 +733,6 @@ const zhTW: Record<string, string> = {
     merchant_catService: '服務',
     merchant_catOther: '其他',
     merchant_catAttraction: '景點/遊樂',
-    merchant_catTransportation: '交通服務',
     merchant_catExperience: '體驗活動',
     merchant_catCulture: '文化藝術',
 
@@ -814,7 +815,6 @@ const zhTW: Record<string, string> = {
     merchant_regCatHotel: '住宿業',
     merchant_regCatAttraction: '景點/遊樂',
     merchant_regCatShopping: '購物零售',
-    merchant_regCatTransportation: '交通服務',
     merchant_regCatExperience: '體驗活動',
     merchant_regCatCulture: '文化藝術',
     merchant_regCatOther: '其他',

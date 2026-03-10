@@ -67,6 +67,7 @@ export function MerchantApplyScreen() {
   const [contactName, setContactName] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [businessCategory, setBusinessCategory] = useState('');
+  const [taxId, setTaxId] = useState('');
   const [businessRegion, setBusinessRegion] = useState('');
 
   // 第二段：經營現況
@@ -111,9 +112,8 @@ export function MerchantApplyScreen() {
     { value: 'restaurant', label: t.merchant_catRestaurant },
     { value: 'hotel', label: t.merchant_catHotel },
     { value: 'attraction', label: t.merchant_catAttraction },
-    { value: 'souvenir', label: t.merchant_surveyCatSouvenir },
+    { value: 'specialty_shop', label: t.merchant_catSpecialtyShop },
     { value: 'experience', label: t.merchant_catExperience },
-    { value: 'transport', label: t.merchant_catTransportation },
     { value: 'other', label: t.merchant_catOther },
   ];
 
@@ -194,6 +194,7 @@ export function MerchantApplyScreen() {
 
     const surveyResponses: Record<string, unknown> = {
       contactName: contactName.trim(),
+      taxId: taxId.trim() || undefined,
       businessCategory,
       businessRegion,
       customerSources,
@@ -302,6 +303,7 @@ export function MerchantApplyScreen() {
       <SurveySectionTitle step={1} title={t.merchant_surveySection1} />
       <TextInputField label={t.merchant_surveyQ1Contact} value={contactName} onChangeText={setContactName} required />
       <TextInputField label={t.merchant_surveyQ2Business} value={businessName} onChangeText={setBusinessName} required />
+      <TextInputField label={t.merchant_surveyTaxId} value={taxId} onChangeText={setTaxId} placeholder={t.merchant_surveyTaxIdPlaceholder} />
       <SingleSelectField label={t.merchant_surveyQ3Category} options={categoryOptions} selected={businessCategory} onSelect={setBusinessCategory} required />
       <RegionPickerField label={t.merchant_surveyQ4Region} value={businessRegion} onSelect={setBusinessRegion} required placeholder={t.merchant_surveyQ4Placeholder} />
 

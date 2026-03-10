@@ -266,7 +266,6 @@ const ko: Record<string, string> = {
     merchant_regCatHotel: '숙박',
     merchant_regCatAttraction: '관광지',
     merchant_regCatShopping: '쇼핑',
-    merchant_regCatTransportation: '교통',
     merchant_regCatExperience: '체험',
     merchant_regCatCulture: '문화/예술',
     merchant_regCatOther: '기타',
@@ -636,8 +635,10 @@ const ko: Record<string, string> = {
 
     merchant_surveyQ1Contact: '담당자 이름',
     merchant_surveyQ2Business: '매장/회사 이름',
+    merchant_surveyTaxId: '사업자등록번호 (선택)',
+    merchant_surveyTaxIdPlaceholder: '사업자등록번호 입력',
     merchant_surveyQ3Category: '업종',
-    merchant_surveyCatSouvenir: '기념품/소매',
+    merchant_catSpecialtyShop: '특색 상점',
     merchant_surveyQ4Region: '매장 소재지',
     merchant_surveyQ4Placeholder: '시/군/구를 선택하세요',
 
@@ -846,7 +847,6 @@ const ko: Record<string, string> = {
     merchant_catService: '서비스',
     merchant_catOther: '기타',
     merchant_catAttraction: '관광/엔터테인먼트',
-    merchant_catTransportation: '교통',
     merchant_catExperience: '체험/액티비티',
     merchant_catCulture: '문화/예술',
 
