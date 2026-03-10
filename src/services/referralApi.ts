@@ -232,21 +232,15 @@ class ReferralApiService extends ApiBase {
     const queryString = query.toString();
     const endpoint = `/api/referral/leaderboard${queryString ? `?${queryString}` : ''}`;
 
-    try {
-      const data = await this.request<{ leaderboard: LeaderboardEntry[]; period: LeaderboardPeriod }>(
-        endpoint,
-        { headers: this.authHeaders(token) }
-      );
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return {
-        success: true,
-        leaderboard: data.leaderboard || [],
-        period: data.period || 'weekly',
-      };
-    } catch (error) {
-      console.error('[ReferralApi] getLeaderboard error:', error);
-      return { success: false, leaderboard: [], period: 'weekly' };
-    }
+    const data = await this.request<{ leaderboard: LeaderboardEntry[]; period: LeaderboardPeriod }>(
+      endpoint,
+      { headers: this.authHeaders(token) }
+    );
+    return {
+      success: true,
+      leaderboard: data.leaderboard || [],
+      period: data.period || 'weekly',
+    };
   }
 
   /**

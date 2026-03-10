@@ -39,7 +39,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { useI18n } from '../../../context/AppContext';
 import { useSubmitFeedback } from '../../../hooks/useFeedbackQueries';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import type { FeedbackType, DeviceInfo } from '../../../types/feedback';
 
@@ -290,7 +290,7 @@ export function FeedbackScreen() {
             disabled={!isFormValid || submitMutation.isPending}
           >
             {submitMutation.isPending ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={UIColors.white} />
             ) : (
               <Text style={styles.submitButtonText}>{t.feedback_submit}</Text>
             )}
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   typeCard: {
     flex: 1, alignItems: 'center', justifyContent: 'center',
     paddingVertical: Spacing.xl, borderRadius: Radius.xl,
-    borderWidth: 2, borderColor: MibuBrand.tanLight, backgroundColor: '#FFFFFF',
+    borderWidth: 2, borderColor: MibuBrand.tanLight, backgroundColor: UIColors.white,
   },
   typeCardSelected: {
     borderColor: MibuBrand.brown, backgroundColor: MibuBrand.creamLight,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
 
   // ========== 訊息輸入 ==========
   messageInput: {
-    backgroundColor: '#FFFFFF', borderRadius: Radius.md,
+    backgroundColor: UIColors.white, borderRadius: Radius.md,
     borderWidth: 1, borderColor: MibuBrand.tanLight,
     paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md,
     fontSize: FontSize.md, color: MibuBrand.brownDark,
@@ -384,13 +384,13 @@ const styles = StyleSheet.create({
   screenshotImage: { width: '100%', height: '100%' },
   screenshotRemove: {
     position: 'absolute', top: -4, right: -4,
-    backgroundColor: '#FFFFFF', borderRadius: Radius.full,
+    backgroundColor: UIColors.white, borderRadius: Radius.full,
   },
   screenshotAdd: {
     width: SCREENSHOT_PREVIEW_SIZE, height: SCREENSHOT_PREVIEW_SIZE,
     borderRadius: Radius.md, borderWidth: 1, borderColor: MibuBrand.tanLight,
     borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: UIColors.white,
   },
   screenshotAddText: { fontSize: FontSize.xs, color: MibuBrand.copper, marginTop: 2 },
 
@@ -400,5 +400,5 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginTop: Spacing.xxl,
   },
   submitButtonDisabled: { opacity: 0.5 },
-  submitButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: '#FFFFFF' },
+  submitButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: UIColors.white },
 });

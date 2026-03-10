@@ -32,7 +32,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../../constants/translations';
 import { useI18n } from '../../../context/AppContext';
 import { useAuth } from '../../../context/AuthContext';
-import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors, RoleColors } from '../../../../constants/Colors';
 
 // ============ 常數定義 ============
 
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   plannerIcon: {
     width: 40,
     height: 40,
-    backgroundColor: '#f3e8ff',
+    backgroundColor: RoleColors.specialist.light,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',

@@ -23,15 +23,18 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/I18nContext';
 import { useVerifyMerchantCode } from '../../../hooks/useMerchantQueries';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { InputLimit } from '../../../constants/businessDefaults';
 
 // ============ 主元件 ============
 export function MerchantVerifyScreen() {
   // ============ Hooks ============
   const { t } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // ============ React Query：驗證碼 Mutation ============
   const verifyMutation = useVerifyMerchantCode();
@@ -104,7 +107,7 @@ export function MerchantVerifyScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       {/* ============ 頂部標題區 ============ */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
@@ -165,7 +168,7 @@ export function MerchantVerifyScreen() {
                 placeholder={t.merchant_codePlaceholder}
                 placeholderTextColor={UIColors.textSecondary}
                 autoCapitalize="characters"
-                maxLength={6}
+                maxLength={InputLimit.verifyCode}
               />
             </View>
 
@@ -204,7 +207,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 60,
     paddingBottom: 20,
     backgroundColor: UIColors.white,
     borderBottomWidth: 1,

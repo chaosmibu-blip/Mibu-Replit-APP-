@@ -8,15 +8,19 @@
  * @see 後端契約: contracts/APP.md
  *
  * ============ 串接端點 ============
- * - GET  /api/auth/user        - 取得當前用戶
- * - POST /api/auth/switch-role - 切換角色
- * - POST /api/auth/logout      - 用戶登出
- * - GET  /api/profile          - 取得用戶檔案
- * - PATCH /api/profile         - 更新用戶檔案
- * - DELETE /api/auth/account   - 刪除帳號 (#011)
- * - POST /api/auth/mobile      - Mobile OAuth 登入
- * - POST /api/auth/guest       - 訪客登入（#049 後端建帳 + 發 JWT）
- * （帳號綁定 API 已移除：bindIdentity / getIdentities / unlinkIdentity）
+ * - GET    /api/auth/user             - 取得當前用戶
+ * - POST   /api/auth/switch-role      - 切換角色
+ * - POST   /api/auth/logout           - 用戶登出
+ * - GET    /api/profile               - 取得用戶檔案
+ * - PATCH  /api/profile               - 更新用戶檔案
+ * - DELETE /api/auth/account          - 刪除帳號 (#011)
+ * - POST   /api/auth/mobile           - Mobile OAuth 登入
+ * - POST   /api/auth/guest            - 訪客登入（#049 後端建帳 + 發 JWT）
+ *
+ * 帳號連結（#071 新增）：
+ * - GET    /api/auth/linked-accounts  - 取得已綁定登入方式
+ * - POST   /api/auth/link             - 綁定新登入方式
+ * - DELETE /api/auth/unlink/:provider - 解除綁定登入方式
  *
  * #044 已移除：密碼登入/註冊、帳號合併（2026-02-10）
  */
@@ -30,6 +34,10 @@ import {
   ProfileResponse,
   DeleteAccountResponse,
   GuestLoginResponse,
+  LinkedAccountsResponse,
+  LinkAccountParams,
+  LinkAccountResponse,
+  UnlinkAccountResponse,
 } from '../types';
 
 // ============ API 服務類別 ============
@@ -199,10 +207,52 @@ class AuthApiService extends ApiBase {
     });
   }
 
-  // ============ 帳號綁定 (Phase 6) ============
+  // ============ #071 帳號連結 ============
 
-  // #044: 帳號合併功能已移除
-  // #044: 帳號綁定功能已移除（bindIdentity / getIdentities / unlinkIdentity）
+  /**
+   * 取得已綁定的登入方式列表
+   *
+   * @param token - JWT Token
+   * @returns 目前登入方式與已綁定列表
+   */
+  async getLinkedAccounts(token: string): Promise<LinkedAccountsResponse> {
+    return this.request<LinkedAccountsResponse>('/api/auth/linked-accounts', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /**
+   * 綁定新的登入方式
+   *
+   * Apple 的 identityToken 請傳入 idToken 欄位
+   *
+   * @param token - JWT Token
+   * @param params - 綁定參數（provider + idToken）
+   * @returns 綁定結果與更新後的列表
+   */
+  async linkAccount(token: string, params: LinkAccountParams): Promise<LinkAccountResponse> {
+    return this.request<LinkAccountResponse>('/api/auth/link', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * 解除綁定登入方式
+   *
+   * 不可解除唯一的登入方式（後端回 400）
+   *
+   * @param token - JWT Token
+   * @param provider - 要解除的提供者
+   * @returns 解除結果與更新後的列表
+   */
+  async unlinkAccount(token: string, provider: 'apple' | 'google'): Promise<UnlinkAccountResponse> {
+    return this.request<UnlinkAccountResponse>(`/api/auth/unlink/${provider}`, {
+      method: 'DELETE',
+      headers: this.authHeaders(token),
+    });
+  }
 
   // ============ #038 頭像上傳 ============
 

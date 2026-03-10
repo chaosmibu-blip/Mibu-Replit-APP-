@@ -53,6 +53,8 @@ import { GachaItem, Language } from '../../../types';
 import { getCategoryLabel } from '../../../constants/translations';
 import { MibuBrand, getCategoryToken, deriveMerchantScheme, UIColors } from '../../../../constants/Colors';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
+import { InputLimit } from '../../../constants/businessDefaults';
+import { AnimationTiming } from '../../../constants/animationTiming';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { SegmentedControl } from '../../shared/components/ui/SegmentedControl';
 import {
@@ -374,9 +376,9 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
             onChangeText={setGraffitiInput}
             placeholder={t.mini_graffitiPlaceholder}
             placeholderTextColor={MibuBrand.brownLight}
-            maxLength={200}
+            maxLength={InputLimit.graffiti}
             multiline
-            onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)}
+            onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), AnimationTiming.standard)}
           />
           <TouchableOpacity
             style={[styles.miniSendButton, (!graffitiInput.trim() || createGraffitiMutation.isPending) && styles.miniSendButtonDisabled]}
@@ -411,7 +413,7 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
                   value={editNoteInput}
                   onChangeText={setEditNoteInput}
                   multiline
-                  maxLength={2000}
+                  maxLength={InputLimit.note}
                   autoFocus
                 />
                 <View style={styles.noteEditActions}>
@@ -462,9 +464,9 @@ function PlaceDetailModal({ item, language, onClose, onFavorite, onBlacklist }: 
               onChangeText={setNewNoteInput}
               placeholder={t.mini_notesPlaceholder}
               placeholderTextColor={MibuBrand.brownLight}
-              maxLength={2000}
+              maxLength={InputLimit.note}
               multiline
-              onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)}
+              onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), AnimationTiming.standard)}
             />
             <TouchableOpacity
               style={[styles.miniSendButton, (!newNoteInput.trim() || createNoteMutation.isPending) && styles.miniSendButtonDisabled]}
@@ -984,7 +986,7 @@ export function CollectionScreen() {
               )}
               {hasPromoUpdate && (
                 <View style={styles.promoUpdateBadge}>
-                  <Ionicons name="pricetag" size={10} color="#fff" />
+                  <Ionicons name="pricetag" size={10} color={UIColors.white} />
                 </View>
               )}
               <View style={[styles.categoryBadge, { backgroundColor: catToken.badge }]}>
@@ -1024,7 +1026,7 @@ export function CollectionScreen() {
           <Text style={styles.listCardDate}>{date}</Text>
           {hasPromoUpdate && (
             <View style={styles.promoUpdateBadge}>
-              <Ionicons name="pricetag" size={10} color="#fff" />
+              <Ionicons name="pricetag" size={10} color={UIColors.white} />
             </View>
           )}
           <View style={[styles.listCardBadge, { backgroundColor: catToken.badge }]}>

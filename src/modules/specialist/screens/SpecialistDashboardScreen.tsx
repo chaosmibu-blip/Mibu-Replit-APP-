@@ -34,7 +34,8 @@ import {
   useToggleSpecialistOnline,
 } from '../../../hooks/useSpecialistQueries';
 import { RoleSwitcher } from '../../shared/components/RoleSwitcher';
-import { MibuBrand } from '../../../../constants/Colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { LOCALE_MAP } from '../../../utils/i18n';
 
@@ -43,6 +44,7 @@ export function SpecialistDashboardScreen() {
   const { user, setUser } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // ============ React Query Hooks ============
 
@@ -123,7 +125,7 @@ export function SpecialistDashboardScreen() {
 
   // ============ 主畫面 JSX ============
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingTop: insets.top }]}>
       {/* ============ 頁面標題區 ============ */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -254,7 +256,7 @@ export function SpecialistDashboardScreen() {
             <View key={service.id} style={styles.serviceCard}>
               {/* 旅客頭像 */}
               <View style={styles.serviceAvatar}>
-                <Ionicons name="person" size={24} color="#ffffff" />
+                <Ionicons name="person" size={24} color={UIColors.white} />
               </View>
               {/* 旅客資訊 */}
               <View style={styles.serviceInfo}>
@@ -289,7 +291,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingTop: 60,
     paddingBottom: 100,
   },
   // Loading 狀態樣式
@@ -483,7 +484,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.highlight,
   },
   serviceStatusActive: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
   },
   serviceStatusText: {
     fontSize: 12,

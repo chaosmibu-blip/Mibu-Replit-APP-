@@ -48,6 +48,7 @@ import { AvatarPreset } from '../../../types/asset';
 
 // StorageKeys 已統一集中管理
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
+import { PerkDefaults } from '../../../constants/businessDefaults';
 
 // 頭像預設從 avatarService 動態載入（Cloudinary URL）
 
@@ -274,8 +275,8 @@ export function HomeScreen() {
 
   // 權益衍生資料
   const userPerks: UserPerksData = {
-    dailyPullLimit: perksData?.dailyPullLimit ?? 36,
-    inventorySlots: perksData?.inventorySlots ?? 30,
+    dailyPullLimit: perksData?.dailyPullLimit ?? PerkDefaults.dailyPullLimit,
+    inventorySlots: perksData?.inventorySlots ?? PerkDefaults.inventorySlots,
     canApplyPartner: perksData?.canApplyPartner ?? false,
   };
 

@@ -27,6 +27,7 @@ import {
   RefreshControl,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -123,6 +124,7 @@ const STATUS_CONFIG: Record<RegionStatus, {
 // ============================================================
 
 export function CrowdfundingScreen() {
+  const insets = useSafeAreaInsets();
   const { t, language } = useI18n();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -231,7 +233,7 @@ export function CrowdfundingScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
@@ -400,7 +402,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
     backgroundColor: MibuBrand.creamLight,

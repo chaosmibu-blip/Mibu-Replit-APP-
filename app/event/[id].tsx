@@ -27,7 +27,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '../../src/context/AppContext';
 import { eventApi } from '../../src/services/api';
 import { Event } from '../../src/types';
-import { MibuBrand } from '../../constants/Colors';
+import { MibuBrand, UIColors, RoleColors } from '../../constants/Colors';
 import { LOCALE_MAP } from '../../src/utils/i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -36,7 +36,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const EVENT_TYPE_CONFIG: Record<string, { icon: keyof typeof Ionicons.glyphMap; color: string; labelKey: string }> = {
   announcement: { icon: 'megaphone', color: MibuBrand.brown, labelKey: 'event_announcement' },
   festival: { icon: 'calendar', color: '#dc2626', labelKey: 'event_festival' },
-  limited: { icon: 'time', color: '#7c3aed', labelKey: 'event_limited' },
+  limited: { icon: 'time', color: RoleColors.specialist.dark, labelKey: 'event_limited' },
 };
 
 export default function EventDetailScreen() {
@@ -159,7 +159,7 @@ export default function EventDetailScreen() {
         {/* Event Type Badge */}
         {typeConfig && (
           <View style={[styles.typeBadge, { backgroundColor: typeConfig.color }]}>
-            <Ionicons name={typeConfig.icon} size={14} color="#ffffff" />
+            <Ionicons name={typeConfig.icon} size={14} color={UIColors.white} />
             <Text style={styles.typeBadgeText}>
               {t[typeConfig.labelKey]}
             </Text>
@@ -174,18 +174,27 @@ export default function EventDetailScreen() {
           <Ionicons name="calendar-outline" size={18} color={MibuBrand.copper} />
           <Text style={styles.dateText}>
             {formatDate(event.startDate)}
-            {event.endDate && ` ~ ${formatDate(event.endDate)}`}
+            {event.endDate ? ` ~ ${formatDate(event.endDate)}` : ` — ${t.event_longTerm || '長期活動'}`}
           </Text>
         </View>
 
-        {/* Location */}
+        {/* Location — #067: 點擊可開啟地圖 */}
         {(event.city || event.location || event.address) && (
-          <View style={styles.locationSection}>
+          <TouchableOpacity
+            style={styles.locationSection}
+            onPress={() => {
+              const query = [event.location, event.address, event.city].filter(Boolean).join(' ');
+              const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+              Linking.openURL(mapUrl).catch(() => {});
+            }}
+            activeOpacity={0.7}
+          >
             <Ionicons name="location-outline" size={18} color={MibuBrand.copper} />
-            <Text style={styles.locationText}>
+            <Text style={[styles.locationText, styles.tappableText]}>
               {[event.city, event.location, event.address].filter(Boolean).join(' · ')}
             </Text>
-          </View>
+            <Ionicons name="open-outline" size={14} color={MibuBrand.copper} />
+          </TouchableOpacity>
         )}
 
         {/* Activity Class（TDX 活動分類） */}
@@ -215,27 +224,33 @@ export default function EventDetailScreen() {
           </View>
         )}
 
-        {/* Phone */}
+        {/* Phone — #067: 點擊可撥打電話 */}
         {event.phone && (
-          <View style={styles.infoRow}>
+          <TouchableOpacity
+            style={styles.infoRow}
+            onPress={() => Linking.openURL(`tel:${event.phone}`).catch(() => {})}
+            activeOpacity={0.7}
+          >
             <Ionicons name="call-outline" size={18} color={MibuBrand.copper} />
             <Text style={styles.infoLabel}>{t.common_phone}</Text>
-            <Text style={styles.infoValue}>{event.phone}</Text>
-          </View>
+            <Text style={[styles.infoValue, styles.tappableText]}>{event.phone}</Text>
+          </TouchableOpacity>
         )}
 
-        {/* Description */}
-        <View style={styles.descriptionSection}>
-          <Text style={styles.sectionLabel}>
-            {t.common_description}
-          </Text>
-          <Text style={styles.descriptionText}>{getLocalizedDesc()}</Text>
-        </View>
+        {/* Description — #067: content 空字串時隱藏 */}
+        {getLocalizedDesc().trim() !== '' && (
+          <View style={styles.descriptionSection}>
+            <Text style={styles.sectionLabel}>
+              {t.common_description}
+            </Text>
+            <Text style={styles.descriptionText}>{getLocalizedDesc()}</Text>
+          </View>
+        )}
 
         {/* External Link */}
         {externalUrl && (
           <TouchableOpacity style={styles.externalLinkButton} onPress={handleExternalLink}>
-            <Ionicons name="open-outline" size={20} color="#ffffff" />
+            <Ionicons name="open-outline" size={20} color={UIColors.white} />
             <Text style={styles.externalLinkText}>
               {t.common_learnMore}
             </Text>
@@ -276,7 +291,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   backButtonText: {
-    color: '#ffffff',
+    color: UIColors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -331,7 +346,7 @@ const styles = StyleSheet.create({
   typeBadgeText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   title: {
     fontSize: 24,
@@ -381,6 +396,9 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
     flex: 1,
   },
+  tappableText: {
+    textDecorationLine: 'underline',
+  },
   descriptionSection: {
     marginHorizontal: 20,
     marginTop: 24,
@@ -410,6 +428,6 @@ const styles = StyleSheet.create({
   externalLinkText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
 });

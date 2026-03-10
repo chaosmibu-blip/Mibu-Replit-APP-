@@ -377,16 +377,10 @@ class CommonApiService extends ApiBase {
    * const { success, contacts } = await commonApi.getSOSContacts(token);
    */
   async getSOSContacts(token: string): Promise<SOSContactsResponse> {
-    try {
-      const data = await this.request<{ contacts: SOSContact[] }>('/api/sos/contacts', {
-        headers: this.authHeaders(token),
-      });
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return { success: true, contacts: data.contacts || [] };
-    } catch (error) {
-      console.error('[CommonApi] getSOSContacts error:', error);
-      return { success: false, contacts: [] };
-    }
+    const data = await this.request<{ contacts: SOSContact[] }>('/api/sos/contacts', {
+      headers: this.authHeaders(token),
+    });
+    return { success: true, contacts: data.contacts || [] };
   }
 
   /**

@@ -1,54 +1,42 @@
 /**
  * 商家相關 API 服務
  *
- * 處理商家儀表板、優惠券管理、地點認領、產品管理、金流等功能
+ * 處理商家儀表板、優惠券管理、地點認領等功能
  *
  * @module services/merchantApi
  * @see 後端契約: contracts/APP.md
  *
- * ============ 串接端點 ============
+ * ============ 串接端點（已與後端確認 2026-03-09）============
  * 基本資訊：
- * - GET  /api/merchant/me                - 取得商家資訊
- * - POST /api/merchant/register          - 註冊商家
- * - POST /api/merchant/apply             - 申請商家
- * - POST /api/merchant/verify            - 驗證商家碼
+ * - GET  /api/merchant/me                    - 取得商家資訊（含 status 審核狀態）
+ * - POST /api/merchant/register              - 註冊商家
+ * - POST /api/merchant/apply                 - 申請商家
+ * - GET  /api/merchant/application-status    - 查詢申請狀態
+ * - POST /api/merchant/verify                - 驗證商家碼
  *
  * 數據分析：
- * - GET  /api/merchant/analytics         - 取得分析數據
+ * - GET  /api/merchant/analytics             - 取得分析數據
  *
- * 金流：
- * - GET  /api/merchant/daily-code        - 取得每日核銷碼
- * - GET  /api/merchant/credits           - 取得點數餘額
- * - POST /api/merchant/credits/purchase  - 購買點數
- * - GET  /api/merchant/transactions      - 取得交易記錄
- * - GET  /api/merchant/redemption-code   - 取得核銷碼
+ * 核銷：
+ * - GET  /api/merchant/daily-code            - 取得每日核銷碼（需 approved 狀態）
  *
  * 優惠券 CRUD：
- * - GET    /api/merchant/coupons         - 取得優惠券列表
- * - POST   /api/merchant/coupons         - 建立優惠券
- * - PUT    /api/merchant/coupons/:id     - 更新優惠券
- * - DELETE /api/merchant/coupons/:id     - 刪除優惠券
+ * - GET    /api/merchant/coupons             - 取得優惠券列表
+ * - POST   /api/merchant/coupons             - 建立優惠券
+ * - PUT    /api/merchant/coupons/:id         - 更新優惠券
+ * - DELETE /api/merchant/coupons/:id         - 刪除優惠券
  *
  * 地點管理：
- * - GET  /api/merchant/places/search     - 搜尋可認領地點
- * - POST /api/merchant/places/claim      - 認領地點
- * - GET  /api/merchant/places            - 取得已認領地點
- * - PUT  /api/merchant/places/:id        - 更新地點資訊
- *
- * 產品管理：
- * - GET    /api/merchant/products        - 取得產品列表
- * - POST   /api/merchant/products        - 建立產品
- * - PUT    /api/merchant/products/:id    - 更新產品
- * - DELETE /api/merchant/products/:id    - 刪除產品
+ * - GET  /api/merchant/places/search         - 搜尋可認領地點
+ * - POST /api/merchant/places/claim          - 認領地點
+ * - GET  /api/merchant/places                - 取得已認領地點
+ * - PUT  /api/merchant/places/:id            - 更新地點資訊
  */
 import { ApiBase } from './base';
 import {
   MerchantMe,
   MerchantDailyCode,
-  MerchantCredits,
-  MerchantTransaction,
   MerchantPlace,
-  MerchantProduct,
   PlaceSearchResult,
   MerchantApplyParams,
   MerchantApplyResponse,
@@ -59,8 +47,8 @@ import {
   CreateMerchantCouponParams,
   UpdateMerchantCouponParams,
   UpdateMerchantPlaceParams,
-  MerchantRedemptionCode,
-  AnalyticsPeriod
+  AnalyticsPeriod,
+  ResolveUrlResponse,
 } from '../types';
 
 // ============ API 服務類別 ============
@@ -184,80 +172,19 @@ class MerchantApiService extends ApiBase {
     });
   }
 
-  // ============ 金流 ============
+  // ============ 每日核銷碼 ============
 
   /**
    * 取得每日核銷碼
    *
    * 商家用於核銷用戶優惠券的每日驗證碼
-   * 每天更換一次
+   * 每天更換一次，需 approved 狀態才可呼叫
    *
    * @param token - JWT Token
    * @returns 今日核銷碼
    */
   async getMerchantDailyCode(token: string): Promise<MerchantDailyCode> {
     return this.request<MerchantDailyCode>('/api/merchant/daily-code', {
-      headers: this.authHeaders(token),
-    });
-  }
-
-  /**
-   * 取得商家點數餘額
-   *
-   * @param token - JWT Token
-   * @returns 點數餘額資訊
-   */
-  async getMerchantCredits(token: string): Promise<MerchantCredits> {
-    return this.request<MerchantCredits>('/api/merchant/credits', {
-      headers: this.authHeaders(token),
-    });
-  }
-
-  /**
-   * 購買點數
-   *
-   * 商家購買廣告點數
-   *
-   * @param token - JWT Token
-   * @param amount - 購買金額
-   * @param provider - 付款方式（stripe/recur）
-   * @returns 購買結果和付款連結
-   */
-  async purchaseCredits(token: string, amount: number, provider: 'stripe' | 'recur' = 'stripe'): Promise<{
-    transactionId: number;
-    amount: number;
-    provider: 'stripe' | 'recur';
-    checkoutUrl: string | null;
-    status: string;
-    message: string;
-  }> {
-    return this.request('/api/merchant/credits/purchase', {
-      method: 'POST',
-      headers: this.authHeaders(token),
-      body: JSON.stringify({ amount, provider }),
-    });
-  }
-
-  /**
-   * 取得交易記錄
-   *
-   * @param token - JWT Token
-   * @returns 交易記錄列表
-   */
-  async getMerchantTransactions(token: string): Promise<{ transactions: MerchantTransaction[] }> {
-    return this.request('/api/merchant/transactions', {
-      headers: this.authHeaders(token),
-    });
-  }
-
-  /**
-   * 取得核銷碼
-   *
-   * @param token - JWT Token
-   * @returns 核銷碼資訊
-   */
-  async getMerchantRedemptionCode(token: string): Promise<MerchantRedemptionCode> {
-    return this.request<MerchantRedemptionCode>('/api/merchant/redemption-code', {
       headers: this.authHeaders(token),
     });
   }
@@ -378,6 +305,21 @@ class MerchantApiService extends ApiBase {
   }
 
   /**
+   * #070: 解析 Google Maps 連結取得景點資料
+   *
+   * @param token - JWT Token
+   * @param url - Google Maps 連結（支援完整網址、goo.gl 短連結、maps.app 連結）
+   * @returns 景點完整資料
+   */
+  async resolveGoogleMapsUrl(token: string, url: string): Promise<ResolveUrlResponse> {
+    return this.request<ResolveUrlResponse>('/api/merchant/places/resolve-url', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify({ url }),
+    });
+  }
+
+  /**
    * 取得已認領地點列表
    *
    * @param token - JWT Token
@@ -409,70 +351,6 @@ class MerchantApiService extends ApiBase {
     });
   }
 
-  // ============ 產品管理 ============
-
-  /**
-   * 取得商家產品列表
-   *
-   * @param token - JWT Token
-   * @returns 產品列表
-   */
-  async getMerchantProducts(token: string): Promise<{ products: MerchantProduct[] }> {
-    return this.request('/api/merchant/products', {
-      headers: this.authHeaders(token),
-    });
-  }
-
-  /**
-   * 建立商家產品
-   *
-   * @param token - JWT Token
-   * @param params - 產品資料
-   * @returns 新建立的產品
-   */
-  async createMerchantProduct(token: string, params: {
-    name: string;
-    description?: string;
-    price?: number;
-    discountPrice?: number;
-    placeId?: number;
-  }): Promise<{ product: MerchantProduct }> {
-    return this.request('/api/merchant/products', {
-      method: 'POST',
-      headers: this.authHeaders(token),
-      body: JSON.stringify(params),
-    });
-  }
-
-  /**
-   * 更新商家產品
-   *
-   * @param token - JWT Token
-   * @param productId - 產品 ID
-   * @param params - 要更新的欄位
-   * @returns 更新後的產品
-   */
-  async updateMerchantProduct(token: string, productId: number, params: Partial<MerchantProduct>): Promise<{ product: MerchantProduct }> {
-    return this.request(`/api/merchant/products/${productId}`, {
-      method: 'PUT',
-      headers: this.authHeaders(token),
-      body: JSON.stringify(params),
-    });
-  }
-
-  /**
-   * 刪除商家產品
-   *
-   * @param token - JWT Token
-   * @param productId - 產品 ID
-   * @returns 刪除結果
-   */
-  async deleteMerchantProduct(token: string, productId: number): Promise<{ success: boolean }> {
-    return this.request(`/api/merchant/products/${productId}`, {
-      method: 'DELETE',
-      headers: this.authHeaders(token),
-    });
-  }
 }
 
 // ============ 匯出 ============

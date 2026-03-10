@@ -31,6 +31,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/I18nContext';
 import {
   useMerchantCoupons,
@@ -42,6 +43,7 @@ import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateM
 import { TierBadge } from '../../shared/components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 import { LOCALE_MAP } from '../../../utils/i18n';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
@@ -51,6 +53,7 @@ export function MerchantCouponsScreen() {
   // ============ Hooks ============
   const { t, language } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // ============ React Query Hooks ============
   const couponsQuery = useMerchantCoupons();
@@ -301,7 +304,7 @@ export function MerchantCouponsScreen() {
       keyboardVerticalOffset={100}
     >
       {/* ============ 頂部標題區 ============ */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         {/* 返回按鈕 */}
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
@@ -421,7 +424,7 @@ export function MerchantCouponsScreen() {
         )}
 
         {/* 底部間距 */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: BOTTOM_SPACER_HEIGHT }} />
       </ScrollView>
 
       {/* ============ 新增/編輯彈窗 ============ */}
@@ -580,7 +583,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
     backgroundColor: MibuBrand.warmWhite,

@@ -36,6 +36,7 @@ import {
   ActivityIndicator,
   Animated,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image as ExpoImage } from 'expo-image';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
@@ -64,6 +65,8 @@ import styles, { SCREEN_WIDTH } from './GachaScreen.styles';
 
 // #043: 移除 UNLIMITED_EMAILS 硬編碼白名單，改用後端 isSuperAdmin 判斷
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
+import { Threshold, ApiTimeout } from '../../../constants/businessDefaults';
+import { AnimationTiming } from '../../../constants/animationTiming';
 
 // 螢幕寬度已移至 GachaScreen.styles.ts（SCREEN_WIDTH）
 
@@ -105,6 +108,7 @@ export function GachaScreen() {
   // ============================================================
   // Hooks & Context
   // ============================================================
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, getToken, setUser } = useAuth();
   const { t, language } = useI18n();
@@ -302,7 +306,7 @@ export function GachaScreen() {
     try {
       // 設定 10 秒 timeout
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 10000);
+        setTimeout(() => reject(new Error('Request timeout')), ApiTimeout.gachaRequest);
       });
 
       // 使用預載入快取，避免重複請求
@@ -693,7 +697,7 @@ export function GachaScreen() {
     if (pendingGachaRef.current) {
       pendingGachaRef.current = false;
       // 延遲一幀讓 Modal 關閉動畫完成
-      setTimeout(() => handleGacha(), 100);
+      setTimeout(() => handleGacha(), AnimationTiming.nextTick);
     }
   }, []);
 
@@ -815,7 +819,7 @@ export function GachaScreen() {
   return (
     <ScrollView
       style={styles.scrollView}
-      contentContainerStyle={styles.scrollContent}
+      contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
     >
       {/* ========== 頂部 Logo 區 ========== */}
       <View style={styles.logoContainer}>
@@ -988,7 +992,7 @@ export function GachaScreen() {
       )}
 
       {/* ========== 道具箱快滿提醒（剩餘 5 格以內）========== */}
-      {!isInventoryFull && inventoryRemaining <= 5 && inventoryRemaining > 0 && (
+      {!isInventoryFull && inventoryRemaining <= Threshold.inventoryAlmostFull && inventoryRemaining > 0 && (
         <View style={styles.inventoryAlmostFull}>
           <Ionicons name="alert-circle" size={20} color={MibuBrand.copper} />
           <Text style={styles.inventoryAlmostFullText}>

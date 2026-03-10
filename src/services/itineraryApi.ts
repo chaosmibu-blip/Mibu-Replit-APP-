@@ -26,7 +26,7 @@
  * v2.1.0: AI 對話改用 context 取代 previousMessages
  */
 
-import { ApiBase, ApiError } from './base';
+import { ApiBase } from './base';
 import {
   CreateItineraryRequest,
   UpdateItineraryRequest,
@@ -70,17 +70,11 @@ class ItineraryApi extends ApiBase {
    * @returns 行程摘要列表
    */
   async getItineraries(token: string): Promise<ItineraryListResponse> {
-    try {
-      const data = await this.request<{ itineraries: ItinerarySummary[] }>('/api/itinerary', {
-        method: 'GET',
-        headers: this.authHeaders(token),
-      });
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return { success: true, itineraries: data.itineraries || [] };
-    } catch (error) {
-      console.error('[ItineraryApi] getItineraries error:', error);
-      return { success: false, itineraries: [] };
-    }
+    const data = await this.request<{ itineraries: ItinerarySummary[] }>('/api/itinerary', {
+      method: 'GET',
+      headers: this.authHeaders(token),
+    });
+    return { success: true, itineraries: data.itineraries || [] };
   }
 
   /**
@@ -94,30 +88,11 @@ class ItineraryApi extends ApiBase {
    * @returns 行程詳情
    */
   async getItinerary(id: number, token: string): Promise<ItineraryDetailResponse> {
-    try {
-      const itinerary = await this.request<Itinerary>(`/api/itinerary/${id}`, {
-        method: 'GET',
-        headers: this.authHeaders(token),
-      });
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return { success: true, itinerary };
-    } catch (error) {
-      console.error('[ItineraryApi] getItinerary error:', error);
-      // 回傳空的行程物件以符合型別
-      return {
-        success: false,
-        itinerary: {
-          id: 0,
-          title: '',
-          date: '',
-          country: '',
-          city: '',
-          places: [],
-          createdAt: '',
-          updatedAt: '',
-        },
-      };
-    }
+    const itinerary = await this.request<Itinerary>(`/api/itinerary/${id}`, {
+      method: 'GET',
+      headers: this.authHeaders(token),
+    });
+    return { success: true, itinerary };
   }
 
   /**
@@ -137,45 +112,12 @@ class ItineraryApi extends ApiBase {
     data: CreateItineraryRequest,
     token: string
   ): Promise<ItineraryMutationResponse> {
-    try {
-      // 後端直接回傳 Itinerary 物件（HTTP 201）
-      const itinerary = await this.request<Itinerary>('/api/itinerary', {
-        method: 'POST',
-        headers: this.authHeaders(token),
-        body: JSON.stringify(data),
-      });
-
-      // 包裝成 APP 期望的格式
-      return {
-        success: true,
-        itinerary,
-      };
-    } catch (error) {
-      console.error('[ItineraryApi] createItinerary error:', error);
-
-      // 提取伺服器回傳的錯誤訊息
-      let serverMessage: string | undefined;
-      if (error instanceof ApiError) {
-        serverMessage = error.serverMessage;
-      } else if (error instanceof Error) {
-        serverMessage = error.message;
-      }
-
-      return {
-        success: false,
-        itinerary: {
-          id: 0,
-          title: '',
-          date: '',
-          country: '',
-          city: '',
-          places: [],
-          createdAt: '',
-          updatedAt: '',
-        },
-        message: serverMessage || '建立行程失敗',
-      };
-    }
+    const itinerary = await this.request<Itinerary>('/api/itinerary', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(data),
+    });
+    return { success: true, itinerary };
   }
 
   /**
@@ -191,40 +133,16 @@ class ItineraryApi extends ApiBase {
     data: UpdateItineraryRequest,
     token: string
   ): Promise<ItineraryMutationResponse> {
-    try {
-      const res = await this.request<ItineraryMutationResponse>(`/api/itinerary/${id}`, {
-        method: 'PUT',
-        headers: this.authHeaders(token),
-        body: JSON.stringify(data),
-      });
-      // 確保 success 欄位存在（後端可能不回傳 success，HTTP 200 視為成功）
-      if (res.success === undefined && res.itinerary) {
-        return { ...res, success: true };
-      }
-      return res;
-    } catch (error) {
-      console.error('[ItineraryApi] updateItinerary error:', error);
-      let serverMessage: string | undefined;
-      if (error instanceof ApiError) {
-        serverMessage = error.serverMessage;
-      } else if (error instanceof Error) {
-        serverMessage = error.message;
-      }
-      return {
-        success: false,
-        itinerary: {
-          id: 0,
-          title: '',
-          date: '',
-          country: '',
-          city: '',
-          places: [],
-          createdAt: '',
-          updatedAt: '',
-        },
-        message: serverMessage || '更新行程失敗',
-      };
+    const res = await this.request<ItineraryMutationResponse>(`/api/itinerary/${id}`, {
+      method: 'PUT',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(data),
+    });
+    // 後端可能不回傳 success，HTTP 200 視為成功
+    if (res.success === undefined && res.itinerary) {
+      return { ...res, success: true };
     }
+    return res;
   }
 
   /**
@@ -235,21 +153,10 @@ class ItineraryApi extends ApiBase {
    * @returns 刪除結果
    */
   async deleteItinerary(id: number, token: string): Promise<DeleteItineraryResponse> {
-    try {
-      return await this.request<DeleteItineraryResponse>(`/api/itinerary/${id}`, {
-        method: 'DELETE',
-        headers: this.authHeaders(token),
-      });
-    } catch (error) {
-      console.error('[ItineraryApi] deleteItinerary error:', error);
-      let serverMessage: string | undefined;
-      if (error instanceof ApiError) {
-        serverMessage = error.serverMessage;
-      } else if (error instanceof Error) {
-        serverMessage = error.message;
-      }
-      return { success: false, message: serverMessage || '刪除行程失敗' };
-    }
+    return await this.request<DeleteItineraryResponse>(`/api/itinerary/${id}`, {
+      method: 'DELETE',
+      headers: this.authHeaders(token),
+    });
   }
 
   // ============ 景點管理 ============
@@ -266,24 +173,16 @@ class ItineraryApi extends ApiBase {
    * @returns 依類別分組的可用景點列表
    */
   async getAvailablePlaces(id: number, token: string): Promise<AvailablePlacesResponse> {
-    try {
-      const data = await this.request<{ categories: AvailablePlacesByCategory[] }>(
-        `/api/itinerary/${id}/available-places`,
-        {
-          method: 'GET',
-          headers: this.authHeaders(token),
-        }
-      );
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      const categories = data.categories || [];
-      // 計算總景點數
-      const totalCount = categories.reduce((sum, cat) => sum + cat.places.length, 0);
-
-      return { success: true, categories, totalCount };
-    } catch (error) {
-      console.error('[ItineraryApi] getAvailablePlaces error:', error);
-      return { success: false, categories: [], totalCount: 0 };
-    }
+    const data = await this.request<{ categories: AvailablePlacesByCategory[] }>(
+      `/api/itinerary/${id}/available-places`,
+      {
+        method: 'GET',
+        headers: this.authHeaders(token),
+      }
+    );
+    const categories = data.categories || [];
+    const totalCount = categories.reduce((sum, cat) => sum + cat.places.length, 0);
+    return { success: true, categories, totalCount };
   }
 
   /**
@@ -302,25 +201,19 @@ class ItineraryApi extends ApiBase {
     data: AddPlacesRequest,
     token: string
   ): Promise<AddPlacesResponse> {
-    try {
-      const result = await this.request<{ added: ItineraryPlaceItem[]; count: number }>(
-        `/api/itinerary/${id}/places`,
-        {
-          method: 'POST',
-          headers: this.authHeaders(token),
-          body: JSON.stringify(data),
-        }
-      );
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return {
-        success: true,
-        addedCount: result.count || result.added?.length || 0,
-        places: result.added || [],
-      };
-    } catch (error) {
-      console.error('[ItineraryApi] addPlaces error:', error);
-      return { success: false, addedCount: 0, places: [], message: 'Failed to add places' };
-    }
+    const result = await this.request<{ added: ItineraryPlaceItem[]; count: number }>(
+      `/api/itinerary/${id}/places`,
+      {
+        method: 'POST',
+        headers: this.authHeaders(token),
+        body: JSON.stringify(data),
+      }
+    );
+    return {
+      success: true,
+      addedCount: result.count || result.added?.length || 0,
+      places: result.added || [],
+    };
   }
 
   /**
@@ -338,18 +231,13 @@ class ItineraryApi extends ApiBase {
     itemId: number,
     token: string
   ): Promise<RemovePlaceResponse> {
-    try {
-      return await this.request<RemovePlaceResponse>(
-        `/api/itinerary/${itineraryId}/places/${itemId}`,
-        {
-          method: 'DELETE',
-          headers: this.authHeaders(token),
-        }
-      );
-    } catch (error) {
-      console.error('[ItineraryApi] removePlace error:', error);
-      return { success: false, message: 'Failed to remove place' };
-    }
+    return await this.request<RemovePlaceResponse>(
+      `/api/itinerary/${itineraryId}/places/${itemId}`,
+      {
+        method: 'DELETE',
+        headers: this.authHeaders(token),
+      }
+    );
   }
 
   /**
@@ -367,19 +255,14 @@ class ItineraryApi extends ApiBase {
     data: ReorderPlacesRequest,
     token: string
   ): Promise<ReorderPlacesResponse> {
-    try {
-      return await this.request<ReorderPlacesResponse>(
-        `/api/itinerary/${id}/places/reorder`,
-        {
-          method: 'PUT',
-          headers: this.authHeaders(token),
-          body: JSON.stringify(data),
-        }
-      );
-    } catch (error) {
-      console.error('[ItineraryApi] reorderPlaces error:', error);
-      return { success: false, places: [] };
-    }
+    return await this.request<ReorderPlacesResponse>(
+      `/api/itinerary/${id}/places/reorder`,
+      {
+        method: 'PUT',
+        headers: this.authHeaders(token),
+        body: JSON.stringify(data),
+      }
+    );
   }
 
   // ============ #027 AI 對話式排程功能 ============
@@ -406,69 +289,22 @@ class ItineraryApi extends ApiBase {
     data: AiChatRequest,
     token: string
   ): Promise<AiChatResponse> {
-    // 重試配置
-    const MAX_RETRIES = 2;
-    const RETRY_DELAY = 1500; // 1.5 秒後重試
+    // base.ts 已有網路錯誤重試機制，不需要自建重試
+    const result = await this.request<{
+      response: string;
+      itineraryUpdated?: boolean;
+      updatedItinerary?: AiChatResponse['updatedItinerary'];
+    }>(`/api/itinerary/${id}/ai-chat`, {
+      method: 'POST',
+      headers: this.authHeaders(token),
+      body: JSON.stringify(data),
+    });
 
-    /**
-     * 判斷是否為網路錯誤
-     * 只有網路錯誤才需要重試
-     */
-    const isNetworkError = (error: unknown): boolean => {
-      if (error instanceof TypeError && error.message.includes('Network request failed')) {
-        return true;
-      }
-      if (error instanceof Error && error.message.includes('Network')) {
-        return true;
-      }
-      return false;
-    };
-
-    // 延遲函數
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-    let lastError: unknown;
-
-    // 重試迴圈
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      try {
-        // 非首次嘗試時，先等待再重試
-        if (attempt > 0) {
-          await delay(RETRY_DELAY);
-        }
-
-        // #069 Agent 化：只送 message，只讀核心欄位
-        const result = await this.request<{
-          response: string;
-          itineraryUpdated?: boolean;
-          updatedItinerary?: AiChatResponse['updatedItinerary'];
-        }>(`/api/itinerary/${id}/ai-chat`, {
-          method: 'POST',
-          headers: this.authHeaders(token),
-          body: JSON.stringify(data),
-        });
-
-        return {
-          success: true,
-          response: result.response,
-          itineraryUpdated: result.itineraryUpdated,
-          updatedItinerary: result.updatedItinerary,
-        };
-      } catch (error) {
-        lastError = error;
-        console.error(`[ItineraryApi] aiChat error (attempt ${attempt + 1}):`, error);
-
-        // 只有網路錯誤才重試，其他錯誤直接跳出
-        if (!isNetworkError(error) || attempt === MAX_RETRIES) {
-          break;
-        }
-      }
-    }
-
-    console.error('[ItineraryApi] aiChat failed after retries:', lastError);
     return {
-      success: false,
-      response: '',
+      success: true,
+      response: result.response,
+      itineraryUpdated: result.itineraryUpdated,
+      updatedItinerary: result.updatedItinerary,
     };
   }
 
@@ -487,19 +323,14 @@ class ItineraryApi extends ApiBase {
     data: AiAddPlacesRequest,
     token: string
   ): Promise<AiAddPlacesResponse> {
-    try {
-      return await this.request<AiAddPlacesResponse>(
-        `/api/itinerary/${id}/ai-add-places`,
-        {
-          method: 'POST',
-          headers: this.authHeaders(token),
-          body: JSON.stringify(data),
-        }
-      );
-    } catch (error) {
-      console.error('[ItineraryApi] aiAddPlaces error:', error);
-      return { success: false, addedCount: 0, places: [] };
-    }
+    return await this.request<AiAddPlacesResponse>(
+      `/api/itinerary/${id}/ai-add-places`,
+      {
+        method: 'POST',
+        headers: this.authHeaders(token),
+        body: JSON.stringify(data),
+      }
+    );
   }
 }
 

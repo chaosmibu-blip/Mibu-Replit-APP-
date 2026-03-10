@@ -29,6 +29,17 @@
  * - POST   /api/mini/notes/:placeId   - 新增筆記
  * - PATCH  /api/mini/notes/:id        - 更新筆記
  * - DELETE /api/mini/notes/:id        - 刪除筆記
+ *
+ * 副貓圖鑑:
+ * - GET    /api/mini/sub-cats/catalog    - 副貓目錄
+ * - GET    /api/mini/sub-cats/collection - 用戶圖鑑
+ * - GET    /api/mini/sub-cats/bonuses    - 加成彙總
+ *
+ * 養成:
+ * - GET    /api/mini/nurture/status   - 養成狀態
+ * - POST   /api/mini/nurture/feed     - 餵食
+ * - GET    /api/mini/nurture/logs     - 養成紀錄
+ * - GET    /api/mini/nurture/cat-food - 貓糧數量
  */
 import { ApiBase } from './base';
 import type {
@@ -48,6 +59,14 @@ import type {
   CreateNoteResponse,
   UpdateNoteParams,
   UpdateNoteResponse,
+  SubCatType,
+  SubCatCatalogResponse,
+  SubCatCollectionResponse,
+  SubCatBonusesResponse,
+  NurtureStatusResponse,
+  FeedResponse,
+  NurtureLogsResponse,
+  CatFoodResponse,
 } from '../types/mini';
 
 class MiniApiService extends ApiBase {
@@ -162,6 +181,61 @@ class MiniApiService extends ApiBase {
   async deleteNote(token: string, noteId: number): Promise<{ success: boolean }> {
     return this.request<{ success: boolean }>(`/api/mini/notes/${noteId}`, {
       method: 'DELETE',
+      headers: this.authHeaders(token),
+    });
+  }
+
+  // ============ #060 副貓圖鑑 ============
+
+  /** 取得副貓目錄（可按類型篩選） */
+  async getSubCatCatalog(token: string, type?: SubCatType): Promise<SubCatCatalogResponse> {
+    const query = type ? `?type=${type}` : '';
+    return this.request<SubCatCatalogResponse>(`/api/mini/sub-cats/catalog${query}`, {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /** 取得用戶的貓咪圖鑑（全部副貓 + 是否擁有） */
+  async getSubCatCollection(token: string): Promise<SubCatCollectionResponse> {
+    return this.request<SubCatCollectionResponse>('/api/mini/sub-cats/collection', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /** 取得副貓加成效果彙總 */
+  async getSubCatBonuses(token: string): Promise<SubCatBonusesResponse> {
+    return this.request<SubCatBonusesResponse>('/api/mini/sub-cats/bonuses', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  // ============ #061 養成系統 ============
+
+  /** 取得養成狀態（飽食度、羈絆、成長階段） */
+  async getNurtureStatus(token: string): Promise<NurtureStatusResponse> {
+    return this.request<NurtureStatusResponse>('/api/mini/nurture/status', {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /** 餵食 MINI（消耗 1 份貓糧） */
+  async feed(token: string): Promise<FeedResponse> {
+    return this.request<FeedResponse>('/api/mini/nurture/feed', {
+      method: 'POST',
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /** 取得養成紀錄（時間倒序） */
+  async getNurtureLogs(token: string, limit = 20): Promise<NurtureLogsResponse> {
+    return this.request<NurtureLogsResponse>(`/api/mini/nurture/logs?limit=${limit}`, {
+      headers: this.authHeaders(token),
+    });
+  }
+
+  /** 取得貓糧數量 */
+  async getCatFood(token: string): Promise<CatFoodResponse> {
+    return this.request<CatFoodResponse>('/api/mini/nurture/cat-food', {
       headers: this.authHeaders(token),
     });
   }

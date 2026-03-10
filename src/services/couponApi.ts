@@ -148,26 +148,20 @@ class CouponApiService extends ApiBase {
     const queryString = query.toString();
     const endpoint = `/api/coupons/my${queryString ? `?${queryString}` : ''}`;
 
-    try {
-      const data = await this.request<{
-        coupons: UserCoupon[];
-        total: number;
-        pagination?: { page: number; limit: number; hasMore: boolean };
-      }>(endpoint, {
-        headers: this.authHeaders(token),
-      });
+    const data = await this.request<{
+      coupons: UserCoupon[];
+      total: number;
+      pagination?: { page: number; limit: number; hasMore: boolean };
+    }>(endpoint, {
+      headers: this.authHeaders(token),
+    });
 
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return {
-        success: true,
-        coupons: data.coupons || [],
-        total: data.total || 0,
-        pagination: data.pagination,
-      };
-    } catch (error) {
-      console.error('[CouponApi] getMyCoupons error:', error);
-      return { success: false, coupons: [], total: 0 };
-    }
+    return {
+      success: true,
+      coupons: data.coupons || [],
+      total: data.total || 0,
+      pagination: data.pagination,
+    };
   }
 
   /**
@@ -208,26 +202,20 @@ class CouponApiService extends ApiBase {
     token: string,
     code: string
   ): Promise<VerifyCouponResponse> {
-    try {
-      const data = await this.request<{
-        valid: boolean;
-        coupon?: VerifyCouponResponse['coupon'];
-        message?: string;
-      }>(`/api/coupons/verify/${encodeURIComponent(code)}`, {
-        headers: this.authHeaders(token),
-      });
+    const data = await this.request<{
+      valid: boolean;
+      coupon?: VerifyCouponResponse['coupon'];
+      message?: string;
+    }>(`/api/coupons/verify/${encodeURIComponent(code)}`, {
+      headers: this.authHeaders(token),
+    });
 
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return {
-        success: true,
-        valid: data.valid,
-        coupon: data.coupon,
-        message: data.message,
-      };
-    } catch (error) {
-      console.error('[CouponApi] verifyCoupon error:', error);
-      return { success: false, valid: false, message: 'Verification failed' };
-    }
+    return {
+      success: true,
+      valid: data.valid,
+      coupon: data.coupon,
+      message: data.message,
+    };
   }
 }
 

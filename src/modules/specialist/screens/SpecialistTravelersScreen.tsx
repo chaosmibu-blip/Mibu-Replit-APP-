@@ -26,6 +26,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
 import { useSpecialistTravelers } from '../../../hooks/useSpecialistQueries';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { LOCALE_MAP } from '../../../utils/i18n';
@@ -33,6 +34,7 @@ import { LOCALE_MAP } from '../../../utils/i18n';
 export function SpecialistTravelersScreen() {
   const { t, language } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const travelersQuery = useSpecialistTravelers();
   const travelers = (travelersQuery.data?.travelers ?? []).map((item: { id: string; name: string; status: string }) => ({
@@ -74,7 +76,7 @@ export function SpecialistTravelersScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
@@ -138,7 +140,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 60,
     paddingBottom: 20,
     backgroundColor: UIColors.white,
     borderBottomWidth: 1,

@@ -236,14 +236,6 @@ class ApiService {
   getMerchantAnalytics = merchantApi.getMerchantAnalytics.bind(merchantApi);
   /** 取得商家每日碼 */
   getMerchantDailyCode = merchantApi.getMerchantDailyCode.bind(merchantApi);
-  /** 取得商家點數 */
-  getMerchantCredits = merchantApi.getMerchantCredits.bind(merchantApi);
-  /** 購買點數 */
-  purchaseCredits = merchantApi.purchaseCredits.bind(merchantApi);
-  /** 取得商家交易記錄 */
-  getMerchantTransactions = merchantApi.getMerchantTransactions.bind(merchantApi);
-  /** 取得商家核銷碼 */
-  getMerchantRedemptionCode = merchantApi.getMerchantRedemptionCode.bind(merchantApi);
   /** 取得商家優惠券列表 */
   getMerchantCoupons = merchantApi.getMerchantCoupons.bind(merchantApi);
   /** 建立商家優惠券 */
@@ -260,14 +252,6 @@ class ApiService {
   getMerchantPlaces = merchantApi.getMerchantPlaces.bind(merchantApi);
   /** 更新商家地點 */
   updateMerchantPlace = merchantApi.updateMerchantPlace.bind(merchantApi);
-  /** 取得商家產品列表 */
-  getMerchantProducts = merchantApi.getMerchantProducts.bind(merchantApi);
-  /** 建立商家產品 */
-  createMerchantProduct = merchantApi.createMerchantProduct.bind(merchantApi);
-  /** 更新商家產品 */
-  updateMerchantProduct = merchantApi.updateMerchantProduct.bind(merchantApi);
-  /** 刪除商家產品 */
-  deleteMerchantProduct = merchantApi.deleteMerchantProduct.bind(merchantApi);
 
   // ============ Specialist 策劃師相關 ============
 

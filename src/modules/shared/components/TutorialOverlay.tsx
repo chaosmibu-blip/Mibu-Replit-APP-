@@ -30,7 +30,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { useI18n } from '../../../context/AppContext';
 import { Language } from '../../../types';
 
@@ -313,7 +313,7 @@ export const GACHA_TUTORIAL_STEPS: TutorialStep[] = [
     description: '稀有優惠券會直接存入道具箱，記得查看有效期限並前往商家使用！',
     descriptionEn: 'Rare coupons are saved to your item box. Check expiry dates and use them!',
     icon: 'ticket',
-    iconColor: '#f59e0b',
+    iconColor: SemanticColors.starYellow,
   },
 ];
 

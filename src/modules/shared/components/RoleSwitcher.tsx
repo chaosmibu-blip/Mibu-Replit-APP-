@@ -28,7 +28,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth, useI18n } from '../../../context/AppContext';
 import { UserRole } from '../../../types';
-import { MibuBrand, UIColors, RoleColors } from '../../../../constants/Colors';
+import { MibuBrand, UIColors, RoleColors, SemanticColors } from '../../../../constants/Colors';
 
 // ============ Props 介面定義 ============
 
@@ -50,7 +50,7 @@ const ROLE_CONFIG: Record<UserRole, { labelKey: string; color: string; icon: str
   traveler: { labelKey: 'common_roleTraveler', color: MibuBrand.brown, icon: 'airplane-outline', route: '/(tabs)' },
   merchant: { labelKey: 'common_roleMerchant', color: RoleColors.merchant.main, icon: 'storefront-outline', route: '/merchant-dashboard' },
   specialist: { labelKey: 'common_roleSpecialist', color: RoleColors.specialist.main, icon: 'shield-checkmark-outline', route: '/specialist-dashboard' },
-  admin: { labelKey: 'common_roleAdmin', color: '#f59e0b', icon: 'settings-outline', route: '/admin-dashboard' },
+  admin: { labelKey: 'common_roleAdmin', color: SemanticColors.starYellow, icon: 'settings-outline', route: '/admin-dashboard' },
 };
 
 // ============ 主元件 ============

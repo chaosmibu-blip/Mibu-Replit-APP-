@@ -29,6 +29,7 @@ import { preloadService } from '../../../services/preloadService';
 import { MibuBrand } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import { Select } from '../../shared/components/ui/Select';
+import { InputLimit } from '../../../constants/businessDefaults';
 import type { Country, Region } from '../../../types';
 import type { Itinerary } from '../../../types/itinerary';
 import styles from './ItineraryScreenV2.styles';
@@ -225,7 +226,7 @@ export function CreateItineraryModal({
                   onChangeText={(text) => setNewItinerary(prev => ({ ...prev, title: text }))}
                   placeholder={t.itinerary_tripTitlePlaceholder}
                   placeholderTextColor={MibuBrand.tan}
-                  maxLength={50}
+                  maxLength={InputLimit.title}
                   autoCapitalize="none"
                   returnKeyType="next"
                 />

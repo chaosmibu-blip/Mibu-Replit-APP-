@@ -16,6 +16,7 @@ import { Text, StyleSheet, Animated, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SemanticColors } from '../../../../../constants/Colors';
 import { Spacing, FontSize } from '@/src/theme/designTokens';
+import { AnimationTiming, AutoDismiss } from '@/src/constants/animationTiming';
 
 // React Native 的 NetInfo 需要 @react-native-community/netinfo
 // 這裡使用簡化的線上/離線檢測
@@ -55,7 +56,7 @@ export function NetworkBanner({
         if (wasDisconnectedRef.current) {
           // 顯示「已恢復」後自動隱藏
           setShowBanner(true);
-          hideTimer.current = setTimeout(() => setShowBanner(false), 3000);
+          hideTimer.current = setTimeout(() => setShowBanner(false), AutoDismiss.toast);
         }
       };
       const handleOffline = () => {
@@ -92,7 +93,7 @@ export function NetworkBanner({
         } else if (wasDisconnectedRef.current) {
           setIsConnected(true);
           setShowBanner(true);
-          hideTimer.current = setTimeout(() => setShowBanner(false), 3000);
+          hideTimer.current = setTimeout(() => setShowBanner(false), AutoDismiss.toast);
         }
       });
       return () => {
@@ -107,7 +108,7 @@ export function NetworkBanner({
     animHiddenRef.current = false;
     Animated.timing(translateY, {
       toValue: showBanner ? 0 : -60,
-      duration: 300,
+      duration: AnimationTiming.standard,
       useNativeDriver: true,
     }).start(() => {
       // 動畫完成後更新隱藏狀態

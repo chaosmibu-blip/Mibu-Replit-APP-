@@ -23,6 +23,7 @@
 | **今日事今日畢** | 沒有先後順序，用戶說要做就代表今天要做完，不拖延不排隊 |
 | **千人日活基準** | 架構設計以 1,000 DAU 為基礎思考。若成本過重，必須明確告知用戶「重多少」（效能、費用、開發時間），由用戶判斷是否承擔 |
 | **只寫高品質程式碼** | 好的程式碼不需要註解就能看懂。命名即文件、結構即邏輯、一致即品質。每一行都要經得起三個月後回來看的考驗（詳見 /quality-code） |
+| **既有錯誤順手修** | 跑 tsc 或開發過程中看到既有錯誤，不要跳過說「這不是我改的」— 順手修掉。錯誤不會自己消失，放著只會越積越多（詳見 /fix-on-sight） |
 
 ### 代理人團隊模式（不可違反）
 
@@ -359,6 +360,37 @@ npm update @chaosmibu-blip/mibu-shared  # 更新
 
 ---
 
+### /fix-on-sight — 看到既有錯誤就順手修（每次跑 tsc 或開發時自動觸發）
+
+**核心原則**：錯誤不會自己消失。看到就修，不要跳過說「這不是我改的」。放著只會越積越多，下次還是會看到同一個錯誤。
+
+**觸發時機**：用語意與情境判斷 — 跑 `npx tsc --noEmit`、開發過程中遇到編譯錯誤、或 review 時發現既有問題時自動觸發。不論錯誤是不是這次改動引入的，只要看到就修。
+
+**流程**：
+```
+1. 發現錯誤 → 判斷是既有的還是這次引入的
+2. 既有錯誤 → 順手修掉，不要跳過
+3. 修復方式 → 最小改動，不改業務邏輯（同 /tsc-fix 原則）
+4. 修完驗證 → 重跑 tsc 確認零錯誤
+5. 獨立 commit → 既有錯誤的修復跟主要任務分開 commit
+```
+
+**判斷標準**：
+
+| 情境 | 行動 |
+|------|------|
+| tsc 報錯，跟我的改動無關 | 順手修，獨立 commit |
+| tsc 報錯，是我引入的 | 立刻修，算在主要 commit |
+| 看到明顯的 dead code / 型別錯誤 | 順手修 |
+| 錯誤太複雜（需要重構大範圍） | 告知用戶，建議另開任務處理 |
+
+**禁止行為**：
+- ❌ 「這是既有的錯誤，不是我改的」然後跳過
+- ❌ 連續多次看到同一個錯誤都不修
+- ❌ 用 `// @ts-ignore` 壓掉錯誤
+
+---
+
 ### /img-fit — 圖片放入圓形框架（新增或更換頭像圖片時觸發）
 
 **核心原則**：圖片不帶邊框，邊框由 CSS 負責。圖片職責是「內容」，CSS 職責是「框架」。
@@ -683,7 +715,7 @@ import { Image as ExpoImage } from 'expo-image';
 | 一致性維度 | 具體做法 |
 |-----------|---------|
 | **API 呼叫** | 全部走 React Query hooks，不混用 useState+useEffect |
-| **樣式值** | 全部用 Design Token（MibuBrand、Spacing、Radius、FontSize），不硬編碼 |
+| **樣式值** | 全部用 Design Token（MibuBrand、Spacing、Radius、FontSize），不硬編碼。業務值用 businessDefaults，動畫用 animationTiming |
 | **狀態管理** | Query 資料用 hooks，UI 狀態用 useState，跨元件用 Context |
 | **錯誤處理** | Query 層統一處理，mutation 用 onError callback |
 | **命名慣例** | hooks 用 `useXxx`，query hooks 用 `useXxxQueries`，畫面用 `XxxScreen` |
@@ -719,13 +751,43 @@ const unreadCount = notifications.filter(n => !n.isRead).length;
 | 複雜演算法 | 要（解釋邏輯思路） |
 | 反直覺的決定 | 要（解釋為什麼不用顯而易見的做法） |
 
-#### 五、品質檢查清單（寫完自己過一遍）
+#### 五、寫碼防呆規則（寫的當下就要對）
+
+**以下是健檢反覆發現的問題，寫碼時就要避免，不要等事後修：**
+
+| 寫什麼 | 正確做法 | 錯誤做法 |
+|--------|---------|---------|
+| **色彩** | `MibuBrand.brown` / `UIColors.white` / `SemanticColors.success.light` | `'#7A5230'` / `'#fff'` / `'#dcfce7'` |
+| **間距** | `Spacing.lg`（16）/ `Spacing.xl`（24） | `padding: 16` / `margin: 24` |
+| **圓角** | `Radius.md`（12）/ `Radius.xl`（20） | `borderRadius: 12` / `borderRadius: 20` |
+| **字體大小** | `FontSize.md`（14）/ `FontSize.lg`（16） | `fontSize: 14` / `fontSize: 16` |
+| **SafeArea** | `const insets = useSafeAreaInsets()` + `paddingTop: insets.top` | `paddingTop: 60` / `Platform.OS === 'ios' ? 60 : 40` |
+| **動畫延遲** | `AnimationTiming.standard`（300ms）/ `AutoDismiss.quick`（2s） | `setTimeout(..., 300)` / `setTimeout(..., 2000)` |
+| **業務 fallback** | `PerkDefaults.dailyPullLimit` / `InputLimit.chatMessage` | `?? 36` / `maxLength={500}` |
+| **底部留白** | `BOTTOM_SPACER_HEIGHT` | `height: 100` |
+| **用戶可見文字** | `t.xxx`（i18n key） | `'請稍候'` / `'Error'` 硬編碼中英文 |
+| **API 錯誤** | 讓錯誤冒泡到 React Query（不 try/catch） | Service 層 catch → return `{ success: false }` |
+| **Query Key** | `queryKeys.xxx`（統一常數） | `queryKey: ['xxx']`（原始字串） |
+
+**常數檔案速查**：
+```typescript
+import { Spacing, Radius, FontSize } from '@/theme/designTokens';
+import { MibuBrand, UIColors, SemanticColors } from '@/constants/Colors';
+import { AnimationTiming, AutoDismiss } from '@/constants/animationTiming';
+import { PerkDefaults, InputLimit, Threshold, BOTTOM_SPACER_HEIGHT } from '@/constants/businessDefaults';
+import { ComponentSize } from '@/constants/componentSizes';
+```
+
+#### 六、品質檢查清單（寫完自己過一遍）
 
 ```
 □ 命名：隨便指一個變數，不看上下文能懂嗎？
 □ 結構：函數有超過 30 行的嗎？能拆嗎？
 □ 一致：跟專案裡同類的寫法一樣嗎？
-□ 硬編碼：有魔術數字嗎？該用 Token/常數嗎？
+□ 硬編碼：有魔術數字嗎？該用 Token/常數嗎？（見防呆規則表）
+□ 色彩：有 '#xxx' 嗎？該用 Color Token 嗎？
+□ 間距：有裸數字 padding/margin 嗎？該用 Spacing Token 嗎？
+□ 文字：有硬編碼中英文嗎？該走 i18n 嗎？
 □ 邊界：loading / error / empty 都處理了嗎？
 □ 重複：有沒有跟別處重複的邏輯可以抽出來？
 ```
@@ -1047,6 +1109,78 @@ grep 'androidClientId' hooks/useGoogleAuth.ts
 
 ---
 
+### /code-audit — 前端程式碼品質健檢（用戶要求健檢或定期品質檢查時觸發）
+
+**核心原則**：按項目逐項掃全專案，修完一項再換下一項。不是抽查，是全面體檢。
+
+**觸發時機**：用語意與情境判斷 — 當用戶提到「健檢」、「品質檢查」、「code audit」、「技術債清理」、或想全面檢視程式碼品質時觸發。
+
+**健檢項目（按優先順序執行）**：
+
+| 優先級 | 項目 | 掃描方式 | 修復規則 |
+|--------|------|---------|---------|
+| P0 | **Service 層吞錯誤** | `grep -rn "catch.*error" src/services/` | 移除 try/catch，讓錯誤冒泡到 React Query |
+| P0 | **重複邏輯合併** | 找超過 80% 相似的函數 | 抽取共用函數 |
+| P1 | **paddingTop 硬編碼** | `grep -rn "paddingTop.*60\|paddingTop.*Platform"` | 改用 `useSafeAreaInsets()` |
+| P1 | **硬編碼文字** | `grep -rn "Alert\.alert.*[\u4e00-\u9fff]"` | 全部走 `t.xxx` 翻譯 key |
+| P1 | **Query Key 不一致** | `grep -rn "queryKey.*\['" src/hooks/` | 統一用 queryKeys 常數 |
+| P2 | **重複重試** | `grep -rn "retry\|MAX_RETRIES" src/services/` | 選一層留，不疊加 |
+| P2 | **硬編碼色彩** | `grep -rn "'#[0-9a-fA-F]'" src/modules/` | 改用 MibuBrand / UIColors / SemanticColors |
+| P2 | **Magic Number** | `grep -rn "setTimeout.*[0-9]\{3,\}" src/modules/` | 改用 AnimationTiming / AutoDismiss / businessDefaults 常數 |
+| P3 | **Design Token 缺失** | `grep -rL "Spacing" src/modules/**/*.styles.ts` | 導入 Spacing/Radius/FontSize |
+| P3 | **共用元件抽取** | 找 3+ 處重複的 UI 結構 | 抽取共用元件 |
+
+**執行流程**：
+```
+每個項目必須完整走過：
+
+1. 掃描 → grep/glob 找出全專案所有問題點
+2. 規劃 → 列出受影響的檔案清單
+3. 建立計劃文件 → docs/plan-{主題}.md
+4. 逐檔修復 → 一次改一個檔案
+5. 驗證 → npx tsc --noEmit 確認零錯誤
+6. 獨立 commit → 訊息標明項目編號
+7. 進入下一項
+```
+
+**掃描範圍**：
+```bash
+# 統計專案規模
+find src/ app/ -name "*.ts" -o -name "*.tsx" | wc -l
+find src/ app/ -name "*.ts" -o -name "*.tsx" | xargs wc -l | tail -1
+```
+
+**常數檔案位置**（修復時引用）：
+
+| 常數 | 檔案 |
+|------|------|
+| AnimationTiming / AutoDismiss | `src/constants/animationTiming.ts` |
+| PerkDefaults / InputLimit / Threshold / BOTTOM_SPACER_HEIGHT | `src/constants/businessDefaults.ts` |
+| ComponentSize | `src/constants/componentSizes.ts` |
+| Spacing / Radius / FontSize / Shadow | `src/theme/designTokens.ts` |
+| MibuBrand / UIColors / SemanticColors | `constants/Colors.ts` |
+
+**Commit 策略**：每個項目獨立 commit，訊息格式：`refactor: 項目 N — {說明}（{檔案數} 檔）`
+
+**完成標準**：
+```
+□ 所有 P0-P2 項目已修復
+□ npx tsc --noEmit 零新增錯誤
+□ 每項獨立 commit + push
+□ 計劃文件更新 checkbox 勾選
+□ 輸出健檢摘要表格
+```
+
+**健檢摘要表格格式**：
+```
+| 項目 | 修復前 | 修復後 | 影響檔案 |
+|------|--------|--------|---------|
+| Service 吞錯誤 | 15 處 | 0 處 | 18 檔 |
+| 硬編碼色彩 | 120+ 處 | 0 處 | 30 檔 |
+```
+
+---
+
 ### /discuss-plan — 討論時主動建立計劃文件（討論改動/開發項目時自動觸發）
 
 **核心原則**：討論不留空話，每一輪討論的結論都要落地成文件，執行時才不會漏東漏西。
@@ -1089,6 +1223,172 @@ grep 'androidClientId' hooks/useGoogleAuth.ts
 - 單一明確指令（「改這個顏色」）→ 直接做
 - 純問答（「這個怎麼運作？」）→ 直接回答
 - 已有計劃文件的後續執行 → 繼續用現有文件
+
+---
+
+### /component-extract — 用到才抽的元件抽取（修改或新增 UI 時自動判斷）
+
+**核心原則**：不預先抽象，用到才抽。預先抽常常抽錯抽象，反而更難改。只在「重複已經造成維護負擔」的當下才抽取。
+
+**觸發時機**：用語意與情境判斷 — 在修改或新增 UI 時，發現同一段 JSX/樣式結構在專案中重複出現，且這次修改需要同時改多處時自動觸發。核心判斷：「這次改動是不是要改好幾個地方同樣的東西？」
+
+**觸發條件**（符合任一即觸發判斷流程）：
+
+| 條件 | 說明 | 範例 |
+|------|------|------|
+| **改一處要改多處** | 修改某段 UI，發現同樣結構散落 3+ 處，這次必須全部同步改 | 改頭像樣式，發現 5 個畫面都有同樣的圓形頭像 + fallback |
+| **新增 UI 撞臉現有** | 寫新畫面/元件時，發現跟某處現有 UI 幾乎一模一樣 | 新增商家卡片，跟現有的景點卡片結構 80% 相同 |
+| **複製貼上衝動** | 發現自己正在從別處複製一段 JSX 來用 | 從 A 畫面複製整段列表項目到 B 畫面 |
+| **同一個 bug 修多處** | 修一個 UI bug，發現同樣的錯誤在多處重複出現 | 某個卡片缺 loading 狀態，查了發現 4 個地方都缺 |
+
+**判斷流程**（觸發後不是直接抽，先判斷值不值得）：
+```
+1. 掃描重複 → grep/glob 找出所有相似結構
+2. 計算重複度
+   a. 出現幾處？
+   b. 結構相似度多高？（> 80% 才算重複）
+   c. 差異點在哪？（能用 props 參數化嗎？）
+3. 評估未來變動
+   a. 這段 UI 未來會改嗎？（穩定不動的不急著抽）
+   b. 改的時候需要全部同步嗎？
+4. 做出決策（見決策矩陣）
+5. 執行或跳過
+```
+
+**決策矩陣**：
+
+| 重複次數 | 結構相似度 | 未來會改？ | 決策 |
+|---------|-----------|-----------|------|
+| 2 處 | 任意 | 不太會 | **不抽** — 兩處而已，直接改 |
+| 2 處 | > 80% | 會 | **考慮抽** — 但不強制，看複雜度 |
+| 3+ 處 | > 80% | 任意 | **抽** — 維護成本已經超過抽取成本 |
+| 3+ 處 | 50-80% | 會 | **抽** — 用 props 處理差異 |
+| 3+ 處 | < 50% | 任意 | **不抽** — 只是長得像，本質不同 |
+| 5+ 處 | > 60% | 任意 | **一定抽** — 不抽就是欠技術債 |
+
+**抽取執行步驟**：
+```
+1. 定義介面 → 找出所有實例的差異點，設計 Props
+   - 共同部分 → 寫死在元件內
+   - 差異部分 → 變成 props（用最少的 props 覆蓋所有情境）
+   - props 不超過 8 個，超過代表抽象可能抽錯了
+
+2. 命名元件 → 名字要說出「這是什麼」
+   - ✅ <AvatarCircle size={52} />
+   - ✅ <PlaceCard place={item} onPress={handlePress} />
+   - ❌ <CardComponent />、<CustomView />
+
+3. 放置位置
+   | 使用範圍 | 放哪裡 |
+   |---------|--------|
+   | 單一模組內 3+ 處 | src/modules/{module}/components/ |
+   | 跨模組 2+ 處 | src/modules/shared/components/ |
+
+4. 替換所有實例 → 逐檔替換，每檔替換後確認不影響功能
+
+5. 驗證
+   - npx tsc --noEmit 零新增錯誤
+   - 視覺上跟抽取前完全一致（不改外觀，只改結構）
+
+6. 更新 memory → docs/memory-components.md 新增元件記錄
+```
+
+**抽取品質檢查**：
+```
+□ Props 數量 ≤ 8 個？（超過代表抽象可能有問題）
+□ 元件名稱一看就懂用途？
+□ 所有原始實例都替換了？（grep 確認無遺漏）
+□ 替換後視覺完全一致？
+□ 沒有為了「未來可能用到」加多餘的 props？
+□ 樣式用 Design Token，不硬編碼？
+```
+
+**什麼時候不抽**：
+- 只出現 1-2 次，且不太會改 → 不值得
+- 長得像但商業邏輯完全不同 → 硬抽會變成 props 地獄
+- 正在趕功能，不是改 UI → 記下來，之後再處理
+- 預測「未來可能會用到」→ 等真的用到再說
+
+**常見反模式（不要踩）**：
+
+| 反模式 | 為什麼錯 | 正確做法 |
+|--------|---------|---------|
+| 預先抽象 | 猜錯需求，之後要大改 | 等重複出現再抽 |
+| God Component | 一個元件塞 15 個 props 處理所有情境 | 拆成多個專用元件 |
+| 過度參數化 | 每個樣式值都變 prop | 只參數化真正有差異的部分 |
+| 抽了但沒全換 | 新舊並存，維護更亂 | 抽了就全部替換，不留舊的 |
+| 改外觀順便抽 | 抽取 + 改樣式混在一起，出問題不知道是哪個改壞的 | 先抽取（視覺不變）→ 再改樣式（獨立 commit） |
+
+### /sync-report — 後端同步任務回報（任務實作完成或盤點時觸發）
+
+**核心原則**：回報要讓後端一眼看懂「前端做了什麼、打了哪些 API、缺什麼、需要後端配合什麼」。後端不需要讀前端 code 就能確認實作完整度。
+
+**觸發時機**：用語意與情境判斷 — 當完成後端同步任務的實作、或盤點任務完成狀況時自動觸發。每個任務完成後都要寫回報到 `docs/sync-backend.md`。
+
+**回報格式**：
+
+```markdown
+### {日期} {狀態圖示} #{編號}：{任務名}（{前端狀態}）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #{編號} |
+| 狀態 | ✅ 前端已完成 / ⚠️ 部分完成 / ❌ 未實作 |
+| 嚴重度 | 高/中/低 |
+
+**API 端點對應**
+
+| 後端端點 | 前端方法 | 檔案位置 | 狀態 |
+|---------|---------|---------|------|
+| `GET /api/xxx` | `xxxApi.getXxx()` | `src/services/xxxApi.ts:L行號` | ✅/❌ |
+
+**React Query Hooks**
+
+| Hook 名稱 | 用途 | 檔案位置 | 狀態 |
+|-----------|------|---------|------|
+| `useXxx()` | 查詢xxx | `src/hooks/useXxxQueries.ts:L行號` | ✅/❌ |
+
+**型別定義**
+
+| 型別 | 檔案位置 | 狀態 |
+|------|---------|------|
+| `XxxResponse` | `src/types/xxx.ts:L行號` | ✅/❌ |
+
+**新增檔案**（如有）
+- `檔案路徑` — 一句話說明用途
+
+**修改檔案**（如有）
+- `檔案路徑` — 改了什麼（行號）
+
+**翻譯**（如有涉及 i18n）
+- 4 語系共 N 個 key（列出 key prefix）
+
+**缺失項目**（⚠️/❌ 時必填）
+- [ ] 具體缺什麼 — 檔案位置 + 需要做什麼
+
+**後端需確認**（如有）
+- 需要後端配合的事項（API 未部署、欄位缺失、格式不符等）
+
+**驗收比對**（對照 sync-app.md 的驗收標準）
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | xxx | xxx | ✅ 可達成 / ❌ 無法達成（原因）|
+```
+
+**必填欄位判斷**：
+
+| 狀態 | 必填欄位 |
+|------|---------|
+| ✅ 完成 | API 端點對應 + Hooks + 型別 + 修改/新增檔案 + 驗收比對 |
+| ⚠️ 部分完成 | 上述全部 + 缺失項目 |
+| ❌ 未實作 | 缺失項目（列出後端期望的所有待辦） |
+
+**品質標準**：
+- 後端讀完能回答：「前端打了哪些 API？格式對嗎？錯誤處理有嗎？」
+- 每個 API 端點都要有對應的前端方法和檔案位置
+- 缺失項目要具體到「哪個檔案要加什麼」
+- 驗收標準逐條比對，不能籠統帶過
 
 ---
 

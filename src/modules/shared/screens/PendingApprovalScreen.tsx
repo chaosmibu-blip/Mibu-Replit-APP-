@@ -59,7 +59,7 @@ export function PendingApprovalScreen() {
     <View style={styles.container}>
       {/* ===== 沙漏圖示 ===== */}
       <View style={styles.iconContainer}>
-        <Ionicons name="hourglass-outline" size={80} color="#f59e0b" />
+        <Ionicons name="hourglass-outline" size={80} color={SemanticColors.starYellow} />
       </View>
 
       {/* ===== 標題與說明 ===== */}
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   roleValue: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#f59e0b',
+    color: SemanticColors.starYellow,
   },
   // 登出按鈕
   logoutButton: {

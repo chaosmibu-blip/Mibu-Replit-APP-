@@ -165,17 +165,11 @@ class GachaApiService extends ApiBase {
    * @returns 優惠券列表和地區資訊
    */
   async getPrizePool(regionId: number): Promise<PrizePoolResponse> {
-    try {
-      const data = await this.request<{
-        coupons: PrizePoolResponse['coupons'];
-        region: PrizePoolResponse['region'];
-      }>(`/api/gacha/prize-pool?regionId=${regionId}`);
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return { success: true, coupons: data.coupons || [], region: data.region };
-    } catch (error) {
-      console.error('[GachaApi] getPrizePool error:', error);
-      return { success: false, coupons: [], region: { id: 0, name: '' } };
-    }
+    const data = await this.request<{
+      coupons: PrizePoolResponse['coupons'];
+      region: PrizePoolResponse['region'];
+    }>(`/api/gacha/prize-pool?regionId=${regionId}`);
+    return { success: true, coupons: data.coupons || [], region: data.region };
   }
 
   /**

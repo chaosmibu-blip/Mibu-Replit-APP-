@@ -36,11 +36,12 @@ import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
 import { CoinReward } from '../../shared/components/ui/CoinReward';
 import { SectionHeader } from '../../shared/components/ui/SectionHeader';
-import { MibuBrand } from '../../../../constants/Colors';
+import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { RuleItem, NavigateTo, RuleStatus } from '../../../types/rules';
 import { useRules, usePerks, useClaimReward, useRefreshEconomyData } from '../../../hooks/useEconomyQueries';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
+import { PerkDefaults, Threshold, BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 
 // ============================================================
 // 常數定義
@@ -137,10 +138,10 @@ export function EconomyScreen() {
   const completedOnetimeCount = onetimeQuests.filter(q => q.status === 'completed' || q.status === 'claimed').length;
 
   // 權益顯示
-  const rawDailyPullLimit = perksInfo?.dailyPullLimit ?? 36;
-  const rawInventorySlots = perksInfo?.inventorySlots ?? 30;
-  const isUnlimitedPulls = rawDailyPullLimit === -1;
-  const isUnlimitedSlots = rawInventorySlots >= 999;
+  const rawDailyPullLimit = perksInfo?.dailyPullLimit ?? PerkDefaults.dailyPullLimit;
+  const rawInventorySlots = perksInfo?.inventorySlots ?? PerkDefaults.inventorySlots;
+  const isUnlimitedPulls = rawDailyPullLimit === Threshold.unlimitedPulls;
+  const isUnlimitedSlots = rawInventorySlots >= Threshold.unlimitedSlotsMin;
   const dailyPullLimitDisplay = isUnlimitedPulls ? '∞' : String(rawDailyPullLimit);
   const inventorySlotsDisplay = isUnlimitedSlots ? '∞' : String(rawInventorySlots);
 
@@ -265,7 +266,7 @@ export function EconomyScreen() {
             disabled={claiming === rule.id}
           >
             {claiming === rule.id ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={UIColors.white} />
             ) : (
               <Text style={styles.claimButtonText}>{t.economy_collect}</Text>
             )}
@@ -649,7 +650,7 @@ const styles = StyleSheet.create({
     color: MibuBrand.copper,
   },
   tabTextActive: {
-    color: '#ffffff',
+    color: UIColors.white,
   },
   tabContent: {},
 
@@ -738,7 +739,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   claimButtonText: {
-    color: '#fff',
+    color: UIColors.white,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -853,6 +854,6 @@ const styles = StyleSheet.create({
   },
 
   bottomSpacer: {
-    height: 100,
+    height: BOTTOM_SPACER_HEIGHT,
   },
 });

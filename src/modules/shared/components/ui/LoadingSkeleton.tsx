@@ -22,6 +22,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, ViewStyle, StyleProp, DimensionValue } from 'react-native';
 import { MibuBrand } from '../../../../../constants/Colors';
 import { Spacing, Radius } from '@/src/theme/designTokens';
+import { AnimationTiming } from '@/src/constants/animationTiming';
 
 // ========== 基礎骨架方塊 ==========
 
@@ -49,12 +50,12 @@ function SkeletonBlock({
       Animated.sequence([
         Animated.timing(opacity, {
           toValue: 0.7,
-          duration: 800,
+          duration: AnimationTiming.skeletonPulse,
           useNativeDriver: true,
         }),
         Animated.timing(opacity, {
           toValue: 0.3,
-          duration: 800,
+          duration: AnimationTiming.skeletonPulse,
           useNativeDriver: true,
         }),
       ])

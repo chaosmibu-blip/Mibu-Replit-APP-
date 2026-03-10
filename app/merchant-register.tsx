@@ -26,6 +26,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -47,6 +48,7 @@ const BUSINESS_CATEGORIES = [
 ];
 
 export default function MerchantRegisterScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useI18n();
   const router = useRouter();
 
@@ -155,7 +157,7 @@ export default function MerchantRegisterScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
@@ -314,10 +316,10 @@ export default function MerchantRegisterScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={UIColors.white} />
             ) : (
               <>
-                <Ionicons name="send" size={18} color="#fff" />
+                <Ionicons name="send" size={18} color={UIColors.white} />
                 <Text style={styles.submitButtonText}>{translations.submit}</Text>
               </>
             )}
@@ -338,7 +340,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 60,
     paddingBottom: 16,
     backgroundColor: MibuBrand.cream,
     borderBottomWidth: 1,
@@ -378,7 +379,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -388,7 +389,7 @@ const styles = StyleSheet.create({
     borderColor: MibuBrand.tanLight,
   },
   picker: {
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -406,7 +407,7 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
   },
   pickerOptions: {
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     marginTop: 8,
     borderWidth: 1,
@@ -440,7 +441,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: UIColors.white,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -468,6 +469,6 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: UIColors.white,
   },
 });

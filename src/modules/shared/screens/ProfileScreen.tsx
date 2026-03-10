@@ -18,6 +18,7 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Animated, RefreshControl } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -54,6 +55,7 @@ import { ApiError } from '../../../services/base';
 import { TagInput } from '../components/TagInput';
 import { UserProfile, Gender, AvatarPreset } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import { STORAGE_KEYS } from '../../../constants/storageKeys';
 import styles from './ProfileScreen.styles';
@@ -93,6 +95,7 @@ const displayUserId = (userId: string | undefined): string => {
 // ============ 元件本體 ============
 
 export function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const { user, getToken, setUser } = useAuth();
   const { t, language } = useI18n();
 
@@ -359,7 +362,7 @@ export function ProfileScreen() {
       keyboardVerticalOffset={100}
     >
       {/* ===== 頂部導航列 ===== */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
         </TouchableOpacity>
@@ -704,7 +707,7 @@ export function ProfileScreen() {
         </View>
 
         {/* 底部留白 */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: BOTTOM_SPACER_HEIGHT }} />
       </ScrollView>
 
       {/* ===== 頭像選擇 Modal（獨立元件） ===== */}
