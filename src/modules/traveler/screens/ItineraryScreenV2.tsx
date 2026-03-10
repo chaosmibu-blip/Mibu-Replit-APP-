@@ -862,7 +862,8 @@ export function ItineraryScreenV2() {
   /** 儲存 Mini 頭像到相簿 */
   const saveAvatarToGallery = useCallback(async () => {
     try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
+      // writeOnly: true — 僅請求寫入權限，不請求 READ_MEDIA_IMAGES
+      const { status } = await MediaLibrary.requestPermissionsAsync(true);
       if (status !== 'granted') {
         Alert.alert('需要權限', '請允許存取相簿以儲存圖片');
         return;

@@ -19,7 +19,7 @@ const IS_PRODUCTION = IS_EAS_BUILD || IS_EAS_UPDATE || process.env.APP_ENV === '
 
 // ============ 版本常數（統一管理，避免兩邊不同步） ============
 const IOS_BUILD_NUMBER = '1';            // iOS Build 號（每次提審要遞增）
-const ANDROID_VERSION_CODE = 2;          // Android 版本碼（每次上架要遞增）
+const ANDROID_VERSION_CODE = 3;          // Android 版本碼（每次上架要遞增）
 
 // ============ 基礎設定（開發/正式共用） ============
 const baseConfig = {
@@ -51,8 +51,14 @@ const baseConfig = {
         backgroundColor: '#F5E6D3',      // Mibu 品牌奶油色
       },
     ],
-    // expo-media-library：權限描述統一在 infoPlist 區段設定，避免 plugin 覆蓋
-    'expo-media-library',
+    // expo-media-library：僅保留儲存權限，讀取改用 Android Photo Picker（不需要 READ_MEDIA_IMAGES）
+    [
+      'expo-media-library',
+      {
+        photosPermission: false,
+        savePhotosPermission: '允許 Mibu 將圖片儲存到您的相簿',
+      },
+    ],
     // Google 原生登入（取代 expo-auth-session 的網頁式 OAuth）
     [
       '@react-native-google-signin/google-signin',
@@ -143,11 +149,11 @@ const productionConfig = {
     },
     edgeToEdgeEnabled: true,
     // Android 權限宣告（只宣告實際有使用的權限）
+    // 注意：READ_MEDIA_IMAGES / READ_MEDIA_VIDEO / READ_EXTERNAL_STORAGE 已移除
+    // 圖片選擇改用 Android Photo Picker（不需要相簿讀取權限）
     permissions: [
       'ACCESS_FINE_LOCATION',            // 精確定位
       'ACCESS_COARSE_LOCATION',          // 粗略定位
-      'READ_EXTERNAL_STORAGE',           // 讀取相簿
-      'WRITE_EXTERNAL_STORAGE',          // 寫入相簿
     ],
   },
 };
