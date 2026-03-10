@@ -141,7 +141,6 @@
 
 | 元件 | 模組 | 說明 |
 |------|------|------|
-| MerchantRegistrationForm | merchant | 商家註冊表單 |
 | CouponPreviewCard | traveler | 優惠券預覽卡片 |
 | CouponWinAnimation | traveler | 優惠券贏取動畫 |
 
@@ -309,7 +308,6 @@
 |---|------|------|------|
 | 3.1.1 | MerchantApplyScreen | `/merchant-apply` | ✅ |
 | 3.1.2 | MerchantRegisterScreen | `/merchant-register` | ✅ |
-| 3.1.3 | MerchantRegistrationForm | `/register-merchant` | ✅ |
 
 ### 3.2 商家總覽
 

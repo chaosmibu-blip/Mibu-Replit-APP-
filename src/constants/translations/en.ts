@@ -409,10 +409,14 @@ const en: Record<string, string> = {
 
     merchant_surveyQ1Contact: 'Your Name',
     merchant_surveyQ2Business: 'Business / Company Name',
+    merchant_surveyTaxId: 'Tax ID (Optional)',
+    merchant_surveyTaxIdPlaceholder: 'Tax identification number',
     merchant_surveyQ3Category: 'Industry Category',
-    merchant_surveyCatSouvenir: 'Souvenir & Retail',
+    merchant_catSpecialtyShop: 'Specialty Shop',
     merchant_surveyQ4Region: 'Business Location',
     merchant_surveyQ4Placeholder: 'Select your city/county',
+    merchant_surveyAddress: 'Address (Optional)',
+    merchant_surveyAddressPlaceholder: 'e.g. 100 Main St, 2F',
 
     merchant_surveyQ5Sources: 'Where do most of your customers come from?',
     merchant_srcWalkIn: 'Walk-in',
@@ -684,7 +688,6 @@ const en: Record<string, string> = {
     merchant_regCatHotel: 'Hotel/Accommodation',
     merchant_regCatAttraction: 'Attraction/Entertainment',
     merchant_regCatShopping: 'Shopping/Retail',
-    merchant_regCatTransportation: 'Transportation',
     merchant_regCatExperience: 'Experience/Activity',
     merchant_regCatCulture: 'Culture/Art',
     merchant_regCatOther: 'Other',
@@ -847,7 +850,6 @@ const en: Record<string, string> = {
     merchant_catService: 'Service',
     merchant_catOther: 'Other',
     merchant_catAttraction: 'Attraction/Entertainment',
-    merchant_catTransportation: 'Transportation',
     merchant_catExperience: 'Experience/Activity',
     merchant_catCulture: 'Culture/Art',
     // ========== Economy ==========

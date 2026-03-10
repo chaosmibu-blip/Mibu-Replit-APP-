@@ -44,7 +44,7 @@
 ### 商家業務元件 (src/modules/merchant/components/)
 | 元件 | 檔案路徑 | 用途 |
 |------|----------|------|
-| `MerchantRegistrationForm` | `src/modules/merchant/components/MerchantRegistrationForm.tsx` | 商家註冊表單 |
+| （已清理舊元件，申請表單改用 `MerchantApplyScreen` 內建 12 題問卷） | | |
 
 ---
 
