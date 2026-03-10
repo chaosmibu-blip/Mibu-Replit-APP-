@@ -41,6 +41,7 @@ import {
   useSearchMerchantPlaces,
   useResolveGoogleMapsUrl,
 } from '../../../hooks/useMerchantQueries';
+import type { PlaceSearchResult, ResolveUrlResponse } from '../../../types/merchant';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorState } from '../components/ui/ErrorState';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
@@ -97,10 +98,10 @@ export function MerchantApplyScreen() {
   const [bindingMode, setBindingMode] = useState<BindingMode>('none');
   const [isBindingExpanded, setIsBindingExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [selectedPlace, setSelectedPlace] = useState<any>(null);
+  const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
+  const [selectedPlace, setSelectedPlace] = useState<PlaceSearchResult | null>(null);
   const [googleMapsUrl, setGoogleMapsUrl] = useState('');
-  const [resolvedPlace, setResolvedPlace] = useState<any>(null);
+  const [resolvedPlace, setResolvedPlace] = useState<ResolveUrlResponse['place'] | null>(null);
   const [manualPlaceName, setManualPlaceName] = useState('');
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -267,7 +268,7 @@ export function MerchantApplyScreen() {
     );
   };
 
-  const handleReapply = () => refetchStatus();
+  const handleReapply = () => setIsReapplying(true);
 
   // ========== 店家綁定事件 ==========
 
@@ -289,14 +290,14 @@ export function MerchantApplyScreen() {
 
     searchTimerRef.current = setTimeout(() => {
       searchPlacesMutation.mutate(text.trim(), {
-        onSuccess: (data: any) => {
-          setSearchResults(data?.places ?? data ?? []);
+        onSuccess: (data: { places?: PlaceSearchResult[] }) => {
+          setSearchResults(data?.places ?? []);
         },
       });
     }, SEARCH_DEBOUNCE_MS);
   }, [searchPlacesMutation]);
 
-  const handleSelectPlace = useCallback((place: any) => {
+  const handleSelectPlace = useCallback((place: PlaceSearchResult) => {
     setSelectedPlace(place);
     setSearchResults([]);
     setSearchQuery(place.placeName ?? '');
@@ -311,8 +312,8 @@ export function MerchantApplyScreen() {
   const handleResolveUrl = useCallback(() => {
     if (!googleMapsUrl.trim()) return;
     resolveUrlMutation.mutate(googleMapsUrl.trim(), {
-      onSuccess: (data: any) => {
-        setResolvedPlace(data);
+      onSuccess: (data: ResolveUrlResponse) => {
+        setResolvedPlace(data.place);
       },
       onError: (error: Error) => {
         Alert.alert(t.common_error, error.message);
@@ -493,7 +494,7 @@ export function MerchantApplyScreen() {
                   </View>
                   {searchResults.length > 0 && (
                     <View style={styles.searchResultsList}>
-                      {searchResults.map((place: any, index: number) => (
+                      {searchResults.map((place, index) => (
                         <TouchableOpacity
                           key={place.id ?? index}
                           style={[

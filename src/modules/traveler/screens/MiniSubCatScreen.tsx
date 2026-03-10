@@ -29,11 +29,12 @@ import {
   StyleSheet,
   RefreshControl,
   Modal,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image as ExpoImage } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/AppContext';
 import {
   useSubCatCatalog,
@@ -56,39 +57,43 @@ const RARITY_COLORS: Record<SubCatRarity, string> = {
   legendary: '#F39C12',
 };
 
-/** 稀有度顯示名稱 */
-const RARITY_LABELS: Record<SubCatRarity, string> = {
-  common: '普通',
-  rare: '稀有',
-  epic: '史詩',
-  legendary: '傳說',
-};
-
 /** 類型篩選選項 */
 interface TypeFilterOption {
   key: SubCatType | 'all';
   label: string;
 }
 
-const TYPE_FILTERS: TypeFilterOption[] = [
-  { key: 'all', label: '全部' },
-  { key: 'exploration', label: '探索' },
-  { key: 'resource', label: '資源' },
-  { key: 'function', label: '功能' },
-  { key: 'benefit', label: '福利' },
-];
-
-/** Grid 欄位計算 */
-const SCREEN_WIDTH = Dimensions.get('window').width;
+/** Grid 間距常數 */
 const GRID_GAP = Spacing.md;
 const GRID_PADDING = Spacing.lg;
-const CARD_WIDTH = (SCREEN_WIDTH - GRID_PADDING * 2 - GRID_GAP) / 2;
 
 // ============ 主元件 ============
 
 export function MiniSubCatScreen() {
   const router = useRouter();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
+  const { width: screenWidth } = useWindowDimensions();
+
+  // Grid 欄位計算（依螢幕寬度動態計算）
+  const cardWidth = (screenWidth - GRID_PADDING * 2 - GRID_GAP) / 2;
+
+  // 稀有度顯示名稱（i18n）
+  const rarityLabels: Record<SubCatRarity, string> = useMemo(() => ({
+    common: (t as Record<string, string>).mini_subCatRarityCommon || '普通',
+    rare: (t as Record<string, string>).mini_subCatRarityRare || '稀有',
+    epic: (t as Record<string, string>).mini_subCatRarityEpic || '史詩',
+    legendary: (t as Record<string, string>).mini_subCatRarityLegendary || '傳說',
+  }), [t]);
+
+  // 類型篩選選項（i18n）
+  const typeFilters: TypeFilterOption[] = useMemo(() => [
+    { key: 'all', label: (t as Record<string, string>).mini_subCatAll || '全部' },
+    { key: 'exploration', label: (t as Record<string, string>).mini_subCatExploration || '探索' },
+    { key: 'resource', label: (t as Record<string, string>).mini_subCatResource || '資源' },
+    { key: 'function', label: (t as Record<string, string>).mini_subCatFunction || '功能' },
+    { key: 'benefit', label: (t as Record<string, string>).mini_subCatBenefit || '福利' },
+  ], [t]);
 
   // 篩選狀態
   const [selectedType, setSelectedType] = useState<SubCatType | 'all'>('all');
@@ -141,7 +146,7 @@ export function MiniSubCatScreen() {
 
   const getTypeLabel = (type: SubCatType): string => {
     const key = `mini_subCatType_${type}` as keyof typeof t;
-    return (t[key] as string) || TYPE_FILTERS.find((f) => f.key === type)?.label || type;
+    return (t[key] as string) || typeFilters.find((f) => f.key === type)?.label || type;
   };
 
   const getBonusLabel = (bonusType: string): string => {
@@ -208,7 +213,7 @@ export function MiniSubCatScreen() {
       style={localStyles.filterScroll}
       contentContainerStyle={localStyles.filterContent}
     >
-      {TYPE_FILTERS.map((filter) => {
+      {typeFilters.map((filter) => {
         const isActive = selectedType === filter.key;
         return (
           <TouchableOpacity
@@ -218,7 +223,7 @@ export function MiniSubCatScreen() {
           >
             <Text style={[localStyles.filterTabText, isActive && localStyles.filterTabTextActive]}>
               {filter.key === 'all'
-                ? ((t as Record<string, string>).mini_subCatAll || filter.label)
+                ? filter.label
                 : getTypeLabel(filter.key)}
             </Text>
           </TouchableOpacity>
@@ -233,7 +238,7 @@ export function MiniSubCatScreen() {
     return (
       <TouchableOpacity
         key={cat.id}
-        style={localStyles.catCard}
+        style={[localStyles.catCard, { width: cardWidth }]}
         onPress={() => handleCatPress(cat)}
         activeOpacity={cat.owned ? 0.7 : 1}
       >
@@ -253,7 +258,7 @@ export function MiniSubCatScreen() {
 
           {/* 稀有度標籤 */}
           <View style={[localStyles.rarityBadge, { backgroundColor: rarityColor }]}>
-            <Text style={localStyles.rarityBadgeText}>{RARITY_LABELS[cat.rarity]}</Text>
+            <Text style={localStyles.rarityBadgeText}>{rarityLabels[cat.rarity]}</Text>
           </View>
         </View>
 
@@ -293,7 +298,7 @@ export function MiniSubCatScreen() {
           <View key={rowIndex} style={localStyles.gridRow}>
             {row.map((cat) => renderCatCard(cat))}
             {/* 奇數個副貓時，最後一列補空位 */}
-            {row.length === 1 && <View style={localStyles.catCardPlaceholder} />}
+            {row.length === 1 && <View style={{ width: cardWidth }} />}
           </View>
         ))}
       </View>
@@ -370,7 +375,7 @@ export function MiniSubCatScreen() {
             {/* 名字 + 稀有度 */}
             <Text style={localStyles.modalName}>{detailCat.name}</Text>
             <View style={[localStyles.modalRarityBadge, { backgroundColor: rarityColor }]}>
-              <Text style={localStyles.modalRarityText}>{RARITY_LABELS[detailCat.rarity]}</Text>
+              <Text style={localStyles.modalRarityText}>{rarityLabels[detailCat.rarity]}</Text>
             </View>
 
             {/* 類型 */}
@@ -410,7 +415,7 @@ export function MiniSubCatScreen() {
   return (
     <View style={localStyles.container}>
       {/* Header */}
-      <View style={localStyles.header}>
+      <View style={[localStyles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <TouchableOpacity onPress={() => router.back()} style={localStyles.backButton}>
           <Ionicons name="chevron-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
@@ -471,7 +476,6 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xxl + Spacing.xl,
     paddingBottom: Spacing.md,
     backgroundColor: MibuBrand.creamLight,
   },
@@ -578,14 +582,10 @@ const localStyles = StyleSheet.create({
 
   // 副貓卡片
   catCard: {
-    width: CARD_WIDTH,
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: Radius.lg,
     overflow: 'hidden',
     ...Shadow.sm,
-  },
-  catCardPlaceholder: {
-    width: CARD_WIDTH,
   },
   catImageContainer: {
     width: '100%',
@@ -687,7 +687,7 @@ const localStyles = StyleSheet.create({
   // Detail Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: UIColors.overlayMedium,
     justifyContent: 'center',
     alignItems: 'center',
     padding: Spacing.xl,

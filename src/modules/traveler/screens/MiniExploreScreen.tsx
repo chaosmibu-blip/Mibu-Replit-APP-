@@ -31,6 +31,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/AppContext';
 import {
   useExplorationStatus,
@@ -57,6 +58,7 @@ function formatCountdown(totalSeconds: number): string {
 export function MiniExploreScreen() {
   const router = useRouter();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
 
   // Query & Mutation
   const statusQuery = useExplorationStatus();
@@ -325,7 +327,7 @@ export function MiniExploreScreen() {
     return (
       <View style={localStyles.centered}>
         <ErrorState
-          message={statusQuery.error?.message || 'Failed to load'}
+          message={statusQuery.error?.message || t.common_loadFailed || 'Failed to load'}
           onRetry={() => statusQuery.refetch()}
         />
       </View>
@@ -346,7 +348,7 @@ export function MiniExploreScreen() {
   return (
     <View style={localStyles.container}>
       {/* Header */}
-      <View style={localStyles.header}>
+      <View style={[localStyles.header, { paddingTop: insets.top + Spacing.md }]}>
         <TouchableOpacity onPress={() => router.back()} style={localStyles.backButton}>
           <Ionicons name="chevron-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
@@ -400,7 +402,6 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xxl + Spacing.xl,
     paddingBottom: Spacing.md,
     backgroundColor: MibuBrand.creamLight,
   },

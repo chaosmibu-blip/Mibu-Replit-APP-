@@ -32,6 +32,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/AppContext';
 import { useNurtureStatus, useFeedMini, useNurtureLogs } from '../../../hooks/useMiniQueries';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
@@ -65,6 +66,7 @@ const ACTION_ICON: Record<string, string> = {
 export function MiniNurtureScreen() {
   const router = useRouter();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
 
   // Query & Mutation
   const nurtureQuery = useNurtureStatus();
@@ -171,7 +173,7 @@ export function MiniNurtureScreen() {
     return (
       <View style={localStyles.centered}>
         <ErrorState
-          message={nurtureQuery.error?.message || 'Failed to load'}
+          message={nurtureQuery.error?.message || t.common_loadFailed || 'Failed to load'}
           onRetry={() => nurtureQuery.refetch()}
         />
       </View>
@@ -218,7 +220,7 @@ export function MiniNurtureScreen() {
   return (
     <View style={localStyles.container}>
       {/* Header */}
-      <View style={localStyles.header}>
+      <View style={[localStyles.header, { paddingTop: insets.top + Spacing.md }]}>
         <TouchableOpacity onPress={() => router.back()} style={localStyles.backButton}>
           <Ionicons name="chevron-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
@@ -384,7 +386,6 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xxl + Spacing.xl,
     paddingBottom: Spacing.md,
     backgroundColor: MibuBrand.creamLight,
   },

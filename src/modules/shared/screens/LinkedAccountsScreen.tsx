@@ -31,15 +31,19 @@ import { useGoogleAuth } from '../../../../hooks/useGoogleAuth';
 import { ErrorState } from '../components/ui/ErrorState';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 
 // ============ 常數 ============
+
+const APPLE_BRAND_COLOR = '#000000';
+const GOOGLE_BRAND_COLOR = '#4285F4';
 
 const PROVIDER_CONFIG: Record<string, {
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
 }> = {
-  apple: { icon: 'logo-apple', color: '#000000' },
-  google: { icon: 'logo-google', color: '#4285F4' },
+  apple: { icon: 'logo-apple', color: APPLE_BRAND_COLOR },
+  google: { icon: 'logo-google', color: GOOGLE_BRAND_COLOR },
   guest: { icon: 'person-outline', color: MibuBrand.copper },
 };
 
@@ -175,7 +179,7 @@ export function LinkedAccountsScreen() {
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t.linkedAccounts_title}</Text>
-        <View style={{ width: 44 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
@@ -312,7 +316,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: Spacing.xl,
-    paddingBottom: 100,
+    paddingBottom: BOTTOM_SPACER_HEIGHT,
   },
   infoCard: {
     flexDirection: 'row',
@@ -395,6 +399,9 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.brown,
     minWidth: 72,
     alignItems: 'center',
+  },
+  headerSpacer: {
+    width: 44,
   },
   linkButtonText: {
     fontSize: FontSize.sm,
