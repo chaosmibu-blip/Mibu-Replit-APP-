@@ -1,15 +1,18 @@
 /**
- * MerchantPlacesScreen - 地點管理
- *
+ * ============================================================
+ * MerchantPlacesScreen - 地點管理（#074 對齊新 API）
+ * ============================================================
  * 功能說明：
  * - 顯示商家已認領的店家列表
  * - 支援搜尋並認領新店家
  * - 顯示店家審核狀態（待審核/已核准/已拒絕）
  *
  * 串接的 API：
- * - GET /merchant/places - 取得已認領店家列表
- * - GET /merchant/places/search - 搜尋可認領店家
- * - POST /merchant/places/claim - 認領店家
+ * - GET /api/merchant/places - 取得已認領店家列表
+ * - POST /api/merchant/places/search - 搜尋可認領店家
+ * - POST /api/merchant/places/claim - 認領店家
+ *
+ * 更新日期：2026-03-10（#074 商家後台完整重做）
  */
 import React, { useState } from 'react';
 import {
@@ -29,11 +32,12 @@ import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/I18nContext';
 import {
   useMerchantPlaces,
-  useSearchMerchantPlaces,
-  useClaimMerchantPlace,
+  useSearchPlaces,
+  useClaimPlace,
 } from '../../../hooks/useMerchantQueries';
 import { MerchantPlace, PlaceSearchResult } from '../../../types';
 import { MibuBrand, SemanticColors } from '../../../../constants/Colors';
+import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
 import { EmptyState } from '../../shared/components/ui/EmptyState';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 
@@ -55,16 +59,16 @@ export function MerchantPlacesScreen() {
   const places: MerchantPlace[] = placesData?.places ?? [];
 
   // ============ React Query：搜尋與認領 Mutations ============
-  const searchMutation = useSearchMerchantPlaces();
-  const claimMutation = useClaimMerchantPlace();
+  const searchMutation = useSearchPlaces();
+  const claimMutation = useClaimPlace();
 
   // ============ 本地 UI 狀態 ============
   // searchResults: 搜尋結果列表
   const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
   // searchQuery: 搜尋關鍵字
   const [searchQuery, setSearchQuery] = useState('');
-  // claiming: 正在認領的店家 placeId（用於個別按鈕 loading 狀態）
-  const [claiming, setClaiming] = useState<string | null>(null);
+  // claiming: 正在認領的店家 id（用於個別按鈕 loading 狀態）
+  const [claiming, setClaiming] = useState<number | null>(null);
   // showSearch: 是否顯示搜尋模式
   const [showSearch, setShowSearch] = useState(false);
 
@@ -116,7 +120,7 @@ export function MerchantPlacesScreen() {
    */
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
-    searchMutation.mutate(searchQuery, {
+    searchMutation.mutate({ query: searchQuery }, {
       onSuccess: (data) => {
         setSearchResults(data.places ?? []);
       },
@@ -137,12 +141,14 @@ export function MerchantPlacesScreen() {
    * @param place - 要認領的店家搜尋結果
    */
   const handleClaim = (place: PlaceSearchResult) => {
-    setClaiming(place.placeId);
+    setClaiming(place.id);
     claimMutation.mutate(
       {
         placeName: place.placeName,
         district: place.district,
         city: place.city,
+        country: place.country,
+        placeCacheId: place.id,
       },
       {
         onSuccess: () => {
@@ -332,7 +338,7 @@ export function MerchantPlacesScreen() {
               // 搜尋結果卡片列表
               <View style={styles.placesList}>
                 {searchResults.map(result => (
-                  <View key={result.placeId} style={styles.placeCard}>
+                  <View key={result.id} style={styles.placeCard}>
                     {/* 位置圖示 */}
                     <View style={styles.placeIcon}>
                       <Ionicons name="location" size={24} color={MibuBrand.brown} />
@@ -344,25 +350,19 @@ export function MerchantPlacesScreen() {
                         {result.district ? `${result.district}, ` : ''}{result.city || ''}
                       </Text>
                     </View>
-                    {/* 已認領標籤或認領按鈕 */}
-                    {result.isClaimed ? (
-                      <View style={styles.claimedBadge}>
-                        <Text style={styles.claimedText}>{translations.claimed}</Text>
-                      </View>
-                    ) : (
-                      <TouchableOpacity
-                        style={styles.claimBadge}
-                        onPress={() => handleClaim(result)}
-                        disabled={claiming === result.placeId}
-                        accessibilityLabel={`認領 ${result.placeName}`}
-                      >
-                        {claiming === result.placeId ? (
-                          <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
-                        ) : (
-                          <Text style={styles.claimBadgeText}>{translations.claim}</Text>
-                        )}
-                      </TouchableOpacity>
-                    )}
+                    {/* 認領按鈕 */}
+                    <TouchableOpacity
+                      style={styles.claimBadge}
+                      onPress={() => handleClaim(result)}
+                      disabled={claiming === result.id}
+                      accessibilityLabel={`認領 ${result.placeName}`}
+                    >
+                      {claiming === result.id ? (
+                        <ActivityIndicator size="small" color={MibuBrand.warmWhite} />
+                      ) : (
+                        <Text style={styles.claimBadgeText}>{translations.claim}</Text>
+                      )}
+                    </TouchableOpacity>
                   </View>
                 ))}
               </View>
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
   },
   // 內容區
   content: {
-    padding: 20,
+    padding: Spacing.xl,
     paddingTop: 60,
     paddingBottom: 100,
   },
@@ -395,22 +395,22 @@ const styles = StyleSheet.create({
   },
   // 載入中文字
   loadingText: {
-    marginTop: 12,
+    marginTop: Spacing.md,
     color: MibuBrand.copper,
-    fontSize: 16,
+    fontSize: FontSize.lg,
   },
   // 頂部標題區
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
-    gap: 12,
+    marginBottom: Spacing.xl,
+    gap: Spacing.md,
   },
   // 返回按鈕
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     backgroundColor: MibuBrand.warmWhite,
     alignItems: 'center',
     justifyContent: 'center',
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   },
   // 頁面標題
   title: {
-    fontSize: 24,
+    fontSize: FontSize.xxl,
     fontWeight: '900',
     color: MibuBrand.brownDark,
   },
@@ -428,51 +428,51 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     backgroundColor: MibuBrand.brown,
-    paddingVertical: 16,
-    borderRadius: 16,
-    marginBottom: 24,
+    paddingVertical: Spacing.lg,
+    borderRadius: Radius.lg,
+    marginBottom: Spacing.xl,
   },
   // 認領按鈕文字
   claimButtonText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: MibuBrand.warmWhite,
   },
   // 區塊標題
   sectionTitle: {
-    fontSize: 18,
+    fontSize: FontSize.xl,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   // 空狀態卡片
   emptyCard: {
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 40,
+    borderRadius: Radius.lg,
+    padding: Spacing.xxl,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
   // 空狀態文字
   emptyText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     color: MibuBrand.copper,
-    marginTop: 12,
+    marginTop: Spacing.md,
   },
   // 店家列表
   placesList: {
-    gap: 12,
+    gap: Spacing.md,
   },
   // 店家卡片
   placeCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
   },
@@ -480,11 +480,11 @@ const styles = StyleSheet.create({
   placeIcon: {
     width: 48,
     height: 48,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     backgroundColor: MibuBrand.highlight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: Spacing.md,
   },
   // 店家資訊區
   placeInfo: {
@@ -492,65 +492,49 @@ const styles = StyleSheet.create({
   },
   // 店家名稱
   placeName: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   // 店家位置
   placeLocation: {
-    fontSize: 13,
+    fontSize: FontSize.sm,
     color: MibuBrand.copper,
   },
   // 狀態標籤
   statusBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 6,
-    borderRadius: 20,
-  },
-  // 已驗證標籤（未使用但保留）
-  verifiedBadge: {
-    backgroundColor: SemanticColors.successLight,
-  },
-  // 待驗證標籤（未使用但保留）
-  pendingBadge: {
-    backgroundColor: SemanticColors.warningLight,
+    borderRadius: Radius.xl,
   },
   // 狀態標籤文字
   statusText: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontWeight: '600',
-  },
-  // 已驗證文字（未使用但保留）
-  verifiedText: {
-    color: SemanticColors.successDark,
-  },
-  // 待驗證文字（未使用但保留）
-  pendingText: {
-    color: SemanticColors.warningDark,
   },
   // 編輯圖示容器
   editIcon: {
-    marginLeft: 8,
+    marginLeft: Spacing.sm,
   },
   // 搜尋區塊
   searchSection: {
-    marginBottom: 20,
-    gap: 12,
+    marginBottom: Spacing.xl,
+    gap: Spacing.md,
   },
   // 搜尋輸入容器
   searchInputContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.md,
   },
   // 搜尋輸入框
   searchInput: {
     flex: 1,
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.lg,
     paddingVertical: 14,
-    fontSize: 16,
+    fontSize: FontSize.lg,
     borderWidth: 2,
     borderColor: MibuBrand.tanLight,
     color: MibuBrand.brownDark,
@@ -559,44 +543,44 @@ const styles = StyleSheet.create({
   searchButton: {
     width: 52,
     backgroundColor: MibuBrand.brown,
-    borderRadius: 12,
+    borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   // 取消按鈕
   cancelButton: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: Spacing.md,
   },
   // 取消按鈕文字
   cancelButtonText: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '600',
     color: MibuBrand.copper,
   },
   // 已認領標籤
   claimedBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
     backgroundColor: MibuBrand.tanLight,
   },
   // 已認領文字
   claimedText: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontWeight: '600',
     color: MibuBrand.copper,
   },
   // 認領按鈕
   claimBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.xl,
     backgroundColor: MibuBrand.brown,
   },
   // 認領按鈕文字
   claimBadgeText: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontWeight: '600',
     color: MibuBrand.warmWhite,
   },
@@ -605,19 +589,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     backgroundColor: SemanticColors.errorLight,
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 16,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: Radius.md,
+    marginBottom: Spacing.lg,
     borderWidth: 1,
     borderColor: SemanticColors.errorMain,
   },
   // 錯誤橫幅文字
   errorBannerText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '600',
     color: SemanticColors.errorDark,
   },
