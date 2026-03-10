@@ -25,10 +25,10 @@ import {
   useUpdateMerchantCoupon,
 } from '../../../hooks/useMerchantQueries';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
-import { MerchantCouponTier } from '../../../types';
+import { CouponTier } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 
-const TIERS: { id: MerchantCouponTier; label: string; prob: string; color: string }[] = [
+const TIERS: { id: CouponTier; label: string; prob: string; color: string }[] = [
   { id: 'SP', label: 'SP', prob: '0.1%', color: MibuBrand.tierSP },
   { id: 'SSR', label: 'SSR', prob: '0.9%', color: MibuBrand.tierSSR },
   { id: 'SR', label: 'SR', prob: '4%', color: MibuBrand.tierSR },
@@ -59,7 +59,7 @@ export function CouponFormScreen() {
   // ============ UI 狀態 ============
   const [formData, setFormData] = useState({
     name: '',
-    tier: 'R' as MerchantCouponTier,
+    tier: 'R' as CouponTier,
     content: '',
     terms: '',
     quantity: '100',

@@ -1,5 +1,10 @@
 /**
- * Merchant 模組 - 商家端：金流、商家功能
+ * ============================================================
+ * Merchant 模組 - 商家端
+ * ============================================================
+ * #074: 重寫，移除 Products / Transactions / Verify 畫面
+ *
+ * 更新日期：2026-03-10
  */
 
 // Screens - 主要畫面
@@ -7,10 +12,7 @@ export { MerchantDashboardScreen } from './screens/MerchantDashboardScreen';
 export { MerchantAnalyticsScreen } from './screens/MerchantAnalyticsScreen';
 export { MerchantCouponsScreen } from './screens/MerchantCouponsScreen';
 export { MerchantPlacesScreen } from './screens/MerchantPlacesScreen';
-export { MerchantProductsScreen } from './screens/MerchantProductsScreen';
 export { MerchantProfileScreen } from './screens/MerchantProfileScreen';
-export { MerchantTransactionsScreen } from './screens/MerchantTransactionsScreen';
-export { MerchantVerifyScreen } from './screens/MerchantVerifyScreen';
 
 // Place Management Screens - 地點管理
 export { ClaimPlaceScreen } from './screens/ClaimPlaceScreen';

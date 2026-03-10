@@ -38,7 +38,7 @@ import {
   useUpdateMerchantCoupon,
   useDeleteMerchantCoupon,
 } from '../../../hooks/useMerchantQueries';
-import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../../../types';
+import { MerchantCoupon, CouponTier, CouponRarityLevel, CreateCouponRequest, UpdateCouponRequest } from '../../../types';
 import { TierBadge } from '../../shared/components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
@@ -72,7 +72,7 @@ export function MerchantCouponsScreen() {
   // formData: 表單資料
   const [formData, setFormData] = useState<{
     name: string;           // 優惠券名稱
-    tier: MerchantCouponTier; // 稀有度等級
+    tier: CouponRarityLevel; // 稀有度等級
     content: string;        // 優惠內容
     terms: string;          // 使用條款
     quantity: string;       // 發放數量
@@ -164,7 +164,7 @@ export function MerchantCouponsScreen() {
 
       if (editingCoupon) {
         // 更新模式：只傳送有變更的欄位
-        const updateParams: UpdateMerchantCouponParams = {};
+        const updateParams: UpdateCouponRequest = {};
         if (formData.name.trim() !== editingCoupon.name) {
           updateParams.name = formData.name.trim();
         }
@@ -192,7 +192,7 @@ export function MerchantCouponsScreen() {
         }
       } else {
         // 新增模式
-        const createParams: CreateMerchantCouponParams = {
+        const createParams: CreateCouponRequest = {
           name: formData.name.trim(),
           tier: formData.tier,
           content: formData.content.trim(),
