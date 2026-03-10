@@ -195,5 +195,15 @@ export const queryKeys = {
   explorationStatus: ['mini', 'exploration', 'status'] as const,
   graffiti: (placeId: number) => ['mini', 'graffiti', placeId] as const,
   notes: (placeId: number) => ['mini', 'notes', placeId] as const,
+  subCatCatalog: (type?: string) =>
+    type ? ['mini', 'sub-cats', 'catalog', type] as const : ['mini', 'sub-cats', 'catalog'] as const,
+  subCatCollection: ['mini', 'sub-cats', 'collection'] as const,
+  subCatBonuses: ['mini', 'sub-cats', 'bonuses'] as const,
+  nurtureStatus: ['mini', 'nurture', 'status'] as const,
+  nurtureLogs: ['mini', 'nurture', 'logs'] as const,
+  catFood: ['mini', 'nurture', 'cat-food'] as const,
+
+  // 帳號連結（#071）
+  linkedAccounts: ['auth', 'linked-accounts'] as const,
 } as const;
 

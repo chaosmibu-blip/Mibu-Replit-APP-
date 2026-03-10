@@ -382,6 +382,15 @@ export function SettingsScreen() {
     {
       title: t.settings_moreFeatures,
       items: [
+        // #071: 登入方式管理
+        {
+          icon: 'link-outline',
+          label: t.settings_linkedAccounts || '登入方式管理',
+          action: () => router.push('/linked-accounts' as any),
+          hasArrow: true,
+          iconBg: MibuBrand.cream,
+          iconColor: MibuBrand.copper,
+        },
         {
           icon: 'chatbubbles-outline',
           label: t.settings_feedback,
