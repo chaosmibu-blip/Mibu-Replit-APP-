@@ -1,15 +1,16 @@
 /**
- * MerchantProfileScreen - 商家資料
- *
+ * ============================================================
+ * MerchantProfileScreen - 商家資料（#074 對齊新 API）
+ * ============================================================
  * 功能說明：
- * - 顯示商家基本資訊（名稱、信箱、狀態、餘額、方案等）
+ * - 顯示商家基本資訊（名稱、信箱、狀態、方案等）
  * - 提供刪除帳號功能
  *
  * 串接的 API：
- * - GET /merchant/me - 取得商家個人資料
- * - DELETE /auth/account - 刪除帳號（保留手動呼叫，破壞性一次性操作）
+ * - GET /api/merchant/me - 取得商家個人資料
+ * - DELETE /api/auth/account - 刪除帳號
  *
- * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
+ * 更新日期：2026-03-10（#074 商家後台完整重做）
  */
 import React from 'react';
 import {
@@ -44,7 +45,7 @@ export function MerchantProfileScreen() {
 
   // ============ 衍生狀態 ============
   const loading = merchantQuery.isLoading;
-  const merchant = merchantQuery.data ?? null;
+  const merchant = merchantQuery.data?.merchant ?? null;
 
   // ============ 多語系翻譯（透過 t 字典） ============
   const translations = {
@@ -54,14 +55,12 @@ export function MerchantProfileScreen() {
     status: t.merchant_accountStatus,
     approved: t.common_approved,
     pending: t.common_pending,
-    balance: t.merchant_creditBalance,
     plan: t.merchant_subscriptionPlan,
     free: t.merchant_freePlan,
     partner: t.merchant_partnerPlan,
     premium: t.merchant_premiumPlan,
     memberSince: t.merchant_memberSince,
     loading: t.loading,
-    points: t.merchant_points,
     dangerZone: t.merchant_dangerZone,
     deleteAccount: t.merchant_deleteAccount,
     deleteConfirmTitle: t.merchant_confirmDeleteTitle,
@@ -95,7 +94,7 @@ export function MerchantProfileScreen() {
    */
   const getPlanLabel = (plan?: string) => {
     switch (plan) {
-      case 'partner': return translations.partner;
+      case 'pro': return translations.partner;
       case 'premium': return translations.premium;
       default: return translations.free;
     }
@@ -175,18 +174,18 @@ export function MerchantProfileScreen() {
         </View>
         {/* 商家名稱 */}
         <Text style={styles.businessName}>
-          {merchant?.businessName || merchant?.name || '-'}
+          {merchant?.businessName || '-'}
         </Text>
         {/* 審核狀態標籤 */}
         <View style={[
           styles.statusBadge,
-          merchant?.isApproved ? styles.approvedBadge : styles.pendingBadge
+          merchant?.status === 'approved' ? styles.approvedBadge : styles.pendingBadge
         ]}>
           <Text style={[
             styles.statusText,
-            merchant?.isApproved ? styles.approvedText : styles.pendingText
+            merchant?.status === 'approved' ? styles.approvedText : styles.pendingText
           ]}>
-            {merchant?.isApproved ? translations.approved : translations.pending}
+            {merchant?.status === 'approved' ? translations.approved : translations.pending}
           </Text>
         </View>
       </View>
@@ -201,29 +200,14 @@ export function MerchantProfileScreen() {
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{translations.email}</Text>
             <Text style={styles.infoValue}>
-              {merchant?.contactEmail || merchant?.email || '-'}
+              {merchant?.email || '-'}
             </Text>
           </View>
         </View>
 
         <View style={styles.divider} />
 
-        {/* 點數餘額 */}
-        <View style={styles.infoRow}>
-          <View style={styles.infoIcon}>
-            <Ionicons name="wallet-outline" size={20} color={MibuBrand.brown} />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={styles.infoLabel}>{translations.balance}</Text>
-            <Text style={styles.infoValue}>
-              {merchant?.creditBalance ?? 0} {translations.points}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        {/* 訂閱方案 */}
+        {/* 商家等級 */}
         <View style={styles.infoRow}>
           <View style={styles.infoIcon}>
             <Ionicons name="ribbon-outline" size={20} color={MibuBrand.brown} />
@@ -231,7 +215,7 @@ export function MerchantProfileScreen() {
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>{translations.plan}</Text>
             <Text style={styles.infoValue}>
-              {getPlanLabel(merchant?.subscriptionPlan)}
+              {getPlanLabel(merchant?.merchantLevel)}
             </Text>
           </View>
         </View>

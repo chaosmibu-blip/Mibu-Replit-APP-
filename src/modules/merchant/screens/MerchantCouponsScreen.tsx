@@ -1,6 +1,7 @@
 /**
- * MerchantCouponsScreen - 優惠券管理
- *
+ * ============================================================
+ * MerchantCouponsScreen - 優惠券管理（#074 對齊新 API）
+ * ============================================================
  * 功能說明：
  * - 顯示商家所有優惠券列表
  * - 支援新增、編輯、刪除優惠券
@@ -8,12 +9,12 @@
  * - 顯示各稀有度等級的抽中機率
  *
  * 串接的 API：
- * - GET /merchant/coupons - 取得優惠券列表
- * - POST /merchant/coupons - 建立優惠券
- * - PUT /merchant/coupons/:id - 更新優惠券
- * - DELETE /merchant/coupons/:id - 刪除優惠券
+ * - GET /api/coupons/merchant/:merchantId - 取得優惠券列表
+ * - POST /api/coupons - 建立優惠券
+ * - PATCH /api/coupons/:id - 更新優惠券
+ * - DELETE /api/coupons/:id - 刪除優惠券
  *
- * 更新日期：2026-02-12（Phase 3 遷移至 React Query）
+ * 更新日期：2026-03-10（#074 商家後台完整重做）
  */
 import React, { useState } from 'react';
 import {
@@ -33,30 +34,32 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/I18nContext';
 import {
+  useMerchantMe,
   useMerchantCoupons,
-  useCreateMerchantCoupon,
-  useUpdateMerchantCoupon,
-  useDeleteMerchantCoupon,
+  useCreateCoupon,
+  useUpdateCoupon,
+  useDeleteCoupon,
 } from '../../../hooks/useMerchantQueries';
 import { MerchantCoupon, CouponTier, CouponRarityLevel, CreateCouponRequest, UpdateCouponRequest } from '../../../types';
 import { TierBadge } from '../../shared/components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
-import { LOCALE_MAP } from '../../../utils/i18n';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============ 主元件 ============
 export function MerchantCouponsScreen() {
   // ============ Hooks ============
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const router = useRouter();
 
   // ============ React Query Hooks ============
-  const couponsQuery = useMerchantCoupons();
-  const createMutation = useCreateMerchantCoupon();
-  const updateMutation = useUpdateMerchantCoupon();
-  const deleteMutation = useDeleteMerchantCoupon();
+  const meQuery = useMerchantMe();
+  const merchantId = meQuery.data?.merchant?.id;
+  const couponsQuery = useMerchantCoupons(merchantId);
+  const createMutation = useCreateCoupon();
+  const updateMutation = useUpdateCoupon();
+  const deleteMutation = useDeleteCoupon();
 
   // ============ 衍生狀態 ============
   const loading = couponsQuery.isLoading;
@@ -71,19 +74,17 @@ export function MerchantCouponsScreen() {
 
   // formData: 表單資料
   const [formData, setFormData] = useState<{
-    name: string;           // 優惠券名稱
-    tier: CouponRarityLevel; // 稀有度等級
-    content: string;        // 優惠內容
-    terms: string;          // 使用條款
-    quantity: string;       // 發放數量
-    validUntil: string;     // 有效期限
+    code: string;            // 優惠券代碼
+    title: string;           // 優惠券名稱
+    rarity: CouponRarityLevel; // 稀有度等級
+    terms: string;           // 使用條款
+    remainingQuantity: string; // 發放數量
   }>({
-    name: '',
-    tier: 'R',
-    content: '',
+    code: '',
+    title: '',
+    rarity: 'R',
     terms: '',
-    quantity: '100',
-    validUntil: '',
+    remainingQuantity: '100',
   });
 
   // ============ 多語系翻譯（透過 t 字典） ============
@@ -96,14 +97,12 @@ export function MerchantCouponsScreen() {
     content: t.merchant_discountContent,
     terms: t.merchant_terms,
     quantity: t.merchant_quantity,
-    validUntil: t.merchant_validUntilWithFormat,
     save: t.common_save,
     cancel: t.cancel,
     delete: t.common_delete,
     remaining: t.merchant_remaining,
     active: t.merchant_couponActive,
     inactive: t.merchant_couponInactive,
-    expired: t.merchant_couponExpired,
     noCoupons: t.merchant_noCoupons,
     confirmDelete: t.merchant_confirmDeleteCoupon,
     tierProbability: t.merchant_tierProbability,
@@ -117,12 +116,11 @@ export function MerchantCouponsScreen() {
   const openCreateModal = () => {
     setEditingCoupon(null);
     setFormData({
-      name: '',
-      tier: 'R',
-      content: '',
+      code: '',
+      title: '',
+      rarity: 'R',
       terms: '',
-      quantity: '100',
-      validUntil: '',
+      remainingQuantity: '100',
     });
     setShowModal(true);
   };
@@ -134,12 +132,11 @@ export function MerchantCouponsScreen() {
   const openEditModal = (coupon: MerchantCoupon) => {
     setEditingCoupon(coupon);
     setFormData({
-      name: coupon.name,
-      tier: coupon.tier,
-      content: coupon.content,
+      code: coupon.code,
+      title: coupon.title,
+      rarity: coupon.rarity ?? 'R',
       terms: coupon.terms || '',
-      quantity: String(coupon.quantity),
-      validUntil: coupon.validUntil ? coupon.validUntil.split('T')[0] : '',
+      remainingQuantity: String(coupon.remainingQuantity ?? 0),
     });
     setShowModal(true);
   };
@@ -152,38 +149,27 @@ export function MerchantCouponsScreen() {
    */
   const handleSave = async () => {
     // 驗證必填欄位
-    if (!formData.name.trim() || !formData.content.trim()) {
+    if (!formData.code.trim() || !formData.title.trim()) {
       Alert.alert(t.common_error, t.common_fillRequired);
       return;
     }
 
     try {
       // 解析數量，預設為 100
-      const parsedQuantity = parseInt(formData.quantity, 10);
+      const parsedQuantity = parseInt(formData.remainingQuantity, 10);
       const quantity = isNaN(parsedQuantity) || parsedQuantity < 1 ? 100 : parsedQuantity;
 
       if (editingCoupon) {
         // 更新模式：只傳送有變更的欄位
         const updateParams: UpdateCouponRequest = {};
-        if (formData.name.trim() !== editingCoupon.name) {
-          updateParams.name = formData.name.trim();
-        }
-        if (formData.tier !== editingCoupon.tier) {
-          updateParams.tier = formData.tier;
-        }
-        if (formData.content.trim() !== editingCoupon.content) {
-          updateParams.content = formData.content.trim();
+        if (formData.title.trim() !== editingCoupon.title) {
+          updateParams.title = formData.title.trim();
         }
         if (formData.terms.trim() !== (editingCoupon.terms || '')) {
           updateParams.terms = formData.terms.trim() || undefined;
         }
-        if (quantity !== editingCoupon.quantity) {
-          updateParams.quantity = quantity;
-        }
-        const validUntilVal = formData.validUntil || undefined;
-        const existingValidUntil = editingCoupon.validUntil ? editingCoupon.validUntil.split('T')[0] : undefined;
-        if (validUntilVal !== existingValidUntil) {
-          updateParams.validUntil = validUntilVal;
+        if (quantity !== editingCoupon.remainingQuantity) {
+          updateParams.remainingQuantity = quantity;
         }
 
         // 只有有變更才呼叫 API
@@ -192,13 +178,17 @@ export function MerchantCouponsScreen() {
         }
       } else {
         // 新增模式
+        if (!merchantId) {
+          Alert.alert(t.common_error, '商家資料尚未載入');
+          return;
+        }
         const createParams: CreateCouponRequest = {
-          name: formData.name.trim(),
-          tier: formData.tier,
-          content: formData.content.trim(),
+          code: formData.code.trim(),
+          title: formData.title.trim(),
           terms: formData.terms.trim() || undefined,
-          quantity,
-          validUntil: formData.validUntil || undefined,
+          merchantId,
+          rarity: formData.rarity,
+          remainingQuantity: quantity,
           isActive: true,
         };
         await createMutation.mutateAsync(createParams);
@@ -252,25 +242,6 @@ export function MerchantCouponsScreen() {
 
   // ============ 工具函數 ============
 
-  /**
-   * formatDate - 格式化日期
-   * @param dateStr - ISO 日期字串
-   * @returns 格式化後的日期字串
-   */
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString(LOCALE_MAP[language]);
-  };
-
-  /**
-   * isExpired - 檢查是否已過期
-   * @param dateStr - ISO 日期字串
-   * @returns 是否已過期
-   */
-  const isExpired = (dateStr: string | null) => {
-    if (!dateStr) return false;
-    return new Date(dateStr) < new Date();
-  };
 
   // ============ 載入中畫面 ============
   if (loading) {
@@ -354,43 +325,41 @@ export function MerchantCouponsScreen() {
                 !coupon.isActive && styles.couponCardInactive,
               ]}
               onPress={() => openEditModal(coupon)}
-              accessibilityLabel={`編輯 ${coupon.name}`}
+              accessibilityLabel={`編輯 ${coupon.title}`}
             >
               {/* 卡片頂部：稀有度 + 狀態 */}
               <View style={styles.couponHeader}>
-                <TierBadge tier={coupon.tier} />
+                {coupon.rarity && <TierBadge tier={coupon.rarity} />}
                 <View style={[
                   styles.statusBadge,
-                  coupon.isActive
-                    ? (isExpired(coupon.validUntil) ? styles.statusExpired : styles.statusActive)
-                    : styles.statusInactive
+                  coupon.isActive ? styles.statusActive : styles.statusInactive,
                 ]}>
                   <Text style={styles.statusText}>
-                    {coupon.isActive
-                      ? (isExpired(coupon.validUntil) ? translations.expired : translations.active)
-                      : translations.inactive}
+                    {coupon.isActive ? translations.active : translations.inactive}
                   </Text>
                 </View>
               </View>
 
-              {/* 優惠券名稱與內容 */}
-              <Text style={styles.couponName}>{coupon.name}</Text>
-              <Text style={styles.couponContent}>{coupon.content}</Text>
+              {/* 優惠券名稱與代碼 */}
+              <Text style={styles.couponName}>{coupon.title}</Text>
+              <Text style={styles.couponCode}>{coupon.code}</Text>
 
-              {/* 數量與有效期資訊 */}
+              {/* 數量與核銷資訊 */}
               <View style={styles.couponMeta}>
-                <View style={styles.metaItem}>
-                  <Ionicons name="layers-outline" size={14} color={MibuBrand.copper} />
-                  <Text style={styles.metaText}>
-                    {translations.remaining}: {coupon.remainingQuantity}/{coupon.quantity}
-                  </Text>
-                </View>
-                {coupon.validUntil && (
+                {coupon.remainingQuantity != null && (
                   <View style={styles.metaItem}>
-                    <Ionicons name="calendar-outline" size={14} color={MibuBrand.copper} />
-                    <Text style={styles.metaText}>{formatDate(coupon.validUntil)}</Text>
+                    <Ionicons name="layers-outline" size={14} color={MibuBrand.copper} />
+                    <Text style={styles.metaText}>
+                      {translations.remaining}: {coupon.remainingQuantity}
+                    </Text>
                   </View>
                 )}
+                <View style={styles.metaItem}>
+                  <Ionicons name="checkmark-circle-outline" size={14} color={MibuBrand.copper} />
+                  <Text style={styles.metaText}>
+                    {t.merchant_redeemed || '已核銷'}: {coupon.redeemedCount}
+                  </Text>
+                </View>
               </View>
 
               {/* 操作按鈕 */}
@@ -399,7 +368,7 @@ export function MerchantCouponsScreen() {
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => toggleActive(coupon)}
-                  accessibilityLabel={coupon.isActive ? `停用 ${coupon.name}` : `啟用 ${coupon.name}`}
+                  accessibilityLabel={coupon.isActive ? `停用 ${coupon.title}` : `啟用 ${coupon.title}`}
                 >
                   <Ionicons
                     name={coupon.isActive ? 'pause-circle-outline' : 'play-circle-outline'}
@@ -411,7 +380,7 @@ export function MerchantCouponsScreen() {
                 <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => handleDelete(coupon.id)}
-                  accessibilityLabel={`刪除 ${coupon.name}`}
+                  accessibilityLabel={`刪除 ${coupon.title}`}
                 >
                   <Ionicons name="trash-outline" size={20} color={SemanticColors.errorDark} />
                 </TouchableOpacity>
@@ -443,56 +412,59 @@ export function MerchantCouponsScreen() {
 
             {/* 表單內容 */}
             <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              {/* 優惠券代碼 */}
+              <Text style={styles.inputLabel}>{t.merchant_couponCode || '優惠券代碼'} *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.code}
+                onChangeText={text => setFormData({ ...formData, code: text })}
+                placeholder={t.merchant_couponCodePlaceholder || '例：SUMMER2026'}
+                placeholderTextColor={MibuBrand.tan}
+                editable={!editingCoupon}
+              />
+
               {/* 優惠券名稱 */}
               <Text style={styles.inputLabel}>{translations.name} *</Text>
               <TextInput
                 style={styles.input}
-                value={formData.name}
-                onChangeText={text => setFormData({ ...formData, name: text })}
+                value={formData.title}
+                onChangeText={text => setFormData({ ...formData, title: text })}
                 placeholder={t.merchant_couponNamePlaceholder}
                 placeholderTextColor={MibuBrand.tan}
               />
 
-              {/* 稀有度等級選擇 */}
-              <Text style={styles.inputLabel}>{translations.tier}</Text>
-              <View style={styles.tierGrid}>
-                {TIER_ORDER.map(tier => {
-                  const tierStyle = getTierStyle(tier);
-                  return (
-                    <TouchableOpacity
-                      key={tier}
-                      style={[
-                        styles.tierOption,
-                        formData.tier === tier && {
-                          backgroundColor: tierStyle.backgroundColor,
-                          borderColor: tierStyle.borderColor,
-                        },
-                      ]}
-                      onPress={() => setFormData({ ...formData, tier })}
-                      accessibilityLabel={`稀有度 ${tier}，機率 ${tierStyle.probability}%`}
-                    >
-                      <Text style={[
-                        styles.tierOptionText,
-                        formData.tier === tier && { color: tierStyle.textColor, fontWeight: '700' },
-                      ]}>
-                        {tier} ({tierStyle.probability}%)
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              {/* 優惠內容 */}
-              <Text style={styles.inputLabel}>{translations.content} *</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={formData.content}
-                onChangeText={text => setFormData({ ...formData, content: text })}
-                placeholder={t.merchant_discountContentPlaceholder}
-                placeholderTextColor={MibuBrand.tan}
-                multiline
-                numberOfLines={3}
-              />
+              {/* 稀有度等級選擇（僅新增時可選） */}
+              {!editingCoupon && (
+                <>
+                  <Text style={styles.inputLabel}>{translations.tier}</Text>
+                  <View style={styles.tierGrid}>
+                    {TIER_ORDER.map(tier => {
+                      const tierStyle = getTierStyle(tier);
+                      return (
+                        <TouchableOpacity
+                          key={tier}
+                          style={[
+                            styles.tierOption,
+                            formData.rarity === tier && {
+                              backgroundColor: tierStyle.backgroundColor,
+                              borderColor: tierStyle.borderColor,
+                            },
+                          ]}
+                          onPress={() => setFormData({ ...formData, rarity: tier as CouponRarityLevel })}
+                          accessibilityLabel={`稀有度 ${tier}，機率 ${tierStyle.probability}%`}
+                        >
+                          <Text style={[
+                            styles.tierOptionText,
+                            formData.rarity === tier && { color: tierStyle.textColor, fontWeight: '700' },
+                          ]}>
+                            {tier} ({tierStyle.probability}%)
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </>
+              )}
 
               {/* 使用條款 */}
               <Text style={styles.inputLabel}>{translations.terms}</Text>
@@ -506,30 +478,16 @@ export function MerchantCouponsScreen() {
                 numberOfLines={2}
               />
 
-              {/* 數量與有效期限 */}
-              <View style={styles.inputRow}>
-                <View style={styles.inputHalf}>
-                  <Text style={styles.inputLabel}>{translations.quantity}</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.quantity}
-                    onChangeText={text => setFormData({ ...formData, quantity: text.replace(/[^0-9]/g, '') })}
-                    keyboardType="number-pad"
-                    placeholder="100"
-                    placeholderTextColor={MibuBrand.tan}
-                  />
-                </View>
-                <View style={styles.inputHalf}>
-                  <Text style={styles.inputLabel}>{translations.validUntil}</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.validUntil}
-                    onChangeText={text => setFormData({ ...formData, validUntil: text })}
-                    placeholder="2025-12-31"
-                    placeholderTextColor={MibuBrand.tan}
-                  />
-                </View>
-              </View>
+              {/* 數量 */}
+              <Text style={styles.inputLabel}>{translations.quantity}</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.remainingQuantity}
+                onChangeText={text => setFormData({ ...formData, remainingQuantity: text.replace(/[^0-9]/g, '') })}
+                keyboardType="number-pad"
+                placeholder="100"
+                placeholderTextColor={MibuBrand.tan}
+              />
             </ScrollView>
 
             {/* 彈窗底部按鈕 */}
@@ -709,10 +667,6 @@ const styles = StyleSheet.create({
   statusInactive: {
     backgroundColor: MibuBrand.tanLight,
   },
-  // 狀態標籤（已過期）
-  statusExpired: {
-    backgroundColor: SemanticColors.errorLight,
-  },
   // 狀態標籤文字
   statusText: {
     fontSize: 11,
@@ -724,14 +678,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    marginBottom: 6,
+    marginBottom: 4,
   },
-  // 優惠券內容
-  couponContent: {
-    fontSize: 14,
+  // 優惠券代碼
+  couponCode: {
+    fontSize: 13,
     color: MibuBrand.copper,
-    lineHeight: 20,
     marginBottom: 12,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   // 優惠券資訊區
   couponMeta: {
