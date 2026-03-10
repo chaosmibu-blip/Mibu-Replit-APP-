@@ -11,7 +11,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { MibuBrand } from '../constants/Colors';
+import { MibuBrand, UIColors } from '../constants/Colors';
 
 interface ErrorBoundaryProps {
   error: Error;
@@ -28,7 +28,7 @@ export default function ErrorScreen({ error, retry }: ErrorBoundaryProps) {
       <Text style={styles.message}>{error.message || '未知錯誤'}</Text>
 
       <TouchableOpacity style={styles.retryButton} onPress={retry}>
-        <Ionicons name="refresh" size={20} color="#fff" />
+        <Ionicons name="refresh" size={20} color={UIColors.white} />
         <Text style={styles.retryText}>重試</Text>
       </TouchableOpacity>
 
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryText: {
-    color: '#fff',
+    color: UIColors.white,
     fontSize: 16,
     fontWeight: '600',
   },

@@ -28,7 +28,8 @@ import { io, Socket } from 'socket.io-client';
 import { useAuth, useI18n } from '../../../context/AppContext';
 import { API_BASE_URL } from '../../../constants/translations';
 import { LOCALE_MAP } from '../../../utils/i18n';
-import { UIColors, MibuBrand } from '../../../../constants/Colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { UIColors, MibuBrand, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 
 // ============ 型別定義 ============
@@ -51,6 +52,7 @@ export function SpecialistTrackingScreen() {
   const { t, language } = useI18n();
   const router = useRouter();
   const params = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
 
   // ============ 狀態變數與 Refs ============
   // socketRef: WebSocket 連線實例
@@ -195,7 +197,7 @@ export function SpecialistTrackingScreen() {
   return (
     <View style={styles.container}>
       {/* ============ 頁面標題區 ============ */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#1e293b" />
@@ -288,9 +290,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 60,
     paddingBottom: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   statusConnected: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: SemanticColors.successLight,
   },
   statusDisconnected: {
     backgroundColor: '#fef2f2',
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
   // 旅客列表卡片樣式
   travelerListCard: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: UIColors.white,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,

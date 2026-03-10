@@ -24,12 +24,13 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth, useI18n } from '../src/context/AppContext';
 import { API_BASE_URL } from '../src/constants/translations';
-import { MibuBrand } from '../constants/Colors';
+import { MibuBrand, UIColors } from '../constants/Colors';
 import { STORAGE_KEYS } from '../src/constants/storageKeys';
 
 const TRANSLATIONS = {
@@ -116,6 +117,7 @@ const TRANSLATIONS = {
 };
 
 export default function RegisterScreen() {
+  const insets = useSafeAreaInsets();
   const { setUser } = useAuth();
   const { language } = useI18n();
   const [loading, setLoading] = useState(false);
@@ -201,7 +203,7 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top }]}
         keyboardShouldPersistTaps="handled"
       >
         <TouchableOpacity
@@ -305,10 +307,10 @@ export default function RegisterScreen() {
             accessibilityRole="button"
           >
             {loading ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={UIColors.white} />
             ) : (
               <>
-                <Ionicons name="person-add-outline" size={20} color="#ffffff" />
+                <Ionicons name="person-add-outline" size={20} color={UIColors.white} />
                 <Text style={styles.registerButtonText}>{t.register}</Text>
               </>
             )}
@@ -338,7 +340,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 60,
     paddingBottom: 40,
   },
   backButton: {
@@ -408,7 +409,7 @@ const styles = StyleSheet.create({
   registerButtonText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
+    color: UIColors.white,
   },
   footer: {
     flexDirection: 'row',

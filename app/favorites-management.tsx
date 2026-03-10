@@ -19,10 +19,12 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../src/context/AppContext';
 import { MibuBrand } from '../constants/Colors';
+import { Spacing } from '../src/theme/designTokens';
 
 type TabType = 'favorites' | 'blacklist';
 
@@ -37,6 +39,7 @@ const MOCK_BLACKLIST = [
 ];
 
 export default function FavoritesManagementScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<TabType>('favorites');
@@ -82,7 +85,7 @@ export default function FavoritesManagementScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
@@ -200,7 +203,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 60,
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
@@ -270,7 +272,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: Spacing.xxxl,
   },
   emptyText: {
     fontSize: 16,

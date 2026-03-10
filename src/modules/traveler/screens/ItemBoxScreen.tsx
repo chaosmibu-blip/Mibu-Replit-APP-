@@ -20,6 +20,7 @@
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, Dimensions, Animated, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n, useGacha, useAuth } from '../../../context/AppContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -30,6 +31,8 @@ import { ApiError } from '../../../services/base';
 import { InventoryItem, CouponTier, PlacePackOptionsResponse } from '../../../types';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
+import { InputLimit } from '../../../constants/businessDefaults';
+import { AnimationTiming } from '../../../constants/animationTiming';
 
 // ============================================================
 // 常數定義
@@ -383,6 +386,7 @@ function InventorySlot({ item, index, onPress, onLongPress, t }: InventorySlotPr
 // ============================================================
 
 export function ItemBoxScreen() {
+  const insets = useSafeAreaInsets();
   const { t } = useI18n();
   const { setUnreadCount } = useGacha();
   const { getToken } = useAuth();
@@ -599,7 +603,7 @@ export function ItemBoxScreen() {
     setRedeemSuccess(false);
     setCountdown(null);
     if (redeemTimerRef.current) clearTimeout(redeemTimerRef.current);
-    redeemTimerRef.current = setTimeout(() => { setRedeemModalVisible(true); redeemTimerRef.current = null; }, 300);
+    redeemTimerRef.current = setTimeout(() => { setRedeemModalVisible(true); redeemTimerRef.current = null; }, AnimationTiming.standard);
   };
 
   /**
@@ -746,7 +750,7 @@ export function ItemBoxScreen() {
       {/* ========== Header 區域 ========== */}
       <View style={{
         backgroundColor: MibuBrand.creamLight,
-        paddingTop: 60,
+        paddingTop: insets.top,
         paddingHorizontal: 20,
         paddingBottom: 16,
         borderBottomLeftRadius: 24,
@@ -1012,7 +1016,7 @@ export function ItemBoxScreen() {
                   placeholder={t.itemBox_redeemPlaceholder}
                   placeholderTextColor={MibuBrand.copper}
                   autoCapitalize="characters"
-                  maxLength={8}
+                  maxLength={InputLimit.tagName}
                   style={{
                     backgroundColor: MibuBrand.cream,
                     borderRadius: 12,

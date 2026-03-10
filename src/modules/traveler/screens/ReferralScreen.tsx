@@ -29,6 +29,7 @@ import {
   Alert,
   Share,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
@@ -38,6 +39,7 @@ import { referralApi } from '../../../services/referralApi';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
 import { getUserFacingErrorMessage } from '../../../shared/errors';
+import { InputLimit } from '../../../constants/businessDefaults';
 import {
   LeaderboardPeriod,
 } from '../../../types/referral';
@@ -83,6 +85,7 @@ const REWARD_TIERS: RewardTier[] = [
 // ============================================================
 
 export function ReferralScreen() {
+  const insets = useSafeAreaInsets();
   const { getToken } = useAuth();
   const { t, language } = useI18n();
   const router = useRouter();
@@ -226,7 +229,7 @@ export function ReferralScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
@@ -566,7 +569,7 @@ export function ReferralScreen() {
                 placeholder={t.referral_enterCodePlaceholder}
                 placeholderTextColor={MibuBrand.tan}
                 autoCapitalize="characters"
-                maxLength={12}
+                maxLength={InputLimit.referralCode}
               />
               <TouchableOpacity
                 style={[

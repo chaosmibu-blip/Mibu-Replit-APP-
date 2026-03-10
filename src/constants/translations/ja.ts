@@ -453,6 +453,7 @@ const ja: Record<string, string> = {
     event_announcement: 'お知らせ', /* TODO: ja */
     event_festival: 'フェスティバル', /* TODO: ja */
     event_limited: '期間限定イベント', /* TODO: ja */
+    event_longTerm: '長期イベント',
 
     specialist_travelers: 'travelers', /* TODO: ja */
     specialist_mapNotAvailableWeb: 'Map not available on web', /* TODO: ja */
@@ -1513,12 +1514,105 @@ const ja: Record<string, string> = {
     // スポット詳細タブ
     mini_infoTab: '詳細',
 
+    // #057 探索
+    mini_exploreTitle: '探索',
+    mini_exploreIntro: 'MINIを探索に送り出そう！',
+    mini_exploreCity: '都市',
+    mini_exploreDistrict: '地区',
+    mini_exploreCityPlaceholder: '都市名を入力',
+    mini_exploreDistrictPlaceholder: '地区名を入力',
+    mini_exploreStart: '探索開始',
+    mini_exploreExploring: 'MINIが探索中...',
+    mini_exploreLocation: '探索場所',
+    mini_exploreTimeLeft: '残り時間',
+    mini_exploreReady: '探索完了！',
+    mini_exploreReadyDesc: 'MINIが新しい発見をしました！受け取りましょう！',
+    mini_exploreClaim: '結果を受け取る',
+    mini_exploreClaimSuccess: '探索結果',
+    mini_exploreClaimDesc: 'MINIが以下のスポットを発見しました：',
+    mini_exploreCompleted: '完了した探索',
+    mini_exploreEmpty: 'まだ探索記録がありません',
+    mini_exploreStartFail: '探索の開始に失敗しました。もう一度お試しください',
+    mini_exploreClaimFail: '受け取りに失敗しました。もう一度お試しください',
+
+    // #060 副猫図鑑
+    mini_subCatTitle: '副猫図鑑',
+    mini_subCatCollection: '収集済み',
+    mini_subCatAll: 'すべて',
+    mini_subCatExploration: '探索',
+    mini_subCatResource: 'リソース',
+    mini_subCatFunction: '機能',
+    mini_subCatBenefit: '福利',
+    mini_subCatOwned: '所有済み',
+    mini_subCatUnowned: '未所有',
+    mini_subCatHint: '入手方法',
+    mini_subCatBonus: 'ボーナス効果',
+    mini_subCatBonusSummary: 'ボーナス一覧',
+    mini_subCatAcquired: '入手日',
+    mini_subCatEmpty: 'まだ副猫がいません',
+    mini_subCatRarityCommon: 'コモン',
+    mini_subCatRarityRare: 'レア',
+    mini_subCatRarityEpic: 'エピック',
+    mini_subCatRarityLegendary: 'レジェンダリー',
+
+    // #061 育成
+    mini_nurtureTitle: '育成',
+    mini_nurtureSatiety: '満腹度',
+    mini_nurtureBondLevel: '絆レベル',
+    mini_nurtureHeartProgress: '好感度',
+    mini_nurtureNextMilestone: '次のマイルストーン',
+    mini_nurtureBondToGo: 'あと{count}絆',
+    mini_nurtureCatFood: 'キャットフード',
+    mini_nurtureFeedCount: '本日{count}/{limit}回',
+    mini_nurtureFeed: 'ごはん',
+    mini_nurtureFeedSuccess: '給餌成功',
+    mini_nurtureFeedResult: '満腹度 {before}% → {after}%、絆 +{bond}',
+    mini_nurtureStageUp: '成長レベルアップ！',
+    mini_nurtureStageUpDesc: 'MINIが{stage}に成長しました！',
+    mini_nurtureFeedNoFood: 'キャットフードがありません',
+    mini_nurtureFeedLimitReached: '本日の給餌回数上限に達しました',
+    mini_nurtureFeedFail: '給餌に失敗しました。もう一度お試しください',
+    mini_nurtureLogsTitle: '育成記録',
+    mini_nurtureLogsEmpty: 'まだ育成記録がありません',
+
+    // #070 店舗バインド
+    merchant_bindStore: '店舗を紐付け（任意）',
+    merchant_bindStoreDesc: '店舗を紐付けて旅行者に見つけてもらいやすく',
+    merchant_bindSearch: '既存を検索',
+    merchant_bindUrl: 'Googleマップ',
+    merchant_bindManual: '手動入力',
+    merchant_bindSearchPlaceholder: '店舗名を検索（2文字以上）',
+    merchant_bindManualPlaceholder: '店舗名を入力',
+    merchant_bindResolve: '解析',
+    merchant_bindResolving: '解析中...',
+    merchant_bindResolveFail: '解析に失敗しました。URLを確認してください',
+    merchant_bindSelected: '選択した店舗',
+    merchant_bindClear: 'クリア',
+
     itemBox_packOpenSuccess: '開封完了',
     itemBox_packOpenResult: 'スポットが図鑑に追加されました',
     itemBox_packOpenFailed: '開封に失敗しました。後でもう一度お試しください',
     itemBox_packSelectCity: '都市を選択',
     itemBox_packPlaces: '件のスポット',
     itemBox_packOpening: '開封中...',
+
+    // ============ #071 アカウント連携 ============
+    settings_linkedAccounts: 'ログイン方法管理',
+    linkedAccounts_title: 'ログイン方法管理',
+    linkedAccounts_currentProvider: '登録方法',
+    linkedAccounts_linked: '連携済み',
+    linkedAccounts_link: '連携する',
+    linkedAccounts_unlink: '連携解除',
+    linkedAccounts_unlinkConfirm: '連携を解除しますか？',
+    linkedAccounts_unlinkConfirmDesc: '解除後、再連携するにはOAuth認証が必要です',
+    linkedAccounts_linkSuccess: '連携しました',
+    linkedAccounts_unlinkSuccess: '連携を解除しました',
+    linkedAccounts_errorAlreadyLinked: 'このアカウントは別のユーザーに連携されています',
+    linkedAccounts_errorOnlyMethod: '唯一のログイン方法は解除できません',
+    linkedAccounts_errorVerifyFailed: 'ログイン認証に失敗しました。もう一度お試しください',
+    linkedAccounts_apple: 'Apple',
+    linkedAccounts_google: 'Google',
+    linkedAccounts_guest: 'ゲスト',
 
     // ============ #064 フィードバック ============
     settings_feedback: 'フィードバック',

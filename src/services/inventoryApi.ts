@@ -91,44 +91,33 @@ class InventoryApiService extends ApiBase {
     const query = queryParams.toString();
     const url = `/api/inventory${query ? `?${query}` : ''}`;
 
-    try {
-      const data = await this.request<{
-        items: InventoryItem[];
-        slotCount: number;
-        maxSlots: number;
-        isFull: boolean;
-        pagination?: { page: number; limit: number; total: number; totalPages: number };
-      }>(url, {
-        headers: this.authHeaders(token),
-      });
+    const data = await this.request<{
+      items: InventoryItem[];
+      slotCount: number;
+      maxSlots: number;
+      isFull: boolean;
+      pagination?: { page: number; limit: number; total: number; totalPages: number };
+    }>(url, {
+      headers: this.authHeaders(token),
+    });
 
-      const normalizedItems = (data.items || []).map((item: any) => {
-        const normalized = {
-          ...item,
-          type: item.itemType || item.type || 'coupon',
-          itemType: item.itemType || item.type || 'coupon',
-        };
-        delete normalized.slotIndex;
-        return normalized;
-      });
-      return {
-        success: true,
-        items: normalizedItems,
-        slotCount: data.slotCount || 0,
-        maxSlots: data.maxSlots || 30,
-        isFull: data.isFull || false,
-        pagination: data.pagination,
+    const normalizedItems = (data.items || []).map((item: any) => {
+      const normalized = {
+        ...item,
+        type: item.itemType || item.type || 'coupon',
+        itemType: item.itemType || item.type || 'coupon',
       };
-    } catch (error) {
-      console.error('[InventoryApi] getInventory error:', error);
-      return {
-        success: false,
-        items: [],
-        slotCount: 0,
-        maxSlots: 30,
-        isFull: false,
-      };
-    }
+      delete normalized.slotIndex;
+      return normalized;
+    });
+    return {
+      success: true,
+      items: normalizedItems,
+      slotCount: data.slotCount || 0,
+      maxSlots: data.maxSlots || 30,
+      isFull: data.isFull || false,
+      pagination: data.pagination,
+    };
   }
 
   /**
@@ -156,13 +145,8 @@ class InventoryApiService extends ApiBase {
    * @returns 更新後的項目
    */
   async markInventoryItemRead(token: string, itemId: number): Promise<{ success: boolean; item?: InventoryItem }> {
-    try {
-      const result = await this.getInventoryItem(token, itemId);
-      return { success: true, item: result.item };
-    } catch (error) {
-      console.error('[InventoryApi] markInventoryItemRead error:', error);
-      return { success: false };
-    }
+    const result = await this.getInventoryItem(token, itemId);
+    return { success: true, item: result.item };
   }
 
   /**

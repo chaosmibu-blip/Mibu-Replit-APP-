@@ -31,6 +31,7 @@ import {
   Platform,
   Animated,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
@@ -43,10 +44,13 @@ import { SosAlertStatus } from '../../../types';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { ErrorState } from '../components/ui/ErrorState';
 import { LOCALE_MAP } from '../../../utils/i18n';
+import { AutoDismiss } from '../../../constants/animationTiming';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 
 // ============ 元件本體 ============
 
 export function SOSScreen() {
+  const insets = useSafeAreaInsets();
   const { t, language } = useI18n();
   const router = useRouter();
   const { getToken } = useAuth();
@@ -141,7 +145,7 @@ export function SOSScreen() {
     if (webhookUrl) {
       await Clipboard.setStringAsync(webhookUrl);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), AutoDismiss.quick);
     }
   };
 
@@ -334,7 +338,7 @@ export function SOSScreen() {
   return (
     <View style={styles.container}>
       {/* ===== 頂部導航列 ===== */}
-      <View style={styles.headerBar}>
+      <View style={[styles.headerBar, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={MibuBrand.brownDark} />
         </TouchableOpacity>
@@ -501,7 +505,7 @@ export function SOSScreen() {
         )}
 
         {/* 底部留白 */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: BOTTOM_SPACER_HEIGHT }} />
       </ScrollView>
     </View>
   );
@@ -526,7 +530,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingHorizontal: 16,
     paddingBottom: 16,
     backgroundColor: MibuBrand.warmWhite,

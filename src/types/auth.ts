@@ -62,12 +62,6 @@ export interface User {
 export interface AuthResponse {
   user: User;    // 用戶資訊
   token: string; // JWT Token
-  /** #046: 同裝置偵測到非訪客帳號時，後端建議合併 */
-  suggestMerge?: {
-    existingAccountId: string;
-    existingName: string | null;
-    sharedDeviceWarning: string;
-  };
 }
 
 // ============ 用戶個人資料 ============
@@ -184,4 +178,48 @@ export interface DeleteAccountResponse {
   message?: string;       // 成功訊息
   error?: string;         // 錯誤訊息
   code?: 'UNAUTHORIZED' | 'MERCHANT_ACCOUNT_EXISTS' | 'DELETE_FAILED' | 'SERVER_ERROR'; // 錯誤碼
+}
+
+// ============ #071 帳號連結 ============
+
+/** 已綁定的登入方式 */
+export interface LinkedAccount {
+  provider: 'apple' | 'google' | 'guest';  // 登入提供者
+  linked: boolean;                          // 是否已綁定（API 只回傳 true 的）
+}
+
+/**
+ * 帳號連結列表回應
+ * GET /api/auth/linked-accounts
+ */
+export interface LinkedAccountsResponse {
+  currentProvider: 'apple' | 'google' | 'guest';  // 註冊時的登入方式
+  linkedAccounts: LinkedAccount[];                  // 已綁定的登入方式列表
+}
+
+/**
+ * 綁定登入方式參數
+ * POST /api/auth/link
+ */
+export interface LinkAccountParams {
+  provider: 'apple' | 'google';    // 要綁定的提供者
+  idToken: string;                 // OAuth token（Apple 用 identityToken）
+}
+
+/**
+ * 綁定登入方式回應
+ * POST /api/auth/link
+ */
+export interface LinkAccountResponse {
+  success: boolean;
+  linkedAccounts: LinkedAccount[];
+}
+
+/**
+ * 解除綁定回應
+ * DELETE /api/auth/unlink/:provider
+ */
+export interface UnlinkAccountResponse {
+  success: boolean;
+  linkedAccounts: LinkedAccount[];
 }

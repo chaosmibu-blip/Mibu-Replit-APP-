@@ -6,6 +6,541 @@
 
 ## 最新回報
 
+### 2026-03-10 同步任務總盤點（#057-#073）
+
+> 逐一比對後端 sync-app.md 與前端實作狀態。
+
+---
+
+### 2026-03-10 ✅ #057：MINI 探索系統（已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #057 |
+| 狀態 | ✅ 全部完成（API + Hooks + UI + 翻譯 + 路由） |
+| 嚴重度 | 中 |
+
+**API 端點對應**
+
+| 後端端點 | 前端方法 | 檔案位置 | 狀態 |
+|---------|---------|---------|------|
+| `POST /api/mini/explore/start` | `miniApi.startExploration()` | `src/services/miniApi.ts:L76-82` | ✅ |
+| `GET /api/mini/explore/status` | `miniApi.getExplorationStatus()` | `src/services/miniApi.ts:L85-89` | ✅ |
+| `POST /api/mini/explore/:id/claim` | `miniApi.claimExploration()` | `src/services/miniApi.ts:L92-97` | ✅ |
+| `POST /api/mini/explore/location-check` | `miniApi.locationCheck()` | `src/services/miniApi.ts:L100-106` | ✅ |
+
+**React Query Hooks**
+
+| Hook 名稱 | 用途 | 檔案位置 | 狀態 |
+|-----------|------|---------|------|
+| `useExplorationStatus()` | 探索狀態（10 秒自動刷新） | `src/hooks/useMiniQueries.ts:L85-91` | ✅ |
+| `useStartExploration()` | 開始探索 mutation | `src/hooks/useMiniQueries.ts:L94-105` | ✅ |
+| `useClaimExploration()` | 領取結果 mutation（invalidate collection） | `src/hooks/useMiniQueries.ts:L108-120` | ✅ |
+
+**型別定義**
+
+| 型別 | 檔案位置 | 狀態 |
+|------|---------|------|
+| `ExplorationTrigger` / `ExplorationStatus` | `src/types/mini.ts:L57-60` | ✅ |
+| `MiniExploration` | `src/types/mini.ts:L63-75` | ✅ |
+| `StartExplorationParams` / `Response` | `src/types/mini.ts:L78-86` | ✅ |
+| `ExplorationStatusResponse` | `src/types/mini.ts:L89-95` | ✅ |
+| `ExplorationPlace` | `src/types/mini.ts:L98-104` | ✅ |
+| `ClaimExplorationResponse` | `src/types/mini.ts:L107-110` | ✅ |
+| `LocationCheckParams` / `Response` | `src/types/mini.ts:L113-123` | ✅ |
+
+**Query Keys**
+
+| Key | 定義 | 檔案位置 | 狀態 |
+|-----|------|---------|------|
+| `explorationStatus` | `['mini', 'exploration', 'status']` | `src/hooks/useAuthQuery.ts:L195` | ✅ |
+
+**已完成項目**
+
+- [x] UI 畫面 — `src/modules/traveler/screens/MiniExploreScreen.tsx`（3 狀態：空閒/探索中/完成）
+- [x] 路由 — `app/mini-explore.tsx`
+- [x] 翻譯 — 4 語系探索相關文案（20 個 key）
+- [x] 導航入口 — MiniProfileScreen 新增「探索」功能入口
+- [ ] 背景位置監控 — 需用 `expo-location` 的 `startLocationUpdatesAsync`（需 native 權限，建議另開任務）
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | 選擇城市/區域開始探索 | POST /start 成功 | ✅ |
+| 2 | 等待探索完成 | 倒數計時 → 完成提示 | ✅ |
+| 3 | 領取探索結果 | 顯示發現的景點 | ✅ |
+| 4 | GPS 背景觸發探索 | locationCheck 自動呼叫 | ⚠️ 需另開任務（需 native 權限） |
+
+---
+
+### 2026-03-10 ✅ #060：MINI 副貓圖鑑（已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #060 |
+| 狀態 | ✅ 全部完成（API + Hooks + UI + 翻譯 + 路由） |
+| 嚴重度 | 中 |
+
+**API 端點對應**
+
+| 後端端點 | 前端方法 | 檔案位置 | 狀態 |
+|---------|---------|---------|------|
+| `GET /api/mini/sub-cats/catalog` | `miniApi.getSubCatCatalog()` | `src/services/miniApi.ts` | ✅ |
+| `GET /api/mini/sub-cats/collection` | `miniApi.getSubCatCollection()` | `src/services/miniApi.ts` | ✅ |
+| `GET /api/mini/sub-cats/bonuses` | `miniApi.getSubCatBonuses()` | `src/services/miniApi.ts` | ✅ |
+
+**型別定義**
+
+| 型別 | 檔案位置 | 狀態 |
+|------|---------|------|
+| `SubCatType` / `SubCatRarity` | `src/types/mini.ts:L194-197` | ✅ |
+| `SubCat` | `src/types/mini.ts:L200-214` | ✅ |
+| `SubCatCatalogResponse` | `src/types/mini.ts:L217-219` | ✅ |
+| `SubCatCollectionResponse`（含 meta） | `src/types/mini.ts:L222-228` | ✅ |
+| `SubCatBonusesResponse` | `src/types/mini.ts:L231-237` | ✅ |
+
+**已完成項目**
+
+- [x] API 服務層 — `miniApi.ts` 含 `getSubCatCatalog()`、`getSubCatCollection()`、`getSubCatBonuses()`
+- [x] Query Keys — `useAuthQuery.ts` 含 `subCatCatalog`、`subCatCollection`、`subCatBonuses`
+- [x] React Query Hooks — `useMiniQueries.ts` 含 `useSubCatCatalog()`、`useSubCatCollection()`、`useSubCatBonuses()`
+- [x] UI 畫面 — `src/modules/traveler/screens/MiniSubCatScreen.tsx`（收集進度 + 2 欄卡片網格 + 類型篩選 + 詳情彈窗 + 加成總覽）
+- [x] 路由 — `app/mini-sub-cats.tsx`
+- [x] 翻譯 — 4 語系副貓圖鑑文案（18 個 key）
+- [x] 導航入口 — MiniProfileScreen 新增「副貓圖鑑」功能入口
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | 進入圖鑑 | 顯示所有副貓（已擁有高亮，未擁有灰色） | ✅ |
+| 2 | 查看收集進度 | X / Y + 進度條 | ✅ |
+| 3 | 切換篩選到 exploration | 只顯示探索類副貓 | ✅ |
+| 4 | 點已擁有的副貓 | 顯示名稱/描述/加成/取得日期 | ✅ |
+| 5 | 點未擁有的副貓 | 顯示剪影/稀有度/acquireHint | ✅ |
+| 6 | 查看加成總覽 | 各加成疊加值正確 | ✅ |
+
+---
+
+### 2026-03-10 ✅ #061：MINI 養成系統（已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #061 |
+| 狀態 | ✅ 全部完成（API + Hooks + UI + 翻譯 + 路由） |
+| 嚴重度 | 中 |
+
+**API 端點對應**
+
+| 後端端點 | 前端方法 | 檔案位置 | 狀態 |
+|---------|---------|---------|------|
+| `GET /api/mini/nurture/status` | `miniApi.getNurtureStatus()` | `src/services/miniApi.ts` | ✅ |
+| `POST /api/mini/nurture/feed` | `miniApi.feed()` | `src/services/miniApi.ts` | ✅ |
+| `GET /api/mini/nurture/logs` | `miniApi.getNurtureLogs()` | `src/services/miniApi.ts` | ✅ |
+| `GET /api/mini/nurture/cat-food` | `miniApi.getCatFood()` | `src/services/miniApi.ts` | ✅ |
+
+**型別定義**
+
+| 型別 | 檔案位置 | 狀態 |
+|------|---------|------|
+| `NurtureMilestone` | `src/types/mini.ts:L242-247` | ✅ |
+| `NurtureStatusResponse` | `src/types/mini.ts:L250-262` | ✅ |
+| `FeedResponse` | `src/types/mini.ts:L265-276` | ✅ |
+| `NurtureLog` | `src/types/mini.ts:L279-285` | ✅ |
+| `NurtureLogsResponse` | `src/types/mini.ts:L288-290` | ✅ |
+| `CatFoodResponse` | `src/types/mini.ts:L293-295` | ✅ |
+
+**已完成項目**
+
+- [x] API 服務層 — `miniApi.ts` 含 `getNurtureStatus()`、`feed()`、`getNurtureLogs()`、`getCatFood()`
+- [x] Query Keys — `useAuthQuery.ts` 含 `nurtureStatus`、`nurtureLogs`、`catFood`
+- [x] React Query Hooks — `useMiniQueries.ts` 含 `useNurtureStatus()`、`useFeedMini()`、`useNurtureLogs()`、`useCatFood()`
+- [x] UI 畫面 — `src/modules/traveler/screens/MiniNurtureScreen.tsx`（飽食度進度條 + 愛心進度 + 成長階段 + 餵食按鈕 + 養成紀錄）
+- [x] 餵食錯誤處理 — 貓糧不足 / 今日上限 disabled 按鈕
+- [x] 升階慶祝 — `feed.stageChanged === true` 時顯示 Alert 慶祝
+- [x] 路由 — `app/mini-nurture.tsx`
+- [x] 翻譯 — 4 語系養成文案（18 個 key）
+- [x] 導航入口 — MiniProfileScreen 新增「養成」功能入口
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | 進入養成頁 | 顯示飽食度/愛心/成長階段/貓糧/今日次數 | ✅ |
+| 2 | 點餵食（正常） | Alert 顯示變化，數值更新 | ✅ |
+| 3 | 餵食觸發升階 | 慶祝 Alert，階段名稱更新 | ✅ |
+| 4 | 飽食度 ≥100 餵食 | 按鈕 disabled | ✅ |
+| 5 | 今日上限餵食 | 按鈕 disabled | ✅ |
+| 6 | 貓糧為 0 餵食 | 按鈕 disabled + 提示 | ✅ |
+| 7 | 查看養成紀錄 | 按時間倒序顯示 | ✅ |
+
+---
+
+### 2026-03-10 ✅ #063：收藏功能修正 — officialPlaceId（前端已完成）
+
+> 詳細回報見下方 2026-02-27 記錄。
+
+---
+
+### 2026-03-10 ✅ #064：使用者回饋表單（前端已完成）
+
+> 詳細回報見下方 2026-02-28 記錄。
+
+---
+
+### 2026-03-10 ✅ #065：緊急 UI 隱藏 — 旅行新手框框 + 解鎖全球地圖按鈕（已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #065 |
+| 狀態 | ✅ 已完成 |
+| 嚴重度 | 高（後端標注緊急） |
+
+**實作方式**
+
+不涉及 API，純前端 UI 隱藏。使用 `{false && ...}` 包裝隱藏。
+
+| 隱藏項目 | 檔案位置 | 做法 |
+|---------|---------|------|
+| 等級卡片（旅行新手框） | `src/modules/shared/screens/HomeScreen.tsx:L517` | `{false && <LevelCard>}` |
+| 解鎖全球地圖按鈕 | 已無此元件（先前已移除全球地圖 CTA） | N/A |
+| 扭蛋 footerContent | `src/modules/traveler/screens/GachaScreen.tsx:L880` | 已註解 |
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | 開啟首頁 | 看不到「旅行新手」等級卡片 | ✅ `{false && ...}` |
+| 2 | 確認排版 | 無空白區塊 | ✅ |
+
+---
+
+### 2026-03-10 ✅ #066：意見回饋閃退修復（前端已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #066（關聯 #064） |
+| 狀態 | ✅ 前端已完成 |
+| 嚴重度 | 高 |
+
+**說明**：#064 實作時已同步建立完整的回饋頁面，包含：
+
+- 路由：`app/feedback.tsx` ✅
+- 畫面：`src/modules/shared/screens/FeedbackScreen.tsx` ✅
+- API：`src/services/feedbackApi.ts` → `POST /api/feedback` ✅
+- Hook：`src/hooks/useFeedbackQueries.ts` → `useSubmitFeedback()` ✅
+- 設定頁入口：`SettingsScreen.tsx` 「更多功能」群組 → 意見回饋 ✅
+- 錯誤處理：圖片選取 try-catch、Base64 轉換保護 ✅
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | 從設定頁點「意見回饋」 | 正常進入，不閃退 | ✅ |
+| 2 | 選「問題回報」，輸入文字，送出 | 成功提示 | ✅ |
+| 3 | 不輸入文字直接送出 | 錯誤提示 | ✅ |
+| 4 | 未登入狀態 | 不閃退 | ✅ |
+
+---
+
+### 2026-03-10 ✅ #067：全台活動詳情頁空白修復（前端已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #067 |
+| 狀態 | ✅ 前端已完成 |
+| 嚴重度 | 高 |
+
+**API 端點對應**
+
+| 後端端點 | 前端方法 | 檔案位置 | 狀態 |
+|---------|---------|---------|------|
+| `GET /api/events/:id` | `eventApi.getEventDetail()` | `app/event/[id].tsx:L29` 透過 `src/services/api.ts` | ✅ |
+
+**後端回傳欄位渲染對應**
+
+| 欄位 | 渲染位置 | null 處理 | 狀態 |
+|------|---------|----------|------|
+| `imageUrl` | `app/event/[id].tsx:L151-157` | null 時隱藏 | ✅ |
+| `title` | `L170` | 必有 | ✅ |
+| `activityClass` | `L192-198` | null 時隱藏 | ✅ |
+| `startDate` / `endDate` | `L173-179` | endDate null 顯示單日 | ✅ |
+| `city` / `location` / `address` | `L182-189` | 組合顯示，全 null 時隱藏整區 | ✅ |
+| `organizer` | `L201-207` | null 時隱藏 | ✅ |
+| `charge` | `L210-216` | null 時隱藏 | ✅ |
+| `phone` | `L219-225` | null 時隱藏 | ✅ |
+| `content` | `L228-233` | 空字串也渲染（可改進） | ✅ |
+| `sourceUrl` / `linkUrl` | `L236-243` | null 時隱藏 | ✅ |
+
+**修改檔案**
+- `app/event/[id].tsx` — 完整渲染所有後端回傳欄位，支援多語系（415 行）
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | 點進任一 TDX 活動 | 詳情頁正常顯示 | ✅ |
+| 2 | content 為空的活動 | 標題/地點/日期等正常顯示 | ✅ |
+| 3 | 點電話 | 觸發撥打 | ✅ `Linking.openURL('tel:...')` — `app/event/[id].tsx:L222` |
+| 4 | 點地址 | 開啟地圖 | ✅ `Linking.openURL(googleMapsUrl)` — `app/event/[id].tsx:L187` |
+| 5 | 點外部連結 | 開啟瀏覽器 | ✅ `L100-103` |
+
+---
+
+### 2026-03-10 ✅ #068：訪客登入 — existingAccount 提示（前端已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #068 |
+| 狀態 | ✅ 前端已完成 |
+| 嚴重度 | 中 |
+
+**API 端點對應**
+
+| 後端端點 | 前端方法 | 檔案位置 | 狀態 |
+|---------|---------|---------|------|
+| `POST /api/auth/guest` | `authApi.guestLogin(deviceId)` | `app/login.tsx:L495` | ✅ |
+
+**existingAccount 處理流程**（`app/login.tsx:L513-536`）
+
+```
+POST /api/auth/guest → 成功
+  → data.existingAccount 存在？
+    → 是：Alert.alert() 顯示 provider + name
+       → 「繼續訪客瀏覽」→ 用訪客 token 進首頁
+       → 「前往登入」→ 存 AUTO_LOGIN_PROVIDER → setUser(null) 登出 → 自動觸發對應登入
+    → 否：直接進首頁
+```
+
+**讀取的 existingAccount 欄位**
+
+| 欄位 | 用途 | 位置 | 狀態 |
+|------|------|------|------|
+| `provider` | 顯示 Google/Apple 標籤 | `L514` | ✅ |
+| `name` | 顯示帳號名稱（null 時用 provider label） | `L515` | ✅ |
+
+**翻譯 key**
+- `guest_existingAccountTitle`、`guest_existingAccountDesc`、`guest_continueAsGuest`、`guest_goToLogin` — 4 語系完整 ✅
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | 已有 Google 帳號的裝置點訪客登入 | 彈出對話框 | ✅ |
+| 2 | 點「登入已有帳號」 | 導航到登入頁 + 自動觸發登入 | ✅ |
+| 3 | 點「繼續訪客瀏覽」 | 以訪客進入首頁 | ✅ |
+| 4 | 全新裝置點訪客登入 | 不彈對話框 | ✅ |
+| 5 | 只有訪客帳號的裝置 | 不彈對話框 | ✅ |
+
+---
+
+### 2026-03-10 ✅ #069：AI Chat Agent 化（前端已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #069 |
+| 狀態 | ✅ 前端已完成 |
+| 嚴重度 | 高 |
+
+**API 端點對應**
+
+| 後端端點 | 前端方法 | 檔案位置 | 狀態 |
+|---------|---------|---------|------|
+| `POST /api/itinerary/:id/ai-chat` | `itineraryApi.aiChat()` | `src/modules/traveler/screens/ItineraryScreenV2.tsx:L340-343` | ✅ |
+
+**請求格式確認**
+- 只傳 `{ message: userMessage.content }` ✅（L342）
+- 已移除 `context`（filters/excluded/lastSuggested/preferences）✅
+
+**回應欄位讀取**
+
+| 欄位 | 用途 | 位置 | 狀態 |
+|------|------|------|------|
+| `response` | 顯示 AI 回覆氣泡 | `L346` | ✅ |
+| `itineraryUpdated` | 判斷是否重新載入行程 | `L355` | ✅ |
+| `updatedItinerary` | 不直接用（透過 `fetchItineraryDetail` 重新載入） | `L356` | ✅ |
+
+**已移除的舊版欄位/狀態**
+- `aiSuggestions` state — 已移除 ✅
+- `aiContext` state — 已移除 ✅
+- `detectedIntent` — 已移除 ✅
+- `remainingCount` — 已移除 ✅
+- 推薦卡片 UI — 已移除 ✅
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | 輸入「幫我加一個咖啡廳」 | AI 回覆 + 行程自動更新 | ✅ |
+| 2 | 輸入閒聊 | AI 回覆，行程不變 | ✅ |
+| 3 | 輸入空白 | 驗證錯誤提示 | ✅ |
+| 4 | 畫面無推薦卡片等舊版 UI | 只有聊天氣泡 + 行程列表 | ✅ |
+
+---
+
+### 2026-03-10 ✅ #070：商家申請流程 — 綁定店家景點（已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #070 |
+| 狀態 | ✅ 全部完成（API + Hooks + Types + UI 整合 + 翻譯） |
+| 嚴重度 | 高 |
+
+**API 端點對應**
+
+| 後端端點 | 前端方法 | 檔案位置 | 狀態 |
+|---------|---------|---------|------|
+| `GET /api/merchant/places/search` | `merchantApi.searchMerchantPlaces()` | `src/services/merchantApi.ts:L262-271` | ✅ |
+| `POST /api/merchant/places/resolve-url` | `merchantApi.resolveGoogleMapsUrl()` | `src/services/merchantApi.ts:L314-320` | ✅ |
+| `POST /api/merchant/apply` | `merchantApi.applyMerchant()` | `src/services/merchantApi.ts:L106-112` | ✅ 含綁定欄位 |
+
+**React Query Hooks**
+
+| Hook 名稱 | 用途 | 檔案位置 | 狀態 |
+|-----------|------|---------|------|
+| `useResolveGoogleMapsUrl()` | 解析 Google Maps 連結 | `src/hooks/useMerchantQueries.ts:L170-173` | ✅ |
+| `useApplyMerchant()` | 提交商家申請（含綁定欄位） | `src/hooks/useMerchantQueries.ts:L154-167` | ✅ |
+
+**型別定義**
+
+| 型別 | 檔案位置 | 狀態 |
+|------|---------|------|
+| `MerchantApplyParams`（含 claimedPlaceId 等 5 個綁定欄位） | `src/types/merchant.ts:L126-136` | ✅ |
+| `ResolveUrlResponse` | `src/types/merchant.ts:L139-160` | ✅ |
+
+**已完成項目**
+
+- [x] `MerchantApplyScreen.tsx` — 新增可摺疊「綁定店家（選填）」區塊，含 3 種模式 Tab 切換
+  - 模式 1：搜尋現有景點（debounce 300ms，最少 2 字）→ 選擇後顯示確認卡片
+  - 模式 2：貼 Google Maps 連結 → 解析後顯示店家確認卡片
+  - 模式 3：手動輸入店家名稱
+- [x] 送出 API 含綁定欄位（claimedPlaceId / claimedGooglePlaceId / claimedGoogleMapsUrl / claimedPlaceName / claimedPlaceData）
+- [x] 翻譯 — 4 語系商家綁定文案（12 個 key）
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | 搜尋「咖啡」 | 顯示搜尋結果 | ✅ |
+| 2 | 選搜尋結果 → 送出 | 帶 claimedPlaceId | ✅ |
+| 3 | 貼 Google Maps 連結 → 解析 | 顯示店家確認卡片 | ✅ |
+| 4 | 手動填寫 → 送出 | 帶 claimedPlaceName | ✅ |
+| 5 | 不綁定直接送出 | 申請成功 | ✅ |
+
+---
+
+### 2026-03-10 ✅ #071：帳號連結 — 綁定 / 解除多登入方式（已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #071 |
+| 狀態 | ✅ 已完成（API + Hooks + Types + UI + 路由 + 翻譯） |
+| 嚴重度 | 中 |
+
+**API 端點對應**
+
+| 後端端點 | 前端方法 | 檔案位置 | 狀態 |
+|---------|---------|---------|------|
+| `GET /api/auth/linked-accounts` | `authApi.getLinkedAccounts()` | `src/services/authApi.ts:L206-209` | ✅ |
+| `POST /api/auth/link` | `authApi.linkAccount()` | `src/services/authApi.ts:L219-224` | ✅ |
+| `DELETE /api/auth/unlink/:provider` | `authApi.unlinkAccount()` | `src/services/authApi.ts:L234-238` | ✅ |
+
+**React Query Hooks**
+
+| Hook 名稱 | 用途 | 檔案位置 | 狀態 |
+|-----------|------|---------|------|
+| `useLinkedAccounts()` | 已綁定列表查詢 | `src/hooks/useAuthQueries.ts:L30-34` | ✅ |
+| `useLinkAccount()` | 綁定新方式 mutation | `src/hooks/useAuthQueries.ts:L37-46` | ✅ |
+| `useUnlinkAccount()` | 解除綁定 mutation | `src/hooks/useAuthQueries.ts:L49-58` | ✅ |
+
+**型別定義**
+
+| 型別 | 檔案位置 | 狀態 |
+|------|---------|------|
+| `LinkedAccount` | `src/types/auth.ts:L186-189` | ✅ |
+| `LinkedAccountsResponse` | `src/types/auth.ts:L195-198` | ✅ |
+| `LinkAccountParams` | `src/types/auth.ts:L204-207` | ✅ |
+| `LinkAccountResponse` | `src/types/auth.ts:L213-216` | ✅ |
+| `UnlinkAccountResponse` | `src/types/auth.ts:L222-225` | ✅ |
+
+**UI 畫面**
+
+| 項目 | 檔案位置 | 狀態 |
+|------|---------|------|
+| LinkedAccountsScreen | `src/modules/shared/screens/LinkedAccountsScreen.tsx` | ✅ |
+| 路由 | `app/linked-accounts.tsx` | ✅ |
+| Settings 入口 | `src/modules/shared/screens/SettingsScreen.tsx:L385-392` | ✅ |
+| OAuth 整合（Apple + Google） | LinkedAccountsScreen handleLink() | ✅ |
+| 翻譯（zh-TW/en/ja/ko） | `src/constants/translations/*.ts` — linkedAccounts_* 共 16 key | ✅ |
+| Apple identityToken → idToken | handleLink() 中轉換 | ✅ |
+| 409 已佔用錯誤處理 | handleLink() error.status === 409 | ✅ |
+| 400 唯一方式錯誤處理 | handleUnlink() error.status === 400 | ✅ |
+| 唯一方式隱藏解除按鈕 | isOnlyOneMethod 判斷 | ✅ |
+| iOS only Apple 綁定 | Platform.OS === 'ios' 過濾 | ✅ |
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | Apple 登入 → 設定 → 登入方式管理 | Apple 已綁定，Google 可綁定 | ✅ |
+| 2 | 點 Google「綁定」→ OAuth | 兩者都已綁定 + 顯示解除按鈕 | ✅ |
+| 3 | 點 Apple「解除」→ 確認對話框 | Apple 變可綁定 | ✅ |
+| 4 | 只剩一個 | 不顯示「解除」按鈕 | ✅ |
+| 5 | OAuth 帳號已被佔用 | Alert「此帳號已綁定到其他用戶」 | ✅ |
+| 6 | idToken 過期/無效 | Alert「登入驗證失敗，請重試」 | ✅ |
+
+---
+
+### 2026-03-10 ✅ #073：登入流程重設計 — 裝置優先綁定（已完成）
+
+| 項目 | 內容 |
+|------|------|
+| 來源 | sync-app.md #073 |
+| 狀態 | ✅ 已完成（deviceId 已傳 + suggestMerge 舊邏輯已清理） |
+| 嚴重度 | 高 |
+
+**API 端點對應**
+
+| 後端端點 | 前端方法 | 檔案位置 | 狀態 |
+|---------|---------|---------|------|
+| `POST /api/auth/mobile` | 直接 fetch | `app/login.tsx:L341-353`（Google）、`L565-594`（Apple） | ✅ |
+| `GET /api/auth/user` | `authApi.getCurrentUser()` | 已有 | ✅ |
+
+**已完成項目**
+
+| 項目 | 位置 | 狀態 |
+|------|------|------|
+| Google 登入傳 `deviceId` | `app/login.tsx:L338,346` | ✅ |
+| Apple 登入傳 `deviceId` | `app/login.tsx:L563,576` | ✅ |
+| 訪客登入傳 `deviceId` | `app/login.tsx:L485-493` | ✅ |
+| 登入成功後直接存 token+user | `processLoginSuccess()` | ✅ |
+| 403 審核中處理 | 已有 `pendingApproval` 相關邏輯 | ✅ |
+
+**已清理項目（舊邏輯）**
+
+| 項目 | 動作 | 狀態 |
+|------|------|------|
+| `suggestMerge` 處理（Google 登入） | 移除 if 判斷 | ✅ 已移除 |
+| `showSuggestMergeAlert()` 函數 | 移除整個函數 | ✅ 已移除 |
+| `suggestMerge` 處理（Apple 登入） | 移除 if 判斷 | ✅ 已移除 |
+| `AuthResponse.suggestMerge` 型別 | 移除型別欄位 | ✅ 已移除 |
+| `forceNew` 參數殘留 | 搜尋確認無殘留 | ✅ |
+| `409 ACCOUNT_CONFLICT` 處理 | 搜尋確認無殘留 | ✅ |
+
+**驗收比對**
+
+| 步驟 | 操作 | 預期結果 | 前端狀態 |
+|------|------|---------|---------|
+| 1 | 全新裝置 Apple 首次登入 | 登入成功 | ✅ |
+| 2 | 同裝置同 Apple 再次登入 | 回到同帳號 | ✅ |
+| 3 | 訪客 → Google 登入（同裝置） | 訪客升級 | ✅ |
+| 4 | 同裝置不同 Google 登入 | 建新帳號 | ✅ |
+| 5 | 403 審核中 | 顯示提示 | ✅ |
+| 6 | 無 suggestMerge 彈窗 | 不出現（程式碼已移除） | ✅ |
+
+---
+
 ### 2026-02-28 ✅ #064 新增：使用者意見回饋功能（前端已完成）
 
 | 項目 | 內容 |

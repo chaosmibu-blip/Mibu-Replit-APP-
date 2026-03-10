@@ -33,6 +33,7 @@ import { useMiniProfile, useUpdateMiniName } from '../../../hooks/useMiniQueries
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
 import { Spacing, Radius, FontSize, Shadow } from '../../../theme/designTokens';
 import { ErrorState } from '../../shared/components/ui/ErrorState';
+import { InputLimit } from '../../../constants/businessDefaults';
 import type { MiniMood, MiniGrowthStage } from '../../../types/mini';
 
 // ============ 輔助函數 ============
@@ -180,7 +181,7 @@ export function MiniProfileScreen() {
                 onChangeText={setNameInput}
                 placeholder={t.mini_namePlaceholder}
                 placeholderTextColor={MibuBrand.brownLight}
-                maxLength={50}
+                maxLength={InputLimit.title}
                 autoFocus
                 onSubmitEditing={handleSaveName}
               />
@@ -241,6 +242,25 @@ export function MiniProfileScreen() {
             <Text style={localStyles.statTitle}>{t.mini_growthStage}</Text>
             <Text style={localStyles.statValue}>{getStageLabel(profile.growthStage)}</Text>
           </View>
+        </View>
+
+        {/* 功能入口 */}
+        <View style={localStyles.actionSection}>
+          <TouchableOpacity style={localStyles.actionCard} onPress={() => router.push('/mini-nurture' as any)}>
+            <Ionicons name="restaurant-outline" size={24} color={MibuBrand.copper} />
+            <Text style={localStyles.actionLabel}>{(t as Record<string, string>).mini_nurtureTitle || '養成'}</Text>
+            <Ionicons name="chevron-forward" size={18} color={MibuBrand.brownLight} />
+          </TouchableOpacity>
+          <TouchableOpacity style={localStyles.actionCard} onPress={() => router.push('/mini-explore' as any)}>
+            <Ionicons name="compass-outline" size={24} color={MibuBrand.copper} />
+            <Text style={localStyles.actionLabel}>{(t as Record<string, string>).mini_exploreTitle || '探索'}</Text>
+            <Ionicons name="chevron-forward" size={18} color={MibuBrand.brownLight} />
+          </TouchableOpacity>
+          <TouchableOpacity style={localStyles.actionCard} onPress={() => router.push('/mini-sub-cats' as any)}>
+            <Ionicons name="paw-outline" size={24} color={MibuBrand.copper} />
+            <Text style={localStyles.actionLabel}>{(t as Record<string, string>).mini_subCatTitle || '副貓圖鑑'}</Text>
+            <Ionicons name="chevron-forward" size={18} color={MibuBrand.brownLight} />
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -390,5 +410,26 @@ const localStyles = StyleSheet.create({
     height: '100%',
     backgroundColor: MibuBrand.success,
     borderRadius: Radius.full,
+  },
+
+  // 功能入口
+  actionSection: {
+    marginTop: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  actionCard: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: MibuBrand.warmWhite,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+    ...Shadow.sm,
+  },
+  actionLabel: {
+    flex: 1,
+    fontSize: FontSize.lg,
+    fontWeight: '600' as const,
+    color: MibuBrand.brownDark,
   },
 });

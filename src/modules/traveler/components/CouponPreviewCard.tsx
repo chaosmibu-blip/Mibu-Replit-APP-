@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CouponTier } from '../../../types';
-import { UIColors } from '../../../../constants/Colors';
+import { UIColors, SemanticColors } from '../../../../constants/Colors';
 import { useI18n } from '../../../context/AppContext';
 import { tFormat } from '../../../utils/i18n';
 
@@ -182,7 +182,7 @@ const CouponPreviewCard = React.memo(function CouponPreviewCard({
         <View style={styles.metaRow}>
           {/* 商家名稱 */}
           <View style={styles.metaItem}>
-            <Ionicons name="location-outline" size={12} color="#64748b" />
+            <Ionicons name="location-outline" size={12} color={UIColors.textSecondary} />
             <Text style={styles.metaText} numberOfLines={1}>
               {placeName}
             </Text>
@@ -190,7 +190,7 @@ const CouponPreviewCard = React.memo(function CouponPreviewCard({
           {/* 有效期限 */}
           {validUntil && (
             <View style={styles.metaItem}>
-              <Ionicons name="time-outline" size={12} color="#64748b" />
+              <Ionicons name="time-outline" size={12} color={UIColors.textSecondary} />
               <Text style={styles.metaText}>{formatDate(validUntil)}</Text>
             </View>
           )}

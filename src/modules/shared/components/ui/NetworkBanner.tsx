@@ -14,8 +14,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Text, StyleSheet, Animated, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SemanticColors } from '../../../../../constants/Colors';
 import { Spacing, FontSize } from '@/src/theme/designTokens';
+import { AnimationTiming, AutoDismiss } from '@/src/constants/animationTiming';
 
 // React Native 的 NetInfo 需要 @react-native-community/netinfo
 // 這裡使用簡化的線上/離線檢測
@@ -38,6 +40,7 @@ export function NetworkBanner({
   offlineMessage = '網路連線中斷',
   onlineMessage = '已恢復連線',
 }: NetworkBannerProps) {
+  const insets = useSafeAreaInsets();
   const [isConnected, setIsConnected] = useState(true);
   const [showBanner, setShowBanner] = useState(false);
   // 用 useRef 追蹤是否曾斷線（同步讀取，避免閉包過時 — 教訓 #006）
@@ -55,7 +58,7 @@ export function NetworkBanner({
         if (wasDisconnectedRef.current) {
           // 顯示「已恢復」後自動隱藏
           setShowBanner(true);
-          hideTimer.current = setTimeout(() => setShowBanner(false), 3000);
+          hideTimer.current = setTimeout(() => setShowBanner(false), AutoDismiss.toast);
         }
       };
       const handleOffline = () => {
@@ -92,7 +95,7 @@ export function NetworkBanner({
         } else if (wasDisconnectedRef.current) {
           setIsConnected(true);
           setShowBanner(true);
-          hideTimer.current = setTimeout(() => setShowBanner(false), 3000);
+          hideTimer.current = setTimeout(() => setShowBanner(false), AutoDismiss.toast);
         }
       });
       return () => {
@@ -107,7 +110,7 @@ export function NetworkBanner({
     animHiddenRef.current = false;
     Animated.timing(translateY, {
       toValue: showBanner ? 0 : -60,
-      duration: 300,
+      duration: AnimationTiming.standard,
       useNativeDriver: true,
     }).start(() => {
       // 動畫完成後更新隱藏狀態
@@ -137,7 +140,7 @@ export function NetworkBanner({
     <Animated.View
       style={[
         styles.container,
-        { backgroundColor: bannerBg, transform: [{ translateY }] },
+        { backgroundColor: bannerBg, paddingTop: insets.top, transform: [{ translateY }] },
       ]}
     >
       <Ionicons name={iconName} size={16} color={bannerColor} />
@@ -155,7 +158,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: Platform.OS === 'ios' ? 50 : Spacing.md,
     paddingBottom: Spacing.sm,
     gap: Spacing.sm,
     zIndex: 9999,

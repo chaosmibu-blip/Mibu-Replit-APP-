@@ -26,10 +26,12 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../../context/AppContext';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
+import { InputLimit } from '../../../constants/businessDefaults';
 
 // ============ 介面定義 ============
 
@@ -141,6 +143,7 @@ const translations = {
 // ============ 元件本體 ============
 
 export function ChatScreen() {
+  const insets = useSafeAreaInsets();
   const { language } = useI18n();
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -268,7 +271,7 @@ export function ChatScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
     >
       {/* ===== 頂部導航列 ===== */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity
           style={styles.headerIcon}
           onPress={() => router.push('/mini-profile')}
@@ -379,7 +382,7 @@ export function ChatScreen() {
           value={inputText}
           onChangeText={setInputText}
           multiline
-          maxLength={500}
+          maxLength={InputLimit.chatMessage}
         />
         <TouchableOpacity
           style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
@@ -406,7 +409,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: MibuBrand.warmWhite,
-    paddingTop: Platform.OS === 'ios' ? 60 : 20,
     paddingBottom: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 2,

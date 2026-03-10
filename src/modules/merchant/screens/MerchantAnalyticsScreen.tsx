@@ -25,6 +25,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../../context/I18nContext';
 import {
   useMerchantAnalytics,
@@ -41,6 +42,7 @@ export function MerchantAnalyticsScreen() {
   // ============ Hooks ============
   const { t } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   // ============ UI 狀態 ============
   // selectedPeriod: 選中的時間區間
@@ -172,7 +174,7 @@ export function MerchantAnalyticsScreen() {
   return (
     <View style={styles.container}>
       {/* ============ 頂部標題區 ============ */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         {/* 返回按鈕 */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} accessibilityLabel="返回">
           <Ionicons name="arrow-back" size={24} color={MibuBrand.dark} />
@@ -428,7 +430,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 60,
     paddingBottom: 16,
     backgroundColor: MibuBrand.warmWhite,
     borderBottomWidth: 1,

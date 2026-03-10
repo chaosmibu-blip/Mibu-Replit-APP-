@@ -71,28 +71,16 @@ class EventApiService extends ApiBase {
     const queryString = searchParams.toString();
     const url = queryString ? `/api/events?${queryString}` : '/api/events';
 
-    try {
-      const data = await this.request<{
-        events: Event[];
-        pagination: EventListResponse['pagination'];
-      }>(url);
+    const data = await this.request<{
+      events: Event[];
+      pagination: EventListResponse['pagination'];
+    }>(url);
 
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      // 前端統一包裝格式，確保介面一致性
-      return {
-        success: true,
-        events: data.events || [],
-        pagination: data.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 },
-      };
-    } catch (error) {
-      console.error('[EventApi] Failed to fetch events:', error);
-      // 錯誤時回傳空列表，避免前端崩潰
-      return {
-        success: false,
-        events: [],
-        pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
-      };
-    }
+    return {
+      success: true,
+      events: data.events || [],
+      pagination: data.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 },
+    };
   }
 
   // ========== 活動詳情 ==========
@@ -114,15 +102,9 @@ class EventApiService extends ApiBase {
    *   console.log('活動名稱:', detail.event.title);
    * }
    */
-  async getEventById(id: number): Promise<EventDetailResponse | null> {
-    try {
-      const data = await this.request<{ event: Event }>(`/api/events/${id}`);
-      // 後端沒有 success 欄位，HTTP 200 就是成功
-      return { success: true, event: data.event };
-    } catch (error) {
-      console.error('[EventApi] Failed to fetch event detail:', error);
-      return null;
-    }
+  async getEventById(id: number): Promise<EventDetailResponse> {
+    const data = await this.request<{ event: Event }>(`/api/events/${id}`);
+    return { success: true, event: data.event };
   }
 
   // ========== 首頁活動聚合 ==========
@@ -147,28 +129,17 @@ class EventApiService extends ApiBase {
     festivals: Event[];
     limitedEvents: Event[];
   }> {
-    try {
-      // 並行請求三種類型的活動，提升載入速度
-      const [announcements, festivals, limited] = await Promise.all([
-        this.getEvents({ type: 'announcement', status: 'active', limit: 3 }),
-        this.getEvents({ type: 'festival', status: 'active', limit: 5 }),
-        this.getEvents({ type: 'limited', status: 'active', limit: 5 }),
-      ]);
+    const [announcements, festivals, limited] = await Promise.all([
+      this.getEvents({ type: 'announcement', status: 'active', limit: 3 }),
+      this.getEvents({ type: 'festival', status: 'active', limit: 5 }),
+      this.getEvents({ type: 'limited', status: 'active', limit: 5 }),
+    ]);
 
-      return {
-        announcements: announcements.events || [],
-        festivals: festivals.events || [],
-        limitedEvents: limited.events || [],
-      };
-    } catch (error) {
-      console.error('[EventApi] Failed to fetch home events:', error);
-      // 任何錯誤都回傳空資料，確保首頁不會崩潰
-      return {
-        announcements: [],
-        festivals: [],
-        limitedEvents: [],
-      };
-    }
+    return {
+      announcements: announcements.events || [],
+      festivals: festivals.events || [],
+      limitedEvents: limited.events || [],
+    };
   }
 }
 
