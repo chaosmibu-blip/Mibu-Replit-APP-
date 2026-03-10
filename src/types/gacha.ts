@@ -12,7 +12,39 @@
  */
 
 import { LocalizedContent, CouponTier, Category } from './common';
-import { MerchantInfo, CouponData } from './merchant';
+
+// ========== 扭蛋專用型別（原 merchant.ts，#074 搬遷至此） ==========
+
+/** 商家簡要資訊（扭蛋景點卡片用） */
+export interface MerchantInfo {
+  id: string;
+  name: string;
+  badge?: string;
+  discount?: string;
+  description?: string;
+  brandColor?: string;
+  isPro?: boolean;
+  promo?: string;
+}
+
+/** 優惠券資料（扭蛋獎勵用） */
+export interface CouponData {
+  title: LocalizedContent;
+  code: string;
+  terms: LocalizedContent;
+  expiresAt?: string;
+}
+
+/** 區域優惠券池（扭蛋用） */
+export interface RegionPoolCoupon {
+  id: number;
+  title: string;
+  description: string | null;
+  rarity: 'SP' | 'SSR';
+  merchantName: string;
+  discount: string | null;
+  merchantId: number;
+}
 
 // ============ 扭蛋池 ============
 

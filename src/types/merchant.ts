@@ -1,442 +1,103 @@
 /**
- * @fileoverview 商家系統型別定義
+ * ============================================================
+ * 商家系統型別定義 (merchant.ts)
+ * ============================================================
+ * #074: 完全重寫，對齊後端 APP.md v4.2.0 契約
  *
- * 定義商家相關的資料結構，包含：
- * - 商家資訊與狀態
- * - 優惠券管理
- * - 數據分析
- * - 地點認領
+ * 涵蓋 23 個 API 端點的請求/回應型別：
+ * - 商家帳號（me、apply、application-status、permissions、delete）
+ * - 核銷碼（daily-code）
+ * - 數據分析（analytics、summary）
+ * - 店家管理（search、resolve-url、places、claim、new、update）
+ * - 優惠券管理（list、create、update、delete）— 路徑 /api/coupons
+ * - 核銷記錄（redemption-history、stats）
+ * - 訂閱管理（subscription、checkout、cancel）
  *
- * @module types/merchant
+ * 更新日期：2026-03-10（#074 商家後台完整重做）
  */
 
-import { LocalizedContent, PlanTier, CouponRarity } from './common';
+// ========== 基礎列舉型別 ==========
 
-// ============ 商家狀態型別 ============
-
-/**
- * 商家審核狀態
- * - pending: 待審核
- * - approved: 已通過
- * - rejected: 已拒絕
- */
 export type MerchantStatus = 'pending' | 'approved' | 'rejected';
-
-/**
- * 商家等級
- * - free: 免費版
- * - pro: 專業版
- * - premium: 頂級版
- */
 export type MerchantLevel = 'free' | 'pro' | 'premium';
+export type MerchantApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
+export type AnalyticsPeriod = '7d' | '30d' | '90d' | 'all';
+export type MerchantPlaceStatus = 'pending' | 'approved' | 'rejected';
+export type MerchantPlaceCardLevel = 'free' | 'pro' | 'premium';
+export type CouponRarityLevel = 'R' | 'S' | 'SR' | 'SSR';
 
-/**
- * 商家優惠券等級
- */
-export type MerchantCouponTier = 'SP' | 'SSR' | 'SR' | 'S' | 'R';
+// ========== API #1: GET /api/merchant/me ==========
 
-// ============ 優惠券資料 ============
-
-/**
- * 優惠券資料
- *
- * 與景點關聯的優惠券資訊
- */
-export interface CouponData {
-  title: LocalizedContent;     // 多語言標題
-  code: string;                // 優惠券代碼
-  terms: LocalizedContent;     // 多語言使用條款
-  expiresAt?: string;          // 到期時間（ISO 8601）
-}
-
-// ============ 商家資訊 ============
-
-/**
- * 商家簡要資訊
- *
- * 用於景點卡片等處顯示的商家資訊
- */
-export interface MerchantInfo {
-  id: string;            // 商家 ID
-  name: string;          // 商家名稱
-  badge?: string;        // 徽章
-  discount?: string;     // 折扣資訊
-  description?: string;  // 描述
-  brandColor?: string;   // 品牌顏色
-  isPro?: boolean;       // 是否為專業版
-  promo?: string;        // 促銷資訊
-}
-
-/**
- * 商家基本資訊
- */
-export interface Merchant {
-  id: string;                    // 商家 ID
-  name: string;                  // 商家名稱
-  email: string;                 // 電子郵件
-  claimedPlaceNames: string[];   // 已認領的地點名稱
-  subscriptionPlan: PlanTier;    // 訂閱方案
-}
-
-/**
- * 商家詳細資訊（我的商家）
- *
- * GET /api/merchant/me 回傳的完整商家資訊
- */
 export interface MerchantMe {
-  id: number;                   // 商家 ID
-  userId: string;               // 關聯用戶 ID
-  name?: string;                // 商家名稱
-  email?: string;               // 電子郵件
-  ownerName?: string;           // 負責人姓名
-  businessName?: string;        // 店家名稱
-  taxId?: string;               // 統一編號
-  businessCategory?: string;    // 商業類別
-  address?: string;             // 地址
-  phone?: string;               // 電話
-  mobile?: string;              // 手機
-  contactEmail?: string;        // 聯絡信箱
-  status: MerchantStatus;       // 審核狀態
-  merchantLevel: MerchantLevel; // 商家等級
-  isApproved: boolean;          // 是否已審核通過
-  creditBalance: number;        // 點數餘額
-  subscriptionPlan?: string;    // 訂閱方案
-  createdAt: string;            // 建立時間（ISO 8601）
+  id: number;
+  userId: string;
+  businessName: string | null;
+  email: string;
+  subscriptionPlan: string;
+  status: MerchantStatus;
+  merchantLevel: MerchantLevel;
+  createdAt: string;
+  rejectionReason: string | null;
+  claimedPlaceName: string | null;
 }
 
-// ============ 商家核銷碼 ============
-
-/**
- * 商家每日核銷碼
- *
- * 用於店員驗證優惠券的每日碼
- */
-export interface MerchantDailyCode {
-  code: string;       // 驗證碼
-  expiresAt: string;  // 過期時間（ISO 8601）
+export interface MerchantMeResponse {
+  merchant: MerchantMe | null;
 }
 
-// ============ 商家申請 ============
+// ========== API #2: POST /api/merchant/apply ==========
 
-/**
- * 商家申請參數
- * POST /api/merchant/apply
- * #053: 改為 businessName + email + surveyResponses 格式
- */
-export interface MerchantApplyParams {
-  businessName: string;                       // 商家名稱（必填）
-  email: string;                              // Email（必填）
-  surveyResponses?: Record<string, unknown>;  // 問卷回答（選填）
-  // #070: 店家綁定欄位（三種模式擇一，全選填）
-  claimedPlaceId?: number;                    // 模式 1：選了現有景點的 place_cache ID
-  claimedGooglePlaceId?: string;              // 模式 2：貼連結解析後的 Google Place ID
-  claimedGoogleMapsUrl?: string;              // 模式 2：原始 Google Maps 連結
-  claimedPlaceName?: string;                  // 模式 2/3：店家名稱
-  claimedPlaceData?: Record<string, unknown>; // 模式 2/3：完整資料快照
+export interface MerchantSurveyResponses {
+  contactName: string;
+  taxId?: string;
+  industryCategory: string;
+  region: string;
+  address?: string;
+  customerSources: string[];
+  challenges: string[];
+  marketingBudget: string;
+  onlineChannels: string[];
+  expectedOutcome: string;
+  gamificationView: string;
+  contactInfo: string;
 }
 
-/** #070: Google Maps 連結解析回應 */
-export interface ResolveUrlResponse {
-  success: boolean;
-  place: {
-    googlePlaceId: string;
-    placeName: string;
-    address: string;
-    district: string;
-    city: string;
-    country: string;
-    locationLat: number;
-    locationLng: number;
+export interface MerchantApplyRequest {
+  businessName: string;
+  email: string;
+  surveyResponses: MerchantSurveyResponses;
+  claimedPlaceId?: number;
+  claimedGooglePlaceId?: string;
+  claimedGoogleMapsUrl?: string;
+  claimedPlaceName?: string;
+  claimedPlaceData?: {
+    address?: string;
+    district?: string;
+    city?: string;
+    country?: string;
+    category?: string;
+    subcategory?: string;
+    locationLat?: number;
+    locationLng?: number;
+    openingHours?: { weekdayText?: string[]; periods?: any[] };
     phone?: string;
     website?: string;
-    openingHours?: {
-      weekdayText: string[];
-      periods: unknown[];
-    };
-    rating?: number;
-    types?: string[];
-    businessStatus?: string;
   };
 }
 
-/**
- * 商家申請回應
- * POST /api/merchant/apply
- * #053: 更新為新版回應格式
- */
 export interface MerchantApplyResponse {
   success: boolean;
   application: {
     id: number;
     status: 'pending';
     businessName: string;
+    claimedPlaceName: string | null;
     createdAt: string;
   };
 }
 
-// ============ 數據分析 ============
+// ========== API #3: GET /api/merchant/application-status ==========
 
-/**
- * 商家分析概覽
- */
-export interface MerchantAnalyticsOverview {
-  totalExposures: number;    // 總曝光次數
-  totalCollectors: number;   // 總收藏人數
-  couponIssued: number;      // 發行優惠券數
-  couponRedeemed: number;    // 核銷優惠券數
-  redemptionRate: number;    // 核銷率
-}
-
-/**
- * 商家分析趨勢
- */
-export interface MerchantAnalyticsTrend {
-  date: string;       // 日期
-  exposures: number;  // 曝光數
-}
-
-/**
- * 熱門優惠券分析
- */
-export interface MerchantAnalyticsTopCoupon {
-  couponId: number;       // 優惠券 ID
-  title: string;          // 標題
-  issued: number;         // 發行數
-  redeemed: number;       // 核銷數
-  redemptionRate: number; // 核銷率
-}
-
-/**
- * 地點收藏分析
- */
-export interface MerchantAnalyticsPlaceBreakdown {
-  placeId: number;        // 地點 ID
-  placeName: string;      // 地點名稱
-  collectionCount: number; // 收藏次數
-}
-
-/**
- * 分析時間範圍
- */
-export type AnalyticsPeriod = '7d' | '30d' | '90d' | 'all';
-
-/**
- * 商家分析資料
- * GET /api/merchant/analytics
- */
-export interface MerchantAnalytics {
-  overview: MerchantAnalyticsOverview;           // 概覽
-  trend: MerchantAnalyticsTrend[];               // 趨勢
-  topCoupons: MerchantAnalyticsTopCoupon[];      // 熱門優惠券
-  placeBreakdown: MerchantAnalyticsPlaceBreakdown[]; // 地點分析
-  period: string;                                // 時間範圍
-  generatedAt: string;                           // 生成時間
-}
-
-/**
- * 商家分析資料（舊版相容）
- * @deprecated 使用 MerchantAnalytics
- */
-export interface MerchantAnalyticsLegacy {
-  itineraryCardCount: number;  // 行程卡片出現次數
-  couponStats: {
-    total: number;             // 總優惠券數
-    active: number;            // 有效優惠券數
-    redeemed: number;          // 已核銷數
-  };
-  impressions: number;         // 曝光次數
-  collectionClickCount: number; // 收藏點擊次數
-}
-
-// ============ 商家優惠券管理 ============
-
-/**
- * 商家優惠券
- */
-export interface MerchantCoupon {
-  id: number;                       // 優惠券 ID
-  merchantId: number;               // 商家 ID
-  name: string;                     // 優惠券名稱
-  tier: MerchantCouponTier;         // 優惠券等級
-  content: string;                  // 優惠內容
-  terms: string | null;             // 使用條款
-  quantity: number;                 // 發行數量
-  remainingQuantity: number;        // 剩餘數量
-  validFrom: string | null;         // 生效時間
-  validUntil: string | null;        // 過期時間
-  isActive: boolean;                // 是否啟用
-  inventoryImageUrl: string | null; // 背包顯示用圖片
-  backgroundImageUrl: string | null; // 卡片背景圖片
-  createdAt: string;                // 建立時間
-  updatedAt: string;                // 更新時間
-}
-
-/**
- * 建立商家優惠券參數
- * POST /api/merchant/coupons
- */
-export interface CreateMerchantCouponParams {
-  name: string;                  // 優惠券名稱
-  tier: MerchantCouponTier;      // 優惠券等級
-  content: string;               // 優惠內容
-  terms?: string;                // 使用條款
-  quantity: number;              // 發行數量
-  validFrom?: string;            // 生效時間
-  validUntil?: string;           // 過期時間
-  isActive?: boolean;            // 是否啟用
-  inventoryImageUrl?: string;    // 背包顯示用圖片
-  backgroundImageUrl?: string;   // 卡片背景圖片
-}
-
-/**
- * 更新商家優惠券參數
- * PUT /api/merchant/coupons/:id
- */
-export interface UpdateMerchantCouponParams {
-  name?: string;                 // 優惠券名稱
-  tier?: MerchantCouponTier;     // 優惠券等級
-  content?: string;              // 優惠內容
-  terms?: string;                // 使用條款
-  quantity?: number;             // 發行數量
-  validFrom?: string;            // 生效時間
-  validUntil?: string;           // 過期時間
-  isActive?: boolean;            // 是否啟用
-  inventoryImageUrl?: string;    // 背包顯示用圖片
-  backgroundImageUrl?: string;   // 卡片背景圖片
-}
-
-/**
- * 商家優惠券列表回應
- * GET /api/merchant/coupons
- */
-export interface MerchantCouponsResponse {
-  success: boolean;              // 是否成功
-  coupons: MerchantCoupon[];     // 優惠券列表
-}
-
-// ============ 商家地點管理 ============
-
-/**
- * 營業時間
- */
-export interface MerchantPlaceOpeningHours {
-  weekdayText?: string[];  // 文字格式的營業時間
-  periods?: any[];         // 結構化營業時間
-}
-
-/**
- * 商家地點審核狀態
- */
-export type MerchantPlaceStatus = 'pending' | 'approved' | 'rejected';
-
-/**
- * 商家地點卡片等級
- */
-export type MerchantPlaceCardLevel = 'free' | 'pro' | 'premium';
-
-/**
- * 商家地點
- */
-export interface MerchantPlace {
-  id: number;                                 // 地點 ID
-  merchantId: number;                         // 商家 ID
-  officialPlaceId: number | null;             // 官方地點 ID
-  placeName: string;                          // 地點名稱
-  district: string;                           // 區域
-  city: string;                               // 城市
-  country: string;                            // 國家
-  description: string | null;                 // 描述
-  googleMapUrl: string | null;                // Google 地圖連結
-  openingHours: MerchantPlaceOpeningHours | null; // 營業時間
-  status: MerchantPlaceStatus;                // 審核狀態
-  cardLevel: MerchantPlaceCardLevel;          // 卡片等級
-  promoTitle: string | null;                  // 促銷標題
-  promoDescription: string | null;            // 促銷描述
-  inventoryImageUrl: string | null;           // 背包圖片 URL
-  isPromoActive: boolean;                     // 促銷是否啟用
-  createdAt: string;                          // 建立時間
-  updatedAt: string;                          // 更新時間
-
-  // ============ 擴充欄位（UI 向後兼容） ============
-  /** 連結 ID（舊版欄位） */
-  linkId?: string;
-  /** 是否已驗證（可由 status === 'approved' 判斷） */
-  isVerified?: boolean;
-}
-
-/**
- * 更新商家地點參數
- * PUT /api/merchant/places/:id
- */
-export interface UpdateMerchantPlaceParams {
-  description?: string;                       // 描述
-  googleMapUrl?: string;                      // Google 地圖連結
-  openingHours?: MerchantPlaceOpeningHours;   // 營業時間
-  promoTitle?: string;                        // 促銷標題
-  promoDescription?: string;                  // 促銷描述
-  isPromoActive?: boolean;                    // 是否啟用促銷
-}
-
-/**
- * 商家地點（舊版相容）
- * @deprecated 使用 MerchantPlace
- */
-export interface MerchantPlaceLegacy {
-  id: number;          // 地點 ID
-  linkId: string;      // 連結 ID
-  merchantId: number;  // 商家 ID
-  placeName: string;   // 地點名稱
-  district?: string;   // 區域
-  city?: string;       // 城市
-  isVerified: boolean; // 是否已驗證
-  createdAt: string;   // 建立時間
-}
-
-// ============ 地點搜尋 ============
-
-/**
- * 地點搜尋結果
- *
- * 商家認領地點時的搜尋結果
- */
-export interface PlaceSearchResult {
-  id: number;          // 地點 ID
-  placeId: string;     // 地點識別碼
-  placeName: string;   // 地點名稱
-  district?: string;   // 區域
-  city?: string;       // 城市
-  isClaimed: boolean;  // 是否已被認領
-}
-
-// ============ 區域獎池 ============
-
-/**
- * 區域獎池優惠券
- *
- * 顯示在特定區域可獲得的優惠券
- */
-export interface RegionPoolCoupon {
-  id: number;                  // 優惠券 ID
-  title: string;               // 標題
-  description: string | null;  // 描述
-  rarity: CouponRarity;        // 稀有度
-  merchantName: string;        // 商家名稱
-  discount: string | null;     // 折扣內容
-  merchantId: number;          // 商家 ID
-}
-
-// ============ 商家申請系統（#053 新增） ============
-
-/**
- * 商家申請狀態
- * #053: 新增商家申請 API
- */
-export type MerchantApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
-
-/**
- * 商家申請狀態回應
- * GET /api/merchant/application-status
- */
 export interface MerchantApplicationStatusResponse {
   status: MerchantApplicationStatus;
   application: {
@@ -444,29 +105,405 @@ export interface MerchantApplicationStatusResponse {
     businessName: string;
     email: string;
     surveyResponses: Record<string, unknown> | null;
+    claimedPlaceName: string | null;
     createdAt: string;
     approvedAt: string | null;
     rejectionReason: string | null;
   } | null;
+  merchantTier?: string;
 }
 
-/**
- * Profile 中的商家區塊
- * GET /api/account/profile → merchant
- * #053: 新增
- */
+// ========== API #4: GET /api/merchant/permissions ==========
+
+export interface MerchantTierPermissions {
+  maxPlaces: number;
+  maxCoupons: number;
+  analytics: boolean;
+  allowedRarities: CouponRarityLevel[];
+  hasFrame: boolean;
+  hasLoadingEffect: boolean;
+  canEditPromo: boolean;
+  canEditItemboxImage: boolean;
+  hasDedicatedSupport: boolean;
+}
+
+export interface MerchantPermissionsResponse {
+  merchantTier: MerchantLevel;
+  maxPlaces: number;
+  hasAnalytics: boolean;
+  permissions: MerchantTierPermissions;
+  allTierPermissions: {
+    free: MerchantTierPermissions;
+    pro: MerchantTierPermissions;
+    premium: MerchantTierPermissions;
+  };
+}
+
+// ========== API #5: DELETE /api/merchant/account ==========
+
+export interface DeleteMerchantAccountRequest {
+  reason?: string;
+}
+
+// ========== API #6: GET /api/merchant/daily-code ==========
+
+export interface MerchantDailyCode {
+  seedCode: string;
+  updatedAt: string;
+  expiresAt: string;
+}
+
+// ========== API #7: GET /api/merchant/analytics ==========
+
+export interface MerchantAnalyticsOverview {
+  totalExposures: number;
+  totalCollectors: number;
+  couponIssued: number;
+  couponRedeemed: number;
+  redemptionRate: number;
+}
+
+export interface MerchantAnalyticsTrend {
+  date: string;
+  exposures: number;
+}
+
+export interface MerchantAnalyticsTopCoupon {
+  title: string;
+  issued: number;
+  redeemed: number;
+  redemptionRate: number;
+}
+
+export interface MerchantAnalyticsPlaceBreakdown {
+  placeId: number;
+  placeName: string;
+  collectionCount: number;
+}
+
+export interface MerchantAnalytics {
+  overview: MerchantAnalyticsOverview;
+  trend: MerchantAnalyticsTrend[];
+  topCoupons: MerchantAnalyticsTopCoupon[];
+  placeBreakdown: MerchantAnalyticsPlaceBreakdown[];
+  period: string;
+  generatedAt: string;
+}
+
+// ========== API #8: GET /api/merchant/analytics/summary ==========
+
+export interface MerchantAnalyticsSummary {
+  placesCount: number;
+  activeCouponsCount: number;
+  monthlyExposures: number;
+  subscriptionTier: string;
+}
+
+// ========== API #9: GET /api/merchant/places/search ==========
+
+export interface PlaceSearchResult {
+  id: number;
+  placeName: string;
+  district: string;
+  city: string;
+  country: string;
+  category?: string;
+}
+
+export interface PlaceSearchResponse {
+  places: PlaceSearchResult[];
+}
+
+// ========== API #10: POST /api/merchant/places/resolve-url ==========
+
+export interface ResolveUrlRequest {
+  url: string;
+}
+
+export interface ResolvedPlace {
+  googlePlaceId: string;
+  placeName: string;
+  address: string;
+  district?: string;
+  city?: string;
+  country?: string;
+  locationLat: number;
+  locationLng: number;
+  phone?: string;
+  website?: string;
+  openingHours?: { weekdayText?: string[]; periods?: any[] };
+  rating?: number;
+  types?: string[];
+  businessStatus?: string;
+}
+
+export interface ResolveUrlResponse {
+  success: boolean;
+  place: ResolvedPlace;
+}
+
+// ========== API #11: GET /api/merchant/places ==========
+
+export interface MerchantPlace {
+  id: number;
+  merchantId: number;
+  officialPlaceId: number | null;
+  placeName: string;
+  district: string;
+  city: string;
+  country: string;
+  description: string | null;
+  googleMapUrl: string | null;
+  openingHours: { weekdayText?: string[]; periods?: any[] } | null;
+  status: MerchantPlaceStatus;
+  cardLevel: MerchantPlaceCardLevel;
+  promoTitle: string | null;
+  promoDescription: string | null;
+  isPromoActive: boolean | null;
+  createdAt: string;
+}
+
+export interface MerchantPlacesResponse {
+  places: MerchantPlace[];
+}
+
+// ========== API #12: POST /api/merchant/places/claim ==========
+
+export interface ClaimPlaceRequest {
+  placeName: string;
+  district: string;
+  city: string;
+  country: string;
+  placeCacheId?: number;
+  googlePlaceId?: string;
+}
+
+export interface ClaimPlaceResponse {
+  success: true;
+  link: MerchantPlace;
+  message: string;
+}
+
+// ========== API #13: POST /api/merchant/places/new ==========
+
+export interface NewPlaceRequest {
+  placeName: string;
+  district: string;
+  city: string;
+  country: string;
+  address?: string;
+  category?: string;
+  subcategory?: string;
+  description?: string;
+  googlePlaceId?: string;
+  locationLat?: string;
+  locationLng?: string;
+  openingHours?: { weekdayText?: string[]; periods?: any[] };
+  phone?: string;
+  website?: string;
+}
+
+export interface NewPlaceResponse {
+  success: true;
+  draft: {
+    id: number;
+    merchantId: number;
+    placeName: string;
+    status: 'pending';
+    source: 'merchant';
+  };
+  message: string;
+}
+
+// ========== API #14: PUT /api/merchant/places/:linkId ==========
+
+export interface UpdatePlaceRequest {
+  description?: string;
+  googleMapUrl?: string;
+  openingHours?: { weekdayText?: string[]; periods?: any[] };
+  promoTitle?: string;
+  promoDescription?: string;
+  isPromoActive?: boolean;
+}
+
+export interface UpdatePlaceResponse {
+  success: true;
+  link: MerchantPlace;
+}
+
+// ========== API #15: GET /api/coupons/merchant/:merchantId ==========
+
+export interface MerchantCoupon {
+  id: number;
+  code: string;
+  title: string;
+  terms: string | null;
+  placeName: string | null;
+  rarity: CouponRarityLevel | null;
+  isActive: boolean;
+  archived: boolean;
+  remainingQuantity: number | null;
+  redeemedCount: number;
+  createdAt: string;
+}
+
+export interface MerchantCouponsResponse {
+  coupons: MerchantCoupon[];
+}
+
+// ========== API #16: POST /api/coupons ==========
+
+export interface CreateCouponRequest {
+  code: string;
+  title: string;
+  terms?: string;
+  merchantId: number;
+  placeId?: number;
+  rarity?: CouponRarityLevel;
+  isActive?: boolean;
+  remainingQuantity?: number;
+}
+
+export interface CreateCouponResponse {
+  coupon: MerchantCoupon;
+}
+
+// ========== API #17: PATCH /api/coupons/:id ==========
+
+export interface UpdateCouponRequest {
+  title?: string;
+  terms?: string;
+  isActive?: boolean;
+  remainingQuantity?: number;
+}
+
+export interface UpdateCouponResponse {
+  coupon: MerchantCoupon;
+}
+
+// ========== API #18: DELETE /api/coupons/:id ==========
+
+export interface DeleteCouponResponse {
+  success: true;
+  message: string;
+}
+
+// ========== API #19: GET /api/merchant/redemption-history ==========
+
+export interface RedemptionRecord {
+  id: number;
+  userId: string;
+  userDisplayName: string;
+  couponTitle: string;
+  redemptionCode: string;
+  status: string;
+  verifiedAt: string | null;
+  createdAt: string;
+}
+
+export interface RedemptionHistoryResponse {
+  redemptions: RedemptionRecord[];
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
+export interface RedemptionHistoryParams {
+  limit?: number;
+  offset?: number;
+}
+
+// ========== API #20: GET /api/merchant/redemption-history/stats ==========
+
+export interface RedemptionStats {
+  totalRedemptions: number;
+  todayRedemptions: number;
+  weekRedemptions: number;
+  monthRedemptions: number;
+}
+
+export interface RedemptionStatsResponse {
+  stats: RedemptionStats;
+}
+
+// ========== API #21: GET /api/merchant/subscription ==========
+
+export interface MerchantSubscription {
+  merchantId: number;
+  merchantLevel: MerchantLevel;
+  merchantLevelExpiresAt: string | null;
+  limits: {
+    maxPlaces: number;
+    analytics: boolean;
+  };
+  subscription: {
+    id: number;
+    tier: string;
+    status: string;
+    currentPeriodEnd: string;
+    cancelAtPeriodEnd: boolean;
+  } | null;
+}
+
+// ========== API #22: POST /api/merchant/subscription/checkout ==========
+
+export interface CheckoutRequest {
+  type: 'merchant' | 'place';
+  tier: 'pro' | 'premium';
+  placeId?: number;
+  provider?: 'stripe' | 'recur';
+  successUrl?: string;
+  cancelUrl?: string;
+}
+
+export interface StripeCheckoutResponse {
+  url: string;
+  checkoutUrl: string;
+  sessionId: string;
+}
+
+export interface RecurCheckoutResponse {
+  provider: 'recur';
+  productId: string;
+  publishableKey: string;
+  customerEmail: string;
+  externalCustomerId: string;
+  successUrl: string;
+  cancelUrl: string;
+}
+
+export type CheckoutResponse = StripeCheckoutResponse | RecurCheckoutResponse;
+
+// ========== API #23: POST /api/merchant/subscription/cancel ==========
+
+export interface CancelSubscriptionRequest {
+  subscriptionId: number;
+}
+
+export interface CancelSubscriptionResponse {
+  success: true;
+  subscription: Record<string, unknown>;
+}
+
+// ========== Profile 區塊（GET /api/account/profile） ==========
+
 export interface ProfileMerchantBlock {
   isMerchant: boolean;
   applicationStatus: MerchantApplicationStatus;
   merchantId: number | null;
 }
 
-/**
- * Profile 中的自己人區塊
- * GET /api/account/profile → partner
- * #053: specialist→partner 改名
- */
 export interface ProfilePartnerBlock {
   isPartner: boolean;
   applicationStatus: 'none' | 'pending' | 'approved' | 'rejected';
 }
+
+// ========== 403 錯誤分類輔助 ==========
+
+export type MerchantErrorType =
+  | 'not_approved'
+  | 'upgrade_required'
+  | 'place_limit'
+  | 'coupon_limit'
+  | 'unknown';
