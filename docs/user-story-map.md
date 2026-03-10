@@ -120,7 +120,7 @@
 | 用戶故事 | 畫面 | 狀態 |
 |---------|------|------|
 | 作為商家，我想申請加入平台 | MerchantApplyScreen | ✅ 已實作 |
-| 作為商家，我想填寫註冊資料 | MerchantRegisterScreen / MerchantRegistrationForm | ✅ 已實作 |
+| 作為商家，我想填寫註冊資料 | MerchantApplyScreen（12 題問卷） | ✅ 已實作 |
 
 ### 營運管理
 
