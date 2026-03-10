@@ -24,6 +24,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { merchantApi } from '../../../services/merchantApi';
 import { PlaceSearchResult } from '../../../types';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
+import { Spacing } from '../../../theme/designTokens';
 
 export function ClaimPlaceScreen() {
   const { getToken } = useAuth();
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: Spacing.xxxl,
   },
   emptyTitle: {
     fontSize: 18,

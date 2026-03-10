@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   emptyIconCircle: {
     width: 96,
     height: 96,
-    borderRadius: 48,
+    borderRadius: Radius.full,
     backgroundColor: MibuBrand.cream,
     alignItems: 'center',
     justifyContent: 'center',
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   itineraryBadgeText: {
-    fontSize: 10,
+    fontSize: FontSize.xs,
     fontWeight: '700',
     color: MibuBrand.warmWhite,
   },
@@ -214,8 +214,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Spacing.md,
     left: Spacing.md,
-    width: 32,
-    height: 32,
+    width: Spacing.xxl,
+    height: Spacing.xxl,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 64,
     height: 64,
-    borderRadius: 32,
+    borderRadius: Radius.full,
     overflow: 'hidden',
     marginRight: 0,
   },
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   avatarPreviewImage: {
     width: 256,
     height: 256,
-    borderRadius: 128,
+    borderRadius: Radius.full,
   },
   /** Mini 頭像放大預覽 - 右下角儲存按鈕 */
   avatarSaveButton: {
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     right: 32,
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: Radius.xxl,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -553,8 +553,8 @@ const styles = StyleSheet.create({
   placeCard: {
     flexDirection: 'row',
     backgroundColor: MibuBrand.warmWhite,
-    borderRadius: 16, // 對齊扭蛋卡片
-    marginBottom: 12, // 對齊扭蛋卡片
+    borderRadius: Radius.lg, // 對齊扭蛋卡片
+    marginBottom: Spacing.md, // 對齊扭蛋卡片
     overflow: 'hidden',
     // 對齊扭蛋卡片陰影
     shadowColor: MibuBrand.brown,
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
     width: 4, // 對齊扭蛋卡片（從 5 改為 4）
   },
   reorderButtonsContainer: {
-    width: 32,
+    width: Spacing.xxl,
     backgroundColor: MibuBrand.creamLight,
     alignItems: 'center',
     justifyContent: 'center',
@@ -616,9 +616,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginBottom: 12, // 對齊扭蛋卡片
+    marginBottom: Spacing.md, // 對齊扭蛋卡片
     flexWrap: 'wrap',
-    gap: 8,
+    gap: Spacing.sm,
   },
   // 【對齊扭蛋】時間預估 badge
   placeDurationBadge: {
@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   placeDurationText: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontWeight: '600',
     color: MibuBrand.copper,
   },
@@ -651,21 +651,21 @@ const styles = StyleSheet.create({
     borderRadius: 12, // 對齊扭蛋卡片
   },
   placeCategoryText: {
-    fontSize: 12, // 對齊扭蛋卡片
+    fontSize: FontSize.sm, // 對齊扭蛋卡片
     fontWeight: '600',
   },
   placeName: {
     fontSize: 20, // 對齊扭蛋卡片（從 16 改為 20）
     fontWeight: '700',
     color: MibuBrand.brownDark,
-    marginBottom: 8, // 對齊扭蛋卡片
+    marginBottom: Spacing.sm, // 對齊扭蛋卡片
     letterSpacing: -0.3,
   },
   placeDescription: {
-    fontSize: 14, // 對齊扭蛋卡片（從 12 改為 14）
+    fontSize: FontSize.md, // 對齊扭蛋卡片（從 12 改為 14）
     color: MibuBrand.brownLight,
     lineHeight: 22, // 對齊扭蛋卡片
-    marginBottom: 16, // 對齊扭蛋卡片
+    marginBottom: Spacing.lg, // 對齊扭蛋卡片
   },
   // 【對齊扭蛋】地圖按鈕樣式
   placeMapButton: {
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   placeMapText: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     fontWeight: '600',
     color: MibuBrand.copper,
     marginLeft: 6,
@@ -982,9 +982,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   createFieldIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: Spacing.xxl,
+    height: Spacing.xxl,
+    borderRadius: Radius.lg,
     backgroundColor: MibuBrand.warmWhite,
     alignItems: 'center',
     justifyContent: 'center',

@@ -42,6 +42,7 @@ import {
 import { MerchantCoupon, MerchantCouponTier, CreateMerchantCouponParams, UpdateMerchantCouponParams } from '../../../types';
 import { TierBadge } from '../../shared/components/TierBadge';
 import { TIER_ORDER, getTierStyle } from '../../../constants/tierStyles';
+import { Spacing } from '../../../theme/designTokens';
 import { MibuBrand, SemanticColors, UIColors } from '../../../../constants/Colors';
 import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 import { LOCALE_MAP } from '../../../utils/i18n';
@@ -652,7 +653,7 @@ const styles = StyleSheet.create({
   // 空狀態容器
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: Spacing.xxxl,
   },
   // 空狀態文字
   emptyText: {

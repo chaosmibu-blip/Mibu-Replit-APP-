@@ -9,7 +9,8 @@
  */
 import { StyleSheet } from 'react-native';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
-import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
+import { Spacing, Radius, FontSize, Shadow } from '../../../theme/designTokens';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 
 const styles = StyleSheet.create({
   // 主容器
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: Radius.full,
     backgroundColor: MibuBrand.brown,
     alignItems: 'center',
     justifyContent: 'center',
@@ -56,9 +57,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: Spacing.xxl,
+    height: Spacing.xxl,
+    borderRadius: Radius.lg,
     backgroundColor: MibuBrand.copper,
     alignItems: 'center',
     justifyContent: 'center',
@@ -134,11 +135,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.cream,
     borderRadius: Radius.xl,
     padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    ...Shadow.md,
   },
   readOnlyText: {
     fontSize: FontSize.lg,
@@ -173,11 +170,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: Radius.xl,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    ...Shadow.md,
   },
   pickerOption: {
     padding: 14,

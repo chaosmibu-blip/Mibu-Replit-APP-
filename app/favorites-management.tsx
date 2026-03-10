@@ -24,6 +24,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../src/context/AppContext';
 import { MibuBrand } from '../constants/Colors';
+import { Spacing } from '../src/theme/designTokens';
 
 type TabType = 'favorites' | 'blacklist';
 
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: Spacing.xxxl,
   },
   emptyText: {
     fontSize: 16,

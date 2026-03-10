@@ -12,7 +12,7 @@
 import { StyleSheet } from 'react-native';
 import { MibuBrand, UIColors, SemanticColors } from '../../../../constants/Colors';
 import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
-import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
+import { Spacing, Radius, FontSize, Shadow } from '../../../theme/designTokens';
 
 const styles = StyleSheet.create({
   container: {
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   statIconCircle: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: Radius.full,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
@@ -286,11 +286,7 @@ const styles = StyleSheet.create({
     backgroundColor: MibuBrand.warmWhite,
     borderRadius: Radius.xl,
     overflow: 'hidden',
-    shadowColor: UIColors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    ...Shadow.md,
   },
   leaderboardItem: {
     flexDirection: 'row',
@@ -308,7 +304,7 @@ const styles = StyleSheet.create({
   rankBadge: {
     width: 30,
     height: 30,
-    borderRadius: 15,
+    borderRadius: Radius.full,
     backgroundColor: MibuBrand.creamLight,
     justifyContent: 'center',
     alignItems: 'center',

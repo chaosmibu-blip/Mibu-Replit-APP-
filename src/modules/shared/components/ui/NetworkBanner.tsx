@@ -14,6 +14,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Text, StyleSheet, Animated, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SemanticColors } from '../../../../../constants/Colors';
 import { Spacing, FontSize } from '@/src/theme/designTokens';
 import { AnimationTiming, AutoDismiss } from '@/src/constants/animationTiming';
@@ -39,6 +40,7 @@ export function NetworkBanner({
   offlineMessage = '網路連線中斷',
   onlineMessage = '已恢復連線',
 }: NetworkBannerProps) {
+  const insets = useSafeAreaInsets();
   const [isConnected, setIsConnected] = useState(true);
   const [showBanner, setShowBanner] = useState(false);
   // 用 useRef 追蹤是否曾斷線（同步讀取，避免閉包過時 — 教訓 #006）
@@ -138,7 +140,7 @@ export function NetworkBanner({
     <Animated.View
       style={[
         styles.container,
-        { backgroundColor: bannerBg, transform: [{ translateY }] },
+        { backgroundColor: bannerBg, paddingTop: insets.top, transform: [{ translateY }] },
       ]}
     >
       <Ionicons name={iconName} size={16} color={bannerColor} />
@@ -156,7 +158,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: Platform.OS === 'ios' ? 50 : Spacing.md,
     paddingBottom: Spacing.sm,
     gap: Spacing.sm,
     zIndex: 9999,

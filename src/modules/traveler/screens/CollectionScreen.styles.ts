@@ -11,7 +11,8 @@
  */
 import { StyleSheet, Dimensions } from 'react-native';
 import { MibuBrand, UIColors } from '../../../../constants/Colors';
-import { Spacing, Radius, FontSize } from '../../../theme/designTokens';
+import { Spacing, Radius, FontSize, Shadow } from '../../../theme/designTokens';
+import { BOTTOM_SPACER_HEIGHT } from '../../../constants/businessDefaults';
 
 // ============================================================
 // 匯出常數（供元件邏輯使用）
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     backgroundColor: 'rgba(255,255,255,0.9)',
-    borderRadius: 18,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -110,12 +111,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.3)',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: Radius.xl,
   },
 
   /** Modal 分類標籤文字 */
   modalCategoryText: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontWeight: '700',
   },
 
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '900',
     color: MibuBrand.dark,
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
 
   /** Modal 日期 + 地點列 */
@@ -144,19 +145,19 @@ const styles = StyleSheet.create({
 
   /** Modal 日期/地點文字 */
   modalMetaText: {
-    fontSize: 14,
+    fontSize: FontSize.md,
     color: MibuBrand.brownLight,
   },
 
   /** Modal 分隔點 */
   modalMetaDot: {
-    marginHorizontal: 8,
+    marginHorizontal: Spacing.sm,
     color: MibuBrand.tanLight,
   },
 
   /** Modal 描述文字 */
   modalDescription: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     color: MibuBrand.brownLight,
     lineHeight: 24,
     marginBottom: 20,
@@ -169,13 +170,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     backgroundColor: MibuBrand.brown,
-    paddingVertical: 16,
-    borderRadius: 16,
+    paddingVertical: Spacing.lg,
+    borderRadius: Radius.lg,
   },
 
   /** Modal 按鈕文字 */
   modalNavigateText: {
-    fontSize: 16,
+    fontSize: FontSize.lg,
     fontWeight: '700',
     color: UIColors.white,
   },
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
   /** FlatList 內容容器 */
   gridListContent: {
     paddingHorizontal: Spacing.lg,
-    paddingBottom: 100,
+    paddingBottom: BOTTOM_SPACER_HEIGHT,
   },
 
   /** FlatList 欄間距 */
@@ -409,7 +410,7 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     paddingTop: Spacing.lg,
     paddingHorizontal: Spacing.lg,
-    paddingBottom: 100,
+    paddingBottom: BOTTOM_SPACER_HEIGHT,
   },
 
   // ========== 景點卡片（grid 模式） ==========
@@ -445,7 +446,7 @@ const styles = StyleSheet.create({
   unreadDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
+    borderRadius: Radius.xs,
     backgroundColor: MibuBrand.tierSP,
   },
 
@@ -453,7 +454,7 @@ const styles = StyleSheet.create({
   promoUpdateBadge: {
     width: 18,
     height: 18,
-    borderRadius: 9,
+    borderRadius: Radius.full,
     backgroundColor: MibuBrand.success,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
@@ -469,7 +470,7 @@ const styles = StyleSheet.create({
 
   /** 分類標籤文字 */
   categoryBadgeText: {
-    fontSize: 10,
+    fontSize: FontSize.xs,
     fontWeight: '600',
   },
 
@@ -629,7 +630,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     backgroundColor: MibuBrand.tierSP,
-    borderRadius: 5,
+    borderRadius: Radius.full,
     borderWidth: 1.5,
     borderColor: MibuBrand.warmWhite,
   },
@@ -684,7 +685,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     backgroundColor: MibuBrand.tierSP,
-    borderRadius: 4,
+    borderRadius: Radius.xs,
     borderWidth: 1.5,
     borderColor: MibuBrand.warmWhite,
   },
