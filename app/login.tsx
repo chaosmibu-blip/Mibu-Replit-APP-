@@ -207,15 +207,16 @@ export default function LoginScreen() {
                 finalActiveRole = switchData.activeRole || portalToUse;
               }
             } catch (switchError) {
+              // 角色切換失敗時保留後端實際角色，不覆蓋為 portalToUse
+              // 避免前後端角色狀態不一致導致權限錯誤
               console.error('Failed to switch role:', switchError);
-              finalActiveRole = portalToUse;
             }
           }
-          
+
           // Use API role for navigation, activeRole for super admins
           const userRole = userData.role || 'traveler';
           const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
-          
+
           await setUser({
             id: userData.id,
             name: userData.name,
@@ -475,15 +476,16 @@ export default function LoginScreen() {
                 finalActiveRole = switchData.activeRole || portalToUse;
               }
             } catch (switchError) {
+              // 角色切換失敗時保留後端實際角色，不覆蓋為 portalToUse
+              // 避免前後端角色狀態不一致導致權限錯誤
               console.error('Failed to switch role:', switchError);
-              finalActiveRole = portalToUse;
             }
           }
-          
+
           // Use API role for navigation, activeRole for super admins
           const userRole = userData.role || 'traveler';
           const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
-          
+
           await setUser({
             id: userData.id,
             name: displayName,
@@ -552,15 +554,16 @@ export default function LoginScreen() {
                 finalActiveRole = switchData.activeRole || portalToUse;
               }
             } catch (switchError) {
+              // 角色切換失敗時保留後端實際角色，不覆蓋為 portalToUse
+              // 避免前後端角色狀態不一致導致權限錯誤
               console.error('Failed to switch role:', switchError);
-              finalActiveRole = portalToUse;
             }
           }
-          
+
           // Use API role for navigation, activeRole for super admins
           const userRole = userData.role || 'traveler';
           const navigationRole = userData.isSuperAdmin ? finalActiveRole : userRole;
-          
+
           await setUser({
             id: userData.id,
             name: userData.name,
